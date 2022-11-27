@@ -1,8 +1,7 @@
-# # TODO
+# TODOs
 
-* Integrate protobuf as the serialization format
-* Start leveraging the serialized method in objects
-* Creating a versioning mechanism that allows for additive changes
+* Implement Rust bindings
+  * (Subsequently create a valuation service - outside of scope of this project)
 * Make models self-describing via Annotations
 * Create a 'model service' that can expose the data dictionary
   * Maybe creates example objects?
@@ -12,7 +11,7 @@
 
 # Context
 
-The financial models represented in Java
+This project contains protobuf models of financial objects & request/response formats for APIs; as well as language specific bindings.
 
 # Design Principle
 
@@ -22,15 +21,33 @@ to all users.
 
 Goals:
 
-* The models will be available in multiple languages (Java to start, then Python)
-* Models can be serialized to JSON in an efficient manner
+* The models will be available in multiple languages (Java to start, then Python/Rust/Javascript)
+* Models can be serialized to JSON in an efficient manner (this is only supported in the Java implementation)
 * Models can be serialized to a binary object, and that is used to pass data between services
 * Additive changes can be made without requiring deploying models to all services simultaneously
 * Breaking changes are discouraged, but a breaking change will cause compilation failures in services
 
-# Package Structure
+# Proto Package Structure
 
-## Common.Model
+## proto/protos
+
+The golden source protobuf definitions
+
+## proto/<language>
+
+e.g. proto/java. Contains auto-generated code from protobuf libraries. YOUR CODE WILL BE OVERWITTEN IN HERE.
+
+# Code Package Structure (Java)
+
+The Java contains a standalone implementation of models. This is to allow for behavioral aspects to be added to 
+models. For example the Transaction.java class has logic for creating cash impacts and 
+maturation children transactions. Behaviors can't be defined in protobuf, so have to be 
+implemented per language. 
+
+This philosophical approach requires great thought to go into data modelling. This is on purpose. Concepts like 
+'strategy' have far-reaching implementation trade-offs that need to be considered at design time.
+
+## src/main/java/Common.Model
 
 Contains packages for different groups of models, with the Java code:
 
@@ -70,12 +87,6 @@ it to be implemented. For example, when it comes to year end processing, there a
 
 The above philosophy is very important so that we don't end up re-using a technical field for various different business reasons across the infrastrcuture.
 
-
-
-## Proto??? 
-
-Contains protobuf definitions
-
 ### Compatibility
 
 * All objects contain a version that gets updated whenever a change is made
@@ -90,8 +101,11 @@ Contains protobuf definitions
 * Implement versions via annotations. Should have no performance impact
   * Only used when errors are thrown
 
-
 # Building
 
-How to build
-# ledger-models
+Run: 
+
+`cd proto
+protoc -I=. --java_out=./java ./**/*proto`
+
+
