@@ -1,1 +1,3 @@
 target/**
+rust-types/target
+rust-types/protos
