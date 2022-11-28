@@ -7,6 +7,7 @@ fn main() {
     let proto_dir_path = Path::new(&dir).join(Path::new("protos"));
 
     // find paths of all proto files
+    // must run copy_proto_defs.sh first
     let proto_files: Vec<String> = WalkDir::new(proto_dir_path)
         .into_iter()
         .filter_map(|e| e.ok())
