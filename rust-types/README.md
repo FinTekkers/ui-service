@@ -2,8 +2,6 @@
 
 ## Building
 
-from within /rust-types
+from within /rust-type run ```make rust-types``
 
-run sh ```copy_proto_defs.sh``` to temporarily pull the proto files into the directory (this is necessary for the rust proto library to play nicely)
-
-then run ```cargo build``` to build the types. They will be auto-exported under the mod ledger_models
+this will run ```copy_proto_defs.sh``` to temporarily pull the proto files into the directory (this is necessary for the rust proto library to play nicely) and then run ```cargo build``` to build the types. They will be auto-exported under the mod ledger_models
