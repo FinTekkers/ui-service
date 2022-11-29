@@ -31,7 +31,7 @@ fn main() {
         .collect();
 
     tonic_build::configure()
-        .build_client(true)
+        .build_client(false)
         .build_server(true)
         .out_dir("src/ledger_models")
         .compile(&proto_files, &["."])
