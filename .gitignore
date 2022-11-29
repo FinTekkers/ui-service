@@ -2,3 +2,4 @@ target/**
 rust-types/target
 rust-types/protos
 valuation-service/target
+.DS_Store
