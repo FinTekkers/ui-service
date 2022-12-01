@@ -37,152 +37,6 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private PositionRequestProto(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            objectClass_ = s;
-            break;
-          }
-          case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            version_ = s;
-            break;
-          }
-          case 80: {
-            int rawValue = input.readEnum();
-
-            operationType_ = rawValue;
-            break;
-          }
-          case 160: {
-            int rawValue = input.readEnum();
-
-            positionType_ = rawValue;
-            break;
-          }
-          case 168: {
-            int rawValue = input.readEnum();
-
-            positionView_ = rawValue;
-            break;
-          }
-          case 240: {
-            int rawValue = input.readEnum();
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              fields_ = new java.util.ArrayList<java.lang.Integer>();
-              mutable_bitField0_ |= 0x00000001;
-            }
-            fields_.add(rawValue);
-            break;
-          }
-          case 242: {
-            int length = input.readRawVarint32();
-            int oldLimit = input.pushLimit(length);
-            while(input.getBytesUntilLimit() > 0) {
-              int rawValue = input.readEnum();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                fields_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              fields_.add(rawValue);
-            }
-            input.popLimit(oldLimit);
-            break;
-          }
-          case 248: {
-            int rawValue = input.readEnum();
-            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-              measures_ = new java.util.ArrayList<java.lang.Integer>();
-              mutable_bitField0_ |= 0x00000002;
-            }
-            measures_.add(rawValue);
-            break;
-          }
-          case 250: {
-            int length = input.readRawVarint32();
-            int oldLimit = input.pushLimit(length);
-            while(input.getBytesUntilLimit() > 0) {
-              int rawValue = input.readEnum();
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                measures_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              measures_.add(rawValue);
-            }
-            input.popLimit(oldLimit);
-            break;
-          }
-          case 258: {
-            common.model.protos.PositionFilterProto.Builder subBuilder = null;
-            if (filterFields_ != null) {
-              subBuilder = filterFields_.toBuilder();
-            }
-            filterFields_ = input.readMessage(common.model.protos.PositionFilterProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(filterFields_);
-              filterFields_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 266: {
-            common.model.protoUtils.LocalTimestamp.LocalTimestampProto.Builder subBuilder = null;
-            if (asOf_ != null) {
-              subBuilder = asOf_.toBuilder();
-            }
-            asOf_ = input.readMessage(common.model.protoUtils.LocalTimestamp.LocalTimestampProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(asOf_);
-              asOf_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        fields_ = java.util.Collections.unmodifiableList(fields_);
-      }
-      if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        measures_ = java.util.Collections.unmodifiableList(measures_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return common.request.protos.PositionRequestProtos.internal_static_position_PositionRequestProto_descriptor;
@@ -547,7 +401,7 @@ private static final long serialVersionUID = 0L;
     if (asOf_ != null) {
       output.writeMessage(33, getAsOf());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -606,7 +460,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(33, getAsOf());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -640,7 +494,7 @@ private static final long serialVersionUID = 0L;
       if (!getAsOf()
           .equals(other.getAsOf())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -677,7 +531,7 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + AS_OF_FIELD_NUMBER;
       hash = (53 * hash) + getAsOf().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -794,18 +648,13 @@ private static final long serialVersionUID = 0L;
 
     // Construct using common.request.protos.PositionRequestProto.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
@@ -979,7 +828,7 @@ private static final long serialVersionUID = 0L;
       if (other.hasAsOf()) {
         mergeAsOf(other.getAsOf());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -994,17 +843,103 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      common.request.protos.PositionRequestProto parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              objectClass_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 10
+            case 18: {
+              version_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 18
+            case 80: {
+              operationType_ = input.readEnum();
+
+              break;
+            } // case 80
+            case 160: {
+              positionType_ = input.readEnum();
+
+              break;
+            } // case 160
+            case 168: {
+              positionView_ = input.readEnum();
+
+              break;
+            } // case 168
+            case 240: {
+              int tmpRaw = input.readEnum();
+              ensureFieldsIsMutable();
+              fields_.add(tmpRaw);
+              break;
+            } // case 240
+            case 242: {
+              int length = input.readRawVarint32();
+              int oldLimit = input.pushLimit(length);
+              while(input.getBytesUntilLimit() > 0) {
+                int tmpRaw = input.readEnum();
+                ensureFieldsIsMutable();
+                fields_.add(tmpRaw);
+              }
+              input.popLimit(oldLimit);
+              break;
+            } // case 242
+            case 248: {
+              int tmpRaw = input.readEnum();
+              ensureMeasuresIsMutable();
+              measures_.add(tmpRaw);
+              break;
+            } // case 248
+            case 250: {
+              int length = input.readRawVarint32();
+              int oldLimit = input.pushLimit(length);
+              while(input.getBytesUntilLimit() > 0) {
+                int tmpRaw = input.readEnum();
+                ensureMeasuresIsMutable();
+                measures_.add(tmpRaw);
+              }
+              input.popLimit(oldLimit);
+              break;
+            } // case 250
+            case 258: {
+              input.readMessage(
+                  getFilterFieldsFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 258
+            case 266: {
+              input.readMessage(
+                  getAsOfFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 266
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (common.request.protos.PositionRequestProto) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
     private int bitField0_;
@@ -1426,8 +1361,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <code>repeated .position.FieldProto fields = 30;</code>
-     * @param index The index of the value to return.
-     * @return The enum numeric value on the wire of fields at the given index.
+     * @param index The index to set the value at.
+     * @param value The enum numeric value on the wire for fields to set.
      * @return This builder for chaining.
      */
     public Builder setFieldsValue(
@@ -1566,8 +1501,8 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <code>repeated .position.MeasureProto measures = 31;</code>
-     * @param index The index of the value to return.
-     * @return The enum numeric value on the wire of measures at the given index.
+     * @param index The index to set the value at.
+     * @param value The enum numeric value on the wire for measures to set.
      * @return This builder for chaining.
      */
     public Builder setMeasuresValue(
@@ -1873,7 +1808,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new PositionRequestProto(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 

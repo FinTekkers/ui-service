@@ -40,225 +40,6 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private SecurityProto(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            objectClass_ = s;
-            break;
-          }
-          case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            version_ = s;
-            break;
-          }
-          case 42: {
-            common.model.protoUtils.Uuid.UUIDProto.Builder subBuilder = null;
-            if (uuid_ != null) {
-              subBuilder = uuid_.toBuilder();
-            }
-            uuid_ = input.readMessage(common.model.protoUtils.Uuid.UUIDProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(uuid_);
-              uuid_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 50: {
-            common.model.protoUtils.LocalTimestamp.LocalTimestampProto.Builder subBuilder = null;
-            if (asOf_ != null) {
-              subBuilder = asOf_.toBuilder();
-            }
-            asOf_ = input.readMessage(common.model.protoUtils.LocalTimestamp.LocalTimestampProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(asOf_);
-              asOf_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 56: {
-
-            isLink_ = input.readBool();
-            break;
-          }
-          case 80: {
-            int rawValue = input.readEnum();
-
-            securityType_ = rawValue;
-            break;
-          }
-          case 90: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            assetClass_ = s;
-            break;
-          }
-          case 98: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            issuerName_ = s;
-            break;
-          }
-          case 106: {
-            common.model.protos.SecurityProto.Builder subBuilder = null;
-            if (settlementCurrency_ != null) {
-              subBuilder = settlementCurrency_.toBuilder();
-            }
-            settlementCurrency_ = input.readMessage(common.model.protos.SecurityProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(settlementCurrency_);
-              settlementCurrency_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 112: {
-            int rawValue = input.readEnum();
-
-            quantityType_ = rawValue;
-            break;
-          }
-          case 322: {
-            common.model.protos.IdentifierProto.Builder subBuilder = null;
-            if (identifier_ != null) {
-              subBuilder = identifier_.toBuilder();
-            }
-            identifier_ = input.readMessage(common.model.protos.IdentifierProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(identifier_);
-              identifier_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 330: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            description_ = s;
-            break;
-          }
-          case 402: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            cashId_ = s;
-            break;
-          }
-          case 482: {
-            common.model.protoUtils.DecimalValue.DecimalValueProto.Builder subBuilder = null;
-            if (couponRate_ != null) {
-              subBuilder = couponRate_.toBuilder();
-            }
-            couponRate_ = input.readMessage(common.model.protoUtils.DecimalValue.DecimalValueProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(couponRate_);
-              couponRate_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 488: {
-            int rawValue = input.readEnum();
-
-            couponType_ = rawValue;
-            break;
-          }
-          case 496: {
-            int rawValue = input.readEnum();
-
-            couponFrequency_ = rawValue;
-            break;
-          }
-          case 506: {
-            common.model.protoUtils.LocalDate.LocalDateProto.Builder subBuilder = null;
-            if (datedDate_ != null) {
-              subBuilder = datedDate_.toBuilder();
-            }
-            datedDate_ = input.readMessage(common.model.protoUtils.LocalDate.LocalDateProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(datedDate_);
-              datedDate_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 514: {
-            common.model.protoUtils.DecimalValue.DecimalValueProto.Builder subBuilder = null;
-            if (faceValue_ != null) {
-              subBuilder = faceValue_.toBuilder();
-            }
-            faceValue_ = input.readMessage(common.model.protoUtils.DecimalValue.DecimalValueProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(faceValue_);
-              faceValue_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 522: {
-            common.model.protoUtils.LocalDate.LocalDateProto.Builder subBuilder = null;
-            if (issueDate_ != null) {
-              subBuilder = issueDate_.toBuilder();
-            }
-            issueDate_ = input.readMessage(common.model.protoUtils.LocalDate.LocalDateProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(issueDate_);
-              issueDate_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 530: {
-            common.model.protoUtils.LocalDate.LocalDateProto.Builder subBuilder = null;
-            if (maturityDate_ != null) {
-              subBuilder = maturityDate_.toBuilder();
-            }
-            maturityDate_ = input.readMessage(common.model.protoUtils.LocalDate.LocalDateProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(maturityDate_);
-              maturityDate_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return common.model.protos.SecurityProtos.internal_static_security_SecurityProto_descriptor;
@@ -935,7 +716,7 @@ private static final long serialVersionUID = 0L;
     if (maturityDate_ != null) {
       output.writeMessage(66, getMaturityDate());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -1018,7 +799,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(66, getMaturityDate());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -1096,7 +877,7 @@ private static final long serialVersionUID = 0L;
       if (!getMaturityDate()
           .equals(other.getMaturityDate())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -1166,7 +947,7 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + MATURITY_DATE_FIELD_NUMBER;
       hash = (53 * hash) + getMaturityDate().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -1283,18 +1064,13 @@ private static final long serialVersionUID = 0L;
 
     // Construct using common.model.protos.SecurityProto.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
@@ -1571,7 +1347,7 @@ private static final long serialVersionUID = 0L;
       if (other.hasMaturityDate()) {
         mergeMaturityDate(other.getMaturityDate());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1586,17 +1362,148 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      common.model.protos.SecurityProto parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              objectClass_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 10
+            case 18: {
+              version_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 18
+            case 42: {
+              input.readMessage(
+                  getUuidFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 42
+            case 50: {
+              input.readMessage(
+                  getAsOfFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 50
+            case 56: {
+              isLink_ = input.readBool();
+
+              break;
+            } // case 56
+            case 80: {
+              securityType_ = input.readEnum();
+
+              break;
+            } // case 80
+            case 90: {
+              assetClass_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 90
+            case 98: {
+              issuerName_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 98
+            case 106: {
+              input.readMessage(
+                  getSettlementCurrencyFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 106
+            case 112: {
+              quantityType_ = input.readEnum();
+
+              break;
+            } // case 112
+            case 322: {
+              input.readMessage(
+                  getIdentifierFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 322
+            case 330: {
+              description_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 330
+            case 402: {
+              cashId_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 402
+            case 482: {
+              input.readMessage(
+                  getCouponRateFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 482
+            case 488: {
+              couponType_ = input.readEnum();
+
+              break;
+            } // case 488
+            case 496: {
+              couponFrequency_ = input.readEnum();
+
+              break;
+            } // case 496
+            case 506: {
+              input.readMessage(
+                  getDatedDateFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 506
+            case 514: {
+              input.readMessage(
+                  getFaceValueFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 514
+            case 522: {
+              input.readMessage(
+                  getIssueDateFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 522
+            case 530: {
+              input.readMessage(
+                  getMaturityDateFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 530
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (common.model.protos.SecurityProto) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -3518,7 +3425,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new SecurityProto(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 

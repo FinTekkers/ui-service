@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package security;
+
+import "protos/models/position/position_util.proto";
+import "protos/requests/valuation/valuation_request.proto";
+
+option java_multiple_files = true;
+option java_package = "common.request.protos";
+option java_outer_classname = "ValuationResponseProtos";
+
+message ValuationResponseProto {
+  string object_class = 1;
+  string version = 2;
+
+  ValuationRequestProto  valuation_request = 20;
+
+  repeated position.MeasureMapEntry measure_results = 30;
+}
+
+
