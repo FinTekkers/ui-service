@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package security;
+package valuation;
 
 import "protos/models/security/security.proto";
 import "protos/models/position/position_filter.proto";
