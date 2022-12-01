@@ -11,7 +11,6 @@ import common.model.protos.*;
 import common.model.security.identifier.Identifier;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
-import org.jetbrains.annotations.NotNull;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
 import protos.serializers.util.proto.ProtoSerializationUtil;
@@ -45,7 +44,7 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
     }
 
     @Override
-    public PositionProto serialize(@NotNull Position position) {
+    public PositionProto serialize( Position position) {
         PositionProto.Builder builder = PositionProto.newBuilder()
             .setObjectClass(Position.class.getSimpleName())
             .setVersion("0.0.1")
@@ -74,7 +73,7 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
 
     }
 
-    @NotNull
+    
     public static FieldMapEntry getFieldMapEntry(Field field, PositionFilterOperator operator, Object fieldValue) {
         FieldMapEntry.Builder fieldBuilder =
                 FieldMapEntry.newBuilder().setField(FieldProto.valueOf(field.name()));
@@ -221,7 +220,7 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
         array.add(map);
     }
 
-    @NotNull
+    
     public static String convertToDisplayName(String rawFieldName) {
         String displayFieldName = rawFieldName.replaceAll("_", " ");
         displayFieldName = displayFieldName.toLowerCase();
@@ -229,7 +228,7 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
         return displayFieldName;
     }
 
-    @NotNull
+    
     public static String convertFromDisplayName(String str) {
         return str.replaceAll(" ", "_").toUpperCase();
     }

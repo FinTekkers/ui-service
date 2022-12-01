@@ -1,7 +1,6 @@
 package common.model.security;
 
 import common.model.IRawDataModelObject;
-import org.jetbrains.annotations.NotNull;
 
 import java.time.Period;
 import java.time.ZonedDateTime;
@@ -35,7 +34,7 @@ public class Tenor implements IRawDataModelObject {
         return tenor;
     }
 
-    @NotNull
+    
     public String getTenorDescription() {
         Period tenor = getTenor();
 

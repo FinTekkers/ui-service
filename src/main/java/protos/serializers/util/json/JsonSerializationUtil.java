@@ -11,7 +11,6 @@ import common.model.protoUtils.LocalTimestamp;
 import common.model.protoUtils.Uuid;
 import common.model.protos.FieldMapEntry;
 import common.model.protos.SecurityQuantityTypeProto;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -38,7 +37,7 @@ public class JsonSerializationUtil {
         }
     }
 
-    @NotNull
+    
     public static Gson getGsonBuilder() {
         return new GsonBuilder()
                 .setFieldNamingStrategy(new JsonFieldNamingStrategy())

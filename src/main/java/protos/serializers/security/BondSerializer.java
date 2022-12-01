@@ -7,7 +7,6 @@ import common.model.protos.SecurityTypeProto;
 import common.model.security.*;
 import common.model.security.bonds.FloatingRateNote;
 import common.model.security.bonds.TIPSBond;
-import org.jetbrains.annotations.NotNull;
 import protos.serializers.util.proto.ProtoSerializationUtil;
 
 import java.time.ZonedDateTime;
@@ -42,7 +41,7 @@ public class BondSerializer {
         return bondSecurity;
     }
 
-    @NotNull
+    
     private BondSecurity initiatlize(SecurityProto proto, UUID id, ZonedDateTime asOf,
                                      String issuer, CashSecurity settlementCurrency) {
         SecurityTypeProto securityType = proto.getSecurityType();

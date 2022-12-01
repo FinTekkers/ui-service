@@ -14,7 +14,6 @@ import common.model.security.ProductType;
 import common.model.security.Security;
 import common.model.security.identifier.Identifier;
 import common.model.security.identifier.IdentifierType;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.position.PositionSerializer;
@@ -45,7 +44,7 @@ class PositionSerializerTest {
         }
     }
 
-    @NotNull
+    
     private Position createPosition() {
         final Position position = new Position(
             Position.PositionView.DEFAULT_VIEW,

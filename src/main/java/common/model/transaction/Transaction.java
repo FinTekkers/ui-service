@@ -13,7 +13,6 @@ import common.model.postion.Measure;
 import common.model.postion.PositionFilter;
 import common.model.price.Price;
 import common.model.strategy.StrategyAllocation;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -417,7 +416,7 @@ public class Transaction extends RawDataModelObject implements ITransaction {
      * @param parentTransaction The transaction causing the cash effect
      * @return A transaction representing the impact to cash
      */
-    private static Transaction createCashTransaction(@NotNull CashSecurity cashSecurity, Transaction parentTransaction) {
+    private static Transaction createCashTransaction(CashSecurity cashSecurity, Transaction parentTransaction) {
         TransactionType transactionType = null;
         switch(parentTransaction.getTransactionType()) {
             case BUY:

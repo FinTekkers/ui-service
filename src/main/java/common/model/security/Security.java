@@ -6,7 +6,6 @@ import common.model.postion.Field;
 import common.model.postion.Measure;
 import common.model.security.identifier.Identifier;
 import common.model.util.QuantityType;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -147,7 +146,7 @@ public class Security extends RawDataModelObject implements Comparable, IFinanci
     }
 
     @Override
-    public int compareTo(@NotNull Object obj) {
+    public int compareTo( Object obj) {
         if(obj instanceof Security) {
             return getID().compareTo(((Security)obj).getID());
         }

@@ -4,15 +4,13 @@ import common.model.IFinancialModelObject;
 import common.model.RawDataModelObject;
 import common.model.postion.Field;
 import common.model.postion.Measure;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.*;
-
-import static util.Formats.DATE_TIME_FORMATTER;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /***
  * A transaction represents an operation that changes the position of a portfolio. The most obvious of which
@@ -48,22 +46,8 @@ public class Portfolio extends RawDataModelObject implements Comparable, IFinanc
         return portfolioName;
     }
 
-    public JSONObject toJSON() {
-        return new JSONObject(new HashMap<String, Object>() {{
-            put("ID", getID().toString());
-            put("PortfolioName", getPortfolioName());
-            put("AsOf", getAsOf().format(DATE_TIME_FORMATTER));
-        }});
-    }
-
-    public static Portfolio fromJSON(JSONObject json) throws JSONException {
-        ZonedDateTime asOf = ZonedDateTime.parse(json.get("AsOf").toString(), DATE_TIME_FORMATTER);
-        UUID id = UUID.fromString(json.getString("ID"));
-        return new Portfolio(id, json.getString("PortfolioName"), asOf);
-    }
-
     @Override
-    public int compareTo(@NotNull Object o) {
+    public int compareTo( Object o) {
         if(o instanceof Portfolio) {
             return getID().compareTo(((Portfolio)o).getID());
         }

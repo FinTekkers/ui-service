@@ -7,7 +7,6 @@ import common.model.price.Price;
 import common.model.protos.PositionProto;
 import common.model.protos.PriceProto;
 import common.model.protos.SecurityProto;
-import org.jetbrains.annotations.NotNull;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.security.SecuritySerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
@@ -28,7 +27,7 @@ public class PriceSerializer implements IRawDataModelObjectSerializer<PriceProto
     }
 
     @Override
-    public PriceProto serialize(@NotNull Price price) {
+    public PriceProto serialize( Price price) {
         PriceProto.Builder builder = PriceProto.newBuilder()
                 .setObjectClass(Price.class.getSimpleName())
                 .setVersion("0.0.1")
