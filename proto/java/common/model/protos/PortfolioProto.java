@@ -33,92 +33,6 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private PortfolioProto(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            objectClass_ = s;
-            break;
-          }
-          case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            version_ = s;
-            break;
-          }
-          case 42: {
-            common.model.protoUtils.Uuid.UUIDProto.Builder subBuilder = null;
-            if (uuid_ != null) {
-              subBuilder = uuid_.toBuilder();
-            }
-            uuid_ = input.readMessage(common.model.protoUtils.Uuid.UUIDProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(uuid_);
-              uuid_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 50: {
-            common.model.protoUtils.LocalTimestamp.LocalTimestampProto.Builder subBuilder = null;
-            if (asOf_ != null) {
-              subBuilder = asOf_.toBuilder();
-            }
-            asOf_ = input.readMessage(common.model.protoUtils.LocalTimestamp.LocalTimestampProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(asOf_);
-              asOf_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 56: {
-
-            isLink_ = input.readBool();
-            break;
-          }
-          case 82: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            portfolioName_ = s;
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return common.model.protos.PortfolioProtos.internal_static_portfolio_PortfolioProto_descriptor;
@@ -361,7 +275,7 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(portfolioName_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 10, portfolioName_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -391,7 +305,7 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(portfolioName_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, portfolioName_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -424,7 +338,7 @@ private static final long serialVersionUID = 0L;
         != other.getIsLink()) return false;
     if (!getPortfolioName()
         .equals(other.getPortfolioName())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -452,7 +366,7 @@ private static final long serialVersionUID = 0L;
         getIsLink());
     hash = (37 * hash) + PORTFOLIO_NAME_FIELD_NUMBER;
     hash = (53 * hash) + getPortfolioName().hashCode();
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -569,18 +483,13 @@ private static final long serialVersionUID = 0L;
 
     // Construct using common.model.protos.PortfolioProto.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
@@ -714,7 +623,7 @@ private static final long serialVersionUID = 0L;
         portfolioName_ = other.portfolioName_;
         onChanged();
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -729,17 +638,64 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      common.model.protos.PortfolioProto parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              objectClass_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 10
+            case 18: {
+              version_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 18
+            case 42: {
+              input.readMessage(
+                  getUuidFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 42
+            case 50: {
+              input.readMessage(
+                  getAsOfFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 50
+            case 56: {
+              isLink_ = input.readBool();
+
+              break;
+            } // case 56
+            case 82: {
+              portfolioName_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 82
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (common.model.protos.PortfolioProto) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1328,7 +1284,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new PortfolioProto(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 

@@ -36,213 +36,6 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private TransactionProto(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            objectClass_ = s;
-            break;
-          }
-          case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            version_ = s;
-            break;
-          }
-          case 42: {
-            common.model.protoUtils.Uuid.UUIDProto.Builder subBuilder = null;
-            if (uuid_ != null) {
-              subBuilder = uuid_.toBuilder();
-            }
-            uuid_ = input.readMessage(common.model.protoUtils.Uuid.UUIDProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(uuid_);
-              uuid_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 50: {
-            common.model.protoUtils.LocalTimestamp.LocalTimestampProto.Builder subBuilder = null;
-            if (asOf_ != null) {
-              subBuilder = asOf_.toBuilder();
-            }
-            asOf_ = input.readMessage(common.model.protoUtils.LocalTimestamp.LocalTimestampProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(asOf_);
-              asOf_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 56: {
-
-            isLink_ = input.readBool();
-            break;
-          }
-          case 82: {
-            common.model.protos.PortfolioProto.Builder subBuilder = null;
-            if (portfolio_ != null) {
-              subBuilder = portfolio_.toBuilder();
-            }
-            portfolio_ = input.readMessage(common.model.protos.PortfolioProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(portfolio_);
-              portfolio_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 90: {
-            common.model.protos.SecurityProto.Builder subBuilder = null;
-            if (security_ != null) {
-              subBuilder = security_.toBuilder();
-            }
-            security_ = input.readMessage(common.model.protos.SecurityProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(security_);
-              security_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 96: {
-            int rawValue = input.readEnum();
-
-            transactionType_ = rawValue;
-            break;
-          }
-          case 106: {
-            common.model.protoUtils.DecimalValue.DecimalValueProto.Builder subBuilder = null;
-            if (quantity_ != null) {
-              subBuilder = quantity_.toBuilder();
-            }
-            quantity_ = input.readMessage(common.model.protoUtils.DecimalValue.DecimalValueProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(quantity_);
-              quantity_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 114: {
-            common.model.protos.PriceProto.Builder subBuilder = null;
-            if (price_ != null) {
-              subBuilder = price_.toBuilder();
-            }
-            price_ = input.readMessage(common.model.protos.PriceProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(price_);
-              price_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 122: {
-            common.model.protoUtils.LocalDate.LocalDateProto.Builder subBuilder = null;
-            if (tradeDate_ != null) {
-              subBuilder = tradeDate_.toBuilder();
-            }
-            tradeDate_ = input.readMessage(common.model.protoUtils.LocalDate.LocalDateProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(tradeDate_);
-              tradeDate_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 130: {
-            common.model.protoUtils.LocalDate.LocalDateProto.Builder subBuilder = null;
-            if (settlementDate_ != null) {
-              subBuilder = settlementDate_.toBuilder();
-            }
-            settlementDate_ = input.readMessage(common.model.protoUtils.LocalDate.LocalDateProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(settlementDate_);
-              settlementDate_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 162: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              childTransactions_ = new java.util.ArrayList<common.model.protos.TransactionProto>();
-              mutable_bitField0_ |= 0x00000001;
-            }
-            childTransactions_.add(
-                input.readMessage(common.model.protos.TransactionProto.parser(), extensionRegistry));
-            break;
-          }
-          case 200: {
-            int rawValue = input.readEnum();
-
-            positionStatus_ = rawValue;
-            break;
-          }
-          case 210: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            tradeName_ = s;
-            break;
-          }
-          case 218: {
-            common.model.protos.StrategyAllocationProto.Builder subBuilder = null;
-            if (strategyAllocation_ != null) {
-              subBuilder = strategyAllocation_.toBuilder();
-            }
-            strategyAllocation_ = input.readMessage(common.model.protos.StrategyAllocationProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(strategyAllocation_);
-              strategyAllocation_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 240: {
-
-            isCancelled_ = input.readBool();
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        childTransactions_ = java.util.Collections.unmodifiableList(childTransactions_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return common.model.protos.TransactionProtos.internal_static_transaction_TransactionProto_descriptor;
@@ -847,7 +640,7 @@ private static final long serialVersionUID = 0L;
     if (isCancelled_ != false) {
       output.writeBool(30, isCancelled_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -921,7 +714,7 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(30, isCancelled_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -995,7 +788,7 @@ private static final long serialVersionUID = 0L;
     }
     if (getIsCancelled()
         != other.getIsCancelled()) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -1062,7 +855,7 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + IS_CANCELLED_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getIsCancelled());
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -1179,19 +972,13 @@ private static final long serialVersionUID = 0L;
 
     // Construct using common.model.protos.TransactionProto.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-        getChildTransactionsFieldBuilder();
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
@@ -1254,10 +1041,11 @@ private static final long serialVersionUID = 0L;
       }
       if (childTransactionsBuilder_ == null) {
         childTransactions_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        childTransactions_ = null;
         childTransactionsBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000001);
       positionStatus_ = 0;
 
       tradeName_ = "";
@@ -1483,7 +1271,7 @@ private static final long serialVersionUID = 0L;
       if (other.getIsCancelled() != false) {
         setIsCancelled(other.getIsCancelled());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1498,17 +1286,141 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      common.model.protos.TransactionProto parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              objectClass_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 10
+            case 18: {
+              version_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 18
+            case 42: {
+              input.readMessage(
+                  getUuidFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 42
+            case 50: {
+              input.readMessage(
+                  getAsOfFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 50
+            case 56: {
+              isLink_ = input.readBool();
+
+              break;
+            } // case 56
+            case 82: {
+              input.readMessage(
+                  getPortfolioFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 82
+            case 90: {
+              input.readMessage(
+                  getSecurityFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 90
+            case 96: {
+              transactionType_ = input.readEnum();
+
+              break;
+            } // case 96
+            case 106: {
+              input.readMessage(
+                  getQuantityFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 106
+            case 114: {
+              input.readMessage(
+                  getPriceFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 114
+            case 122: {
+              input.readMessage(
+                  getTradeDateFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 122
+            case 130: {
+              input.readMessage(
+                  getSettlementDateFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 130
+            case 162: {
+              common.model.protos.TransactionProto m =
+                  input.readMessage(
+                      common.model.protos.TransactionProto.parser(),
+                      extensionRegistry);
+              if (childTransactionsBuilder_ == null) {
+                ensureChildTransactionsIsMutable();
+                childTransactions_.add(m);
+              } else {
+                childTransactionsBuilder_.addMessage(m);
+              }
+              break;
+            } // case 162
+            case 200: {
+              positionStatus_ = input.readEnum();
+
+              break;
+            } // case 200
+            case 210: {
+              tradeName_ = input.readStringRequireUtf8();
+
+              break;
+            } // case 210
+            case 218: {
+              input.readMessage(
+                  getStrategyAllocationFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 218
+            case 240: {
+              isCancelled_ = input.readBool();
+
+              break;
+            } // case 240
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (common.model.protos.TransactionProto) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
     private int bitField0_;
@@ -3502,7 +3414,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new TransactionProto(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 
