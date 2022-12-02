@@ -1,5 +1,54 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
+pub enum PositionStatusProto {
+    Unknown = 0,
+    /// This trade may never happen
+    Hypothetical = 1,
+    /// This trade is expected to happen, but hasn't been executed yet
+    Intended = 2,
+    /// Beneficial ownership changes related to this transaction are now legally binding
+    Executed = 3,
+}
+impl PositionStatusProto {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            PositionStatusProto::Unknown => "UNKNOWN",
+            PositionStatusProto::Hypothetical => "HYPOTHETICAL",
+            PositionStatusProto::Intended => "INTENDED",
+            PositionStatusProto::Executed => "EXECUTED",
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum MeasureProto {
+    UnknownMeasure = 0,
+    DirectedQuantity = 1,
+    MarketValue = 2,
+    UnadjustedCostBasis = 3,
+    AdjustedCostBasis = 4,
+}
+impl MeasureProto {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            MeasureProto::UnknownMeasure => "UNKNOWN_MEASURE",
+            MeasureProto::DirectedQuantity => "DIRECTED_QUANTITY",
+            MeasureProto::MarketValue => "MARKET_VALUE",
+            MeasureProto::UnadjustedCostBasis => "UNADJUSTED_COST_BASIS",
+            MeasureProto::AdjustedCostBasis => "ADJUSTED_COST_BASIS",
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
 pub enum FieldProto {
     UnknownField = 0,
     /// (UUID.class)
@@ -96,30 +145,6 @@ impl FieldProto {
         }
     }
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-#[repr(i32)]
-pub enum MeasureProto {
-    UnknownMeasure = 0,
-    DirectedQuantity = 1,
-    MarketValue = 2,
-    UnadjustedCostBasis = 3,
-    AdjustedCostBasis = 4,
-}
-impl MeasureProto {
-    /// String value of the enum field names used in the ProtoBuf definition.
-    ///
-    /// The values are not transformed in any way and thus are considered stable
-    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
-    pub fn as_str_name(&self) -> &'static str {
-        match self {
-            MeasureProto::UnknownMeasure => "UNKNOWN_MEASURE",
-            MeasureProto::DirectedQuantity => "DIRECTED_QUANTITY",
-            MeasureProto::MarketValue => "MARKET_VALUE",
-            MeasureProto::UnadjustedCostBasis => "UNADJUSTED_COST_BASIS",
-            MeasureProto::AdjustedCostBasis => "ADJUSTED_COST_BASIS",
-        }
-    }
-}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MeasureMapEntry {
     #[prost(enumeration = "MeasureProto", tag = "1")]
@@ -176,40 +201,6 @@ impl PositionFilterOperator {
             PositionFilterOperator::LessThanOrEquals => "LESS_THAN_OR_EQUALS",
             PositionFilterOperator::MoreThan => "MORE_THAN",
             PositionFilterOperator::MoreThanOrEquals => "MORE_THAN_OR_EQUALS",
-        }
-    }
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PositionFilterProto {
-    #[prost(string, tag = "1")]
-    pub object_class: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
-    pub version: ::prost::alloc::string::String,
-    #[prost(message, repeated, tag = "21")]
-    pub filters: ::prost::alloc::vec::Vec<FieldMapEntry>,
-}
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-#[repr(i32)]
-pub enum PositionStatusProto {
-    Unknown = 0,
-    /// This trade may never happen
-    Hypothetical = 1,
-    /// This trade is expected to happen, but hasn't been executed yet
-    Intended = 2,
-    /// Beneficial ownership changes related to this transaction are now legally binding
-    Executed = 3,
-}
-impl PositionStatusProto {
-    /// String value of the enum field names used in the ProtoBuf definition.
-    ///
-    /// The values are not transformed in any way and thus are considered stable
-    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
-    pub fn as_str_name(&self) -> &'static str {
-        match self {
-            PositionStatusProto::Unknown => "UNKNOWN",
-            PositionStatusProto::Hypothetical => "HYPOTHETICAL",
-            PositionStatusProto::Intended => "INTENDED",
-            PositionStatusProto::Executed => "EXECUTED",
         }
     }
 }
@@ -274,4 +265,48 @@ impl PositionTypeProto {
             PositionTypeProto::TaxLot => "TAX_LOT",
         }
     }
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct PositionFilterProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "21")]
+    pub filters: ::prost::alloc::vec::Vec<FieldMapEntry>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct PositionRequestProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(enumeration = "super::util::RequestOperationTypeProto", tag = "10")]
+    pub operation_type: i32,
+    #[prost(enumeration = "PositionTypeProto", tag = "20")]
+    pub position_type: i32,
+    #[prost(enumeration = "PositionViewProto", tag = "21")]
+    pub position_view: i32,
+    #[prost(enumeration = "FieldProto", repeated, tag = "30")]
+    pub fields: ::prost::alloc::vec::Vec<i32>,
+    #[prost(enumeration = "MeasureProto", repeated, tag = "31")]
+    pub measures: ::prost::alloc::vec::Vec<i32>,
+    #[prost(message, optional, tag = "32")]
+    pub filter_fields: ::core::option::Option<PositionFilterProto>,
+    #[prost(message, optional, tag = "33")]
+    pub as_of: ::core::option::Option<super::util::LocalTimestampProto>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct PositionResponseProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "11")]
+    pub position_request: ::core::option::Option<PositionRequestProto>,
+    /// TODO - Think about how to model this long term; ISO code vs. UUID vs. full security object
+    #[prost(string, tag = "12")]
+    pub reporting_currency: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "30")]
+    pub positions: ::prost::alloc::vec::Vec<PositionProto>,
 }

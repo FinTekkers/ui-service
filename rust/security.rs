@@ -218,3 +218,31 @@ pub struct TenorProto {
     #[prost(enumeration = "TenorTypeProto", tag = "6")]
     pub tenor_type: i32,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SecurityRequestProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(enumeration = "super::util::RequestOperationTypeProto", tag = "10")]
+    pub operation_type: i32,
+    #[prost(message, optional, tag = "20")]
+    pub create_security_input: ::core::option::Option<SecurityProto>,
+    #[prost(message, repeated, tag = "21")]
+    pub uuids: ::prost::alloc::vec::Vec<super::util::UuidProto>,
+    #[prost(message, optional, tag = "22")]
+    pub search_security_input: ::core::option::Option<
+        super::position::PositionFilterProto,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SecurityResponseProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "20")]
+    pub create_security_request: ::core::option::Option<SecurityRequestProto>,
+    #[prost(message, repeated, tag = "30")]
+    pub security_response: ::prost::alloc::vec::Vec<SecurityProto>,
+}
