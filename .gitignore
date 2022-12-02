@@ -1,6 +1,6 @@
 target/**
-rust-types/target
-rust-types/protos
+ledger-models-rust/target
+ledger-models-rust/protos
 valuation-service/target
 .DS_Store
 .idea
