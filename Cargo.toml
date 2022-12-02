@@ -8,14 +8,19 @@ description = "A comprehensive model library for financial products (securities,
 readme = "README.md" # It is used at https://crates.io/crates/publish
 repository = "https://github.com/fintekkers/ledger-models"
 
+
+[[bin]]
+name = "gen"
+path="gen.rs"
+
 [lib]
-path = "proto/rust/lib.rs"
+path = "rust/lib.rs"
 
 [dependencies]
 tonic = "0.8.2"
 prost = "0.11.2"
 prost-types = "0.11.2"
-
-[build-dependencies]
 tonic-build = "0.8.2"
 walkdir = "2"
+grpc-build = "4.2.0"
+
