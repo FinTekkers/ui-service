@@ -73,3 +73,31 @@ pub struct TransactionProto {
     #[prost(bool, tag = "30")]
     pub is_cancelled: bool,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TransactionRequestProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(enumeration = "super::util::RequestOperationTypeProto", tag = "10")]
+    pub operation_type: i32,
+    #[prost(message, optional, tag = "20")]
+    pub create_transaction_input: ::core::option::Option<TransactionProto>,
+    #[prost(message, repeated, tag = "21")]
+    pub uuids: ::prost::alloc::vec::Vec<super::util::UuidProto>,
+    #[prost(message, optional, tag = "22")]
+    pub search_transaction_input: ::core::option::Option<
+        super::position::PositionFilterProto,
+    >,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TransactionResponseProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "20")]
+    pub create_transaction_request: ::core::option::Option<TransactionRequestProto>,
+    #[prost(message, repeated, tag = "30")]
+    pub transaction_response: ::prost::alloc::vec::Vec<TransactionProto>,
+}
