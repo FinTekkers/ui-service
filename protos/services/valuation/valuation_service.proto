@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package valuation_service;
-import "protos/requests/valuation/valuation_request.proto";
-import "protos/requests/valuation/valuation_response.proto";
-
-service Valuation {
-    rpc RunValuation (valuation.ValuationRequestProto) returns (valuation.ValuationResponseProto);
-}
