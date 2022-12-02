@@ -2,7 +2,7 @@ use walkdir::WalkDir;
 
 fn main() {
     //find paths of all proto files
-    let proto_files: Vec<String> = WalkDir::new("protos")
+    let proto_files: Vec<String> = WalkDir::new("ledger-models-protos")
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| {
