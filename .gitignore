@@ -5,3 +5,4 @@ valuation-service/target
 .DS_Store
 .idea
 out/**
+target
