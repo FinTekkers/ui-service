@@ -67,13 +67,13 @@ pub mod valuation_client {
             self.inner = self.inner.accept_compressed(encoding);
             self
         }
-        pub async fn echo_security(
+        pub async fn run_valuation(
             &mut self,
             request: impl tonic::IntoRequest<
-                super::super::security::SecurityRequestProto,
+                super::super::valuation::ValuationRequestProto,
             >,
         ) -> Result<
-            tonic::Response<super::super::security::SecurityResponseProto>,
+            tonic::Response<super::super::valuation::ValuationResponseProto>,
             tonic::Status,
         > {
             self.inner
@@ -87,7 +87,7 @@ pub mod valuation_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/valuation.Valuation/EchoSecurity",
+                "/valuation_service.Valuation/RunValuation",
             );
             self.inner.unary(request.into_request(), path, codec).await
         }
@@ -100,11 +100,11 @@ pub mod valuation_server {
     /// Generated trait containing gRPC methods that should be implemented for use with ValuationServer.
     #[async_trait]
     pub trait Valuation: Send + Sync + 'static {
-        async fn echo_security(
+        async fn run_valuation(
             &self,
-            request: tonic::Request<super::super::security::SecurityRequestProto>,
+            request: tonic::Request<super::super::valuation::ValuationRequestProto>,
         ) -> Result<
-            tonic::Response<super::super::security::SecurityResponseProto>,
+            tonic::Response<super::super::valuation::ValuationResponseProto>,
             tonic::Status,
         >;
     }
@@ -167,15 +167,15 @@ pub mod valuation_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/valuation.Valuation/EchoSecurity" => {
+                "/valuation_service.Valuation/RunValuation" => {
                     #[allow(non_camel_case_types)]
-                    struct EchoSecuritySvc<T: Valuation>(pub Arc<T>);
+                    struct RunValuationSvc<T: Valuation>(pub Arc<T>);
                     impl<
                         T: Valuation,
                     > tonic::server::UnaryService<
-                        super::super::security::SecurityRequestProto,
-                    > for EchoSecuritySvc<T> {
-                        type Response = super::super::security::SecurityResponseProto;
+                        super::super::valuation::ValuationRequestProto,
+                    > for RunValuationSvc<T> {
+                        type Response = super::super::valuation::ValuationResponseProto;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
@@ -183,12 +183,12 @@ pub mod valuation_server {
                         fn call(
                             &mut self,
                             request: tonic::Request<
-                                super::super::security::SecurityRequestProto,
+                                super::super::valuation::ValuationRequestProto,
                             >,
                         ) -> Self::Future {
                             let inner = self.0.clone();
                             let fut = async move {
-                                (*inner).echo_security(request).await
+                                (*inner).run_valuation(request).await
                             };
                             Box::pin(fut)
                         }
@@ -198,7 +198,7 @@ pub mod valuation_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = EchoSecuritySvc(inner);
+                        let method = RunValuationSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -246,6 +246,6 @@ pub mod valuation_server {
         }
     }
     impl<T: Valuation> tonic::server::NamedService for ValuationServer<T> {
-        const NAME: &'static str = "valuation.Valuation";
+        const NAME: &'static str = "valuation_service.Valuation";
     }
 }

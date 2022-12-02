@@ -146,6 +146,13 @@ impl FieldProto {
     }
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct MeasureMapEntry {
+    #[prost(enumeration = "MeasureProto", tag = "1")]
+    pub field: i32,
+    #[prost(message, optional, tag = "2")]
+    pub measure_value: ::core::option::Option<super::util::DecimalValueProto>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FieldMapEntry {
     #[prost(enumeration = "FieldProto", tag = "1")]
     pub field: i32,
