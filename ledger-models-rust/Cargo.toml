@@ -1,0 +1,19 @@
+[package]
+name = "ledger-models"
+version = "0.1.1"
+edition = "2021"
+authors = ["dado0583", "samiam376"]
+license = "Apache-2.0"
+description = "A comprehensive model library for financial products (securities, prices, transactions, etc). Protobuf used for serialization, with language-specific implementations"
+readme = "README.md" # It is used at https://crates.io/crates/publish
+repository = "https://github.com/fintekkers/ledger-models"
+
+[dependencies]
+tonic = "0.8.2"
+prost = "0.11.2"
+automod = "1.0.4"
+prost-types = "0.11.2"
+
+[build-dependencies]
+tonic-build = "0.8.2"
+walkdir = "2"
