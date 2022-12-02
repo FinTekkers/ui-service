@@ -2,8 +2,11 @@
 name = "rust-types"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["dado0583", "samiam376"]
+license = "Apache-2.0"
+description = "A comprehensive model library for financial products (securities, prices, transactions, etc). Protobuf used for serialization, with language-specific implementations"
+readme = "README.md" # It is used at https://crates.io/crates/publish
+repository = "https://github.com/fintekkers/ledger-models"
 
 [dependencies]
 tonic = "0.8.2"
