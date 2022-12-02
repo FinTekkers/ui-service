@@ -8,8 +8,6 @@ description = "A comprehensive model library for financial products (securities,
 readme = "README.md" # It is used at https://crates.io/crates/publish
 repository = "https://github.com/fintekkers/ledger-models"
 
-[features]
-protogen = []
 
 [[bin]]
 name = "gen"
