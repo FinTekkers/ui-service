@@ -1,5 +1,5 @@
 [package]
-name = "rust-types"
+name = "ledger-models"
 version = "0.1.0"
 edition = "2021"
 authors = ["dado0583", "samiam376"]
