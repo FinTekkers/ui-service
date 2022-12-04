@@ -5,8 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ledger-models</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <groupId>org.fintekkers.models</groupId>
+    <version>1.0.0</version>
+    <groupId>io.github.fintekkers</groupId>
+    <name>FinTekkers Ledger Models</name>
+    <description>A library that implements data models for common financial products such as equities, bonds, and more</description>
+    <url>https://github.com/fintekkers</url>
 
     <licenses>
         <license>
@@ -110,6 +113,19 @@
 
     <build>
         <plugins>
+            <!--Used to deploy snapshots to OSSRH/Sonatype/Maven central-->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+
             <plugin><!-- used to add custom folders to the project structure -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -153,6 +169,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <!-- This will ignore any javadoc errors. We dont' use Javadocs
+                for documentation. Instead we use documentation of fields themselves
+                and will expose via a service. However, sonatype requires docs for
+                publishing to maven central -->
+                <configuration>
+                    <additionalOptions>-Xdoclint:none</additionalOptions>
+                </configuration>
                 <version>3.2.0</version>
                 <executions>
                     <execution>
