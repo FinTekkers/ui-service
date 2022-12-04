@@ -1,14 +1,3 @@
-# TODOs
-
-* Implement Rust bindings
-  * (Subsequently create a valuation service - outside of scope of this project)
-* Make models self-describing via Annotations
-* Create a 'model service' that can expose the data dictionary
-  * Maybe creates example objects?
-  * Maybe have a validation endpoint?
-  * Expose model versions to see what changed?
-    * Will likely need every field to be versioned? 
-
 # Context
 
 This project contains protobuf models of financial objects & request/response formats for APIs; as well as language specific bindings.
@@ -101,11 +90,17 @@ The above philosophy is very important so that we don't end up re-using a techni
 * Implement versions via annotations. Should have no performance impact
   * Only used when errors are thrown
 
-# Building
+# DevOps
+
+## Java
+
+### Compiling protobufs
 
 Run: 
 
 `cd proto
 protoc -I=. --java_out=./java ./**/*proto`
 
+### Deploy to maven central
 
+mvn clean deploy -Dgpg.passphrase=askDave -Pci-cd
