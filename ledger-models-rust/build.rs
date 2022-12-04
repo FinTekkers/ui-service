@@ -9,7 +9,7 @@ fn main() {
 
     if build_rust_proto {
         let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-        let proto_dir_path = Path::new(&dir).join(Path::new("protos"));
+        let proto_dir_path = Path::new(&dir).join(Path::new("ledger-models-protos"));
 
         // find paths of all proto files
         // must run copy_proto_defs.sh first

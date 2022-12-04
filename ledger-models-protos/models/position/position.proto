@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package position;
+
+import "models/util/decimal_value.proto";
+import "models/position/measure.proto";
+import "models/position/position_util.proto";
+
+option java_multiple_files = true;
+option java_package = "common.model.ledger-models-protos";
+option java_outer_classname = "PositionProtos";
+
+
+enum PositionViewProto {
+  UNKNOWN_POSITION_VIEW = 0;
+  DEFAULT_VIEW = 1;
+  STRATEGY_VIEW = 2;
+}
+
+enum PositionTypeProto {
+  UNKNOWN_POSITION_TYPE = 0;
+  TRANSACTION = 1;
+  TAX_LOT = 2;
+}
+
+message MeasureMapFieldEntry {
+  MeasureProto measure = 1;
+  util.DecimalValueProto measure_decimal_value = 2;
+}
+
+message PositionProto {
+  string object_class = 1;
+  string version = 2;
+
+  PositionViewProto position_view = 10;
+  PositionTypeProto position_type = 11;
+
+  repeated MeasureMapFieldEntry measures = 20;
+  repeated FieldMapEntry fields = 21;
+}

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package valuation;
+
+import "models/security/security.proto";
+import "models/position/position_filter.proto";
+import "models/price/price.proto";
+
+import "requests/util/operation.proto";
+
+option java_multiple_files = true;
+option java_package = "common.request.ledger-models-protos";
+option java_outer_classname = "ValuationRequestProtos";
+
+message ValuationRequestProto {
+  string object_class = 1;
+  string version = 2;
+
+  //Only supports GET, since there is no backing store, so CREATE isn't relevant. SEARCH isn't relevant either.
+  //VALIDATE could be implemented later, e.g. if the caller wants to check their inputs are correct.
+  util.RequestOperationTypeProto operation_type = 10;
+
+  security.SecurityProto security_input = 20;
+  position.PositionFilterProto position_input= 21;
+  price.PriceProto price_input = 22;
+}
+
+
