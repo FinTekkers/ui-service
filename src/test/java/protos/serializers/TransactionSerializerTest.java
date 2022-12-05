@@ -7,13 +7,12 @@ import org.junit.jupiter.api.Test;
 import protos.serializers.transaction.TransactionSerializer;
 import testutil.DummyBondObjects;
 
+import java.time.temporal.ChronoUnit;
+
 class TransactionSerializerTest {
     @Test
     public void testTransactionSerialize() {
         Transaction transaction = DummyBondObjects.getDummyTransaction();
-
-//        Transaction.addCashImpact(transaction);
-//        Transaction.generateDerivedTransactions(transaction);
 
         TransactionSerializer serializer = TransactionSerializer.getInstance();
         TransactionProto proto = serializer.serialize(transaction);
@@ -25,7 +24,7 @@ class TransactionSerializerTest {
 
     private void compareTransaction(Transaction transaction, Transaction copy) {
         Assertions.assertEquals(transaction.getID(), copy.getID());
-        Assertions.assertTrue(transaction.getAsOf().isEqual(copy.getAsOf()));
+        Assertions.assertTrue(transaction.getAsOf().truncatedTo(ChronoUnit.MILLIS).isEqual(copy.getAsOf().truncatedTo(ChronoUnit.MILLIS)));
 
         Assertions.assertEquals(transaction.getPortfolio().getID(), copy.getPortfolio().getID());
         Assertions.assertEquals(transaction.getSecurity().getID(), copy.getSecurity().getID());

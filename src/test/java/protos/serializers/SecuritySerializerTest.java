@@ -4,13 +4,16 @@ import com.amazonaws.util.StringUtils;
 import common.model.protos.SecurityProto;
 import common.model.security.BondSecurity;
 import common.model.security.CashSecurity;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.security.SecuritySerializer;
 import testutil.DummyBondObjects;
 import testutil.DummyEquityObjects;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Random;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SecuritySerializerTest {
     @Test
@@ -25,23 +28,23 @@ class SecuritySerializerTest {
 
         final var copy = serializer.deserialize(proto);
 
-        Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
+        assertEquals(security.getID(), copy.getID());
+        assertTrue(security.getAsOf().truncatedTo(ChronoUnit.MILLIS).isEqual(copy.getAsOf().truncatedTo(ChronoUnit.MILLIS)));
 
-        Assertions.assertEquals(security.getIssuer(), copy.getIssuer());
-        Assertions.assertEquals(security.getQuantityType(), copy.getQuantityType());
+        assertEquals(security.getIssuer(), copy.getIssuer());
+        assertEquals(security.getQuantityType(), copy.getQuantityType());
 
-        Assertions.assertEquals(security.getDescription(), copy.getDescription());
+        assertEquals(security.getDescription(), copy.getDescription());
 
         //Settlement security - Indirectly testing cash
-        Assertions.assertEquals(security.getSettlementCurrency().getID(), copy.getSettlementCurrency().getID());
-        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
+        assertEquals(security.getSettlementCurrency().getID(), copy.getSettlementCurrency().getID());
+        assertTrue(security.getAsOf().truncatedTo(ChronoUnit.MILLIS).isEqual(copy.getAsOf().truncatedTo(ChronoUnit.MILLIS)));
 
-        Assertions.assertEquals(security.getSettlementCurrency().getIssuer(), copy.getSettlementCurrency().getIssuer());
-        Assertions.assertEquals(security.getSettlementCurrency().getQuantityType(), copy.getSettlementCurrency().getQuantityType());
+        assertEquals(security.getSettlementCurrency().getIssuer(), copy.getSettlementCurrency().getIssuer());
+        assertEquals(security.getSettlementCurrency().getQuantityType(), copy.getSettlementCurrency().getQuantityType());
 
-        Assertions.assertEquals(security.getSecurityId().getIdentifier(), copy.getSecurityId().getIdentifier());
-        Assertions.assertEquals(security.getSecurityId().getIdentifierType(), copy.getSecurityId().getIdentifierType());
+        assertEquals(security.getSecurityId().getIdentifier(), copy.getSecurityId().getIdentifier());
+        assertEquals(security.getSecurityId().getIdentifierType(), copy.getSecurityId().getIdentifierType());
     }
     @Test
     public void testBondSecuritySerialize() {
@@ -53,17 +56,17 @@ class SecuritySerializerTest {
         final var copy = (BondSecurity) serializer.deserialize(proto);
 
         //NOTE: Only testing bond specific items here
-        Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
+        assertEquals(security.getID(), copy.getID());
+        assertTrue(security.getAsOf().truncatedTo(ChronoUnit.MILLIS).isEqual(copy.getAsOf().truncatedTo(ChronoUnit.MILLIS)));
 
-        Assertions.assertEquals(security.getFaceValue().doubleValue(), copy.getFaceValue().doubleValue());
-        Assertions.assertEquals(security.getCouponRate().doubleValue(), copy.getCouponRate().doubleValue());
-        Assertions.assertEquals(security.getCouponFrequency(), copy.getCouponFrequency());
-        Assertions.assertEquals(security.getCouponType(), copy.getCouponType());
-        Assertions.assertEquals(security.getDatedDate(), copy.getDatedDate());
-        Assertions.assertEquals(security.getIssueDate(), copy.getIssueDate());
-        Assertions.assertEquals(security.getMaturityDate(), copy.getMaturityDate());
-        Assertions.assertEquals(security.getPriceScaleFactor().doubleValue(), copy.getPriceScaleFactor().doubleValue());
+        assertEquals(security.getFaceValue().doubleValue(), copy.getFaceValue().doubleValue());
+        assertEquals(security.getCouponRate().doubleValue(), copy.getCouponRate().doubleValue());
+        assertEquals(security.getCouponFrequency(), copy.getCouponFrequency());
+        assertEquals(security.getCouponType(), copy.getCouponType());
+        assertEquals(security.getDatedDate(), copy.getDatedDate());
+        assertEquals(security.getIssueDate(), copy.getIssueDate());
+        assertEquals(security.getMaturityDate(), copy.getMaturityDate());
+        assertEquals(security.getPriceScaleFactor().doubleValue(), copy.getPriceScaleFactor().doubleValue());
     }
 
     @Test
@@ -76,8 +79,8 @@ class SecuritySerializerTest {
         final var copy = (CashSecurity) serializer.deserialize(proto);
 
         //NOTE: Only testing bond specific items here
-        Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
+        assertEquals(security.getID(), copy.getID());
+        assertTrue(security.getAsOf().truncatedTo(ChronoUnit.MILLIS).isEqual(copy.getAsOf().truncatedTo(ChronoUnit.MILLIS)));
     }
 
     @Test
@@ -89,17 +92,17 @@ class SecuritySerializerTest {
 
         String serialized = serializer.serializeToJson(proto);
         String expectedJson = "{\"object_class\":\"Security\",\"version\":\"0.0.1\",\"uuid\":\"00000000-0000-0001-0000-000000000001\",\"as_of\":{\"timestamp\":\"1000-Jan-01 00:00:00.000000\",\"time_zone\":\"America/New_York\"},\"is_link\":false,\"security_type\":\"CASH_SECURITY\",\"asset_class\":\"Cash\",\"issuer_name\":\"USD\",\"quantity_type\":\"UNITS\",\"identifier\":{\"object_class\":\"Identifier\",\"version\":\"0.0.1\",\"identifier_value\":\"USD\",\"identifier_type\":\"CASH\"},\"description\":\"USD\",\"cash_id\":\"CASHUSD\"}";
-        Assertions.assertEquals( 0 /*same*/, StringUtils.compare(expectedJson, serialized),
+        assertEquals( 0 /*same*/, StringUtils.compare(expectedJson, serialized),
                 "Json didn't match! Got:\n"+ serialized+ "\nExpected\n"+ expectedJson);
 
         SecurityProto protoCopy = serializer.deserializeFromJson(serialized);
         final var copy = (CashSecurity) serializer.deserialize(protoCopy);
 
         //NOTE: Only testing cash specific items here
-        Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
-        Assertions.assertEquals(security.getSecurityId(), copy.getSecurityId());
-        Assertions.assertEquals(security.getCashId(), copy.getCashId());
+        assertEquals(security.getID(), copy.getID());
+        assertTrue(security.getAsOf().truncatedTo(ChronoUnit.MILLIS).isEqual(copy.getAsOf().truncatedTo(ChronoUnit.MILLIS)));
+        assertEquals(security.getSecurityId(), copy.getSecurityId());
+        assertEquals(security.getCashId(), copy.getCashId());
     }
 
     @Test
@@ -115,17 +118,18 @@ class SecuritySerializerTest {
         final var copy = (BondSecurity) serializer.deserialize(protoCopy);
 
         //NOTE: Only testing cash specific items here
-        Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertEquals(security.getAsOf(), copy.getAsOf());
-        Assertions.assertEquals(security.getSecurityId(), copy.getSecurityId());
+        assertEquals(security.getID(), copy.getID());
+        assertTrue(security.getAsOf().truncatedTo(ChronoUnit.MILLIS)
+                .isEqual(copy.getAsOf().truncatedTo(ChronoUnit.MILLIS)));
+        assertEquals(security.getSecurityId(), copy.getSecurityId());
 
         //Bond security
-        Assertions.assertEquals(security.getCouponType(), copy.getCouponType());
-        Assertions.assertEquals(security.getCouponFrequency(), copy.getCouponFrequency());
-        Assertions.assertEquals(security.getSettlementCurrency(), copy.getSettlementCurrency());
-        Assertions.assertEquals(security.getIssueDate(), copy.getIssueDate());
-        Assertions.assertEquals(security.getDatedDate(), copy.getDatedDate());
-        Assertions.assertEquals(security.getMaturityDate(), copy.getMaturityDate());
-        Assertions.assertEquals(security.getSecurityId(), copy.getSecurityId());
+        assertEquals(security.getCouponType(), copy.getCouponType());
+        assertEquals(security.getCouponFrequency(), copy.getCouponFrequency());
+        assertEquals(security.getSettlementCurrency(), copy.getSettlementCurrency());
+        assertEquals(security.getIssueDate(), copy.getIssueDate());
+        assertEquals(security.getDatedDate(), copy.getDatedDate());
+        assertEquals(security.getMaturityDate(), copy.getMaturityDate());
+        assertEquals(security.getSecurityId(), copy.getSecurityId());
     }
 }
