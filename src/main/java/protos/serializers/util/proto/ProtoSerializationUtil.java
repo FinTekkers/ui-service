@@ -147,7 +147,7 @@ public class ProtoSerializationUtil {
 
         LocalDateTime localDateTime = Instant.ofEpochSecond(
                 ts.getTimestamp().getSeconds(), ts.getTimestamp().getNanos())
-                .atZone(zoneId)
+                .atZone(ZoneOffset.UTC)
                 .toLocalDateTime();
 
         return ZonedDateTime.of(localDateTime, zoneId);
@@ -156,11 +156,14 @@ public class ProtoSerializationUtil {
     public static LocalTimestampProto serializeTimestamp(ZonedDateTime ts) {
         Instant instant = ts.toInstant();
 
+        long epochSecond = ts.toLocalDateTime().toInstant(ZoneOffset.UTC).getEpochSecond();
+
         return LocalTimestampProto.newBuilder()
             .setTimeZone(ts.getZone().getId())
             .setTimestamp(
-                    Timestamp.newBuilder().setSeconds(instant.getEpochSecond())
-                            .setNanos(instant.getNano()).build()
+                    Timestamp.newBuilder().setSeconds(epochSecond)
+                            .setNanos(instant.getNano())
+                            .build()
             )
             .build();
     }
