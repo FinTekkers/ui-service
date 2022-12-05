@@ -2,6 +2,8 @@ name: Publish package to the Maven Central Repository and GitHub Packages
 on:
   push:
     branches: [main]
+env:
+  MAVEN_OPTS: '--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED'
 jobs:
   publish:
     runs-on: ubuntu-latest 
