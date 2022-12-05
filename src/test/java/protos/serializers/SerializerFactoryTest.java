@@ -13,7 +13,6 @@ import common.model.security.EquitySecurity;
 import common.model.security.Security;
 import common.model.security.SecurityType;
 import common.model.transaction.Transaction;
-
 import org.junit.jupiter.api.Test;
 import testutil.DummyBondObjects;
 import testutil.DummyEquityObjects;

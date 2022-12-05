@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import static common.model.postion.Field.ASSET_CLASS;
 import static common.model.postion.Field.PRODUCT_CLASS;
 
 /***

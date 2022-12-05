@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.Period;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class TenorTest {
     @Test
     public void testDescriptionIsReversible() {

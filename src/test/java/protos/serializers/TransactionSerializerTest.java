@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.transaction.TransactionSerializer;
 import testutil.DummyBondObjects;
-import testutil.DummyEquityObjects;
 
 class TransactionSerializerTest {
     @Test
