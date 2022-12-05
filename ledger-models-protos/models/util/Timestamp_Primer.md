@@ -27,6 +27,10 @@ Therefore, we will use seconds, nanoseconds and timezone to convey times.
 When serializing, the seconds and nanos will represent the time IN UTC!!! As well as the timezone
 to be able to offset the time appropriately.
 
+Note, some languages/systems/versions may not support nanos. When they only support millis, that needs 
+to be converted into nanos. Within the Java implementation you may see tructatedTo(MILLIS) to avoid version 
+issues breaking tests.
+
 # Timestamp approach per language
 
 ## Java

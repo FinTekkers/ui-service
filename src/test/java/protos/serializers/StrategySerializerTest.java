@@ -9,8 +9,10 @@ import protos.serializers.strategy.StrategySerializer;
 import testutil.DummyEquityObjects;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
+import static java.time.temporal.ChronoUnit.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -55,7 +57,7 @@ class StrategySerializerTest {
 
         //Check IDs
         Assertions.assertEquals(strategyAllocation.getID(), copy.getID());
-        Assertions.assertTrue(strategyAllocation.getAsOf().isEqual(copy.getAsOf()));
+        Assertions.assertTrue(strategyAllocation.getAsOf().truncatedTo(MILLIS).isEqual(copy.getAsOf().truncatedTo(MILLIS)));
         //Check size, then contents
         Assertions.assertEquals(strategyAllocation.getAllocations().size(), copy.getAllocations().size());
         Assertions.assertEquals(strategyAllocation.getAllocations(), copy.getAllocations());

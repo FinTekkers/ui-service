@@ -2,10 +2,13 @@ package protos.serializers;
 
 import common.model.price.Price;
 import common.model.protos.PriceProto;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.price.PriceSerializer;
 import testutil.DummyEquityObjects;
+
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PriceSerializerTest {
     @Test
@@ -17,12 +20,12 @@ class PriceSerializerTest {
 
         final var copy = serializer.deserialize(proto);
 
-        Assertions.assertEquals(price.getID(), copy.getID());
-        Assertions.assertTrue(price.getAsOf().isEqual(copy.getAsOf()));
+        assertEquals(price.getID(), copy.getID());
+        assertTrue(price.getAsOf().truncatedTo(MILLIS).isEqual(copy.getAsOf().truncatedTo(MILLIS)));
 
-        Assertions.assertEquals(price.getPrice().doubleValue(), copy.getPrice().doubleValue());
-        Assertions.assertEquals(price.getSecurity().getID(), copy.getSecurity().getID());
-        Assertions.assertEquals(price.getSecurity().getIssuer(), copy.getSecurity().getIssuer());
+        assertEquals(price.getPrice().doubleValue(), copy.getPrice().doubleValue());
+        assertEquals(price.getSecurity().getID(), copy.getSecurity().getID());
+        assertEquals(price.getSecurity().getIssuer(), copy.getSecurity().getIssuer());
     }
 
     @Test
@@ -33,15 +36,14 @@ class PriceSerializerTest {
         final PriceProto proto = serializer.serialize(price);
 
         String serialized = serializer.serializeToJson(proto);
-        System.out.println(serialized);
-        Assertions.assertTrue(serialized.contains("\"price\": \"100\""));
+        assertTrue(serialized.contains("\"price\": \"100\""));
 
         PriceProto protoCopy = serializer.deserializeFromJson(serialized);
         final var copy = (Price) serializer.deserialize(protoCopy);
 
         //NOTE: Only testing cash specific items here
-        Assertions.assertEquals(price.getID(), copy.getID());
-        Assertions.assertTrue(price.getAsOf().isEqual(copy.getAsOf()));
-        Assertions.assertEquals(price.getPrice(), copy.getPrice());
+        assertEquals(price.getID(), copy.getID());
+        assertTrue(price.getAsOf().truncatedTo(MILLIS).isEqual(copy.getAsOf().truncatedTo(MILLIS)));
+        assertEquals(price.getPrice(), copy.getPrice());
     }
 }
