@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import common.model.JSONFieldNames;
 import common.model.price.Price;
-import common.model.protos.PositionProto;
 import common.model.protos.PriceProto;
 import common.model.protos.SecurityProto;
 import protos.serializers.IRawDataModelObjectSerializer;
@@ -27,7 +26,7 @@ public class PriceSerializer implements IRawDataModelObjectSerializer<PriceProto
     }
 
     @Override
-    public PriceProto serialize( Price price) {
+    public PriceProto serialize(Price price) {
         PriceProto.Builder builder = PriceProto.newBuilder()
                 .setObjectClass(Price.class.getSimpleName())
                 .setVersion("0.0.1")

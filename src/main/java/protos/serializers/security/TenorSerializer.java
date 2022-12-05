@@ -4,18 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import common.model.JSONFieldNames;
-import common.model.protos.IdentifierProto;
 import common.model.protos.IdentifierTypeProto;
 import common.model.protos.TenorProto;
 import common.model.protos.TenorTypeProto;
 import common.model.security.Tenor;
 import common.model.security.TenorType;
-import common.model.security.identifier.Identifier;
-import common.model.security.identifier.IdentifierType;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
-
-import java.time.temporal.TemporalAccessor;
 
 public class TenorSerializer implements IRawDataModelObjectSerializer<TenorProto, Tenor> {
 

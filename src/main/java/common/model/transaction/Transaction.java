@@ -3,16 +3,16 @@ package common.model.transaction;
 import common.model.RawDataModelObject;
 import common.model.portfolio.Portfolio;
 import common.model.postion.Field;
+import common.model.postion.Measure;
+import common.model.postion.PositionFilter;
 import common.model.postion.PositionStatus;
+import common.model.price.Price;
 import common.model.security.BondSecurity;
 import common.model.security.CashSecurity;
 import common.model.security.Security;
 import common.model.security.SecurityType;
-import common.model.util.persistence.IForeignKey;
-import common.model.postion.Measure;
-import common.model.postion.PositionFilter;
-import common.model.price.Price;
 import common.model.strategy.StrategyAllocation;
+import common.model.util.persistence.IForeignKey;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,7 +20,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static common.model.postion.Field.ASSET_CLASS;
 import static common.model.postion.Field.PRODUCT_CLASS;
 
 /***

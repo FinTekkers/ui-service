@@ -1,7 +1,10 @@
 package protos.serializers.security;
 
 import common.model.protos.SecurityProto;
-import common.model.security.*;
+import common.model.security.BondSecurity;
+import common.model.security.CashSecurity;
+import common.model.security.CouponFrequency;
+import common.model.security.CouponType;
 import common.model.security.bonds.FloatingRateNote;
 import common.model.security.bonds.TIPSBond;
 import org.junit.jupiter.api.Assertions;
@@ -11,8 +14,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class BondSerializerTest {
     @Test

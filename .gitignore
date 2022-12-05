@@ -4,5 +4,5 @@ ledger-models-rust/protos
 valuation-service/target
 .DS_Store
 .idea
-out/**
+out/
 target

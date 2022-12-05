@@ -1,14 +1,13 @@
 package protos.serializers.position;
 
-import common.model.JSONFieldNames;
 import com.google.gson.*;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
+import common.model.JSONFieldNames;
 import common.model.postion.Field;
 import common.model.postion.Measure;
 import common.model.postion.Position;
 import common.model.protos.*;
-import common.model.security.identifier.Identifier;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import protos.serializers.IRawDataModelObjectSerializer;
