@@ -116,7 +116,7 @@ class SecuritySerializerTest {
 
         //NOTE: Only testing cash specific items here
         Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
+        Assertions.assertEquals(security.getAsOf(), copy.getAsOf());
         Assertions.assertEquals(security.getSecurityId(), copy.getSecurityId());
 
         //Bond security
