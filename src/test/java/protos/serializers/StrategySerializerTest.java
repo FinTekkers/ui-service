@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StrategySerializerTest {
     @Test
@@ -23,7 +24,7 @@ class StrategySerializerTest {
         final StrategyAllocation strategyAllocationCopy = serializer.deserialize(proto);
 
         assertEquals(strategyAllocation.getID(), strategyAllocationCopy.getID());
-        assertEquals(strategyAllocation.getAsOf(), strategyAllocationCopy.getAsOf());
+        assertTrue(strategyAllocation.getAsOf().isEqual(strategyAllocationCopy.getAsOf()));
 
         Map<Strategy, BigDecimal> originalAllocations = strategyAllocation.getAllocations();
         int numberStrategies = originalAllocations.size();
@@ -46,15 +47,15 @@ class StrategySerializerTest {
         final StrategyAllocationProto proto = serializer.serialize(strategyAllocation);
 
         String serialized = serializer.serializeToJson(proto);
-        Assertions.assertTrue(serialized.contains("\"strategy_name\": \"Strategy Name\""));
-        Assertions.assertTrue(serialized.contains("\"value\": \"1\""));
+        assertTrue(serialized.contains("\"strategy_name\": \"Strategy Name\""));
+        assertTrue(serialized.contains("\"value\": \"1\""));
 
         StrategyAllocationProto protoCopy = serializer.deserializeFromJson(serialized);
         final var copy = (StrategyAllocation) serializer.deserialize(protoCopy);
 
         //Check IDs
         Assertions.assertEquals(strategyAllocation.getID(), copy.getID());
-        Assertions.assertEquals(strategyAllocation.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(strategyAllocation.getAsOf().isEqual(copy.getAsOf()));
         //Check size, then contents
         Assertions.assertEquals(strategyAllocation.getAllocations().size(), copy.getAllocations().size());
         Assertions.assertEquals(strategyAllocation.getAllocations(), copy.getAllocations());
