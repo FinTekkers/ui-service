@@ -18,7 +18,7 @@ class PriceSerializerTest {
         final var copy = serializer.deserialize(proto);
 
         Assertions.assertEquals(price.getID(), copy.getID());
-        Assertions.assertEquals(price.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(price.getAsOf().isEqual(copy.getAsOf()));
 
         Assertions.assertEquals(price.getPrice().doubleValue(), copy.getPrice().doubleValue());
         Assertions.assertEquals(price.getSecurity().getID(), copy.getSecurity().getID());
@@ -41,7 +41,7 @@ class PriceSerializerTest {
 
         //NOTE: Only testing cash specific items here
         Assertions.assertEquals(price.getID(), copy.getID());
-        Assertions.assertEquals(price.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(price.getAsOf().isEqual(copy.getAsOf()));
         Assertions.assertEquals(price.getPrice(), copy.getPrice());
     }
 }
