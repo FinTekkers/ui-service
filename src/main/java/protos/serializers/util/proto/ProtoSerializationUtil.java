@@ -148,7 +148,12 @@ public class ProtoSerializationUtil {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
 
-        return ZonedDateTime.of(localDateTime, zoneId);
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, zoneId);
+
+        System.out.println(zoneId);
+        System.out.println(localDateTime);
+
+        return zonedDateTime;
     }
 
     public static LocalTimestampProto serializeTimestamp(ZonedDateTime ts) {
