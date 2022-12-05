@@ -1,12 +1,6 @@
 package common.model.security.bonds;
 
-import common.model.security.BondSecurity;
-import common.model.security.CashSecurity;
 import common.model.security.Security;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.UUID;
 
 /**
  * An interface to indicate a security has a reference index. Examples are:

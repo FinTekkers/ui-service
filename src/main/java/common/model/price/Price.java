@@ -1,7 +1,6 @@
 package common.model.price;
 
 import common.model.RawDataModelObject;
-import common.model.security.CashSecurity;
 import common.model.security.Security;
 
 import java.math.BigDecimal;

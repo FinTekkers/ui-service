@@ -1,9 +1,7 @@
 package protos.serializers;
 
-import com.amazonaws.util.StringUtils;
 import common.model.price.Price;
 import common.model.protos.PriceProto;
-import common.model.security.CashSecurity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.price.PriceSerializer;
