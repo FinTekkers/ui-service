@@ -144,16 +144,13 @@ public class ProtoSerializationUtil {
 
     public static ZonedDateTime deserializeTimestamp(LocalTimestampProto ts) {
         ZoneId zoneId = ZoneId.of(ts.getTimeZone());
-        LocalDateTime localDateTime = Instant.ofEpochSecond(ts.getTimestamp().getSeconds(), ts.getTimestamp().getNanos())
-                .atZone(ZoneId.systemDefault())
+
+        LocalDateTime localDateTime = Instant.ofEpochSecond(
+                ts.getTimestamp().getSeconds(), ts.getTimestamp().getNanos())
+                .atZone(zoneId)
                 .toLocalDateTime();
 
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, zoneId);
-
-        System.out.println(zoneId);
-        System.out.println(localDateTime);
-
-        return zonedDateTime;
+        return ZonedDateTime.of(localDateTime, zoneId);
     }
 
     public static LocalTimestampProto serializeTimestamp(ZonedDateTime ts) {
