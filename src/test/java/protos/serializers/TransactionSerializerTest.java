@@ -25,7 +25,7 @@ class TransactionSerializerTest {
 
     private void compareTransaction(Transaction transaction, Transaction copy) {
         Assertions.assertEquals(transaction.getID(), copy.getID());
-        Assertions.assertEquals(transaction.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(transaction.getAsOf().isEqual(copy.getAsOf()));
 
         Assertions.assertEquals(transaction.getPortfolio().getID(), copy.getPortfolio().getID());
         Assertions.assertEquals(transaction.getSecurity().getID(), copy.getSecurity().getID());

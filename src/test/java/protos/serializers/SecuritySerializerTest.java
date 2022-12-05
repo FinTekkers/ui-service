@@ -26,7 +26,7 @@ class SecuritySerializerTest {
         final var copy = serializer.deserialize(proto);
 
         Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertEquals(security.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
 
         Assertions.assertEquals(security.getIssuer(), copy.getIssuer());
         Assertions.assertEquals(security.getQuantityType(), copy.getQuantityType());
@@ -35,7 +35,7 @@ class SecuritySerializerTest {
 
         //Settlement security - Indirectly testing cash
         Assertions.assertEquals(security.getSettlementCurrency().getID(), copy.getSettlementCurrency().getID());
-        Assertions.assertEquals(security.getSettlementCurrency().getAsOf(), copy.getSettlementCurrency().getAsOf());
+        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
 
         Assertions.assertEquals(security.getSettlementCurrency().getIssuer(), copy.getSettlementCurrency().getIssuer());
         Assertions.assertEquals(security.getSettlementCurrency().getQuantityType(), copy.getSettlementCurrency().getQuantityType());
@@ -54,7 +54,7 @@ class SecuritySerializerTest {
 
         //NOTE: Only testing bond specific items here
         Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertEquals(security.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
 
         Assertions.assertEquals(security.getFaceValue().doubleValue(), copy.getFaceValue().doubleValue());
         Assertions.assertEquals(security.getCouponRate().doubleValue(), copy.getCouponRate().doubleValue());
@@ -77,7 +77,7 @@ class SecuritySerializerTest {
 
         //NOTE: Only testing bond specific items here
         Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertEquals(security.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
     }
 
     @Test
@@ -97,7 +97,7 @@ class SecuritySerializerTest {
 
         //NOTE: Only testing cash specific items here
         Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertEquals(security.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
         Assertions.assertEquals(security.getSecurityId(), copy.getSecurityId());
         Assertions.assertEquals(security.getCashId(), copy.getCashId());
     }
@@ -116,7 +116,7 @@ class SecuritySerializerTest {
 
         //NOTE: Only testing cash specific items here
         Assertions.assertEquals(security.getID(), copy.getID());
-        Assertions.assertEquals(security.getAsOf(), copy.getAsOf());
+        Assertions.assertTrue(security.getAsOf().isEqual(copy.getAsOf()));
         Assertions.assertEquals(security.getSecurityId(), copy.getSecurityId());
 
         //Bond security
