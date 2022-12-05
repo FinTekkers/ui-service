@@ -6,8 +6,6 @@ import common.model.security.identifier.IdentifierType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class IdentifierSerializerTest {
     @Test
     public void identifierSerialization() {

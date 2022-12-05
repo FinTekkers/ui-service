@@ -1,9 +1,5 @@
 package common.model.security;
 
-import common.model.protos.SecurityTypeProto;
-import common.model.security.bonds.FloatingRateNote;
-import common.model.security.bonds.TIPSBond;
-
 /**
  * The type of security, as modelled in code. This should not be used for business purposes
  * as code might be refactored.
