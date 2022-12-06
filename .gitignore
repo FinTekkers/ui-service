@@ -6,3 +6,4 @@ valuation-service/target
 .idea
 out/
 target
+.vscode
