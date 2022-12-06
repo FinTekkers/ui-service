@@ -3,7 +3,7 @@ syntax = "proto3";
 package position;
 
 option java_multiple_files = true;
-option java_package = "common.models.position";
+option java_package = "common.model.protos";
 option java_outer_classname = "FieldProtos";
 
 enum FieldProto {
