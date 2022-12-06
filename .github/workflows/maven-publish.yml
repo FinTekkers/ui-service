@@ -14,6 +14,8 @@ jobs:
         with:
           java-version: '18'
           distribution: 'adopt'
+      - name: Output Run Number
+        run: echo Run number is ${{ github.run_number }}, which will be used for artefact versions
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Publish package
