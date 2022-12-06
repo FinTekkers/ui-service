@@ -2,10 +2,10 @@ package protos.serializers.price;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import common.model.JSONFieldNames;
-import common.model.price.Price;
-import common.model.protos.PriceProto;
-import common.model.protos.SecurityProto;
+import common.models.JSONFieldNames;
+import common.models.price.Price;
+import common.models.price.PriceProto;
+import common.models.security.SecurityProto;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.security.SecuritySerializer;
 import protos.serializers.util.json.JsonSerializationUtil;

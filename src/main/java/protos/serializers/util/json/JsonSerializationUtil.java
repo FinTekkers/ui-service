@@ -6,11 +6,11 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import common.model.protoUtils.DecimalValue;
-import common.model.protoUtils.LocalTimestamp;
-import common.model.protoUtils.Uuid;
-import common.model.protos.FieldMapEntry;
-import common.model.protos.SecurityQuantityTypeProto;
+import common.models.position.FieldMapEntry;
+import common.models.protoUtils.DecimalValue;
+import common.models.protoUtils.LocalTimestamp;
+import common.models.protoUtils.Uuid;
+import common.models.security.SecurityQuantityTypeProto;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;

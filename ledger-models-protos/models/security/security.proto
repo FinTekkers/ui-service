@@ -7,14 +7,14 @@ import "models/util/local_date.proto";
 import "models/util/local_timestamp.proto";
 import "models/util/uuid.proto";
 
-import "models/security/identifier.proto";
+import "models/security/identifier/identifier.proto";
 import "models/security/security_type.proto";
 import "models/security/security_quantity_type.proto";
 import "models/security/coupon_frequency.proto";
 import "models/security/coupon_type.proto";
 
 option java_multiple_files = true;
-option java_package = "common.model.ledger-models-protos";
+option java_package = "common.models.security";
 option java_outer_classname = "SecurityProtos";
 
 message SecurityProto {

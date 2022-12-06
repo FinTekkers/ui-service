@@ -1,7 +1,7 @@
 package protos.serializers;
 
-import common.model.price.Price;
-import common.model.protos.PriceProto;
+import common.models.price.Price;
+import common.models.price.PriceProto;
 import org.junit.jupiter.api.Test;
 import protos.serializers.price.PriceSerializer;
 import testutil.DummyEquityObjects;

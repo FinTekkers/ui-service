@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package util;
 
-option java_package = "common.model.protoUtils";
+option java_package = "common.models.protoUtils";
 
 message DecimalValueProto {
   uint32 scale = 1;

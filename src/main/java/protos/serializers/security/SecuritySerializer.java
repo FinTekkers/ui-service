@@ -3,10 +3,11 @@ package protos.serializers.security;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import common.model.JSONFieldNames;
-import common.model.protos.*;
-import common.model.security.*;
-import common.model.security.identifier.Identifier;
+import common.models.JSONFieldNames;
+import common.models.security.*;
+import common.models.security.identifier.Identifier;
+import common.models.security.identifier.IdentifierProto;
+import common.models.security.identifier.IdentifierTypeProto;
 import org.apache.commons.lang3.StringUtils;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
@@ -15,7 +16,7 @@ import protos.serializers.util.proto.ProtoSerializationUtil;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static common.model.JSONFieldNames.*;
+import static common.models.JSONFieldNames.*;
 
 public class SecuritySerializer implements IRawDataModelObjectSerializer<SecurityProto, Security> {
 
@@ -139,7 +140,7 @@ public class SecuritySerializer implements IRawDataModelObjectSerializer<Securit
     /**
      * Returns a JSON serialization of a proto.
      *
-     * Enum values are serialized as text (more readable) rather than the number (more efficient), so text <->
+     * Enum values are serialized as text (more readable) rather than the number (more efficient), so text and
      *     numbers have to be converted. Non-cash securities have to do a nested serialization of the cash security.
      *
      * @param proto The proto representation of the security
@@ -192,7 +193,7 @@ public class SecuritySerializer implements IRawDataModelObjectSerializer<Securit
     /**
      * Returns a proto from a JSON string.
      *
-     * Enum values are serialized as text (more readable) rather than the number (more efficient), so text <->
+     * Enum values are serialized as text (more readable) rather than the number (more efficient), so text and
      *     numbers have to be converted. Non-cash securities have to do a nested deserialization of the cash security.
      *
      * @param json JSON

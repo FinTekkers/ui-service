@@ -1,21 +1,21 @@
 package testutil;
 
-import common.model.portfolio.Portfolio;
-import common.model.postion.Field;
-import common.model.postion.Measure;
-import common.model.postion.Position;
-import common.model.price.Price;
-import common.model.security.CashSecurity;
-import common.model.security.EquitySecurity;
-import common.model.security.Security;
-import common.model.security.identifier.Identifier;
-import common.model.security.identifier.IdentifierType;
-import common.model.strategy.Strategy;
-import common.model.strategy.StrategyAllocation;
-import common.model.taxLot.TaxLotDelta;
-import common.model.taxLot.TaxLotSource;
-import common.model.transaction.Transaction;
-import common.model.transaction.TransactionType;
+import common.models.portfolio.Portfolio;
+import common.models.postion.Field;
+import common.models.postion.Measure;
+import common.models.postion.Position;
+import common.models.price.Price;
+import common.models.security.CashSecurity;
+import common.models.security.EquitySecurity;
+import common.models.security.Security;
+import common.models.security.identifier.Identifier;
+import common.models.security.identifier.IdentifierType;
+import common.models.strategy.Strategy;
+import common.models.strategy.StrategyAllocation;
+import common.models.taxLot.TaxLotDelta;
+import common.models.taxLot.TaxLotSource;
+import common.models.transaction.Transaction;
+import common.models.transaction.TransactionType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,7 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static common.model.postion.PositionStatus.EXECUTED;
+import static common.models.postion.PositionStatus.EXECUTED;
 
 public class DummyEquityObjects {
     public static Security getDummySecurity() {

@@ -1,8 +1,8 @@
 package protos.serializers;
 
-import common.model.protos.StrategyAllocationProto;
-import common.model.strategy.Strategy;
-import common.model.strategy.StrategyAllocation;
+import common.models.strategy.StrategyAllocationProto;
+import common.models.strategy.Strategy;
+import common.models.strategy.StrategyAllocation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.strategy.StrategySerializer;
