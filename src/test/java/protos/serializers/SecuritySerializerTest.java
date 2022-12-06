@@ -1,9 +1,9 @@
 package protos.serializers;
 
 import com.amazonaws.util.StringUtils;
-import common.model.protos.SecurityProto;
-import common.model.security.BondSecurity;
-import common.model.security.CashSecurity;
+import common.models.security.SecurityProto;
+import common.models.security.BondSecurity;
+import common.models.security.CashSecurity;
 import org.junit.jupiter.api.Test;
 import protos.serializers.security.SecuritySerializer;
 import testutil.DummyBondObjects;

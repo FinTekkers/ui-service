@@ -1,9 +1,9 @@
-package common.model.security;
+package common.models.security;
 
-import common.model.postion.PositionStatus;
-import common.model.price.Price;
-import common.model.transaction.Transaction;
-import common.model.transaction.TransactionType;
+import common.models.postion.PositionStatus;
+import common.models.price.Price;
+import common.models.transaction.Transaction;
+import common.models.transaction.TransactionType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import testutil.DummyEquityObjects;

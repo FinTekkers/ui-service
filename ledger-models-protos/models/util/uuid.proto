@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package util;
 
-option java_package = "common.model.protoUtils";
+option java_package = "common.models.protoUtils";
 
 message UUIDProto {
   bytes raw_uuid = 1;

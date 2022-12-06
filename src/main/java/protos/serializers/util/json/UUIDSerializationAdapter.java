@@ -4,7 +4,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import common.model.protoUtils.Uuid;
+import common.models.protoUtils.Uuid;
 import protos.serializers.util.proto.ProtoSerializationUtil;
 
 import java.io.IOException;

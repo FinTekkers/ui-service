@@ -15,7 +15,7 @@ import "models/position/position_status.proto";
 import "models/transaction/transaction_type.proto";
 
 option java_multiple_files = true;
-option java_package = "common.model.ledger-models-protos";
+option java_package = "common.models.transaction";
 option java_outer_classname = "TransactionProtos";
 
 message TransactionProto {

@@ -9,7 +9,7 @@ import "models/price/price.proto";
 import "requests/util/operation.proto";
 
 option java_multiple_files = true;
-option java_package = "common.request.ledger-models-protos";
+option java_package = "common.request";
 option java_outer_classname = "ValuationRequestProtos";
 
 message ValuationRequestProto {

@@ -1,8 +1,8 @@
 package protos.serializers;
 
 import com.google.gson.Gson;
-import common.model.portfolio.Portfolio;
-import common.model.protos.PortfolioProto;
+import common.models.portfolio.Portfolio;
+import common.models.portfolio.PortfolioProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.portfolio.PortfolioSerializer;
