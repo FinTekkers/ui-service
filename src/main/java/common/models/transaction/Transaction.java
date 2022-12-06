@@ -214,54 +214,32 @@ public class Transaction extends RawDataModelObject implements ITransaction {
      */
     @Override
     public Object getField(Field field) {
-        switch(field) {
+        return switch (field) {
             //Transaction Fields
-            case ID:
-                return getID();
-            case TRANSACTION_TYPE:
-                return getTransactionType().name();
-            case TRADE_DATE:
-                return getTradeDate();
-            case SETTLEMENT_DATE:
-                return getSettlementDate();
-            case POSITION_STATUS:
-                return getPositionStatus();
-            case PRICE:
-                return getPrice();
-            case IS_CANCELLED:
-                return isCancelled();
+            case ID -> getID();
+            case TRANSACTION_TYPE -> getTransactionType().name();
+            case TRADE_DATE -> getTradeDate();
+            case SETTLEMENT_DATE -> getSettlementDate();
+            case POSITION_STATUS -> getPositionStatus();
+            case PRICE -> getPrice();
+            case IS_CANCELLED -> isCancelled();
             //Security Fields
-            case SECURITY:
-                return getSecurity();
-            case PRODUCT_TYPE:
-                return getSecurity().getProductType();
-            case IDENTIFIER:
-                return getSecurity().getSecurityId();
-            case ASSET_CLASS:
-                return getSecurity().getAssetClass();
-            case PRODUCT_CLASS:
-                return getSecurity().getField(PRODUCT_CLASS);
-            case SECURITY_DESCRIPTION:
-                return getSecurity().getDisplayDescription();
-            case SECURITY_ID:
-                return getSecurity().getID();
-            case TENOR:
-                return getSecurity().getField(Field.TENOR);
-            case ADJUSTED_TENOR:
-                return getSecurity().getField(Field.ADJUSTED_TENOR);
-            case MATURITY_DATE:
-                return getSecurity().getField(Field.MATURITY_DATE);
+            case SECURITY -> getSecurity();
+            case PRODUCT_TYPE -> getSecurity().getProductType();
+            case IDENTIFIER -> getSecurity().getSecurityId();
+            case ASSET_CLASS -> getSecurity().getAssetClass();
+            case PRODUCT_CLASS -> getSecurity().getField(PRODUCT_CLASS);
+            case SECURITY_DESCRIPTION -> getSecurity().getDisplayDescription();
+            case SECURITY_ID -> getSecurity().getID();
+            case TENOR -> getSecurity().getField(Field.TENOR);
+            case ADJUSTED_TENOR -> getSecurity().getField(Field.ADJUSTED_TENOR);
+            case MATURITY_DATE -> getSecurity().getField(Field.MATURITY_DATE);
             //Portfolio Fields
-            case PORTFOLIO:
-                return getPortfolio();
-            case PORTFOLIO_ID:
-                return getPortfolio().getID();
-            case PORTFOLIO_NAME:
-                return getPortfolio().getPortfolioName();
-
-            default:
-                throw new RuntimeException(String.format("Field not found %s", field));
-        }
+            case PORTFOLIO -> getPortfolio();
+            case PORTFOLIO_ID -> getPortfolio().getID();
+            case PORTFOLIO_NAME -> getPortfolio().getPortfolioName();
+            default -> throw new RuntimeException(String.format("Field not found %s", field));
+        };
     }
 
     @Override

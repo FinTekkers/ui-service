@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import static common.models.postion.Field.PRODUCT_CLASS;
+import static common.models.postion.Field.*;
 
 /***
  * Tax lots result from transactions. We store Tax Lots as delta-based records, so in order to understand the
@@ -82,54 +82,35 @@ public class TaxLotDelta extends RawDataModelObject implements IFinancialModelOb
     }
 
     public Object getField(Field field) {
-        switch(field) {
-            case ID:
-                return getID();
-            case TAX_LOT_OPEN_DATE:
-                return getOpenDate();
-            case TAX_LOT_CLOSE_DATE:
-                return getClosedDate();
-            case PRICE:
-                return getPrice();
-            case IS_CANCELLED:
-                return isInvalidated();
-            case STRATEGY:
-                return getStrategyAllocation();
-            case POSITION_STATUS:
-                return getPositionStatus();
+        return switch (field) {
+            case ID -> getID();
+            case TAX_LOT_OPEN_DATE -> getOpenDate();
+            case TAX_LOT_CLOSE_DATE -> getClosedDate();
+            case PRICE -> getPrice();
+            case IS_CANCELLED -> isInvalidated();
+            case STRATEGY -> getStrategyAllocation();
+            case POSITION_STATUS -> getPositionStatus();
             //Security fields
-            case SECURITY:
-                return getSecurity();
-            case PRODUCT_TYPE:
-                return getSecurity().getProductType();
-            case IDENTIFIER:
-                return getSecurity().getSecurityId();
-            case ASSET_CLASS:
-                return getSecurity().getAssetClass();
-            case PRODUCT_CLASS:
-                return getSecurity().getField(PRODUCT_CLASS);
-            case SECURITY_DESCRIPTION:
-                return getSecurity().getDisplayDescription();
-            case SECURITY_ID:
-                return getSecurity().getID();
-            case TENOR:
-                return getSecurity().getField(Field.TENOR);
+            case SECURITY -> getSecurity();
+            case PRODUCT_TYPE -> getSecurity().getProductType();
+            case IDENTIFIER -> getSecurity().getSecurityId();
+            case ASSET_CLASS -> getSecurity().getAssetClass();
+            case PRODUCT_CLASS -> getSecurity().getField(PRODUCT_CLASS);
+            case SECURITY_DESCRIPTION -> getSecurity().getDisplayDescription();
+            case SECURITY_ID -> getSecurity().getID();
+            case TENOR -> getSecurity().getField(TENOR);
             //Portfolio fields
-            case PORTFOLIO:
-                return getPortfolio();
-            case PORTFOLIO_ID:
-                return getPortfolio().getID();
-            case PORTFOLIO_NAME:
-                return getPortfolio().getPortfolioName();
-            default:
-                throw new RuntimeException(String.format("Field not found %s", field));
-        }
+            case PORTFOLIO -> getPortfolio();
+            case PORTFOLIO_ID -> getPortfolio().getID();
+            case PORTFOLIO_NAME -> getPortfolio().getPortfolioName();
+            default -> throw new RuntimeException(String.format("Field not found %s", field));
+        };
     }
 
 
     public Set<Field> getFields() {
-        return new HashSet<>(Arrays.asList(Field.ID, Field.TAX_LOT_OPEN_DATE, Field.TAX_LOT_CLOSE_DATE, Field.IS_CANCELLED,
-                Field.PORTFOLIO, Field.SECURITY, Field.POSITION_STATUS));
+        return new HashSet<>(Arrays.asList(ID, TAX_LOT_OPEN_DATE, TAX_LOT_CLOSE_DATE, IS_CANCELLED,
+                PORTFOLIO, SECURITY, POSITION_STATUS));
     }
 
     public Set<Measure> getMeasures() {
