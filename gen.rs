@@ -29,7 +29,7 @@ fn main() {
         .build_server(true)
         .out_dir("ledger-models-rust")
         .compile(&proto_files,
-            &["."],
+            &["ledger-models-protos"],
         )
         .unwrap()
 }
