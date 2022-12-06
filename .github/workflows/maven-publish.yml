@@ -22,6 +22,6 @@ jobs:
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: publish
-          versionCode: ${{github.run_number}}
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          run_number: ${{github.run_number}}
