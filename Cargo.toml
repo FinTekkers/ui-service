@@ -23,5 +23,4 @@ prost = "0.11.2"
 prost-types = "0.11.2"
 tonic-build = "0.8.2"
 walkdir = "2"
-automod = "1.0.4"
 
