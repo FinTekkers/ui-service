@@ -27,7 +27,7 @@ fn main() {
     tonic_build::configure()
         .build_client(true)
         .build_server(true)
-        .out_dir("rust")
+        .out_dir("ledger-models-rust")
         .compile(&proto_files,
             &["."],
         )
