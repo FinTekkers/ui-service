@@ -15,7 +15,7 @@ name = "gen"
 path="gen.rs"
 
 [lib]
-path = "rust/lib.rs"
+path = "ledger-models-rust/lib.rs"
 
 [dependencies]
 tonic = "0.8.2"
