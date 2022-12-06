@@ -1,4 +1,4 @@
-name: Publish package to the Maven Central Repository and GitHub Packages
+name: Publish package to GitHub Packages
 on:
   push:
     branches: [main]
@@ -20,5 +20,6 @@ jobs:
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: publish
+          versionCode: ${{github.run_number}}
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
