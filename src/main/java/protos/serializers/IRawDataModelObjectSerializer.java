@@ -1,7 +1,7 @@
 package protos.serializers;
 
 import com.google.protobuf.GeneratedMessageV3;
-import common.model.IRawDataModelObject;
+import common.models.IRawDataModelObject;
 
 /**
  * The interface that defines serialization methods.

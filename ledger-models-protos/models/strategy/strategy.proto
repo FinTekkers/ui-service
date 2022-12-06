@@ -6,7 +6,7 @@ import "models/util/local_timestamp.proto";
 import "models/util/uuid.proto";
 
 option java_multiple_files = true;
-option java_package = "common.model.ledger-models-protos";
+option java_package = "common.models.strategy";
 option java_outer_classname = "StrategyProtos";
 
 message StrategyProto {

@@ -7,7 +7,7 @@ import "models/position/measure.proto";
 import "models/position/position_util.proto";
 
 option java_multiple_files = true;
-option java_package = "common.model.ledger-models-protos";
+option java_package = "common.models.position";
 option java_outer_classname = "PositionProtos";
 
 

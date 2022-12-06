@@ -1,11 +1,7 @@
 package protos.serializers.strategy;
 
 import com.google.gson.Gson;
-import common.model.protos.MapFieldEntry;
-import common.model.protos.StrategyAllocationProto;
-import common.model.protos.StrategyProto;
-import common.model.strategy.Strategy;
-import common.model.strategy.StrategyAllocation;
+import common.models.strategy.*;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
 import protos.serializers.util.proto.ProtoSerializationUtil;

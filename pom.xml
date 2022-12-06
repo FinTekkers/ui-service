@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ledger-models</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.4</version>
     <groupId>io.github.fintekkers</groupId>
     <name>FinTekkers Ledger Models</name>
     <description>A library that implements data models for common financial products such as equities, bonds, and more</description>
@@ -36,7 +36,6 @@
         <junit.jupiter.version>5.9.0</junit.jupiter.version>
         <junit.platform.version>1.9.0</junit.platform.version>
     </properties>
-
     <!-- This sets the repo where we will upload packaged jars -->
     <distributionManagement>
         <snapshotRepository>

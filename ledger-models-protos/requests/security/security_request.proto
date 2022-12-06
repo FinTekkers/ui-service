@@ -8,7 +8,7 @@ import "models/position/position_filter.proto";
 import "requests/util/operation.proto";
 
 option java_multiple_files = true;
-option java_package = "common.request.ledger-models-protos";
+option java_package = "common.request";
 option java_outer_classname = "SecurityRequestProtos";
 
 message SecurityRequestProto {
