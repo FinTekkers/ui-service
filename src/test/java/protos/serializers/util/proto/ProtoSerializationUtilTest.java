@@ -1,6 +1,6 @@
 package protos.serializers.util.proto;
 
-import common.model.protoUtils.LocalTimestamp;
+import common.models.protoUtils.LocalTimestamp;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;

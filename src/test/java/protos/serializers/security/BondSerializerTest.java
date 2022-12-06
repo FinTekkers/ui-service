@@ -1,12 +1,8 @@
 package protos.serializers.security;
 
-import common.model.protos.SecurityProto;
-import common.model.security.BondSecurity;
-import common.model.security.CashSecurity;
-import common.model.security.CouponFrequency;
-import common.model.security.CouponType;
-import common.model.security.bonds.FloatingRateNote;
-import common.model.security.bonds.TIPSBond;
+import common.models.security.*;
+import common.models.security.bonds.FloatingRateNote;
+import common.models.security.bonds.TIPSBond;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -4,5 +4,7 @@ ledger-models-rust/protos
 valuation-service/target
 .DS_Store
 .idea
+.gradle
+build/
 out/
 target

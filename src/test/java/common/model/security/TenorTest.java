@@ -1,4 +1,4 @@
-package common.model.security;
+package common.models.security;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,7 +1,7 @@
-package common.model.security;
+package common.models.security;
 
-import common.model.security.identifier.Identifier;
-import common.model.security.identifier.IdentifierType;
+import common.models.security.identifier.Identifier;
+import common.models.security.identifier.IdentifierType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import testutil.DummyBondObjects;

@@ -5,11 +5,11 @@ package position;
 import "google/protobuf/any.proto";
 import "models/position/field.proto";
 import "models/position/measure.proto";
-import "models/security/identifier.proto";
+import "models/security/identifier/identifier.proto";
 import "models/util/decimal_value.proto";
 
 option java_multiple_files = true;
-option java_package = "common.model.ledger-models-protos";
+option java_package = "common.models.position";
 option java_outer_classname = "PositionUtilProtos";
 
 

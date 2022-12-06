@@ -1,10 +1,10 @@
 package protos.serializers.portfolio;
 
 import com.google.gson.Gson;
-import common.model.portfolio.Portfolio;
-import common.model.postion.PositionStatus;
-import common.model.protos.PortfolioProto;
-import common.model.protos.PositionStatusProto;
+import common.models.portfolio.Portfolio;
+import common.models.postion.PositionStatus;
+import common.models.portfolio.PortfolioProto;
+import common.models.position.PositionStatusProto;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
 import protos.serializers.util.proto.ProtoSerializationUtil;

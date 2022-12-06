@@ -34,11 +34,11 @@ public final class ValuationService {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          common.request.protos.ValuationRequestProtos.getDescriptor(),
-          common.request.protos.ValuationResponseProtos.getDescriptor(),
+          common.request.ValuationRequestProtos.getDescriptor(),
+          common.request.ValuationResponseProtos.getDescriptor(),
         });
-    common.request.protos.ValuationRequestProtos.getDescriptor();
-    common.request.protos.ValuationResponseProtos.getDescriptor();
+    common.request.ValuationRequestProtos.getDescriptor();
+    common.request.ValuationResponseProtos.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -3,11 +3,11 @@ package protos.serializers.security;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import common.model.JSONFieldNames;
-import common.model.protos.IdentifierProto;
-import common.model.protos.IdentifierTypeProto;
-import common.model.security.identifier.Identifier;
-import common.model.security.identifier.IdentifierType;
+import common.models.JSONFieldNames;
+import common.models.security.identifier.IdentifierProto;
+import common.models.security.identifier.IdentifierTypeProto;
+import common.models.security.identifier.Identifier;
+import common.models.security.identifier.IdentifierType;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
 

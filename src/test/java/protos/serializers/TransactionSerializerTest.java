@@ -1,7 +1,7 @@
 package protos.serializers;
 
-import common.model.protos.TransactionProto;
-import common.model.transaction.Transaction;
+import common.models.transaction.Transaction;
+import common.models.transaction.TransactionProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.transaction.TransactionSerializer;
@@ -16,7 +16,6 @@ class TransactionSerializerTest {
 
         TransactionSerializer serializer = TransactionSerializer.getInstance();
         TransactionProto proto = serializer.serialize(transaction);
-
         Transaction copy = serializer.deserialize(proto);
 
         compareTransaction(transaction, copy);

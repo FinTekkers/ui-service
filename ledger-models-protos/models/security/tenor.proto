@@ -5,7 +5,7 @@ package security;
 import "models/security/tenor_type.proto";
 
 option java_multiple_files = true;
-option java_package = "common.model.ledger-models-protos";
+option java_package = "common.models.security";
 option java_outer_classname = "TenorProtos";
 
 message TenorProto {
