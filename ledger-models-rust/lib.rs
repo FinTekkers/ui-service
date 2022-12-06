@@ -5,4 +5,5 @@ pub mod security;
 pub mod strategy;
 pub mod transaction;
 pub mod util;
+pub mod valuation_service;
 pub mod valuation;

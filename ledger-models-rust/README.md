@@ -1,7 +1,9 @@
 # Rust Types Derived from Proto Files
 
-## Building
+Context
 
-from within /rust-type run ```make rust-types``
+This project contains protobuf models of financial objects & request/response formats for APIs; as well as language specific bindings.
 
-this will run ```copy_proto_defs.sh``` to temporarily pull the proto files into the directory (this is necessary for the rust proto library to play nicely) and then run ```cargo build``` to build the types. They will be auto-exported under the mod ledger_models
+## Generating Types
+
+To generate the types run ```cargo run --bin gen```. This will overwrite the files in ledger-models-rust. Any new file must be exported in lib.rs.
