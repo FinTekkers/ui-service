@@ -1,18 +1,17 @@
 package protos.serializers;
 
-import common.models.strategy.StrategyAllocationProto;
 import common.models.strategy.Strategy;
 import common.models.strategy.StrategyAllocation;
+import common.models.strategy.StrategyAllocationProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.strategy.StrategySerializer;
 import testutil.DummyEquityObjects;
 
 import java.math.BigDecimal;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
-import static java.time.temporal.ChronoUnit.*;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

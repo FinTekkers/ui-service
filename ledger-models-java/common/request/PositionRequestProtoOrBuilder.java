@@ -68,7 +68,7 @@ public interface PositionRequestProtoOrBuilder extends
    * <code>repeated .position.FieldProto fields = 30;</code>
    * @return A list containing the fields.
    */
-  java.util.List<common.models.position.FieldProto> getFieldsList();
+  java.util.List<common.model.protos.FieldProto> getFieldsList();
   /**
    * <code>repeated .position.FieldProto fields = 30;</code>
    * @return The count of fields.
@@ -79,7 +79,7 @@ public interface PositionRequestProtoOrBuilder extends
    * @param index The index of the element to return.
    * @return The fields at the given index.
    */
-  common.models.position.FieldProto getFields(int index);
+  common.model.protos.FieldProto getFields(int index);
   /**
    * <code>repeated .position.FieldProto fields = 30;</code>
    * @return A list containing the enum numeric values on the wire for fields.

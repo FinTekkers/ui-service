@@ -7,22 +7,22 @@ plugins {
     id 'maven-publish'
 }
 
-
 repositories {
     mavenLocal()
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
+    mavenCentral()
 }
 
 dependencies {
-    api 'com.googlecode.json-simple:json-simple:1.1.1'
-    api 'com.google.protobuf:protobuf-java:3.21.9'
-    api 'com.google.code.gson:gson:2.10'
-    api 'com.amazonaws:aws-java-sdk:1.12.353'
-    api 'org.apache.commons:commons-lang3:3.12.0'
-    api 'org.apache.commons:commons-text:1.10.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    implementation 'com.google.protobuf:protobuf-java:3.21.9'
+    implementation 'com.google.code.gson:gson:2.10'
+    implementation 'com.amazonaws:aws-java-sdk:1.12.353'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'org.apache.commons:commons-text:1.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
 }
 
 task run_number {
@@ -33,7 +33,7 @@ group = 'io.github.fintekkers'
 version = '1.0.'+ System.getenv("run_number")
 description = 'FinTekkers Ledger Models'
 java.sourceCompatibility = JavaVersion.VERSION_17
-
+javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 
 task sourcesJar(type: Jar) {
     duplicatesStrategy = 'include'
@@ -53,10 +53,19 @@ sourceSets {
             srcDirs 'ledger-models-java'
         }
     }
+    test {
+        java {
+            srcDirs 'src/test/java'
+        }
+    }
 }
 
 javadoc {
     failOnError = false
+}
+
+test {
+    useJUnitPlatform()
 }
 
 publishing {
@@ -70,6 +79,7 @@ publishing {
             }
         }
     }
+
     publications {
         gpr(MavenPublication) {
             from(components.java)

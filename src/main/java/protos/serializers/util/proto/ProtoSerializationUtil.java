@@ -117,7 +117,6 @@ public class ProtoSerializationUtil {
     public static DecimalValueProto serializeBigDecimal(BigDecimal quantity) {
         return DecimalValueProto.newBuilder()
                 .setScale(quantity.scale())
-                .setPrecision(quantity.precision())
                 .setValue(ByteString.copyFrom(quantity.unscaledValue().toByteArray()))
                 .build();
     }
@@ -126,11 +125,9 @@ public class ProtoSerializationUtil {
         if(quantity == null)
             return null;
 
-        java.math.MathContext mc = new java.math.MathContext(quantity.getPrecision());
         return new BigDecimal(
                 new BigInteger(quantity.getValue().toByteArray()),
-                quantity.getScale(),
-                mc);
+                quantity.getScale());
     }
 
     public static LocalDate deserializeLocalDate(LocalDateProto date) {

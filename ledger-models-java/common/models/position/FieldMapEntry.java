@@ -101,10 +101,10 @@ private static final long serialVersionUID = 0L;
    * <code>.position.FieldProto field = 1;</code>
    * @return The field.
    */
-  @java.lang.Override public common.models.position.FieldProto getField() {
+  @java.lang.Override public common.model.protos.FieldProto getField() {
     @SuppressWarnings("deprecation")
-    common.models.position.FieldProto result = common.models.position.FieldProto.valueOf(field_);
-    return result == null ? common.models.position.FieldProto.UNRECOGNIZED : result;
+    common.model.protos.FieldProto result = common.model.protos.FieldProto.valueOf(field_);
+    return result == null ? common.model.protos.FieldProto.UNRECOGNIZED : result;
   }
 
   public static final int FIELD_VALUE_PACKED_FIELD_NUMBER = 4;
@@ -262,7 +262,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (field_ != common.models.position.FieldProto.UNKNOWN_FIELD.getNumber()) {
+    if (field_ != common.model.protos.FieldProto.UNKNOWN_FIELD.getNumber()) {
       output.writeEnum(1, field_);
     }
     if (fieldMapValueOneOfCase_ == 4) {
@@ -286,7 +286,7 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (field_ != common.models.position.FieldProto.UNKNOWN_FIELD.getNumber()) {
+    if (field_ != common.model.protos.FieldProto.UNKNOWN_FIELD.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(1, field_);
     }
@@ -740,17 +740,17 @@ private static final long serialVersionUID = 0L;
      * @return The field.
      */
     @java.lang.Override
-    public common.models.position.FieldProto getField() {
+    public common.model.protos.FieldProto getField() {
       @SuppressWarnings("deprecation")
-      common.models.position.FieldProto result = common.models.position.FieldProto.valueOf(field_);
-      return result == null ? common.models.position.FieldProto.UNRECOGNIZED : result;
+      common.model.protos.FieldProto result = common.model.protos.FieldProto.valueOf(field_);
+      return result == null ? common.model.protos.FieldProto.UNRECOGNIZED : result;
     }
     /**
      * <code>.position.FieldProto field = 1;</code>
      * @param value The field to set.
      * @return This builder for chaining.
      */
-    public Builder setField(common.models.position.FieldProto value) {
+    public Builder setField(common.model.protos.FieldProto value) {
       if (value == null) {
         throw new NullPointerException();
       }

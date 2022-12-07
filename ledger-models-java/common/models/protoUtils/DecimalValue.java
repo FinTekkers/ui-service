@@ -25,12 +25,6 @@ public final class DecimalValue {
     int getScale();
 
     /**
-     * <code>uint32 precision = 2;</code>
-     * @return The precision.
-     */
-    int getPrecision();
-
-    /**
      * <code>bytes value = 3;</code>
      * @return The value.
      */
@@ -88,17 +82,6 @@ public final class DecimalValue {
       return scale_;
     }
 
-    public static final int PRECISION_FIELD_NUMBER = 2;
-    private int precision_;
-    /**
-     * <code>uint32 precision = 2;</code>
-     * @return The precision.
-     */
-    @java.lang.Override
-    public int getPrecision() {
-      return precision_;
-    }
-
     public static final int VALUE_FIELD_NUMBER = 3;
     private com.google.protobuf.ByteString value_;
     /**
@@ -127,9 +110,6 @@ public final class DecimalValue {
       if (scale_ != 0) {
         output.writeUInt32(1, scale_);
       }
-      if (precision_ != 0) {
-        output.writeUInt32(2, precision_);
-      }
       if (!value_.isEmpty()) {
         output.writeBytes(3, value_);
       }
@@ -145,10 +125,6 @@ public final class DecimalValue {
       if (scale_ != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(1, scale_);
-      }
-      if (precision_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(2, precision_);
       }
       if (!value_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
@@ -171,8 +147,6 @@ public final class DecimalValue {
 
       if (getScale()
           != other.getScale()) return false;
-      if (getPrecision()
-          != other.getPrecision()) return false;
       if (!getValue()
           .equals(other.getValue())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
@@ -188,8 +162,6 @@ public final class DecimalValue {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + SCALE_FIELD_NUMBER;
       hash = (53 * hash) + getScale();
-      hash = (37 * hash) + PRECISION_FIELD_NUMBER;
-      hash = (53 * hash) + getPrecision();
       hash = (37 * hash) + VALUE_FIELD_NUMBER;
       hash = (53 * hash) + getValue().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
@@ -322,8 +294,6 @@ public final class DecimalValue {
         super.clear();
         scale_ = 0;
 
-        precision_ = 0;
-
         value_ = com.google.protobuf.ByteString.EMPTY;
 
         return this;
@@ -353,7 +323,6 @@ public final class DecimalValue {
       public common.models.protoUtils.DecimalValue.DecimalValueProto buildPartial() {
         common.models.protoUtils.DecimalValue.DecimalValueProto result = new common.models.protoUtils.DecimalValue.DecimalValueProto(this);
         result.scale_ = scale_;
-        result.precision_ = precision_;
         result.value_ = value_;
         onBuilt();
         return result;
@@ -406,9 +375,6 @@ public final class DecimalValue {
         if (other.getScale() != 0) {
           setScale(other.getScale());
         }
-        if (other.getPrecision() != 0) {
-          setPrecision(other.getPrecision());
-        }
         if (other.getValue() != com.google.protobuf.ByteString.EMPTY) {
           setValue(other.getValue());
         }
@@ -443,11 +409,6 @@ public final class DecimalValue {
 
                 break;
               } // case 8
-              case 16: {
-                precision_ = input.readUInt32();
-
-                break;
-              } // case 16
               case 26: {
                 value_ = input.readBytes();
 
@@ -496,37 +457,6 @@ public final class DecimalValue {
       public Builder clearScale() {
         
         scale_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int precision_ ;
-      /**
-       * <code>uint32 precision = 2;</code>
-       * @return The precision.
-       */
-      @java.lang.Override
-      public int getPrecision() {
-        return precision_;
-      }
-      /**
-       * <code>uint32 precision = 2;</code>
-       * @param value The precision to set.
-       * @return This builder for chaining.
-       */
-      public Builder setPrecision(int value) {
-        
-        precision_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>uint32 precision = 2;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearPrecision() {
-        
-        precision_ = 0;
         onChanged();
         return this;
       }
@@ -643,9 +573,9 @@ public final class DecimalValue {
   static {
     java.lang.String[] descriptorData = {
       "\n\037models/util/decimal_value.proto\022\004util\"" +
-      "D\n\021DecimalValueProto\022\r\n\005scale\030\001 \001(\r\022\021\n\tp" +
-      "recision\030\002 \001(\r\022\r\n\005value\030\003 \001(\014B\032\n\030common." +
-      "models.protoUtilsb\006proto3"
+      "1\n\021DecimalValueProto\022\r\n\005scale\030\001 \001(\r\022\r\n\005v" +
+      "alue\030\003 \001(\014B\032\n\030common.models.protoUtilsb\006" +
+      "proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -656,7 +586,7 @@ public final class DecimalValue {
     internal_static_util_DecimalValueProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_util_DecimalValueProto_descriptor,
-        new java.lang.String[] { "Scale", "Precision", "Value", });
+        new java.lang.String[] { "Scale", "Value", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
