@@ -49,13 +49,13 @@ java {
 sourceSets {
     main {
         java {
-            srcDirs 'ledger-models-java/src/main/java'
-            srcDirs 'ledger-models-java/generated-src'
+            srcDirs 'src/main/java'
+            srcDirs 'generated-src'
         }
     }
     test {
         java {
-            srcDirs 'ledger-models-java/src/test/java'
+            srcDirs 'src/test/java'
         }
     }
 }
