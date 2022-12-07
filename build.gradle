@@ -26,7 +26,7 @@ dependencies {
 }
 
 task run_number {
-    println System.getenv("run_number")
+    println 'Run number is: '+ System.getenv("run_number")
 }
 
 group = 'io.github.fintekkers'
@@ -49,13 +49,13 @@ java {
 sourceSets {
     main {
         java {
-            srcDirs 'src/main/java'
-            srcDirs 'ledger-models-java'
+            srcDirs 'ledger-models-java/src/main/java'
+            srcDirs 'ledger-models-java/generated-src'
         }
     }
     test {
         java {
-            srcDirs 'src/test/java'
+            srcDirs 'ledger-models-java/src/test/java'
         }
     }
 }
