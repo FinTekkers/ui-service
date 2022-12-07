@@ -50,7 +50,7 @@ public final class PositionRequestProtos {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          common.models.position.FieldProtos.getDescriptor(),
+          common.model.protos.FieldProtos.getDescriptor(),
           common.models.position.MeasureProtos.getDescriptor(),
           common.models.position.PositionProtos.getDescriptor(),
           common.models.position.PositionFilterProtos.getDescriptor(),
@@ -63,7 +63,7 @@ public final class PositionRequestProtos {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_position_PositionRequestProto_descriptor,
         new java.lang.String[] { "ObjectClass", "Version", "OperationType", "PositionType", "PositionView", "Fields", "Measures", "FilterFields", "AsOf", });
-    common.models.position.FieldProtos.getDescriptor();
+    common.model.protos.FieldProtos.getDescriptor();
     common.models.position.MeasureProtos.getDescriptor();
     common.models.position.PositionProtos.getDescriptor();
     common.models.position.PositionFilterProtos.getDescriptor();
