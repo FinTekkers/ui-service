@@ -96,6 +96,16 @@ The above philosophy is very important so that we don't end up re-using a techni
 
 Run the contents of compile.sh manually on the command line
 
+## Rust
+If a new model is added it must be exported in lib.rs
+
 ## Publishing
 
 Publishing of java/rust/etc packages are done via GitHub actions when PRs are integrated. If you need to publish a package locally or get a snapshot, this is currently manual
+
+## Preparing Rust to publish
+to publish a new version do the following 
+1. generate the new protobus using the compile script
+2. export any new models in lib.rs 
+3. bump the package version in ```Cargo.toml```
+4. tag the pr with the version, i.e if version = 0.1.1, set the tag to v0.1.1
