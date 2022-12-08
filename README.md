@@ -108,4 +108,4 @@ to publish a new version do the following
 1. generate the new protobus using the compile script
 2. export any new models in lib.rs 
 3. bump the package version in ```Cargo.toml```
-4. tag the pr with the version, i.e if version = 0.1.1, set the tag to v0.1.1
+4. merge your pr then create a release tagged with the version, if the version = 0.1.1, set the tag to v0.1.1

@@ -1,6 +1,5 @@
 on:
   push:
-    branches: [main]
     tags:  #only trigger action when tagged with release number, i.e v0.0.1     
       - 'v*'    
   workflow_dispatch:
