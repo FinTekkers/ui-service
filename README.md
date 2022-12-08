@@ -92,15 +92,10 @@ The above philosophy is very important so that we don't end up re-using a techni
 
 # DevOps
 
-## Java
+## Compiling protobufs
 
-### Compiling protobufs
+Run the contents of compile.sh manually on the command line
 
-Run: 
+## Publishing
 
-`cd proto
-protoc -I=. --java_out=./java ./**/*proto`
-
-### Deploy to maven central
-
-mvn clean deploy -Dgpg.passphrase=askDave -Pci-cd
+Publishing of java/rust/etc packages are done via GitHub actions when PRs are integrated. If you need to publish a package locally or get a snapshot, this is currently manual
