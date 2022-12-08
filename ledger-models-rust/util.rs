@@ -2,8 +2,6 @@
 pub struct DecimalValueProto {
     #[prost(uint32, tag = "1")]
     pub scale: u32,
-    #[prost(uint32, tag = "2")]
-    pub precision: u32,
     #[prost(bytes = "vec", tag = "3")]
     pub value: ::prost::alloc::vec::Vec<u8>,
 }
