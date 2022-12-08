@@ -1,11 +1,20 @@
-target/**
+#Rust related folders
 ledger-models-rust/target
 ledger-models-rust/protos
 valuation-service/target
-.DS_Store
-.idea
+
+#Java / Gradle related folders (Java build)
 .gradle
+ledger-models-java/gradle
+
+#Build related folders:
 build/
 out/
 target
+target/**
+
+#IDE related folders
 .vscode
+.idea
+
+.DS_Store
