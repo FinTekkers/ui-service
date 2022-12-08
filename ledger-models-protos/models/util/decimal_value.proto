@@ -6,6 +6,5 @@ option java_package = "common.models.protoUtils";
 
 message DecimalValueProto {
   uint32 scale = 1;
-  uint32 precision = 2;
   bytes value = 3;
 }
