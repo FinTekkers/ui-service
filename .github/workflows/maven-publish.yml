@@ -4,7 +4,7 @@ on:
     branches: [main]
 defaults:
   run:
-    working-directory: ./ledger-models-java
+    working-directory: ledger-models-java
 jobs:
   publish:
     runs-on: ubuntu-latest 
