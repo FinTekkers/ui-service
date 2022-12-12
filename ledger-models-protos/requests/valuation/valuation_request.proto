@@ -3,7 +3,7 @@ syntax = "proto3";
 package valuation;
 
 import "models/security/security.proto";
-import "models/position/position_filter.proto";
+import "models/position/position.proto";
 import "models/price/price.proto";
 
 import "requests/util/operation.proto";
@@ -21,7 +21,7 @@ message ValuationRequestProto {
   util.RequestOperationTypeProto operation_type = 10;
 
   security.SecurityProto security_input = 20;
-  position.PositionFilterProto position_input= 21;
+  position.PositionProto position_input= 21;
   price.PriceProto price_input = 22;
 }
 
