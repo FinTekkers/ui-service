@@ -11,7 +11,7 @@ pub struct ValuationRequestProto {
     #[prost(message, optional, tag = "20")]
     pub security_input: ::core::option::Option<super::security::SecurityProto>,
     #[prost(message, optional, tag = "21")]
-    pub position_input: ::core::option::Option<super::position::PositionFilterProto>,
+    pub position_input: ::core::option::Option<super::position::PositionProto>,
     #[prost(message, optional, tag = "22")]
     pub price_input: ::core::option::Option<super::price::PriceProto>,
 }
