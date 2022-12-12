@@ -21,10 +21,13 @@ jobs:
         run: echo Run number is ${{ github.run_number }}, which will be used for artefact versions
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+        with:
+          working-directory: ledger-models-java
       - name: Publish package
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments:  -b ./ledger-models-java/build.gradle publish
+          arguments: publish
+          working-directory: ledger-models-java
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
           run_number: ${{github.run_number}}
