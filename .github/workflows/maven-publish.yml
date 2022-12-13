@@ -2,6 +2,10 @@ name: Publish package to GitHub Packages
 on:
   push:
     branches: [main]
+defaults:
+  run:
+    shell: bash
+    working-directory: ledger-models-java
 jobs:
   publish:
     runs-on: ubuntu-latest 
@@ -14,13 +18,10 @@ jobs:
       with:
         distribution: temurin
         java-version: 11
-        
-    - name: Setup Gradle
-      uses: gradle/gradle-build-action@v2
     - name: Output Run Number
       run: echo Run number is ${{ github.run_number }}, which will be used for artefact versions
     - name: Execute Gradle build
-      run: ./ledger-models-java/gradlew publish
+      run: gradlew publish
       env:
         PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run_number: ${{github.run_number}}
