@@ -5,7 +5,6 @@ valuation-service/target
 
 #Java / Gradle related folders (Java build)
 .gradle
-ledger-models-java/gradle
 
 #Build related folders:
 build/
