@@ -178,9 +178,9 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int POSITION_INPUT_FIELD_NUMBER = 21;
-  private common.models.position.PositionFilterProto positionInput_;
+  private common.models.position.PositionProto positionInput_;
   /**
-   * <code>.position.PositionFilterProto position_input = 21;</code>
+   * <code>.position.PositionProto position_input = 21;</code>
    * @return Whether the positionInput field is set.
    */
   @java.lang.Override
@@ -188,18 +188,18 @@ private static final long serialVersionUID = 0L;
     return positionInput_ != null;
   }
   /**
-   * <code>.position.PositionFilterProto position_input = 21;</code>
+   * <code>.position.PositionProto position_input = 21;</code>
    * @return The positionInput.
    */
   @java.lang.Override
-  public common.models.position.PositionFilterProto getPositionInput() {
-    return positionInput_ == null ? common.models.position.PositionFilterProto.getDefaultInstance() : positionInput_;
+  public common.models.position.PositionProto getPositionInput() {
+    return positionInput_ == null ? common.models.position.PositionProto.getDefaultInstance() : positionInput_;
   }
   /**
-   * <code>.position.PositionFilterProto position_input = 21;</code>
+   * <code>.position.PositionProto position_input = 21;</code>
    */
   @java.lang.Override
-  public common.models.position.PositionFilterProtoOrBuilder getPositionInputOrBuilder() {
+  public common.models.position.PositionProtoOrBuilder getPositionInputOrBuilder() {
     return getPositionInput();
   }
 
@@ -1048,31 +1048,31 @@ private static final long serialVersionUID = 0L;
       return securityInputBuilder_;
     }
 
-    private common.models.position.PositionFilterProto positionInput_;
+    private common.models.position.PositionProto positionInput_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        common.models.position.PositionFilterProto, common.models.position.PositionFilterProto.Builder, common.models.position.PositionFilterProtoOrBuilder> positionInputBuilder_;
+        common.models.position.PositionProto, common.models.position.PositionProto.Builder, common.models.position.PositionProtoOrBuilder> positionInputBuilder_;
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      * @return Whether the positionInput field is set.
      */
     public boolean hasPositionInput() {
       return positionInputBuilder_ != null || positionInput_ != null;
     }
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      * @return The positionInput.
      */
-    public common.models.position.PositionFilterProto getPositionInput() {
+    public common.models.position.PositionProto getPositionInput() {
       if (positionInputBuilder_ == null) {
-        return positionInput_ == null ? common.models.position.PositionFilterProto.getDefaultInstance() : positionInput_;
+        return positionInput_ == null ? common.models.position.PositionProto.getDefaultInstance() : positionInput_;
       } else {
         return positionInputBuilder_.getMessage();
       }
     }
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      */
-    public Builder setPositionInput(common.models.position.PositionFilterProto value) {
+    public Builder setPositionInput(common.models.position.PositionProto value) {
       if (positionInputBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1086,10 +1086,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      */
     public Builder setPositionInput(
-        common.models.position.PositionFilterProto.Builder builderForValue) {
+        common.models.position.PositionProto.Builder builderForValue) {
       if (positionInputBuilder_ == null) {
         positionInput_ = builderForValue.build();
         onChanged();
@@ -1100,13 +1100,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      */
-    public Builder mergePositionInput(common.models.position.PositionFilterProto value) {
+    public Builder mergePositionInput(common.models.position.PositionProto value) {
       if (positionInputBuilder_ == null) {
         if (positionInput_ != null) {
           positionInput_ =
-            common.models.position.PositionFilterProto.newBuilder(positionInput_).mergeFrom(value).buildPartial();
+            common.models.position.PositionProto.newBuilder(positionInput_).mergeFrom(value).buildPartial();
         } else {
           positionInput_ = value;
         }
@@ -1118,7 +1118,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      */
     public Builder clearPositionInput() {
       if (positionInputBuilder_ == null) {
@@ -1132,33 +1132,33 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      */
-    public common.models.position.PositionFilterProto.Builder getPositionInputBuilder() {
+    public common.models.position.PositionProto.Builder getPositionInputBuilder() {
       
       onChanged();
       return getPositionInputFieldBuilder().getBuilder();
     }
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      */
-    public common.models.position.PositionFilterProtoOrBuilder getPositionInputOrBuilder() {
+    public common.models.position.PositionProtoOrBuilder getPositionInputOrBuilder() {
       if (positionInputBuilder_ != null) {
         return positionInputBuilder_.getMessageOrBuilder();
       } else {
         return positionInput_ == null ?
-            common.models.position.PositionFilterProto.getDefaultInstance() : positionInput_;
+            common.models.position.PositionProto.getDefaultInstance() : positionInput_;
       }
     }
     /**
-     * <code>.position.PositionFilterProto position_input = 21;</code>
+     * <code>.position.PositionProto position_input = 21;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        common.models.position.PositionFilterProto, common.models.position.PositionFilterProto.Builder, common.models.position.PositionFilterProtoOrBuilder> 
+        common.models.position.PositionProto, common.models.position.PositionProto.Builder, common.models.position.PositionProtoOrBuilder> 
         getPositionInputFieldBuilder() {
       if (positionInputBuilder_ == null) {
         positionInputBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            common.models.position.PositionFilterProto, common.models.position.PositionFilterProto.Builder, common.models.position.PositionFilterProtoOrBuilder>(
+            common.models.position.PositionProto, common.models.position.PositionProto.Builder, common.models.position.PositionProtoOrBuilder>(
                 getPositionInput(),
                 getParentForChildren(),
                 isClean());

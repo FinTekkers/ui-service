@@ -68,19 +68,19 @@ public interface ValuationRequestProtoOrBuilder extends
   common.models.security.SecurityProtoOrBuilder getSecurityInputOrBuilder();
 
   /**
-   * <code>.position.PositionFilterProto position_input = 21;</code>
+   * <code>.position.PositionProto position_input = 21;</code>
    * @return Whether the positionInput field is set.
    */
   boolean hasPositionInput();
   /**
-   * <code>.position.PositionFilterProto position_input = 21;</code>
+   * <code>.position.PositionProto position_input = 21;</code>
    * @return The positionInput.
    */
-  common.models.position.PositionFilterProto getPositionInput();
+  common.models.position.PositionProto getPositionInput();
   /**
-   * <code>.position.PositionFilterProto position_input = 21;</code>
+   * <code>.position.PositionProto position_input = 21;</code>
    */
-  common.models.position.PositionFilterProtoOrBuilder getPositionInputOrBuilder();
+  common.models.position.PositionProtoOrBuilder getPositionInputOrBuilder();
 
   /**
    * <code>.price.PriceProto price_input = 22;</code>

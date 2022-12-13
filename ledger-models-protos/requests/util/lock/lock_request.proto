@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package util.lock;
+
+import "models/util/lock/node_state.proto";
+import "requests/util/operation.proto";
+
+option java_multiple_files = true;
+option java_package = "common.util.lock";
+option java_outer_classname = "LockRequestProtos";
+
+message LockRequestProto {
+  string object_class = 1;
+  string version = 2;
+
+  //Only supports GET
+  util.RequestOperationTypeProto operation_type = 10;
+
+  util.lock.NodeStateProto node_state = 11;
+}
+
+
