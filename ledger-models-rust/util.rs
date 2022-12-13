@@ -32,9 +32,14 @@ pub struct UuidProto {
 #[repr(i32)]
 pub enum RequestOperationTypeProto {
     UnknownOperation = 0,
+    /// Validate whether an object is well-formed. The proto schema provides the syntax, but validation
+    /// ensures semantic meaning is correct.
     Validate = 1,
+    /// Create an object in the back-end
     Create = 2,
+    /// Retrieve an object
     Get = 3,
+    /// Search for an object
     Search = 4,
 }
 impl RequestOperationTypeProto {

@@ -24,18 +24,35 @@ public final class Operation {
      */
     UNKNOWN_OPERATION(0),
     /**
+     * <pre>
+     *Validate whether an object is well-formed. The proto schema provides the syntax, but validation
+     *ensures semantic meaning is correct.
+     * </pre>
+     *
      * <code>VALIDATE = 1;</code>
      */
     VALIDATE(1),
     /**
+     * <pre>
+     *Create an object in the back-end
+     * </pre>
+     *
      * <code>CREATE = 2;</code>
      */
     CREATE(2),
     /**
+     * <pre>
+     *Retrieve an object
+     * </pre>
+     *
      * <code>GET = 3;</code>
      */
     GET(3),
     /**
+     * <pre>
+     *Search for an object
+     * </pre>
+     *
      * <code>SEARCH = 4;</code>
      */
     SEARCH(4),
@@ -47,18 +64,35 @@ public final class Operation {
      */
     public static final int UNKNOWN_OPERATION_VALUE = 0;
     /**
+     * <pre>
+     *Validate whether an object is well-formed. The proto schema provides the syntax, but validation
+     *ensures semantic meaning is correct.
+     * </pre>
+     *
      * <code>VALIDATE = 1;</code>
      */
     public static final int VALIDATE_VALUE = 1;
     /**
+     * <pre>
+     *Create an object in the back-end
+     * </pre>
+     *
      * <code>CREATE = 2;</code>
      */
     public static final int CREATE_VALUE = 2;
     /**
+     * <pre>
+     *Retrieve an object
+     * </pre>
+     *
      * <code>GET = 3;</code>
      */
     public static final int GET_VALUE = 3;
     /**
+     * <pre>
+     *Search for an object
+     * </pre>
+     *
      * <code>SEARCH = 4;</code>
      */
     public static final int SEARCH_VALUE = 4;

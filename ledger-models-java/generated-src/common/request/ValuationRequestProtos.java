@@ -30,23 +30,23 @@ public final class ValuationRequestProtos {
     java.lang.String[] descriptorData = {
       "\n*requests/valuation/valuation_request.p" +
       "roto\022\tvaluation\032\036models/security/securit" +
-      "y.proto\032%models/position/position_filter" +
-      ".proto\032\030models/price/price.proto\032\035reques" +
-      "ts/util/operation.proto\"\207\002\n\025ValuationReq" +
-      "uestProto\022\024\n\014object_class\030\001 \001(\t\022\017\n\007versi" +
-      "on\030\002 \001(\t\0227\n\016operation_type\030\n \001(\0162\037.util." +
-      "RequestOperationTypeProto\022/\n\016security_in" +
-      "put\030\024 \001(\0132\027.security.SecurityProto\0225\n\016po" +
-      "sition_input\030\025 \001(\0132\035.position.PositionFi" +
-      "lterProto\022&\n\013price_input\030\026 \001(\0132\021.price.P" +
-      "riceProtoB*\n\016common.requestB\026ValuationRe" +
-      "questProtosP\001b\006proto3"
+      "y.proto\032\036models/position/position.proto\032" +
+      "\030models/price/price.proto\032\035requests/util" +
+      "/operation.proto\"\201\002\n\025ValuationRequestPro" +
+      "to\022\024\n\014object_class\030\001 \001(\t\022\017\n\007version\030\002 \001(" +
+      "\t\0227\n\016operation_type\030\n \001(\0162\037.util.Request" +
+      "OperationTypeProto\022/\n\016security_input\030\024 \001" +
+      "(\0132\027.security.SecurityProto\022/\n\016position_" +
+      "input\030\025 \001(\0132\027.position.PositionProto\022&\n\013" +
+      "price_input\030\026 \001(\0132\021.price.PriceProtoB*\n\016" +
+      "common.requestB\026ValuationRequestProtosP\001" +
+      "b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           common.models.security.SecurityProtos.getDescriptor(),
-          common.models.position.PositionFilterProtos.getDescriptor(),
+          common.models.position.PositionProtos.getDescriptor(),
           common.models.price.PriceProtos.getDescriptor(),
           util.Operation.getDescriptor(),
         });
@@ -57,7 +57,7 @@ public final class ValuationRequestProtos {
         internal_static_valuation_ValuationRequestProto_descriptor,
         new java.lang.String[] { "ObjectClass", "Version", "OperationType", "SecurityInput", "PositionInput", "PriceInput", });
     common.models.security.SecurityProtos.getDescriptor();
-    common.models.position.PositionFilterProtos.getDescriptor();
+    common.models.position.PositionProtos.getDescriptor();
     common.models.price.PriceProtos.getDescriptor();
     util.Operation.getDescriptor();
   }
