@@ -4,7 +4,7 @@ on:
       - 'v*'    
   workflow_dispatch:
 
-name: Publish
+name: Publish Rust crate to crates.io
 
 jobs:
   publish:
