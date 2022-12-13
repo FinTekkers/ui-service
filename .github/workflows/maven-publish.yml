@@ -7,7 +7,7 @@ defaults:
     shell: bash
     working-directory: ledger-models-java
 jobs:
-  publish:
+  publish-java-package:
     runs-on: ubuntu-latest 
     permissions: 
       contents: read
