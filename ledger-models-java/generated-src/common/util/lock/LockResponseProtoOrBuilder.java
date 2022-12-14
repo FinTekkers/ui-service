@@ -3,8 +3,8 @@
 
 package common.util.lock;
 
-public interface TransactionResponseProtoOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:util.lock.TransactionResponseProto)
+public interface LockResponseProtoOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:util.lock.LockResponseProto)
     com.google.protobuf.MessageOrBuilder {
 
   /**

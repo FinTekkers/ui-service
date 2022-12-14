@@ -30,7 +30,7 @@ pub struct LockRequestProto {
     pub node_state: ::core::option::Option<NodeStateProto>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct TransactionResponseProto {
+pub struct LockResponseProto {
     #[prost(string, tag = "1")]
     pub object_class: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
