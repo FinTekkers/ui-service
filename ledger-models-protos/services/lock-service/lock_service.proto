@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package lock_service;
+import "requests/util/lock/lock_request.proto";
+import "requests/util/lock/lock_response.proto";
+
+service Valuation {
+    rpc ClaimLock (util.lock.LockRequestProto) returns (util.lock.LockResponseProto);
+}

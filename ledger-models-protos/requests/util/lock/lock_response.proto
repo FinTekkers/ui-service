@@ -9,7 +9,7 @@ option java_multiple_files = true;
 option java_package = "common.util.lock";
 option java_outer_classname = "LockResponseProtos";
 
-message TransactionResponseProto {
+message LockResponseProto {
   string object_class = 1;
   string version = 2;
 
