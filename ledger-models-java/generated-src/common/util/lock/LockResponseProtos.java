@@ -15,10 +15,10 @@ public final class LockResponseProtos {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_util_lock_TransactionResponseProto_descriptor;
+    internal_static_util_lock_LockResponseProto_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_util_lock_TransactionResponseProto_fieldAccessorTable;
+      internal_static_util_lock_LockResponseProto_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -31,12 +31,12 @@ public final class LockResponseProtos {
       "\n&requests/util/lock/lock_response.proto" +
       "\022\tutil.lock\032!models/util/lock/node_state" +
       ".proto\032%requests/util/lock/lock_request." +
-      "proto\"\255\001\n\030TransactionResponseProto\022\024\n\014ob" +
-      "ject_class\030\001 \001(\t\022\017\n\007version\030\002 \001(\t\0228\n\023cre" +
-      "ate_lock_request\030\003 \001(\0132\033.util.lock.LockR" +
-      "equestProto\0220\n\rlock_response\030\004 \001(\0132\031.uti" +
-      "l.lock.NodeStateProtoB(\n\020common.util.loc" +
-      "kB\022LockResponseProtosP\001b\006proto3"
+      "proto\"\246\001\n\021LockResponseProto\022\024\n\014object_cl" +
+      "ass\030\001 \001(\t\022\017\n\007version\030\002 \001(\t\0228\n\023create_loc" +
+      "k_request\030\003 \001(\0132\033.util.lock.LockRequestP" +
+      "roto\0220\n\rlock_response\030\004 \001(\0132\031.util.lock." +
+      "NodeStateProtoB(\n\020common.util.lockB\022Lock" +
+      "ResponseProtosP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -44,11 +44,11 @@ public final class LockResponseProtos {
           common.locks.NodeStateProtos.getDescriptor(),
           common.util.lock.LockRequestProtos.getDescriptor(),
         });
-    internal_static_util_lock_TransactionResponseProto_descriptor =
+    internal_static_util_lock_LockResponseProto_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_util_lock_TransactionResponseProto_fieldAccessorTable = new
+    internal_static_util_lock_LockResponseProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_util_lock_TransactionResponseProto_descriptor,
+        internal_static_util_lock_LockResponseProto_descriptor,
         new java.lang.String[] { "ObjectClass", "Version", "CreateLockRequest", "LockResponse", });
     common.locks.NodeStateProtos.getDescriptor();
     common.util.lock.LockRequestProtos.getDescriptor();
