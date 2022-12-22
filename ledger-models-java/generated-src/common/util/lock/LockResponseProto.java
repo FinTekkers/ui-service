@@ -4,18 +4,18 @@
 package common.util.lock;
 
 /**
- * Protobuf type {@code util.lock.TransactionResponseProto}
+ * Protobuf type {@code util.lock.LockResponseProto}
  */
-public final class TransactionResponseProto extends
+public final class LockResponseProto extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:util.lock.TransactionResponseProto)
-    TransactionResponseProtoOrBuilder {
+    // @@protoc_insertion_point(message_implements:util.lock.LockResponseProto)
+    LockResponseProtoOrBuilder {
 private static final long serialVersionUID = 0L;
-  // Use TransactionResponseProto.newBuilder() to construct.
-  private TransactionResponseProto(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use LockResponseProto.newBuilder() to construct.
+  private LockResponseProto(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private TransactionResponseProto() {
+  private LockResponseProto() {
     objectClass_ = "";
     version_ = "";
   }
@@ -24,7 +24,7 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(
       UnusedPrivateParameter unused) {
-    return new TransactionResponseProto();
+    return new LockResponseProto();
   }
 
   @java.lang.Override
@@ -34,15 +34,15 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return common.util.lock.LockResponseProtos.internal_static_util_lock_TransactionResponseProto_descriptor;
+    return common.util.lock.LockResponseProtos.internal_static_util_lock_LockResponseProto_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return common.util.lock.LockResponseProtos.internal_static_util_lock_TransactionResponseProto_fieldAccessorTable
+    return common.util.lock.LockResponseProtos.internal_static_util_lock_LockResponseProto_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            common.util.lock.TransactionResponseProto.class, common.util.lock.TransactionResponseProto.Builder.class);
+            common.util.lock.LockResponseProto.class, common.util.lock.LockResponseProto.Builder.class);
   }
 
   public static final int OBJECT_CLASS_FIELD_NUMBER = 1;
@@ -232,10 +232,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof common.util.lock.TransactionResponseProto)) {
+    if (!(obj instanceof common.util.lock.LockResponseProto)) {
       return super.equals(obj);
     }
-    common.util.lock.TransactionResponseProto other = (common.util.lock.TransactionResponseProto) obj;
+    common.util.lock.LockResponseProto other = (common.util.lock.LockResponseProto) obj;
 
     if (!getObjectClass()
         .equals(other.getObjectClass())) return false;
@@ -279,69 +279,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static common.util.lock.TransactionResponseProto parseFrom(
+  public static common.util.lock.LockResponseProto parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(
+  public static common.util.lock.LockResponseProto parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(
+  public static common.util.lock.LockResponseProto parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(
+  public static common.util.lock.LockResponseProto parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(byte[] data)
+  public static common.util.lock.LockResponseProto parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(
+  public static common.util.lock.LockResponseProto parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(java.io.InputStream input)
+  public static common.util.lock.LockResponseProto parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(
+  public static common.util.lock.LockResponseProto parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static common.util.lock.TransactionResponseProto parseDelimitedFrom(java.io.InputStream input)
+  public static common.util.lock.LockResponseProto parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static common.util.lock.TransactionResponseProto parseDelimitedFrom(
+  public static common.util.lock.LockResponseProto parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(
+  public static common.util.lock.LockResponseProto parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static common.util.lock.TransactionResponseProto parseFrom(
+  public static common.util.lock.LockResponseProto parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -354,7 +354,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(common.util.lock.TransactionResponseProto prototype) {
+  public static Builder newBuilder(common.util.lock.LockResponseProto prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -370,26 +370,26 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code util.lock.TransactionResponseProto}
+   * Protobuf type {@code util.lock.LockResponseProto}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:util.lock.TransactionResponseProto)
-      common.util.lock.TransactionResponseProtoOrBuilder {
+      // @@protoc_insertion_point(builder_implements:util.lock.LockResponseProto)
+      common.util.lock.LockResponseProtoOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return common.util.lock.LockResponseProtos.internal_static_util_lock_TransactionResponseProto_descriptor;
+      return common.util.lock.LockResponseProtos.internal_static_util_lock_LockResponseProto_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return common.util.lock.LockResponseProtos.internal_static_util_lock_TransactionResponseProto_fieldAccessorTable
+      return common.util.lock.LockResponseProtos.internal_static_util_lock_LockResponseProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              common.util.lock.TransactionResponseProto.class, common.util.lock.TransactionResponseProto.Builder.class);
+              common.util.lock.LockResponseProto.class, common.util.lock.LockResponseProto.Builder.class);
     }
 
-    // Construct using common.util.lock.TransactionResponseProto.newBuilder()
+    // Construct using common.util.lock.LockResponseProto.newBuilder()
     private Builder() {
 
     }
@@ -424,17 +424,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return common.util.lock.LockResponseProtos.internal_static_util_lock_TransactionResponseProto_descriptor;
+      return common.util.lock.LockResponseProtos.internal_static_util_lock_LockResponseProto_descriptor;
     }
 
     @java.lang.Override
-    public common.util.lock.TransactionResponseProto getDefaultInstanceForType() {
-      return common.util.lock.TransactionResponseProto.getDefaultInstance();
+    public common.util.lock.LockResponseProto getDefaultInstanceForType() {
+      return common.util.lock.LockResponseProto.getDefaultInstance();
     }
 
     @java.lang.Override
-    public common.util.lock.TransactionResponseProto build() {
-      common.util.lock.TransactionResponseProto result = buildPartial();
+    public common.util.lock.LockResponseProto build() {
+      common.util.lock.LockResponseProto result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -442,8 +442,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public common.util.lock.TransactionResponseProto buildPartial() {
-      common.util.lock.TransactionResponseProto result = new common.util.lock.TransactionResponseProto(this);
+    public common.util.lock.LockResponseProto buildPartial() {
+      common.util.lock.LockResponseProto result = new common.util.lock.LockResponseProto(this);
       result.objectClass_ = objectClass_;
       result.version_ = version_;
       if (createLockRequestBuilder_ == null) {
@@ -494,16 +494,16 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof common.util.lock.TransactionResponseProto) {
-        return mergeFrom((common.util.lock.TransactionResponseProto)other);
+      if (other instanceof common.util.lock.LockResponseProto) {
+        return mergeFrom((common.util.lock.LockResponseProto)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(common.util.lock.TransactionResponseProto other) {
-      if (other == common.util.lock.TransactionResponseProto.getDefaultInstance()) return this;
+    public Builder mergeFrom(common.util.lock.LockResponseProto other) {
+      if (other == common.util.lock.LockResponseProto.getDefaultInstance()) return this;
       if (!other.getObjectClass().isEmpty()) {
         objectClass_ = other.objectClass_;
         onChanged();
@@ -986,23 +986,23 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:util.lock.TransactionResponseProto)
+    // @@protoc_insertion_point(builder_scope:util.lock.LockResponseProto)
   }
 
-  // @@protoc_insertion_point(class_scope:util.lock.TransactionResponseProto)
-  private static final common.util.lock.TransactionResponseProto DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:util.lock.LockResponseProto)
+  private static final common.util.lock.LockResponseProto DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new common.util.lock.TransactionResponseProto();
+    DEFAULT_INSTANCE = new common.util.lock.LockResponseProto();
   }
 
-  public static common.util.lock.TransactionResponseProto getDefaultInstance() {
+  public static common.util.lock.LockResponseProto getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<TransactionResponseProto>
-      PARSER = new com.google.protobuf.AbstractParser<TransactionResponseProto>() {
+  private static final com.google.protobuf.Parser<LockResponseProto>
+      PARSER = new com.google.protobuf.AbstractParser<LockResponseProto>() {
     @java.lang.Override
-    public TransactionResponseProto parsePartialFrom(
+    public LockResponseProto parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1021,17 +1021,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<TransactionResponseProto> parser() {
+  public static com.google.protobuf.Parser<LockResponseProto> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<TransactionResponseProto> getParserForType() {
+  public com.google.protobuf.Parser<LockResponseProto> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public common.util.lock.TransactionResponseProto getDefaultInstanceForType() {
+  public common.util.lock.LockResponseProto getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 
