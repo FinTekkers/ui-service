@@ -31,6 +31,17 @@ pub enum MeasureProto {
     MarketValue = 2,
     UnadjustedCostBasis = 3,
     AdjustedCostBasis = 4,
+    /// The current yield of the security, essentially coupon / current price. The price can be
+    /// unadjusted cost basis, adjusted cost basis, market value, and so on. This is a bond-centric
+    /// calculation. For equity securities, the TTM dividends will be used as a coupon equivalent (not
+    /// currently supported).
+    CurrentYield = 5,
+    /// The yield if the security is held to maturity. For equities, this will be blank.
+    /// For bonds this will be calculated as: <https://www.wallstreetprep.com/knowledge/yield-to-maturity-ytm/>
+    /// For TIPS, no future inflation adjustments to principal will be included.
+    /// For FRNs, the assumption is the floating rate doesn't change between now and maturity.
+    /// In the future, context-overrides will allow customization of these assumptions
+    YieldToMaturity = 7,
 }
 impl MeasureProto {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -44,6 +55,8 @@ impl MeasureProto {
             MeasureProto::MarketValue => "MARKET_VALUE",
             MeasureProto::UnadjustedCostBasis => "UNADJUSTED_COST_BASIS",
             MeasureProto::AdjustedCostBasis => "ADJUSTED_COST_BASIS",
+            MeasureProto::CurrentYield => "CURRENT_YIELD",
+            MeasureProto::YieldToMaturity => "YIELD_TO_MATURITY",
         }
     }
 }
