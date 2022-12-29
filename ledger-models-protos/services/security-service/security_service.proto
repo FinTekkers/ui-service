@@ -4,6 +4,9 @@ package security_service;
 import "requests/security/security_request.proto";
 import "requests/security/security_response.proto";
 
+option java_generic_services = true;
+option java_package = "common.service";
+
 service Security {
     rpc Execute (security.SecurityRequestProto) returns (security.SecurityResponseProto);
 }

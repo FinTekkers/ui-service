@@ -48,7 +48,7 @@ public final class SecurityRequestProtos {
           common.models.security.SecurityProtos.getDescriptor(),
           common.models.protoUtils.Uuid.getDescriptor(),
           common.models.position.PositionFilterProtos.getDescriptor(),
-          util.Operation.getDescriptor(),
+          common.request.util.Operation.getDescriptor(),
         });
     internal_static_security_SecurityRequestProto_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -59,7 +59,7 @@ public final class SecurityRequestProtos {
     common.models.security.SecurityProtos.getDescriptor();
     common.models.protoUtils.Uuid.getDescriptor();
     common.models.position.PositionFilterProtos.getDescriptor();
-    util.Operation.getDescriptor();
+    common.request.util.Operation.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

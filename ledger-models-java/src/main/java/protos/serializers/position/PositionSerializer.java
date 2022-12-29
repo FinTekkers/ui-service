@@ -3,7 +3,7 @@ package protos.serializers.position;
 import com.google.gson.*;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
-import common.model.protos.FieldProto;
+import common.models.position.FieldProto;
 import common.models.JSONFieldNames;
 import common.models.postion.Field;
 import common.models.postion.Measure;

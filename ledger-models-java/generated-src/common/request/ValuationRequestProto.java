@@ -152,10 +152,10 @@ private static final long serialVersionUID = 0L;
    * <code>.util.RequestOperationTypeProto operation_type = 10;</code>
    * @return The operationType.
    */
-  @java.lang.Override public util.Operation.RequestOperationTypeProto getOperationType() {
+  @java.lang.Override public common.request.util.RequestOperationTypeProto getOperationType() {
     @SuppressWarnings("deprecation")
-    util.Operation.RequestOperationTypeProto result = util.Operation.RequestOperationTypeProto.valueOf(operationType_);
-    return result == null ? util.Operation.RequestOperationTypeProto.UNRECOGNIZED : result;
+    common.request.util.RequestOperationTypeProto result = common.request.util.RequestOperationTypeProto.valueOf(operationType_);
+    return result == null ? common.request.util.RequestOperationTypeProto.UNRECOGNIZED : result;
   }
 
   public static final int MEASURES_FIELD_NUMBER = 30;
@@ -359,7 +359,7 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
     }
-    if (operationType_ != util.Operation.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
+    if (operationType_ != common.request.util.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
       output.writeEnum(10, operationType_);
     }
     if (securityInput_ != null) {
@@ -393,7 +393,7 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
     }
-    if (operationType_ != util.Operation.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
+    if (operationType_ != common.request.util.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(10, operationType_);
     }
@@ -1065,10 +1065,10 @@ private static final long serialVersionUID = 0L;
      * @return The operationType.
      */
     @java.lang.Override
-    public util.Operation.RequestOperationTypeProto getOperationType() {
+    public common.request.util.RequestOperationTypeProto getOperationType() {
       @SuppressWarnings("deprecation")
-      util.Operation.RequestOperationTypeProto result = util.Operation.RequestOperationTypeProto.valueOf(operationType_);
-      return result == null ? util.Operation.RequestOperationTypeProto.UNRECOGNIZED : result;
+      common.request.util.RequestOperationTypeProto result = common.request.util.RequestOperationTypeProto.valueOf(operationType_);
+      return result == null ? common.request.util.RequestOperationTypeProto.UNRECOGNIZED : result;
     }
     /**
      * <pre>
@@ -1080,7 +1080,7 @@ private static final long serialVersionUID = 0L;
      * @param value The operationType to set.
      * @return This builder for chaining.
      */
-    public Builder setOperationType(util.Operation.RequestOperationTypeProto value) {
+    public Builder setOperationType(common.request.util.RequestOperationTypeProto value) {
       if (value == null) {
         throw new NullPointerException();
       }
