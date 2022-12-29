@@ -50,12 +50,12 @@ public final class PositionRequestProtos {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          common.model.protos.FieldProtos.getDescriptor(),
+          common.models.position.FieldProtos.getDescriptor(),
           common.models.position.MeasureProtos.getDescriptor(),
           common.models.position.PositionProtos.getDescriptor(),
           common.models.position.PositionFilterProtos.getDescriptor(),
           common.models.protoUtils.LocalTimestamp.getDescriptor(),
-          util.Operation.getDescriptor(),
+          common.request.util.Operation.getDescriptor(),
         });
     internal_static_position_PositionRequestProto_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -63,12 +63,12 @@ public final class PositionRequestProtos {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_position_PositionRequestProto_descriptor,
         new java.lang.String[] { "ObjectClass", "Version", "OperationType", "PositionType", "PositionView", "Fields", "Measures", "FilterFields", "AsOf", });
-    common.model.protos.FieldProtos.getDescriptor();
+    common.models.position.FieldProtos.getDescriptor();
     common.models.position.MeasureProtos.getDescriptor();
     common.models.position.PositionProtos.getDescriptor();
     common.models.position.PositionFilterProtos.getDescriptor();
     common.models.protoUtils.LocalTimestamp.getDescriptor();
-    util.Operation.getDescriptor();
+    common.request.util.Operation.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
