@@ -40,7 +40,7 @@ public interface PortfolioRequestProtoOrBuilder extends
    * <code>.util.RequestOperationTypeProto operation_type = 10;</code>
    * @return The operationType.
    */
-  util.Operation.RequestOperationTypeProto getOperationType();
+  common.request.util.RequestOperationTypeProto getOperationType();
 
   /**
    * <code>.portfolio.PortfolioProto create_portfolio_input = 20;</code>

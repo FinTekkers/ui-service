@@ -2,7 +2,7 @@ package client.position;
 
 import com.google.gson.*;
 import com.google.protobuf.Any;
-import common.model.protos.FieldProto;
+import common.models.position.FieldProto;
 import common.models.JSONFieldNames;
 import common.models.position.*;
 import common.models.postion.Field;
@@ -13,9 +13,9 @@ import common.models.protoUtils.LocalTimestamp;
 import common.models.security.identifier.IdentifierProto;
 import common.models.security.identifier.IdentifierTypeProto;
 import common.request.PositionRequestProto;
+import common.request.util.RequestOperationTypeProto;
 import protos.serializers.util.json.JsonSerializationUtil;
 import protos.serializers.util.proto.ProtoSerializationUtil;
-import util.Operation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,7 +52,7 @@ public class PositionRequestSerializer {
                 .setVersion("0.0.1")
                 .setPositionType(PositionTypeProto.valueOf(request.getContext().getPositionType().name()))
                 .setPositionView(PositionViewProto.valueOf(request.getContext().getPositionView().name()))
-                .setOperationType(Operation.RequestOperationTypeProto.valueOf(request.getOperation().name()));
+                .setOperationType(RequestOperationTypeProto.valueOf(request.getOperation().name()));
 
         request.getFields().forEach(field -> builder.addFields(FieldProto.valueOf(field.name())));
 
@@ -184,7 +184,7 @@ public class PositionRequestSerializer {
                 .setFilterFields(positionFilterProto)
                 .setPositionType(PositionTypeProto.valueOf(contextMap.get(JSONFieldNames.POSITION_TYPE).getAsString()))
                 .setPositionView(PositionViewProto.valueOf(contextMap.get(JSONFieldNames.POSITION_VIEW).getAsString()))
-                .setOperationType(Operation.RequestOperationTypeProto.valueOf(contextMap.get(JSONFieldNames.OPERATION).getAsString()));
+                .setOperationType(RequestOperationTypeProto.valueOf(contextMap.get(JSONFieldNames.OPERATION).getAsString()));
 
         JsonArray fieldsArray = root.getAsJsonArray(JSONFieldNames.FIELDS);
         fieldsArray.iterator().forEachRemaining(field -> {

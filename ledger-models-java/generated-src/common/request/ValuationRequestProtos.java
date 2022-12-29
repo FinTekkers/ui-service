@@ -50,7 +50,7 @@ public final class ValuationRequestProtos {
           common.models.security.SecurityProtos.getDescriptor(),
           common.models.position.PositionProtos.getDescriptor(),
           common.models.price.PriceProtos.getDescriptor(),
-          util.Operation.getDescriptor(),
+          common.request.util.Operation.getDescriptor(),
           common.models.position.MeasureProtos.getDescriptor(),
         });
     internal_static_valuation_ValuationRequestProto_descriptor =
@@ -62,7 +62,7 @@ public final class ValuationRequestProtos {
     common.models.security.SecurityProtos.getDescriptor();
     common.models.position.PositionProtos.getDescriptor();
     common.models.price.PriceProtos.getDescriptor();
-    util.Operation.getDescriptor();
+    common.request.util.Operation.getDescriptor();
     common.models.position.MeasureProtos.getDescriptor();
   }
 

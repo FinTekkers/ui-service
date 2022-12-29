@@ -40,7 +40,7 @@ public interface TransactionRequestProtoOrBuilder extends
    * <code>.util.RequestOperationTypeProto operation_type = 10;</code>
    * @return The operationType.
    */
-  util.Operation.RequestOperationTypeProto getOperationType();
+  common.request.util.RequestOperationTypeProto getOperationType();
 
   /**
    * <code>.transaction.TransactionProto create_transaction_input = 20;</code>

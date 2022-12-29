@@ -139,10 +139,10 @@ private static final long serialVersionUID = 0L;
    * <code>.util.RequestOperationTypeProto operation_type = 10;</code>
    * @return The operationType.
    */
-  @java.lang.Override public util.Operation.RequestOperationTypeProto getOperationType() {
+  @java.lang.Override public common.request.util.RequestOperationTypeProto getOperationType() {
     @SuppressWarnings("deprecation")
-    util.Operation.RequestOperationTypeProto result = util.Operation.RequestOperationTypeProto.valueOf(operationType_);
-    return result == null ? util.Operation.RequestOperationTypeProto.UNRECOGNIZED : result;
+    common.request.util.RequestOperationTypeProto result = common.request.util.RequestOperationTypeProto.valueOf(operationType_);
+    return result == null ? common.request.util.RequestOperationTypeProto.UNRECOGNIZED : result;
   }
 
   public static final int POSITION_TYPE_FIELD_NUMBER = 20;
@@ -186,13 +186,13 @@ private static final long serialVersionUID = 0L;
   public static final int FIELDS_FIELD_NUMBER = 30;
   private java.util.List<java.lang.Integer> fields_;
   private static final com.google.protobuf.Internal.ListAdapter.Converter<
-      java.lang.Integer, common.model.protos.FieldProto> fields_converter_ =
+      java.lang.Integer, common.models.position.FieldProto> fields_converter_ =
           new com.google.protobuf.Internal.ListAdapter.Converter<
-              java.lang.Integer, common.model.protos.FieldProto>() {
-            public common.model.protos.FieldProto convert(java.lang.Integer from) {
+              java.lang.Integer, common.models.position.FieldProto>() {
+            public common.models.position.FieldProto convert(java.lang.Integer from) {
               @SuppressWarnings("deprecation")
-              common.model.protos.FieldProto result = common.model.protos.FieldProto.valueOf(from);
-              return result == null ? common.model.protos.FieldProto.UNRECOGNIZED : result;
+              common.models.position.FieldProto result = common.models.position.FieldProto.valueOf(from);
+              return result == null ? common.models.position.FieldProto.UNRECOGNIZED : result;
             }
           };
   /**
@@ -200,9 +200,9 @@ private static final long serialVersionUID = 0L;
    * @return A list containing the fields.
    */
   @java.lang.Override
-  public java.util.List<common.model.protos.FieldProto> getFieldsList() {
+  public java.util.List<common.models.position.FieldProto> getFieldsList() {
     return new com.google.protobuf.Internal.ListAdapter<
-        java.lang.Integer, common.model.protos.FieldProto>(fields_, fields_converter_);
+        java.lang.Integer, common.models.position.FieldProto>(fields_, fields_converter_);
   }
   /**
    * <code>repeated .position.FieldProto fields = 30;</code>
@@ -218,7 +218,7 @@ private static final long serialVersionUID = 0L;
    * @return The fields at the given index.
    */
   @java.lang.Override
-  public common.model.protos.FieldProto getFields(int index) {
+  public common.models.position.FieldProto getFields(int index) {
     return fields_converter_.convert(fields_.get(index));
   }
   /**
@@ -372,7 +372,7 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
     }
-    if (operationType_ != util.Operation.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
+    if (operationType_ != common.request.util.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
       output.writeEnum(10, operationType_);
     }
     if (positionType_ != common.models.position.PositionTypeProto.UNKNOWN_POSITION_TYPE.getNumber()) {
@@ -416,7 +416,7 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
     }
-    if (operationType_ != util.Operation.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
+    if (operationType_ != common.request.util.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(10, operationType_);
     }
@@ -1120,17 +1120,17 @@ private static final long serialVersionUID = 0L;
      * @return The operationType.
      */
     @java.lang.Override
-    public util.Operation.RequestOperationTypeProto getOperationType() {
+    public common.request.util.RequestOperationTypeProto getOperationType() {
       @SuppressWarnings("deprecation")
-      util.Operation.RequestOperationTypeProto result = util.Operation.RequestOperationTypeProto.valueOf(operationType_);
-      return result == null ? util.Operation.RequestOperationTypeProto.UNRECOGNIZED : result;
+      common.request.util.RequestOperationTypeProto result = common.request.util.RequestOperationTypeProto.valueOf(operationType_);
+      return result == null ? common.request.util.RequestOperationTypeProto.UNRECOGNIZED : result;
     }
     /**
      * <code>.util.RequestOperationTypeProto operation_type = 10;</code>
      * @param value The operationType to set.
      * @return This builder for chaining.
      */
-    public Builder setOperationType(util.Operation.RequestOperationTypeProto value) {
+    public Builder setOperationType(common.request.util.RequestOperationTypeProto value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -1270,9 +1270,9 @@ private static final long serialVersionUID = 0L;
      * <code>repeated .position.FieldProto fields = 30;</code>
      * @return A list containing the fields.
      */
-    public java.util.List<common.model.protos.FieldProto> getFieldsList() {
+    public java.util.List<common.models.position.FieldProto> getFieldsList() {
       return new com.google.protobuf.Internal.ListAdapter<
-          java.lang.Integer, common.model.protos.FieldProto>(fields_, fields_converter_);
+          java.lang.Integer, common.models.position.FieldProto>(fields_, fields_converter_);
     }
     /**
      * <code>repeated .position.FieldProto fields = 30;</code>
@@ -1286,7 +1286,7 @@ private static final long serialVersionUID = 0L;
      * @param index The index of the element to return.
      * @return The fields at the given index.
      */
-    public common.model.protos.FieldProto getFields(int index) {
+    public common.models.position.FieldProto getFields(int index) {
       return fields_converter_.convert(fields_.get(index));
     }
     /**
@@ -1296,7 +1296,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setFields(
-        int index, common.model.protos.FieldProto value) {
+        int index, common.models.position.FieldProto value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -1310,7 +1310,7 @@ private static final long serialVersionUID = 0L;
      * @param value The fields to add.
      * @return This builder for chaining.
      */
-    public Builder addFields(common.model.protos.FieldProto value) {
+    public Builder addFields(common.models.position.FieldProto value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -1325,9 +1325,9 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder addAllFields(
-        java.lang.Iterable<? extends common.model.protos.FieldProto> values) {
+        java.lang.Iterable<? extends common.models.position.FieldProto> values) {
       ensureFieldsIsMutable();
-      for (common.model.protos.FieldProto value : values) {
+      for (common.models.position.FieldProto value : values) {
         fields_.add(value.getNumber());
       }
       onChanged();

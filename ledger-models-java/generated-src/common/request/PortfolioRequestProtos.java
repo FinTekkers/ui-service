@@ -47,7 +47,7 @@ public final class PortfolioRequestProtos {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           common.models.portfolio.PortfolioProtos.getDescriptor(),
           common.models.protoUtils.Uuid.getDescriptor(),
-          util.Operation.getDescriptor(),
+          common.request.util.Operation.getDescriptor(),
           common.models.position.PositionFilterProtos.getDescriptor(),
         });
     internal_static_portfolio_PortfolioRequestProto_descriptor =
@@ -58,7 +58,7 @@ public final class PortfolioRequestProtos {
         new java.lang.String[] { "ObjectClass", "Version", "OperationType", "CreatePortfolioInput", "Uuids", "SearchPortfolioInput", });
     common.models.portfolio.PortfolioProtos.getDescriptor();
     common.models.protoUtils.Uuid.getDescriptor();
-    util.Operation.getDescriptor();
+    common.request.util.Operation.getDescriptor();
     common.models.position.PositionFilterProtos.getDescriptor();
   }
 
