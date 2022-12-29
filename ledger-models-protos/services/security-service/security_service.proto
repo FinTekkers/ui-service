@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package security_service;
+import "requests/security/security_request.proto";
+import "requests/security/security_response.proto";
+
+service Security {
+    rpc Execute (security.SecurityRequestProto) returns (security.SecurityResponseProto);
+}
