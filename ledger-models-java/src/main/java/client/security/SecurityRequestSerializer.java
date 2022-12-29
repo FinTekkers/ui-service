@@ -12,9 +12,9 @@ import common.models.security.Security;
 import common.models.security.SecurityProto;
 import common.request.SecurityRequestProto;
 import common.request.TransactionRequestProto;
+import common.request.util.RequestOperationTypeProto;
 import protos.serializers.security.SecuritySerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
-import util.Operation;
 
 ;
 
@@ -36,7 +36,7 @@ public class SecurityRequestSerializer {
         SecurityRequestProto.Builder builder = SecurityRequestProto.newBuilder()
                 .setObjectClass(PositionRequest.class.getSimpleName())
                 .setVersion("0.0.1")
-                .setOperationType(Operation.RequestOperationTypeProto.valueOf(request.getOperation().name()));
+                .setOperationType(RequestOperationTypeProto.valueOf(request.getOperation().name()));
 
         Security transaction = request.getSecurity();
         SecurityProto securityProto = SecuritySerializer.getInstance().serialize(transaction);
@@ -82,8 +82,8 @@ public class SecurityRequestSerializer {
 
         SecurityRequest.Operation operation =
                 SecurityRequest.Operation.valueOf(contextMap.get(JSONFieldNames.OPERATION).getAsString());
-        Operation.RequestOperationTypeProto operationType =
-                Operation.RequestOperationTypeProto.valueOf(contextMap.get(JSONFieldNames.OPERATION).getAsString());
+        RequestOperationTypeProto operationType =
+                RequestOperationTypeProto.valueOf(contextMap.get(JSONFieldNames.OPERATION).getAsString());
 
         SecurityRequestProto.Builder builder = SecurityRequestProto.newBuilder();
 

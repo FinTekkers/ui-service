@@ -58,7 +58,7 @@ public final class PositionUtilProtos {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           com.google.protobuf.AnyProto.getDescriptor(),
-          common.model.protos.FieldProtos.getDescriptor(),
+          common.models.position.FieldProtos.getDescriptor(),
           common.models.position.MeasureProtos.getDescriptor(),
           common.models.security.identifier.IdentifierProtos.getDescriptor(),
           common.models.protoUtils.DecimalValue.getDescriptor(),
@@ -76,7 +76,7 @@ public final class PositionUtilProtos {
         internal_static_position_FieldMapEntry_descriptor,
         new java.lang.String[] { "Field", "FieldValuePacked", "EnumValue", "Identifier", "Operator", "FieldMapValueOneOf", });
     com.google.protobuf.AnyProto.getDescriptor();
-    common.model.protos.FieldProtos.getDescriptor();
+    common.models.position.FieldProtos.getDescriptor();
     common.models.position.MeasureProtos.getDescriptor();
     common.models.security.identifier.IdentifierProtos.getDescriptor();
     common.models.protoUtils.DecimalValue.getDescriptor();

@@ -16,7 +16,7 @@ public interface FieldMapEntryOrBuilder extends
    * <code>.position.FieldProto field = 1;</code>
    * @return The field.
    */
-  common.model.protos.FieldProto getField();
+  common.models.position.FieldProto getField();
 
   /**
    * <code>.google.protobuf.Any field_value_packed = 4;</code>

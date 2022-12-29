@@ -13,9 +13,9 @@ import common.models.postion.PositionFilter;
 import common.models.transaction.Transaction;
 import common.request.PortfolioRequestProto;
 import common.request.TransactionRequestProto;
+import common.request.util.RequestOperationTypeProto;
 import protos.serializers.portfolio.PortfolioSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
-import util.Operation;
 
 /**
  * Serializes and deserializes position requests
@@ -36,7 +36,7 @@ public class PortfolioRequestSerializer {
         PortfolioRequestProto.Builder builder = PortfolioRequestProto.newBuilder()
                 .setObjectClass(PortfolioRequest.class.getSimpleName())
                 .setVersion("0.0.1")
-                .setOperationType(Operation.RequestOperationTypeProto.valueOf(request.getOperation().name()));
+                .setOperationType(RequestOperationTypeProto.valueOf(request.getOperation().name()));
 
         Portfolio portfolio = request.getPortfolio();
         PortfolioProto PortfolioProto = PortfolioSerializer.getInstance().serialize(portfolio);
@@ -83,8 +83,8 @@ public class PortfolioRequestSerializer {
 
         final PortfolioRequest.Operation operation =
                 PortfolioRequest.Operation.valueOf(contextMap.get(JSONFieldNames.OPERATION).getAsString());
-        final Operation.RequestOperationTypeProto operationType =
-                Operation.RequestOperationTypeProto.valueOf(contextMap.get(JSONFieldNames.OPERATION).getAsString());
+        final RequestOperationTypeProto operationType =
+                RequestOperationTypeProto.valueOf(contextMap.get(JSONFieldNames.OPERATION).getAsString());
 
         builder.setObjectClass(PortfolioRequest.class.getSimpleName())
                 .setVersion("0.0.1")

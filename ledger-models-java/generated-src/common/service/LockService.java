@@ -27,8 +27,8 @@ public final class LockService {
        */
       public abstract void claimLock(
           com.google.protobuf.RpcController controller,
-          common.util.lock.LockRequestProto request,
-          com.google.protobuf.RpcCallback<common.util.lock.LockResponseProto> done);
+          common.request.lock.LockRequestProto request,
+          com.google.protobuf.RpcCallback<common.request.lock.LockResponseProto> done);
 
     }
 
@@ -38,8 +38,8 @@ public final class LockService {
         @java.lang.Override
         public  void claimLock(
             com.google.protobuf.RpcController controller,
-            common.util.lock.LockRequestProto request,
-            com.google.protobuf.RpcCallback<common.util.lock.LockResponseProto> done) {
+            common.request.lock.LockRequestProto request,
+            com.google.protobuf.RpcCallback<common.request.lock.LockResponseProto> done) {
           impl.claimLock(controller, request, done);
         }
 
@@ -66,7 +66,7 @@ public final class LockService {
           }
           switch(method.getIndex()) {
             case 0:
-              return impl.claimLock(controller, (common.util.lock.LockRequestProto)request);
+              return impl.claimLock(controller, (common.request.lock.LockRequestProto)request);
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -82,7 +82,7 @@ public final class LockService {
           }
           switch(method.getIndex()) {
             case 0:
-              return common.util.lock.LockRequestProto.getDefaultInstance();
+              return common.request.lock.LockRequestProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -98,7 +98,7 @@ public final class LockService {
           }
           switch(method.getIndex()) {
             case 0:
-              return common.util.lock.LockResponseProto.getDefaultInstance();
+              return common.request.lock.LockResponseProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -112,8 +112,8 @@ public final class LockService {
      */
     public abstract void claimLock(
         com.google.protobuf.RpcController controller,
-        common.util.lock.LockRequestProto request,
-        com.google.protobuf.RpcCallback<common.util.lock.LockResponseProto> done);
+        common.request.lock.LockRequestProto request,
+        com.google.protobuf.RpcCallback<common.request.lock.LockResponseProto> done);
 
     public static final
         com.google.protobuf.Descriptors.ServiceDescriptor
@@ -138,8 +138,8 @@ public final class LockService {
       }
       switch(method.getIndex()) {
         case 0:
-          this.claimLock(controller, (common.util.lock.LockRequestProto)request,
-            com.google.protobuf.RpcUtil.<common.util.lock.LockResponseProto>specializeCallback(
+          this.claimLock(controller, (common.request.lock.LockRequestProto)request,
+            com.google.protobuf.RpcUtil.<common.request.lock.LockResponseProto>specializeCallback(
               done));
           return;
         default:
@@ -157,7 +157,7 @@ public final class LockService {
       }
       switch(method.getIndex()) {
         case 0:
-          return common.util.lock.LockRequestProto.getDefaultInstance();
+          return common.request.lock.LockRequestProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -173,7 +173,7 @@ public final class LockService {
       }
       switch(method.getIndex()) {
         case 0:
-          return common.util.lock.LockResponseProto.getDefaultInstance();
+          return common.request.lock.LockResponseProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -197,17 +197,17 @@ public final class LockService {
 
       public  void claimLock(
           com.google.protobuf.RpcController controller,
-          common.util.lock.LockRequestProto request,
-          com.google.protobuf.RpcCallback<common.util.lock.LockResponseProto> done) {
+          common.request.lock.LockRequestProto request,
+          com.google.protobuf.RpcCallback<common.request.lock.LockResponseProto> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(0),
           controller,
           request,
-          common.util.lock.LockResponseProto.getDefaultInstance(),
+          common.request.lock.LockResponseProto.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            common.util.lock.LockResponseProto.class,
-            common.util.lock.LockResponseProto.getDefaultInstance()));
+            common.request.lock.LockResponseProto.class,
+            common.request.lock.LockResponseProto.getDefaultInstance()));
       }
     }
 
@@ -217,9 +217,9 @@ public final class LockService {
     }
 
     public interface BlockingInterface {
-      public common.util.lock.LockResponseProto claimLock(
+      public common.request.lock.LockResponseProto claimLock(
           com.google.protobuf.RpcController controller,
-          common.util.lock.LockRequestProto request)
+          common.request.lock.LockRequestProto request)
           throws com.google.protobuf.ServiceException;
     }
 
@@ -230,15 +230,15 @@ public final class LockService {
 
       private final com.google.protobuf.BlockingRpcChannel channel;
 
-      public common.util.lock.LockResponseProto claimLock(
+      public common.request.lock.LockResponseProto claimLock(
           com.google.protobuf.RpcController controller,
-          common.util.lock.LockRequestProto request)
+          common.request.lock.LockRequestProto request)
           throws com.google.protobuf.ServiceException {
-        return (common.util.lock.LockResponseProto) channel.callBlockingMethod(
+        return (common.request.lock.LockResponseProto) channel.callBlockingMethod(
           getDescriptor().getMethods().get(0),
           controller,
           request,
-          common.util.lock.LockResponseProto.getDefaultInstance());
+          common.request.lock.LockResponseProto.getDefaultInstance());
       }
 
     }
@@ -266,11 +266,11 @@ public final class LockService {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          common.util.lock.LockRequestProtos.getDescriptor(),
-          common.util.lock.LockResponseProtos.getDescriptor(),
+          common.request.lock.LockRequestProtos.getDescriptor(),
+          common.request.lock.LockResponseProtos.getDescriptor(),
         });
-    common.util.lock.LockRequestProtos.getDescriptor();
-    common.util.lock.LockResponseProtos.getDescriptor();
+    common.request.lock.LockRequestProtos.getDescriptor();
+    common.request.lock.LockResponseProtos.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

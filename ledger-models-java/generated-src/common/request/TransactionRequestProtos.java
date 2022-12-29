@@ -48,7 +48,7 @@ public final class TransactionRequestProtos {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           common.models.transaction.TransactionProtos.getDescriptor(),
           common.models.protoUtils.Uuid.getDescriptor(),
-          util.Operation.getDescriptor(),
+          common.request.util.Operation.getDescriptor(),
           common.models.position.PositionFilterProtos.getDescriptor(),
         });
     internal_static_transaction_TransactionRequestProto_descriptor =
@@ -59,7 +59,7 @@ public final class TransactionRequestProtos {
         new java.lang.String[] { "ObjectClass", "Version", "OperationType", "CreateTransactionInput", "Uuids", "SearchTransactionInput", });
     common.models.transaction.TransactionProtos.getDescriptor();
     common.models.protoUtils.Uuid.getDescriptor();
-    util.Operation.getDescriptor();
+    common.request.util.Operation.getDescriptor();
     common.models.position.PositionFilterProtos.getDescriptor();
   }
 
