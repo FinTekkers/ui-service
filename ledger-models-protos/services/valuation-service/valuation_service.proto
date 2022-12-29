@@ -4,6 +4,9 @@ package valuation_service;
 import "requests/valuation/valuation_request.proto";
 import "requests/valuation/valuation_response.proto";
 
+option java_generic_services = true;
+option java_package = "common.service";
+
 service Valuation {
     rpc RunValuation (valuation.ValuationRequestProto) returns (valuation.ValuationResponseProto);
 }
