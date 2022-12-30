@@ -110,14 +110,16 @@ protobuf {
     protoc {
         //Need to specify the specific build version as GPRC
         //not compiled for native M1 chips
-        artifact = 'com.google.protobuf:protoc:3.14.0:osx-x86_64'
+        artifact = 'com.google.protobuf:protoc:3.14.0'
+//        artifact = 'com.google.protobuf:protoc:3.14.0:osx-x86_64'
     }
 
     generatedFilesBaseDir = 'generated-src'
 
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}:osx-x86_64"
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+//            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}:osx-x86_64"
         }
     }
     generateProtoTasks {
