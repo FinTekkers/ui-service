@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package util.errors;
+
+import "requests/util/errors/error.proto";
+
+//GRPC error codes are used to indicate if there was any substantial issue. They cover situations
+//like OK, Cancelled, AlreadyExists, InvalidArgument, ResourceExhausted, Unauthenticated, etc.
+//Ideally Fintekkers will not introduce another concept on top of that to avoid complicating the
+//solution.
+//
+//If there are any errors, the GRPC response should not return OK (code=0).
+//Warnings may be returned at any time, and may be done even with successful responses.
+message Summary {
+  repeated Error errors = 1;
+  repeated Warning warnings = 2;
+}

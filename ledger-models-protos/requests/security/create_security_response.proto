@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package security;
+
+import "models/security/security.proto";
+import "requests/security/create_security_request.proto";
+
+option java_multiple_files = true;
+option java_package = "common.request";
+option java_outer_classname = "CreateSecurityResponseProtos";
+
+message CreateSecurityResponseProto {
+  string object_class = 1;
+  string version = 2;
+
+  //The input that was provided for this request.
+  repeated security.CreateSecurityRequestProto security_request = 20;
+
+  //The security (or securities) that were created in response to this request
+  repeated security.SecurityProto security_response = 30;
+}
+
+

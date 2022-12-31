@@ -67,13 +67,13 @@ pub mod security_client {
             self.inner = self.inner.accept_compressed(encoding);
             self
         }
-        pub async fn execute(
+        pub async fn create_or_update(
             &mut self,
             request: impl tonic::IntoRequest<
-                super::super::security::SecurityRequestProto,
+                super::super::security::CreateSecurityRequestProto,
             >,
         ) -> Result<
-            tonic::Response<super::super::security::SecurityResponseProto>,
+            tonic::Response<super::super::security::CreateSecurityResponseProto>,
             tonic::Status,
         > {
             self.inner
@@ -87,7 +87,127 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/security_service.Security/Execute",
+                "/security_service.Security/CreateOrUpdate",
+            );
+            self.inner.unary(request.into_request(), path, codec).await
+        }
+        pub async fn get_by_i_ds(
+            &mut self,
+            request: impl tonic::IntoRequest<
+                super::super::security::QuerySecurityRequestProto,
+            >,
+        ) -> Result<
+            tonic::Response<super::super::security::QuerySecurityResponseProto>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/security_service.Security/GetByIDs",
+            );
+            self.inner.unary(request.into_request(), path, codec).await
+        }
+        pub async fn search(
+            &mut self,
+            request: impl tonic::IntoRequest<
+                super::super::security::QuerySecurityRequestProto,
+            >,
+        ) -> Result<
+            tonic::Response<super::super::security::QuerySecurityResponseProto>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/security_service.Security/Search",
+            );
+            self.inner.unary(request.into_request(), path, codec).await
+        }
+        pub async fn list_i_ds(
+            &mut self,
+            request: impl tonic::IntoRequest<
+                super::super::security::QuerySecurityRequestProto,
+            >,
+        ) -> Result<
+            tonic::Response<super::super::security::QuerySecurityResponseProto>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/security_service.Security/ListIDs",
+            );
+            self.inner.unary(request.into_request(), path, codec).await
+        }
+        pub async fn validate_create_or_update(
+            &mut self,
+            request: impl tonic::IntoRequest<
+                super::super::security::QuerySecurityRequestProto,
+            >,
+        ) -> Result<
+            tonic::Response<super::super::util::errors::Summary>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/security_service.Security/ValidateCreateOrUpdate",
+            );
+            self.inner.unary(request.into_request(), path, codec).await
+        }
+        pub async fn validate_query_request(
+            &mut self,
+            request: impl tonic::IntoRequest<
+                super::super::security::QuerySecurityRequestProto,
+            >,
+        ) -> Result<
+            tonic::Response<super::super::util::errors::Summary>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/security_service.Security/ValidateQueryRequest",
             );
             self.inner.unary(request.into_request(), path, codec).await
         }
@@ -100,13 +220,42 @@ pub mod security_server {
     /// Generated trait containing gRPC methods that should be implemented for use with SecurityServer.
     #[async_trait]
     pub trait Security: Send + Sync + 'static {
-        async fn execute(
+        async fn create_or_update(
             &self,
-            request: tonic::Request<super::super::security::SecurityRequestProto>,
+            request: tonic::Request<super::super::security::CreateSecurityRequestProto>,
         ) -> Result<
-            tonic::Response<super::super::security::SecurityResponseProto>,
+            tonic::Response<super::super::security::CreateSecurityResponseProto>,
             tonic::Status,
         >;
+        async fn get_by_i_ds(
+            &self,
+            request: tonic::Request<super::super::security::QuerySecurityRequestProto>,
+        ) -> Result<
+            tonic::Response<super::super::security::QuerySecurityResponseProto>,
+            tonic::Status,
+        >;
+        async fn search(
+            &self,
+            request: tonic::Request<super::super::security::QuerySecurityRequestProto>,
+        ) -> Result<
+            tonic::Response<super::super::security::QuerySecurityResponseProto>,
+            tonic::Status,
+        >;
+        async fn list_i_ds(
+            &self,
+            request: tonic::Request<super::super::security::QuerySecurityRequestProto>,
+        ) -> Result<
+            tonic::Response<super::super::security::QuerySecurityResponseProto>,
+            tonic::Status,
+        >;
+        async fn validate_create_or_update(
+            &self,
+            request: tonic::Request<super::super::security::QuerySecurityRequestProto>,
+        ) -> Result<tonic::Response<super::super::util::errors::Summary>, tonic::Status>;
+        async fn validate_query_request(
+            &self,
+            request: tonic::Request<super::super::security::QuerySecurityRequestProto>,
+        ) -> Result<tonic::Response<super::super::util::errors::Summary>, tonic::Status>;
     }
     #[derive(Debug)]
     pub struct SecurityServer<T: Security> {
@@ -167,15 +316,15 @@ pub mod security_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/security_service.Security/Execute" => {
+                "/security_service.Security/CreateOrUpdate" => {
                     #[allow(non_camel_case_types)]
-                    struct ExecuteSvc<T: Security>(pub Arc<T>);
+                    struct CreateOrUpdateSvc<T: Security>(pub Arc<T>);
                     impl<
                         T: Security,
                     > tonic::server::UnaryService<
-                        super::super::security::SecurityRequestProto,
-                    > for ExecuteSvc<T> {
-                        type Response = super::super::security::SecurityResponseProto;
+                        super::super::security::CreateSecurityRequestProto,
+                    > for CreateOrUpdateSvc<T> {
+                        type Response = super::super::security::CreateSecurityResponseProto;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
@@ -183,11 +332,13 @@ pub mod security_server {
                         fn call(
                             &mut self,
                             request: tonic::Request<
-                                super::super::security::SecurityRequestProto,
+                                super::super::security::CreateSecurityRequestProto,
                             >,
                         ) -> Self::Future {
                             let inner = self.0.clone();
-                            let fut = async move { (*inner).execute(request).await };
+                            let fut = async move {
+                                (*inner).create_or_update(request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -196,7 +347,216 @@ pub mod security_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = ExecuteSvc(inner);
+                        let method = CreateOrUpdateSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/security_service.Security/GetByIDs" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetByIDsSvc<T: Security>(pub Arc<T>);
+                    impl<
+                        T: Security,
+                    > tonic::server::UnaryService<
+                        super::super::security::QuerySecurityRequestProto,
+                    > for GetByIDsSvc<T> {
+                        type Response = super::super::security::QuerySecurityResponseProto;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::security::QuerySecurityRequestProto,
+                            >,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).get_by_i_ds(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = GetByIDsSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/security_service.Security/Search" => {
+                    #[allow(non_camel_case_types)]
+                    struct SearchSvc<T: Security>(pub Arc<T>);
+                    impl<
+                        T: Security,
+                    > tonic::server::UnaryService<
+                        super::super::security::QuerySecurityRequestProto,
+                    > for SearchSvc<T> {
+                        type Response = super::super::security::QuerySecurityResponseProto;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::security::QuerySecurityRequestProto,
+                            >,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).search(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = SearchSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/security_service.Security/ListIDs" => {
+                    #[allow(non_camel_case_types)]
+                    struct ListIDsSvc<T: Security>(pub Arc<T>);
+                    impl<
+                        T: Security,
+                    > tonic::server::UnaryService<
+                        super::super::security::QuerySecurityRequestProto,
+                    > for ListIDsSvc<T> {
+                        type Response = super::super::security::QuerySecurityResponseProto;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::security::QuerySecurityRequestProto,
+                            >,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move { (*inner).list_i_ds(request).await };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ListIDsSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/security_service.Security/ValidateCreateOrUpdate" => {
+                    #[allow(non_camel_case_types)]
+                    struct ValidateCreateOrUpdateSvc<T: Security>(pub Arc<T>);
+                    impl<
+                        T: Security,
+                    > tonic::server::UnaryService<
+                        super::super::security::QuerySecurityRequestProto,
+                    > for ValidateCreateOrUpdateSvc<T> {
+                        type Response = super::super::util::errors::Summary;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::security::QuerySecurityRequestProto,
+                            >,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move {
+                                (*inner).validate_create_or_update(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ValidateCreateOrUpdateSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/security_service.Security/ValidateQueryRequest" => {
+                    #[allow(non_camel_case_types)]
+                    struct ValidateQueryRequestSvc<T: Security>(pub Arc<T>);
+                    impl<
+                        T: Security,
+                    > tonic::server::UnaryService<
+                        super::super::security::QuerySecurityRequestProto,
+                    > for ValidateQueryRequestSvc<T> {
+                        type Response = super::super::util::errors::Summary;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::security::QuerySecurityRequestProto,
+                            >,
+                        ) -> Self::Future {
+                            let inner = self.0.clone();
+                            let fut = async move {
+                                (*inner).validate_query_request(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ValidateQueryRequestSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package util.errors;
+
+import "requests/util/errors/message.proto";
+
+//Error codes are defined to allow clients to programmatically
+//respond to issues. The bar for creating a new error code should
+//be that the
+enum ErrorCode {
+  UNKNOWN_ERROR = 0;
+  WARNING = 1;
+  //TO THINK ABOUT
+}
+
+//An error is used for situations where a request cannot be processed successfully, either
+//from a technical perspective or a business perspective.
+message Error {
+  ErrorCode code = 1;
+  Message detail = 2;
+}
+
+//Warnings can have error codes, if it is useful in categorizing the severity of the warning.
+//For example a warning may be thrown if 2 securities are created with the same identifier.
+//Another example may be usage of a deprecated API.
+message Warning {
+  ErrorCode code = 1;
+  Message detail = 2;
+}
