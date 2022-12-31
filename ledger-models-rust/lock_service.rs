@@ -1,13 +1,13 @@
 /// Generated client implementations.
-pub mod valuation_client {
+pub mod lock_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
-    pub struct ValuationClient<T> {
+    pub struct LockClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl ValuationClient<tonic::transport::Channel> {
+    impl LockClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -18,7 +18,7 @@ pub mod valuation_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> ValuationClient<T>
+    impl<T> LockClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
@@ -36,7 +36,7 @@ pub mod valuation_client {
         pub fn with_interceptor<F>(
             inner: T,
             interceptor: F,
-        ) -> ValuationClient<InterceptedService<T, F>>
+        ) -> LockClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
@@ -50,7 +50,7 @@ pub mod valuation_client {
                 http::Request<tonic::body::BoxBody>,
             >>::Error: Into<StdError> + Send + Sync,
         {
-            ValuationClient::new(InterceptedService::new(inner, interceptor))
+            LockClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -85,19 +85,19 @@ pub mod valuation_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/lock_service.Valuation/ClaimLock",
+                "/lock_service.Lock/ClaimLock",
             );
             self.inner.unary(request.into_request(), path, codec).await
         }
     }
 }
 /// Generated server implementations.
-pub mod valuation_server {
+pub mod lock_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    /// Generated trait containing gRPC methods that should be implemented for use with ValuationServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with LockServer.
     #[async_trait]
-    pub trait Valuation: Send + Sync + 'static {
+    pub trait Lock: Send + Sync + 'static {
         async fn claim_lock(
             &self,
             request: tonic::Request<super::super::util::lock::LockRequestProto>,
@@ -107,13 +107,13 @@ pub mod valuation_server {
         >;
     }
     #[derive(Debug)]
-    pub struct ValuationServer<T: Valuation> {
+    pub struct LockServer<T: Lock> {
         inner: _Inner<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
     }
     struct _Inner<T>(Arc<T>);
-    impl<T: Valuation> ValuationServer<T> {
+    impl<T: Lock> LockServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
@@ -147,9 +147,9 @@ pub mod valuation_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for ValuationServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for LockServer<T>
     where
-        T: Valuation,
+        T: Lock,
         B: Body + Send + 'static,
         B::Error: Into<StdError> + Send + 'static,
     {
@@ -165,11 +165,11 @@ pub mod valuation_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/lock_service.Valuation/ClaimLock" => {
+                "/lock_service.Lock/ClaimLock" => {
                     #[allow(non_camel_case_types)]
-                    struct ClaimLockSvc<T: Valuation>(pub Arc<T>);
+                    struct ClaimLockSvc<T: Lock>(pub Arc<T>);
                     impl<
-                        T: Valuation,
+                        T: Lock,
                     > tonic::server::UnaryService<
                         super::super::util::lock::LockRequestProto,
                     > for ClaimLockSvc<T> {
@@ -221,7 +221,7 @@ pub mod valuation_server {
             }
         }
     }
-    impl<T: Valuation> Clone for ValuationServer<T> {
+    impl<T: Lock> Clone for LockServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -231,7 +231,7 @@ pub mod valuation_server {
             }
         }
     }
-    impl<T: Valuation> Clone for _Inner<T> {
+    impl<T: Lock> Clone for _Inner<T> {
         fn clone(&self) -> Self {
             Self(self.0.clone())
         }
@@ -241,7 +241,7 @@ pub mod valuation_server {
             write!(f, "{:?}", self.0)
         }
     }
-    impl<T: Valuation> tonic::server::NamedService for ValuationServer<T> {
-        const NAME: &'static str = "lock_service.Valuation";
+    impl<T: Lock> tonic::server::NamedService for LockServer<T> {
+        const NAME: &'static str = "lock_service.Lock";
     }
 }
