@@ -5,8 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import common.models.JSONFieldNames;
 import common.models.security.Security;
-import common.request.SecurityRequestProto;
-import common.request.SecurityResponseProto;
+import common.request.CreateSecurityRequestProto;
+import common.request.CreateSecurityResponseProto;
 import protos.serializers.security.SecuritySerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
 
@@ -23,14 +23,12 @@ public class SecurityResponseSerializer {
 
     private SecurityResponseSerializer() {}
 
-    public SecurityResponseProto serialize(List<Security> securities, SecurityRequestProto request) {
-        SecurityResponseProto.Builder builder = SecurityResponseProto.newBuilder();
-        builder
-                .setObjectClass("SecurityResponse")
-                .setVersion("0.0.1");
+    public CreateSecurityResponseProto serialize(List<Security> securities, CreateSecurityRequestProto request) {
+        CreateSecurityResponseProto.Builder builder = CreateSecurityResponseProto.newBuilder();
+        builder.setObjectClass("SecurityResponse").setVersion("0.0.1");
 
         if(request != null)
-            builder.setCreateSecurityRequest(request);
+            builder.addSecurityRequest(request);
 
         SecuritySerializer securitySerializer = SecuritySerializer.getInstance();
         securities.forEach(security ->
@@ -40,7 +38,7 @@ public class SecurityResponseSerializer {
         return builder.build();
     }
 
-    public String serializeToJson(SecurityResponseProto proto) {
+    public String serializeToJson(CreateSecurityResponseProto proto) {
         Gson gson = JsonSerializationUtil.getGsonBuilder();
 
         JsonObject rootMap = new JsonObject();

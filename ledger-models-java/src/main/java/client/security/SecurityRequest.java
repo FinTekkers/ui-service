@@ -4,13 +4,8 @@ import common.models.postion.PositionFilter;
 import common.models.security.Security;
 
 public class SecurityRequest {
-    public enum Operation {
-      VALIDATE, CREATE, GET, SEARCH,
-    }
-
     public SecurityRequest() {}
 
-    private Operation operation;
     private PositionFilter filter;
     private Security security;
 
@@ -20,14 +15,6 @@ public class SecurityRequest {
 
     public Security getSecurity() {
         return security;
-    }
-
-    public Operation getOperation() {
-        return operation;
-    }
-
-    public void setOperation(Operation operation) {
-        this.operation = operation;
     }
 
     public PositionFilter getFilter() {
