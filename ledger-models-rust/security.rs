@@ -218,31 +218,66 @@ pub struct TenorProto {
     #[prost(enumeration = "TenorTypeProto", tag = "6")]
     pub tenor_type: i32,
 }
+/// A request to allow clients to find existing securities.
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct SecurityRequestProto {
+pub struct QuerySecurityRequestProto {
     #[prost(string, tag = "1")]
     pub object_class: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub version: ::prost::alloc::string::String,
-    #[prost(enumeration = "super::util::RequestOperationTypeProto", tag = "10")]
-    pub operation_type: i32,
-    #[prost(message, optional, tag = "20")]
-    pub create_security_input: ::core::option::Option<SecurityProto>,
+    /// The list of UUIDs to return
     #[prost(message, repeated, tag = "21")]
     pub uuids: ::prost::alloc::vec::Vec<super::util::UuidProto>,
+    /// A list of position filters that will filter securities that match.
     #[prost(message, optional, tag = "22")]
     pub search_security_input: ::core::option::Option<
         super::position::PositionFilterProto,
     >,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct SecurityResponseProto {
+pub struct QuerySecurityResponseProto {
     #[prost(string, tag = "1")]
     pub object_class: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub version: ::prost::alloc::string::String,
+    /// The input that was provided for this request.
     #[prost(message, optional, tag = "20")]
-    pub create_security_request: ::core::option::Option<SecurityRequestProto>,
+    pub query_security_input: ::core::option::Option<QuerySecurityRequestProto>,
+    /// The security (or securities) that was matched by this request.
+    #[prost(message, repeated, tag = "30")]
+    pub security_response: ::prost::alloc::vec::Vec<SecurityProto>,
+}
+/// Use this request to create or update securities. Uniqueness is guaranteed via the UUID.
+/// Security identifiers do not guarantee uniqueness. As an example a bond ISIN or stock ticker
+/// may be re-used over time. Therefore if you send 2 requests with the same security identifier
+/// you will create two securities. In order to avoid duplication you should either re-use the UUID
+/// when calling the API, in which case an update will be applied. If you do not know the UUID, you
+/// should first do a search operation.
+///
+/// It is preferred that the client generates the UUID. This will avoid issues in the network leading
+/// to duplicate securities.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateSecurityRequestProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    /// A fully formed security object to be created or updated. Validations may be applied
+    /// before creating. For example creating an equity security with bond fields may be invalid and
+    /// therefore rejected.
+    #[prost(message, optional, tag = "20")]
+    pub security_input: ::core::option::Option<SecurityProto>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateSecurityResponseProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    /// The input that was provided for this request.
+    #[prost(message, repeated, tag = "20")]
+    pub security_request: ::prost::alloc::vec::Vec<CreateSecurityRequestProto>,
+    /// The security (or securities) that were created in response to this request
     #[prost(message, repeated, tag = "30")]
     pub security_response: ::prost::alloc::vec::Vec<SecurityProto>,
 }

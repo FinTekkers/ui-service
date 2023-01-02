@@ -15,35 +15,190 @@ public final class SecurityGrpc {
   public static final String SERVICE_NAME = "security_service.Security";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<common.request.SecurityRequestProto,
-      common.request.SecurityResponseProto> getExecuteMethod;
+  private static volatile io.grpc.MethodDescriptor<common.request.CreateSecurityRequestProto,
+      common.request.CreateSecurityResponseProto> getCreateOrUpdateMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "Execute",
-      requestType = common.request.SecurityRequestProto.class,
-      responseType = common.request.SecurityResponseProto.class,
+      fullMethodName = SERVICE_NAME + '/' + "CreateOrUpdate",
+      requestType = common.request.CreateSecurityRequestProto.class,
+      responseType = common.request.CreateSecurityResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<common.request.SecurityRequestProto,
-      common.request.SecurityResponseProto> getExecuteMethod() {
-    io.grpc.MethodDescriptor<common.request.SecurityRequestProto, common.request.SecurityResponseProto> getExecuteMethod;
-    if ((getExecuteMethod = SecurityGrpc.getExecuteMethod) == null) {
+  public static io.grpc.MethodDescriptor<common.request.CreateSecurityRequestProto,
+      common.request.CreateSecurityResponseProto> getCreateOrUpdateMethod() {
+    io.grpc.MethodDescriptor<common.request.CreateSecurityRequestProto, common.request.CreateSecurityResponseProto> getCreateOrUpdateMethod;
+    if ((getCreateOrUpdateMethod = SecurityGrpc.getCreateOrUpdateMethod) == null) {
       synchronized (SecurityGrpc.class) {
-        if ((getExecuteMethod = SecurityGrpc.getExecuteMethod) == null) {
-          SecurityGrpc.getExecuteMethod = getExecuteMethod =
-              io.grpc.MethodDescriptor.<common.request.SecurityRequestProto, common.request.SecurityResponseProto>newBuilder()
+        if ((getCreateOrUpdateMethod = SecurityGrpc.getCreateOrUpdateMethod) == null) {
+          SecurityGrpc.getCreateOrUpdateMethod = getCreateOrUpdateMethod =
+              io.grpc.MethodDescriptor.<common.request.CreateSecurityRequestProto, common.request.CreateSecurityResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Execute"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "CreateOrUpdate"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  common.request.SecurityRequestProto.getDefaultInstance()))
+                  common.request.CreateSecurityRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  common.request.SecurityResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("Execute"))
+                  common.request.CreateSecurityResponseProto.getDefaultInstance()))
+              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("CreateOrUpdate"))
               .build();
         }
       }
     }
-    return getExecuteMethod;
+    return getCreateOrUpdateMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      common.request.QuerySecurityResponseProto> getGetByIDsMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetByIDs",
+      requestType = common.request.QuerySecurityRequestProto.class,
+      responseType = common.request.QuerySecurityResponseProto.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      common.request.QuerySecurityResponseProto> getGetByIDsMethod() {
+    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, common.request.QuerySecurityResponseProto> getGetByIDsMethod;
+    if ((getGetByIDsMethod = SecurityGrpc.getGetByIDsMethod) == null) {
+      synchronized (SecurityGrpc.class) {
+        if ((getGetByIDsMethod = SecurityGrpc.getGetByIDsMethod) == null) {
+          SecurityGrpc.getGetByIDsMethod = getGetByIDsMethod =
+              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, common.request.QuerySecurityResponseProto>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIDs"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  common.request.QuerySecurityRequestProto.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  common.request.QuerySecurityResponseProto.getDefaultInstance()))
+              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("GetByIDs"))
+              .build();
+        }
+      }
+    }
+    return getGetByIDsMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      common.request.QuerySecurityResponseProto> getSearchMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "Search",
+      requestType = common.request.QuerySecurityRequestProto.class,
+      responseType = common.request.QuerySecurityResponseProto.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      common.request.QuerySecurityResponseProto> getSearchMethod() {
+    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, common.request.QuerySecurityResponseProto> getSearchMethod;
+    if ((getSearchMethod = SecurityGrpc.getSearchMethod) == null) {
+      synchronized (SecurityGrpc.class) {
+        if ((getSearchMethod = SecurityGrpc.getSearchMethod) == null) {
+          SecurityGrpc.getSearchMethod = getSearchMethod =
+              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, common.request.QuerySecurityResponseProto>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Search"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  common.request.QuerySecurityRequestProto.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  common.request.QuerySecurityResponseProto.getDefaultInstance()))
+              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("Search"))
+              .build();
+        }
+      }
+    }
+    return getSearchMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      common.request.QuerySecurityResponseProto> getListIDsMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ListIDs",
+      requestType = common.request.QuerySecurityRequestProto.class,
+      responseType = common.request.QuerySecurityResponseProto.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      common.request.QuerySecurityResponseProto> getListIDsMethod() {
+    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, common.request.QuerySecurityResponseProto> getListIDsMethod;
+    if ((getListIDsMethod = SecurityGrpc.getListIDsMethod) == null) {
+      synchronized (SecurityGrpc.class) {
+        if ((getListIDsMethod = SecurityGrpc.getListIDsMethod) == null) {
+          SecurityGrpc.getListIDsMethod = getListIDsMethod =
+              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, common.request.QuerySecurityResponseProto>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIDs"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  common.request.QuerySecurityRequestProto.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  common.request.QuerySecurityResponseProto.getDefaultInstance()))
+              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ListIDs"))
+              .build();
+        }
+      }
+    }
+    return getListIDsMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      util.errors.SummaryOuterClass.Summary> getValidateCreateOrUpdateMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ValidateCreateOrUpdate",
+      requestType = common.request.QuerySecurityRequestProto.class,
+      responseType = util.errors.SummaryOuterClass.Summary.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      util.errors.SummaryOuterClass.Summary> getValidateCreateOrUpdateMethod() {
+    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, util.errors.SummaryOuterClass.Summary> getValidateCreateOrUpdateMethod;
+    if ((getValidateCreateOrUpdateMethod = SecurityGrpc.getValidateCreateOrUpdateMethod) == null) {
+      synchronized (SecurityGrpc.class) {
+        if ((getValidateCreateOrUpdateMethod = SecurityGrpc.getValidateCreateOrUpdateMethod) == null) {
+          SecurityGrpc.getValidateCreateOrUpdateMethod = getValidateCreateOrUpdateMethod =
+              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, util.errors.SummaryOuterClass.Summary>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ValidateCreateOrUpdate"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  common.request.QuerySecurityRequestProto.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  util.errors.SummaryOuterClass.Summary.getDefaultInstance()))
+              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ValidateCreateOrUpdate"))
+              .build();
+        }
+      }
+    }
+    return getValidateCreateOrUpdateMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      util.errors.SummaryOuterClass.Summary> getValidateQueryRequestMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ValidateQueryRequest",
+      requestType = common.request.QuerySecurityRequestProto.class,
+      responseType = util.errors.SummaryOuterClass.Summary.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
+      util.errors.SummaryOuterClass.Summary> getValidateQueryRequestMethod() {
+    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, util.errors.SummaryOuterClass.Summary> getValidateQueryRequestMethod;
+    if ((getValidateQueryRequestMethod = SecurityGrpc.getValidateQueryRequestMethod) == null) {
+      synchronized (SecurityGrpc.class) {
+        if ((getValidateQueryRequestMethod = SecurityGrpc.getValidateQueryRequestMethod) == null) {
+          SecurityGrpc.getValidateQueryRequestMethod = getValidateQueryRequestMethod =
+              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, util.errors.SummaryOuterClass.Summary>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ValidateQueryRequest"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  common.request.QuerySecurityRequestProto.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  util.errors.SummaryOuterClass.Summary.getDefaultInstance()))
+              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ValidateQueryRequest"))
+              .build();
+        }
+      }
+    }
+    return getValidateQueryRequestMethod;
   }
 
   /**
@@ -96,20 +251,90 @@ public final class SecurityGrpc {
 
     /**
      */
-    public void execute(common.request.SecurityRequestProto request,
-        io.grpc.stub.StreamObserver<common.request.SecurityResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getExecuteMethod(), responseObserver);
+    public void createOrUpdate(common.request.CreateSecurityRequestProto request,
+        io.grpc.stub.StreamObserver<common.request.CreateSecurityResponseProto> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCreateOrUpdateMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void getByIDs(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIDsMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void search(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSearchMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void listIDs(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIDsMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void validateCreateOrUpdate(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getValidateCreateOrUpdateMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void validateQueryRequest(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getValidateQueryRequestMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
-            getExecuteMethod(),
+            getCreateOrUpdateMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                common.request.SecurityRequestProto,
-                common.request.SecurityResponseProto>(
-                  this, METHODID_EXECUTE)))
+                common.request.CreateSecurityRequestProto,
+                common.request.CreateSecurityResponseProto>(
+                  this, METHODID_CREATE_OR_UPDATE)))
+          .addMethod(
+            getGetByIDsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                common.request.QuerySecurityRequestProto,
+                common.request.QuerySecurityResponseProto>(
+                  this, METHODID_GET_BY_IDS)))
+          .addMethod(
+            getSearchMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                common.request.QuerySecurityRequestProto,
+                common.request.QuerySecurityResponseProto>(
+                  this, METHODID_SEARCH)))
+          .addMethod(
+            getListIDsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                common.request.QuerySecurityRequestProto,
+                common.request.QuerySecurityResponseProto>(
+                  this, METHODID_LIST_IDS)))
+          .addMethod(
+            getValidateCreateOrUpdateMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                common.request.QuerySecurityRequestProto,
+                util.errors.SummaryOuterClass.Summary>(
+                  this, METHODID_VALIDATE_CREATE_OR_UPDATE)))
+          .addMethod(
+            getValidateQueryRequestMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                common.request.QuerySecurityRequestProto,
+                util.errors.SummaryOuterClass.Summary>(
+                  this, METHODID_VALIDATE_QUERY_REQUEST)))
           .build();
     }
   }
@@ -130,10 +355,50 @@ public final class SecurityGrpc {
 
     /**
      */
-    public void execute(common.request.SecurityRequestProto request,
-        io.grpc.stub.StreamObserver<common.request.SecurityResponseProto> responseObserver) {
+    public void createOrUpdate(common.request.CreateSecurityRequestProto request,
+        io.grpc.stub.StreamObserver<common.request.CreateSecurityResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getExecuteMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getCreateOrUpdateMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void getByIDs(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void search(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getSearchMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void listIDs(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getListIDsMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void validateCreateOrUpdate(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getValidateCreateOrUpdateMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void validateQueryRequest(common.request.QuerySecurityRequestProto request,
+        io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getValidateQueryRequestMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
@@ -153,9 +418,44 @@ public final class SecurityGrpc {
 
     /**
      */
-    public common.request.SecurityResponseProto execute(common.request.SecurityRequestProto request) {
+    public common.request.CreateSecurityResponseProto createOrUpdate(common.request.CreateSecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getExecuteMethod(), getCallOptions(), request);
+          getChannel(), getCreateOrUpdateMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public common.request.QuerySecurityResponseProto getByIDs(common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetByIDsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public common.request.QuerySecurityResponseProto search(common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getSearchMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public common.request.QuerySecurityResponseProto listIDs(common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListIDsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public util.errors.SummaryOuterClass.Summary validateCreateOrUpdate(common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getValidateCreateOrUpdateMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public util.errors.SummaryOuterClass.Summary validateQueryRequest(common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getValidateQueryRequestMethod(), getCallOptions(), request);
     }
   }
 
@@ -175,14 +475,59 @@ public final class SecurityGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<common.request.SecurityResponseProto> execute(
-        common.request.SecurityRequestProto request) {
+    public com.google.common.util.concurrent.ListenableFuture<common.request.CreateSecurityResponseProto> createOrUpdate(
+        common.request.CreateSecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getExecuteMethod(), getCallOptions()), request);
+          getChannel().newCall(getCreateOrUpdateMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<common.request.QuerySecurityResponseProto> getByIDs(
+        common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<common.request.QuerySecurityResponseProto> search(
+        common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getSearchMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<common.request.QuerySecurityResponseProto> listIDs(
+        common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getListIDsMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<util.errors.SummaryOuterClass.Summary> validateCreateOrUpdate(
+        common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getValidateCreateOrUpdateMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<util.errors.SummaryOuterClass.Summary> validateQueryRequest(
+        common.request.QuerySecurityRequestProto request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getValidateQueryRequestMethod(), getCallOptions()), request);
     }
   }
 
-  private static final int METHODID_EXECUTE = 0;
+  private static final int METHODID_CREATE_OR_UPDATE = 0;
+  private static final int METHODID_GET_BY_IDS = 1;
+  private static final int METHODID_SEARCH = 2;
+  private static final int METHODID_LIST_IDS = 3;
+  private static final int METHODID_VALIDATE_CREATE_OR_UPDATE = 4;
+  private static final int METHODID_VALIDATE_QUERY_REQUEST = 5;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -201,9 +546,29 @@ public final class SecurityGrpc {
     @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
-        case METHODID_EXECUTE:
-          serviceImpl.execute((common.request.SecurityRequestProto) request,
-              (io.grpc.stub.StreamObserver<common.request.SecurityResponseProto>) responseObserver);
+        case METHODID_CREATE_OR_UPDATE:
+          serviceImpl.createOrUpdate((common.request.CreateSecurityRequestProto) request,
+              (io.grpc.stub.StreamObserver<common.request.CreateSecurityResponseProto>) responseObserver);
+          break;
+        case METHODID_GET_BY_IDS:
+          serviceImpl.getByIDs((common.request.QuerySecurityRequestProto) request,
+              (io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto>) responseObserver);
+          break;
+        case METHODID_SEARCH:
+          serviceImpl.search((common.request.QuerySecurityRequestProto) request,
+              (io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto>) responseObserver);
+          break;
+        case METHODID_LIST_IDS:
+          serviceImpl.listIDs((common.request.QuerySecurityRequestProto) request,
+              (io.grpc.stub.StreamObserver<common.request.QuerySecurityResponseProto>) responseObserver);
+          break;
+        case METHODID_VALIDATE_CREATE_OR_UPDATE:
+          serviceImpl.validateCreateOrUpdate((common.request.QuerySecurityRequestProto) request,
+              (io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary>) responseObserver);
+          break;
+        case METHODID_VALIDATE_QUERY_REQUEST:
+          serviceImpl.validateQueryRequest((common.request.QuerySecurityRequestProto) request,
+              (io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -266,7 +631,12 @@ public final class SecurityGrpc {
         if (result == null) {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new SecurityFileDescriptorSupplier())
-              .addMethod(getExecuteMethod())
+              .addMethod(getCreateOrUpdateMethod())
+              .addMethod(getGetByIDsMethod())
+              .addMethod(getSearchMethod())
+              .addMethod(getListIDsMethod())
+              .addMethod(getValidateCreateOrUpdateMethod())
+              .addMethod(getValidateQueryRequestMethod())
               .build();
         }
       }
