@@ -11,7 +11,7 @@ import "requests/util/errors/error.proto";
 //
 //If there are any errors, the GRPC response should not return OK (code=0).
 //Warnings may be returned at any time, and may be done even with successful responses.
-message Summary {
-  repeated Error errors = 1;
-  repeated Warning warnings = 2;
+message SummaryProto {
+  repeated ErrorProto errors = 1;
+  repeated WarningProto warnings = 2;
 }

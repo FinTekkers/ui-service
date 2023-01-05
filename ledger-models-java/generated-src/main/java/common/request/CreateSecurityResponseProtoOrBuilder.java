@@ -36,86 +36,82 @@ public interface CreateSecurityResponseProtoOrBuilder extends
    *The input that was provided for this request.
    * </pre>
    *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+   * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
+   * @return Whether the securityRequest field is set.
    */
-  java.util.List<common.request.CreateSecurityRequestProto> 
-      getSecurityRequestList();
+  boolean hasSecurityRequest();
   /**
    * <pre>
    *The input that was provided for this request.
    * </pre>
    *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+   * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
+   * @return The securityRequest.
    */
-  common.request.CreateSecurityRequestProto getSecurityRequest(int index);
+  common.request.CreateSecurityRequestProto getSecurityRequest();
   /**
    * <pre>
    *The input that was provided for this request.
    * </pre>
    *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+   * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
    */
-  int getSecurityRequestCount();
-  /**
-   * <pre>
-   *The input that was provided for this request.
-   * </pre>
-   *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-   */
-  java.util.List<? extends common.request.CreateSecurityRequestProtoOrBuilder> 
-      getSecurityRequestOrBuilderList();
-  /**
-   * <pre>
-   *The input that was provided for this request.
-   * </pre>
-   *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-   */
-  common.request.CreateSecurityRequestProtoOrBuilder getSecurityRequestOrBuilder(
-      int index);
+  common.request.CreateSecurityRequestProtoOrBuilder getSecurityRequestOrBuilder();
 
   /**
    * <pre>
    *The security (or securities) that were created in response to this request
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.security.SecurityProto security_response = 30;</code>
+   * @return Whether the securityResponse field is set.
    */
-  java.util.List<common.models.security.SecurityProto> 
-      getSecurityResponseList();
+  boolean hasSecurityResponse();
   /**
    * <pre>
    *The security (or securities) that were created in response to this request
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.security.SecurityProto security_response = 30;</code>
+   * @return The securityResponse.
    */
-  common.models.security.SecurityProto getSecurityResponse(int index);
+  common.models.security.SecurityProto getSecurityResponse();
   /**
    * <pre>
    *The security (or securities) that were created in response to this request
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.security.SecurityProto security_response = 30;</code>
    */
-  int getSecurityResponseCount();
+  common.models.security.SecurityProtoOrBuilder getSecurityResponseOrBuilder();
+
   /**
    * <pre>
-   *The security (or securities) that were created in response to this request
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   * @return Whether the errorsOrWarnings field is set.
    */
-  java.util.List<? extends common.models.security.SecurityProtoOrBuilder> 
-      getSecurityResponseOrBuilderList();
+  boolean hasErrorsOrWarnings();
   /**
    * <pre>
-   *The security (or securities) that were created in response to this request
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   * @return The errorsOrWarnings.
    */
-  common.models.security.SecurityProtoOrBuilder getSecurityResponseOrBuilder(
-      int index);
+  util.errors.Summary.SummaryProto getErrorsOrWarnings();
+  /**
+   * <pre>
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
+   * </pre>
+   *
+   * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder();
 }

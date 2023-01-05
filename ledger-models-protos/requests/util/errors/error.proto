@@ -15,7 +15,7 @@ enum ErrorCode {
 
 //An error is used for situations where a request cannot be processed successfully, either
 //from a technical perspective or a business perspective.
-message Error {
+message ErrorProto {
   ErrorCode code = 1;
   Message detail = 2;
 }
@@ -23,7 +23,7 @@ message Error {
 //Warnings can have error codes, if it is useful in categorizing the severity of the warning.
 //For example a warning may be thrown if 2 securities are created with the same identifier.
 //Another example may be usage of a deprecated API.
-message Warning {
+message WarningProto {
   ErrorCode code = 1;
   Message detail = 2;
 }

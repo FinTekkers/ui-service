@@ -4,6 +4,7 @@ package security;
 
 import "models/security/security.proto";
 import "requests/security/query_security_request.proto";
+import "requests/util/errors/summary.proto";
 
 option java_multiple_files = true;
 option java_package = "common.request";
@@ -17,7 +18,10 @@ message QuerySecurityResponseProto {
   security.QuerySecurityRequestProto query_security_input = 20;
 
   //The security (or securities) that was matched by this request.
-  repeated security.SecurityProto security_response = 30;
+  repeated security.SecurityProto security_response = 30;;
+
+  //Any errors or warnings related to this request
+  repeated util.errors.SummaryProto errors_or_warnings = 40;
 }
 
 
