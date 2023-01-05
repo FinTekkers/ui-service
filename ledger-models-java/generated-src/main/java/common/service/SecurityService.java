@@ -55,20 +55,20 @@ public final class SecurityService {
           com.google.protobuf.RpcCallback<common.request.QuerySecurityResponseProto> done);
 
       /**
-       * <code>rpc ValidateCreateOrUpdate(.security.QuerySecurityRequestProto) returns (.util.errors.Summary);</code>
+       * <code>rpc ValidateCreateOrUpdate(.security.QuerySecurityRequestProto) returns (.util.errors.SummaryProto);</code>
        */
       public abstract void validateCreateOrUpdate(
           com.google.protobuf.RpcController controller,
           common.request.QuerySecurityRequestProto request,
-          com.google.protobuf.RpcCallback<util.errors.SummaryOuterClass.Summary> done);
+          com.google.protobuf.RpcCallback<util.errors.Summary.SummaryProto> done);
 
       /**
-       * <code>rpc ValidateQueryRequest(.security.QuerySecurityRequestProto) returns (.util.errors.Summary);</code>
+       * <code>rpc ValidateQueryRequest(.security.QuerySecurityRequestProto) returns (.util.errors.SummaryProto);</code>
        */
       public abstract void validateQueryRequest(
           com.google.protobuf.RpcController controller,
           common.request.QuerySecurityRequestProto request,
-          com.google.protobuf.RpcCallback<util.errors.SummaryOuterClass.Summary> done);
+          com.google.protobuf.RpcCallback<util.errors.Summary.SummaryProto> done);
 
     }
 
@@ -111,7 +111,7 @@ public final class SecurityService {
         public  void validateCreateOrUpdate(
             com.google.protobuf.RpcController controller,
             common.request.QuerySecurityRequestProto request,
-            com.google.protobuf.RpcCallback<util.errors.SummaryOuterClass.Summary> done) {
+            com.google.protobuf.RpcCallback<util.errors.Summary.SummaryProto> done) {
           impl.validateCreateOrUpdate(controller, request, done);
         }
 
@@ -119,7 +119,7 @@ public final class SecurityService {
         public  void validateQueryRequest(
             com.google.protobuf.RpcController controller,
             common.request.QuerySecurityRequestProto request,
-            com.google.protobuf.RpcCallback<util.errors.SummaryOuterClass.Summary> done) {
+            com.google.protobuf.RpcCallback<util.errors.Summary.SummaryProto> done) {
           impl.validateQueryRequest(controller, request, done);
         }
 
@@ -206,9 +206,9 @@ public final class SecurityService {
             case 3:
               return common.request.QuerySecurityResponseProto.getDefaultInstance();
             case 4:
-              return util.errors.SummaryOuterClass.Summary.getDefaultInstance();
+              return util.errors.Summary.SummaryProto.getDefaultInstance();
             case 5:
-              return util.errors.SummaryOuterClass.Summary.getDefaultInstance();
+              return util.errors.Summary.SummaryProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -250,20 +250,20 @@ public final class SecurityService {
         com.google.protobuf.RpcCallback<common.request.QuerySecurityResponseProto> done);
 
     /**
-     * <code>rpc ValidateCreateOrUpdate(.security.QuerySecurityRequestProto) returns (.util.errors.Summary);</code>
+     * <code>rpc ValidateCreateOrUpdate(.security.QuerySecurityRequestProto) returns (.util.errors.SummaryProto);</code>
      */
     public abstract void validateCreateOrUpdate(
         com.google.protobuf.RpcController controller,
         common.request.QuerySecurityRequestProto request,
-        com.google.protobuf.RpcCallback<util.errors.SummaryOuterClass.Summary> done);
+        com.google.protobuf.RpcCallback<util.errors.Summary.SummaryProto> done);
 
     /**
-     * <code>rpc ValidateQueryRequest(.security.QuerySecurityRequestProto) returns (.util.errors.Summary);</code>
+     * <code>rpc ValidateQueryRequest(.security.QuerySecurityRequestProto) returns (.util.errors.SummaryProto);</code>
      */
     public abstract void validateQueryRequest(
         com.google.protobuf.RpcController controller,
         common.request.QuerySecurityRequestProto request,
-        com.google.protobuf.RpcCallback<util.errors.SummaryOuterClass.Summary> done);
+        com.google.protobuf.RpcCallback<util.errors.Summary.SummaryProto> done);
 
     public static final
         com.google.protobuf.Descriptors.ServiceDescriptor
@@ -309,12 +309,12 @@ public final class SecurityService {
           return;
         case 4:
           this.validateCreateOrUpdate(controller, (common.request.QuerySecurityRequestProto)request,
-            com.google.protobuf.RpcUtil.<util.errors.SummaryOuterClass.Summary>specializeCallback(
+            com.google.protobuf.RpcUtil.<util.errors.Summary.SummaryProto>specializeCallback(
               done));
           return;
         case 5:
           this.validateQueryRequest(controller, (common.request.QuerySecurityRequestProto)request,
-            com.google.protobuf.RpcUtil.<util.errors.SummaryOuterClass.Summary>specializeCallback(
+            com.google.protobuf.RpcUtil.<util.errors.Summary.SummaryProto>specializeCallback(
               done));
           return;
         default:
@@ -366,9 +366,9 @@ public final class SecurityService {
         case 3:
           return common.request.QuerySecurityResponseProto.getDefaultInstance();
         case 4:
-          return util.errors.SummaryOuterClass.Summary.getDefaultInstance();
+          return util.errors.Summary.SummaryProto.getDefaultInstance();
         case 5:
-          return util.errors.SummaryOuterClass.Summary.getDefaultInstance();
+          return util.errors.Summary.SummaryProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -453,31 +453,31 @@ public final class SecurityService {
       public  void validateCreateOrUpdate(
           com.google.protobuf.RpcController controller,
           common.request.QuerySecurityRequestProto request,
-          com.google.protobuf.RpcCallback<util.errors.SummaryOuterClass.Summary> done) {
+          com.google.protobuf.RpcCallback<util.errors.Summary.SummaryProto> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(4),
           controller,
           request,
-          util.errors.SummaryOuterClass.Summary.getDefaultInstance(),
+          util.errors.Summary.SummaryProto.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            util.errors.SummaryOuterClass.Summary.class,
-            util.errors.SummaryOuterClass.Summary.getDefaultInstance()));
+            util.errors.Summary.SummaryProto.class,
+            util.errors.Summary.SummaryProto.getDefaultInstance()));
       }
 
       public  void validateQueryRequest(
           com.google.protobuf.RpcController controller,
           common.request.QuerySecurityRequestProto request,
-          com.google.protobuf.RpcCallback<util.errors.SummaryOuterClass.Summary> done) {
+          com.google.protobuf.RpcCallback<util.errors.Summary.SummaryProto> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(5),
           controller,
           request,
-          util.errors.SummaryOuterClass.Summary.getDefaultInstance(),
+          util.errors.Summary.SummaryProto.getDefaultInstance(),
           com.google.protobuf.RpcUtil.generalizeCallback(
             done,
-            util.errors.SummaryOuterClass.Summary.class,
-            util.errors.SummaryOuterClass.Summary.getDefaultInstance()));
+            util.errors.Summary.SummaryProto.class,
+            util.errors.Summary.SummaryProto.getDefaultInstance()));
       }
     }
 
@@ -507,12 +507,12 @@ public final class SecurityService {
           common.request.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public util.errors.SummaryOuterClass.Summary validateCreateOrUpdate(
+      public util.errors.Summary.SummaryProto validateCreateOrUpdate(
           com.google.protobuf.RpcController controller,
           common.request.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public util.errors.SummaryOuterClass.Summary validateQueryRequest(
+      public util.errors.Summary.SummaryProto validateQueryRequest(
           com.google.protobuf.RpcController controller,
           common.request.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -573,27 +573,27 @@ public final class SecurityService {
       }
 
 
-      public util.errors.SummaryOuterClass.Summary validateCreateOrUpdate(
+      public util.errors.Summary.SummaryProto validateCreateOrUpdate(
           com.google.protobuf.RpcController controller,
           common.request.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException {
-        return (util.errors.SummaryOuterClass.Summary) channel.callBlockingMethod(
+        return (util.errors.Summary.SummaryProto) channel.callBlockingMethod(
           getDescriptor().getMethods().get(4),
           controller,
           request,
-          util.errors.SummaryOuterClass.Summary.getDefaultInstance());
+          util.errors.Summary.SummaryProto.getDefaultInstance());
       }
 
 
-      public util.errors.SummaryOuterClass.Summary validateQueryRequest(
+      public util.errors.Summary.SummaryProto validateQueryRequest(
           com.google.protobuf.RpcController controller,
           common.request.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException {
-        return (util.errors.SummaryOuterClass.Summary) channel.callBlockingMethod(
+        return (util.errors.Summary.SummaryProto) channel.callBlockingMethod(
           getDescriptor().getMethods().get(5),
           controller,
           request,
-          util.errors.SummaryOuterClass.Summary.getDefaultInstance());
+          util.errors.Summary.SummaryProto.getDefaultInstance());
       }
 
     }
@@ -617,7 +617,7 @@ public final class SecurityService {
       "proto\032/requests/security/create_security" +
       "_request.proto\0320requests/security/create" +
       "_security_response.proto\032\"requests/util/" +
-      "errors/summary.proto2\223\004\n\010Security\022]\n\016Cre" +
+      "errors/summary.proto2\235\004\n\010Security\022]\n\016Cre" +
       "ateOrUpdate\022$.security.CreateSecurityReq" +
       "uestProto\032%.security.CreateSecurityRespo" +
       "nseProto\022U\n\010GetByIDs\022#.security.QuerySec" +
@@ -626,12 +626,12 @@ public final class SecurityService {
       "rySecurityRequestProto\032$.security.QueryS" +
       "ecurityResponseProto\022T\n\007ListIDs\022#.securi" +
       "ty.QuerySecurityRequestProto\032$.security." +
-      "QuerySecurityResponseProto\022S\n\026ValidateCr" +
+      "QuerySecurityResponseProto\022X\n\026ValidateCr" +
       "eateOrUpdate\022#.security.QuerySecurityReq" +
-      "uestProto\032\024.util.errors.Summary\022Q\n\024Valid" +
-      "ateQueryRequest\022#.security.QuerySecurity" +
-      "RequestProto\032\024.util.errors.SummaryB\023\n\016co" +
-      "mmon.service\210\001\001b\006proto3"
+      "uestProto\032\031.util.errors.SummaryProto\022V\n\024" +
+      "ValidateQueryRequest\022#.security.QuerySec" +
+      "urityRequestProto\032\031.util.errors.SummaryP" +
+      "rotoB\023\n\016common.service\210\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -640,13 +640,13 @@ public final class SecurityService {
           common.request.QuerySecurityResponseProtos.getDescriptor(),
           common.request.CreateSecurityRequestProtos.getDescriptor(),
           common.request.CreateSecurityResponseProtos.getDescriptor(),
-          util.errors.SummaryOuterClass.getDescriptor(),
+          util.errors.Summary.getDescriptor(),
         });
     common.request.QuerySecurityRequestProtos.getDescriptor();
     common.request.QuerySecurityResponseProtos.getDescriptor();
     common.request.CreateSecurityRequestProtos.getDescriptor();
     common.request.CreateSecurityResponseProtos.getDescriptor();
-    util.errors.SummaryOuterClass.getDescriptor();
+    util.errors.Summary.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -246,6 +246,9 @@ pub struct QuerySecurityResponseProto {
     /// The security (or securities) that was matched by this request.
     #[prost(message, repeated, tag = "30")]
     pub security_response: ::prost::alloc::vec::Vec<SecurityProto>,
+    /// Any errors or warnings related to this request
+    #[prost(message, repeated, tag = "40")]
+    pub errors_or_warnings: ::prost::alloc::vec::Vec<super::util::errors::SummaryProto>,
 }
 /// Use this request to create or update securities. Uniqueness is guaranteed via the UUID.
 /// Security identifiers do not guarantee uniqueness. As an example a bond ISIN or stock ticker
@@ -275,9 +278,13 @@ pub struct CreateSecurityResponseProto {
     #[prost(string, tag = "2")]
     pub version: ::prost::alloc::string::String,
     /// The input that was provided for this request.
-    #[prost(message, repeated, tag = "20")]
-    pub security_request: ::prost::alloc::vec::Vec<CreateSecurityRequestProto>,
+    #[prost(message, optional, tag = "20")]
+    pub security_request: ::core::option::Option<CreateSecurityRequestProto>,
     /// The security (or securities) that were created in response to this request
-    #[prost(message, repeated, tag = "30")]
-    pub security_response: ::prost::alloc::vec::Vec<SecurityProto>,
+    #[prost(message, optional, tag = "30")]
+    pub security_response: ::core::option::Option<SecurityProto>,
+    /// If no errors or warnings in the response then the request was processed successfully without any
+    /// contingencies.
+    #[prost(message, optional, tag = "40")]
+    pub errors_or_warnings: ::core::option::Option<super::util::errors::SummaryProto>,
 }

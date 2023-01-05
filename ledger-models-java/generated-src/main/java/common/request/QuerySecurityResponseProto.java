@@ -19,6 +19,7 @@ private static final long serialVersionUID = 0L;
     objectClass_ = "";
     version_ = "";
     securityResponse_ = java.util.Collections.emptyList();
+    errorsOrWarnings_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -86,6 +87,15 @@ private static final long serialVersionUID = 0L;
                 input.readMessage(common.models.security.SecurityProto.parser(), extensionRegistry));
             break;
           }
+          case 322: {
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+              errorsOrWarnings_ = new java.util.ArrayList<util.errors.Summary.SummaryProto>();
+              mutable_bitField0_ |= 0x00000002;
+            }
+            errorsOrWarnings_.add(
+                input.readMessage(util.errors.Summary.SummaryProto.parser(), extensionRegistry));
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -103,6 +113,9 @@ private static final long serialVersionUID = 0L;
     } finally {
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
         securityResponse_ = java.util.Collections.unmodifiableList(securityResponse_);
+      }
+      if (((mutable_bitField0_ & 0x00000002) != 0)) {
+        errorsOrWarnings_ = java.util.Collections.unmodifiableList(errorsOrWarnings_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -295,6 +308,66 @@ private static final long serialVersionUID = 0L;
     return securityResponse_.get(index);
   }
 
+  public static final int ERRORS_OR_WARNINGS_FIELD_NUMBER = 40;
+  private java.util.List<util.errors.Summary.SummaryProto> errorsOrWarnings_;
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  @java.lang.Override
+  public java.util.List<util.errors.Summary.SummaryProto> getErrorsOrWarningsList() {
+    return errorsOrWarnings_;
+  }
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends util.errors.Summary.SummaryProtoOrBuilder> 
+      getErrorsOrWarningsOrBuilderList() {
+    return errorsOrWarnings_;
+  }
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  @java.lang.Override
+  public int getErrorsOrWarningsCount() {
+    return errorsOrWarnings_.size();
+  }
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  @java.lang.Override
+  public util.errors.Summary.SummaryProto getErrorsOrWarnings(int index) {
+    return errorsOrWarnings_.get(index);
+  }
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  @java.lang.Override
+  public util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder(
+      int index) {
+    return errorsOrWarnings_.get(index);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -321,6 +394,9 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < securityResponse_.size(); i++) {
       output.writeMessage(30, securityResponse_.get(i));
     }
+    for (int i = 0; i < errorsOrWarnings_.size(); i++) {
+      output.writeMessage(40, errorsOrWarnings_.get(i));
+    }
     unknownFields.writeTo(output);
   }
 
@@ -343,6 +419,10 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < securityResponse_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(30, securityResponse_.get(i));
+    }
+    for (int i = 0; i < errorsOrWarnings_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(40, errorsOrWarnings_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -370,6 +450,8 @@ private static final long serialVersionUID = 0L;
     }
     if (!getSecurityResponseList()
         .equals(other.getSecurityResponseList())) return false;
+    if (!getErrorsOrWarningsList()
+        .equals(other.getErrorsOrWarningsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -392,6 +474,10 @@ private static final long serialVersionUID = 0L;
     if (getSecurityResponseCount() > 0) {
       hash = (37 * hash) + SECURITY_RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getSecurityResponseList().hashCode();
+    }
+    if (getErrorsOrWarningsCount() > 0) {
+      hash = (37 * hash) + ERRORS_OR_WARNINGS_FIELD_NUMBER;
+      hash = (53 * hash) + getErrorsOrWarningsList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -522,6 +608,7 @@ private static final long serialVersionUID = 0L;
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
         getSecurityResponseFieldBuilder();
+        getErrorsOrWarningsFieldBuilder();
       }
     }
     @java.lang.Override
@@ -542,6 +629,12 @@ private static final long serialVersionUID = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
       } else {
         securityResponseBuilder_.clear();
+      }
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarnings_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+      } else {
+        errorsOrWarningsBuilder_.clear();
       }
       return this;
     }
@@ -585,6 +678,15 @@ private static final long serialVersionUID = 0L;
         result.securityResponse_ = securityResponse_;
       } else {
         result.securityResponse_ = securityResponseBuilder_.build();
+      }
+      if (errorsOrWarningsBuilder_ == null) {
+        if (((bitField0_ & 0x00000002) != 0)) {
+          errorsOrWarnings_ = java.util.Collections.unmodifiableList(errorsOrWarnings_);
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.errorsOrWarnings_ = errorsOrWarnings_;
+      } else {
+        result.errorsOrWarnings_ = errorsOrWarningsBuilder_.build();
       }
       onBuilt();
       return result;
@@ -668,6 +770,32 @@ private static final long serialVersionUID = 0L;
                  getSecurityResponseFieldBuilder() : null;
           } else {
             securityResponseBuilder_.addAllMessages(other.securityResponse_);
+          }
+        }
+      }
+      if (errorsOrWarningsBuilder_ == null) {
+        if (!other.errorsOrWarnings_.isEmpty()) {
+          if (errorsOrWarnings_.isEmpty()) {
+            errorsOrWarnings_ = other.errorsOrWarnings_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureErrorsOrWarningsIsMutable();
+            errorsOrWarnings_.addAll(other.errorsOrWarnings_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.errorsOrWarnings_.isEmpty()) {
+          if (errorsOrWarningsBuilder_.isEmpty()) {
+            errorsOrWarningsBuilder_.dispose();
+            errorsOrWarningsBuilder_ = null;
+            errorsOrWarnings_ = other.errorsOrWarnings_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+            errorsOrWarningsBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getErrorsOrWarningsFieldBuilder() : null;
+          } else {
+            errorsOrWarningsBuilder_.addAllMessages(other.errorsOrWarnings_);
           }
         }
       }
@@ -1318,6 +1446,318 @@ private static final long serialVersionUID = 0L;
         securityResponse_ = null;
       }
       return securityResponseBuilder_;
+    }
+
+    private java.util.List<util.errors.Summary.SummaryProto> errorsOrWarnings_ =
+      java.util.Collections.emptyList();
+    private void ensureErrorsOrWarningsIsMutable() {
+      if (!((bitField0_ & 0x00000002) != 0)) {
+        errorsOrWarnings_ = new java.util.ArrayList<util.errors.Summary.SummaryProto>(errorsOrWarnings_);
+        bitField0_ |= 0x00000002;
+       }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        util.errors.Summary.SummaryProto, util.errors.Summary.SummaryProto.Builder, util.errors.Summary.SummaryProtoOrBuilder> errorsOrWarningsBuilder_;
+
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public java.util.List<util.errors.Summary.SummaryProto> getErrorsOrWarningsList() {
+      if (errorsOrWarningsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(errorsOrWarnings_);
+      } else {
+        return errorsOrWarningsBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public int getErrorsOrWarningsCount() {
+      if (errorsOrWarningsBuilder_ == null) {
+        return errorsOrWarnings_.size();
+      } else {
+        return errorsOrWarningsBuilder_.getCount();
+      }
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public util.errors.Summary.SummaryProto getErrorsOrWarnings(int index) {
+      if (errorsOrWarningsBuilder_ == null) {
+        return errorsOrWarnings_.get(index);
+      } else {
+        return errorsOrWarningsBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder setErrorsOrWarnings(
+        int index, util.errors.Summary.SummaryProto value) {
+      if (errorsOrWarningsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureErrorsOrWarningsIsMutable();
+        errorsOrWarnings_.set(index, value);
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder setErrorsOrWarnings(
+        int index, util.errors.Summary.SummaryProto.Builder builderForValue) {
+      if (errorsOrWarningsBuilder_ == null) {
+        ensureErrorsOrWarningsIsMutable();
+        errorsOrWarnings_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder addErrorsOrWarnings(util.errors.Summary.SummaryProto value) {
+      if (errorsOrWarningsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureErrorsOrWarningsIsMutable();
+        errorsOrWarnings_.add(value);
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder addErrorsOrWarnings(
+        int index, util.errors.Summary.SummaryProto value) {
+      if (errorsOrWarningsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureErrorsOrWarningsIsMutable();
+        errorsOrWarnings_.add(index, value);
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder addErrorsOrWarnings(
+        util.errors.Summary.SummaryProto.Builder builderForValue) {
+      if (errorsOrWarningsBuilder_ == null) {
+        ensureErrorsOrWarningsIsMutable();
+        errorsOrWarnings_.add(builderForValue.build());
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder addErrorsOrWarnings(
+        int index, util.errors.Summary.SummaryProto.Builder builderForValue) {
+      if (errorsOrWarningsBuilder_ == null) {
+        ensureErrorsOrWarningsIsMutable();
+        errorsOrWarnings_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder addAllErrorsOrWarnings(
+        java.lang.Iterable<? extends util.errors.Summary.SummaryProto> values) {
+      if (errorsOrWarningsBuilder_ == null) {
+        ensureErrorsOrWarningsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, errorsOrWarnings_);
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder clearErrorsOrWarnings() {
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarnings_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder removeErrorsOrWarnings(int index) {
+      if (errorsOrWarningsBuilder_ == null) {
+        ensureErrorsOrWarningsIsMutable();
+        errorsOrWarnings_.remove(index);
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public util.errors.Summary.SummaryProto.Builder getErrorsOrWarningsBuilder(
+        int index) {
+      return getErrorsOrWarningsFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder(
+        int index) {
+      if (errorsOrWarningsBuilder_ == null) {
+        return errorsOrWarnings_.get(index);  } else {
+        return errorsOrWarningsBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public java.util.List<? extends util.errors.Summary.SummaryProtoOrBuilder> 
+         getErrorsOrWarningsOrBuilderList() {
+      if (errorsOrWarningsBuilder_ != null) {
+        return errorsOrWarningsBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(errorsOrWarnings_);
+      }
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public util.errors.Summary.SummaryProto.Builder addErrorsOrWarningsBuilder() {
+      return getErrorsOrWarningsFieldBuilder().addBuilder(
+          util.errors.Summary.SummaryProto.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public util.errors.Summary.SummaryProto.Builder addErrorsOrWarningsBuilder(
+        int index) {
+      return getErrorsOrWarningsFieldBuilder().addBuilder(
+          index, util.errors.Summary.SummaryProto.getDefaultInstance());
+    }
+    /**
+     * <pre>
+     *Any errors or warnings related to this request
+     * </pre>
+     *
+     * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public java.util.List<util.errors.Summary.SummaryProto.Builder> 
+         getErrorsOrWarningsBuilderList() {
+      return getErrorsOrWarningsFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        util.errors.Summary.SummaryProto, util.errors.Summary.SummaryProto.Builder, util.errors.Summary.SummaryProtoOrBuilder> 
+        getErrorsOrWarningsFieldBuilder() {
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarningsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            util.errors.Summary.SummaryProto, util.errors.Summary.SummaryProto.Builder, util.errors.Summary.SummaryProtoOrBuilder>(
+                errorsOrWarnings_,
+                ((bitField0_ & 0x00000002) != 0),
+                getParentForChildren(),
+                isClean());
+        errorsOrWarnings_ = null;
+      }
+      return errorsOrWarningsBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

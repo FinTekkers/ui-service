@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package security_service;
+import "requests/portfolio/create_portfolio_request.proto";
+import "requests/portfolio/create_portfolio_response.proto";
+import "requests/portfolio/query_portfolio_request.proto";
+import "requests/portfolio/query_portfolio_response.proto";
+
+import "requests/util/errors/summary.proto";
+
+option java_generic_services = true;
+option java_package = "common.service";
+
+service Portfolio {
+    rpc CreateOrUpdate (portfolio.CreatePortfolioRequestProto) returns (portfolio.CreatePortfolioResponseProto);
+
+    rpc GetByIDs (portfolio.QueryPortfolioRequestProto) returns (portfolio.QueryPortfolioResponseProto);
+    rpc Search (portfolio.QueryPortfolioRequestProto) returns (portfolio.QueryPortfolioResponseProto);
+    rpc ListIDs (portfolio.QueryPortfolioRequestProto) returns (portfolio.QueryPortfolioResponseProto);
+
+    rpc ValidateCreateOrUpdate (portfolio.CreatePortfolioRequestProto) returns (util.errors.SummaryProto);
+    rpc ValidateQueryRequest (portfolio.QueryPortfolioRequestProto) returns (util.errors.SummaryProto);
+}

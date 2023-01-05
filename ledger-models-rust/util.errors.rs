@@ -22,7 +22,7 @@ pub struct Message {
 /// An error is used for situations where a request cannot be processed successfully, either
 /// from a technical perspective or a business perspective.
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct Error {
+pub struct ErrorProto {
     #[prost(enumeration = "ErrorCode", tag = "1")]
     pub code: i32,
     #[prost(message, optional, tag = "2")]
@@ -32,7 +32,7 @@ pub struct Error {
 /// For example a warning may be thrown if 2 securities are created with the same identifier.
 /// Another example may be usage of a deprecated API.
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct Warning {
+pub struct WarningProto {
     #[prost(enumeration = "ErrorCode", tag = "1")]
     pub code: i32,
     #[prost(message, optional, tag = "2")]
@@ -68,9 +68,9 @@ impl ErrorCode {
 /// If there are any errors, the GRPC response should not return OK (code=0).
 /// Warnings may be returned at any time, and may be done even with successful responses.
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct Summary {
+pub struct SummaryProto {
     #[prost(message, repeated, tag = "1")]
-    pub errors: ::prost::alloc::vec::Vec<Error>,
+    pub errors: ::prost::alloc::vec::Vec<ErrorProto>,
     #[prost(message, repeated, tag = "2")]
-    pub warnings: ::prost::alloc::vec::Vec<Warning>,
+    pub warnings: ::prost::alloc::vec::Vec<WarningProto>,
 }
