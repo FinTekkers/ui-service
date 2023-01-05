@@ -140,28 +140,28 @@ public final class SecurityGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
-      util.errors.SummaryOuterClass.Summary> getValidateCreateOrUpdateMethod;
+      util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "ValidateCreateOrUpdate",
       requestType = common.request.QuerySecurityRequestProto.class,
-      responseType = util.errors.SummaryOuterClass.Summary.class,
+      responseType = util.errors.Summary.SummaryProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
-      util.errors.SummaryOuterClass.Summary> getValidateCreateOrUpdateMethod() {
-    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, util.errors.SummaryOuterClass.Summary> getValidateCreateOrUpdateMethod;
+      util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod() {
+    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod;
     if ((getValidateCreateOrUpdateMethod = SecurityGrpc.getValidateCreateOrUpdateMethod) == null) {
       synchronized (SecurityGrpc.class) {
         if ((getValidateCreateOrUpdateMethod = SecurityGrpc.getValidateCreateOrUpdateMethod) == null) {
           SecurityGrpc.getValidateCreateOrUpdateMethod = getValidateCreateOrUpdateMethod =
-              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, util.errors.SummaryOuterClass.Summary>newBuilder()
+              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, util.errors.Summary.SummaryProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ValidateCreateOrUpdate"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   common.request.QuerySecurityRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  util.errors.SummaryOuterClass.Summary.getDefaultInstance()))
+                  util.errors.Summary.SummaryProto.getDefaultInstance()))
               .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ValidateCreateOrUpdate"))
               .build();
         }
@@ -171,28 +171,28 @@ public final class SecurityGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
-      util.errors.SummaryOuterClass.Summary> getValidateQueryRequestMethod;
+      util.errors.Summary.SummaryProto> getValidateQueryRequestMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "ValidateQueryRequest",
       requestType = common.request.QuerySecurityRequestProto.class,
-      responseType = util.errors.SummaryOuterClass.Summary.class,
+      responseType = util.errors.Summary.SummaryProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto,
-      util.errors.SummaryOuterClass.Summary> getValidateQueryRequestMethod() {
-    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, util.errors.SummaryOuterClass.Summary> getValidateQueryRequestMethod;
+      util.errors.Summary.SummaryProto> getValidateQueryRequestMethod() {
+    io.grpc.MethodDescriptor<common.request.QuerySecurityRequestProto, util.errors.Summary.SummaryProto> getValidateQueryRequestMethod;
     if ((getValidateQueryRequestMethod = SecurityGrpc.getValidateQueryRequestMethod) == null) {
       synchronized (SecurityGrpc.class) {
         if ((getValidateQueryRequestMethod = SecurityGrpc.getValidateQueryRequestMethod) == null) {
           SecurityGrpc.getValidateQueryRequestMethod = getValidateQueryRequestMethod =
-              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, util.errors.SummaryOuterClass.Summary>newBuilder()
+              io.grpc.MethodDescriptor.<common.request.QuerySecurityRequestProto, util.errors.Summary.SummaryProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ValidateQueryRequest"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   common.request.QuerySecurityRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  util.errors.SummaryOuterClass.Summary.getDefaultInstance()))
+                  util.errors.Summary.SummaryProto.getDefaultInstance()))
               .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ValidateQueryRequest"))
               .build();
         }
@@ -280,14 +280,14 @@ public final class SecurityGrpc {
     /**
      */
     public void validateCreateOrUpdate(common.request.QuerySecurityRequestProto request,
-        io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary> responseObserver) {
+        io.grpc.stub.StreamObserver<util.errors.Summary.SummaryProto> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getValidateCreateOrUpdateMethod(), responseObserver);
     }
 
     /**
      */
     public void validateQueryRequest(common.request.QuerySecurityRequestProto request,
-        io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary> responseObserver) {
+        io.grpc.stub.StreamObserver<util.errors.Summary.SummaryProto> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getValidateQueryRequestMethod(), responseObserver);
     }
 
@@ -326,14 +326,14 @@ public final class SecurityGrpc {
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 common.request.QuerySecurityRequestProto,
-                util.errors.SummaryOuterClass.Summary>(
+                util.errors.Summary.SummaryProto>(
                   this, METHODID_VALIDATE_CREATE_OR_UPDATE)))
           .addMethod(
             getValidateQueryRequestMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 common.request.QuerySecurityRequestProto,
-                util.errors.SummaryOuterClass.Summary>(
+                util.errors.Summary.SummaryProto>(
                   this, METHODID_VALIDATE_QUERY_REQUEST)))
           .build();
     }
@@ -388,7 +388,7 @@ public final class SecurityGrpc {
     /**
      */
     public void validateCreateOrUpdate(common.request.QuerySecurityRequestProto request,
-        io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary> responseObserver) {
+        io.grpc.stub.StreamObserver<util.errors.Summary.SummaryProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getValidateCreateOrUpdateMethod(), getCallOptions()), request, responseObserver);
     }
@@ -396,7 +396,7 @@ public final class SecurityGrpc {
     /**
      */
     public void validateQueryRequest(common.request.QuerySecurityRequestProto request,
-        io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary> responseObserver) {
+        io.grpc.stub.StreamObserver<util.errors.Summary.SummaryProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getValidateQueryRequestMethod(), getCallOptions()), request, responseObserver);
     }
@@ -446,14 +446,14 @@ public final class SecurityGrpc {
 
     /**
      */
-    public util.errors.SummaryOuterClass.Summary validateCreateOrUpdate(common.request.QuerySecurityRequestProto request) {
+    public util.errors.Summary.SummaryProto validateCreateOrUpdate(common.request.QuerySecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getValidateCreateOrUpdateMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public util.errors.SummaryOuterClass.Summary validateQueryRequest(common.request.QuerySecurityRequestProto request) {
+    public util.errors.Summary.SummaryProto validateQueryRequest(common.request.QuerySecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getValidateQueryRequestMethod(), getCallOptions(), request);
     }
@@ -507,7 +507,7 @@ public final class SecurityGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<util.errors.SummaryOuterClass.Summary> validateCreateOrUpdate(
+    public com.google.common.util.concurrent.ListenableFuture<util.errors.Summary.SummaryProto> validateCreateOrUpdate(
         common.request.QuerySecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getValidateCreateOrUpdateMethod(), getCallOptions()), request);
@@ -515,7 +515,7 @@ public final class SecurityGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<util.errors.SummaryOuterClass.Summary> validateQueryRequest(
+    public com.google.common.util.concurrent.ListenableFuture<util.errors.Summary.SummaryProto> validateQueryRequest(
         common.request.QuerySecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getValidateQueryRequestMethod(), getCallOptions()), request);
@@ -564,11 +564,11 @@ public final class SecurityGrpc {
           break;
         case METHODID_VALIDATE_CREATE_OR_UPDATE:
           serviceImpl.validateCreateOrUpdate((common.request.QuerySecurityRequestProto) request,
-              (io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary>) responseObserver);
+              (io.grpc.stub.StreamObserver<util.errors.Summary.SummaryProto>) responseObserver);
           break;
         case METHODID_VALIDATE_QUERY_REQUEST:
           serviceImpl.validateQueryRequest((common.request.QuerySecurityRequestProto) request,
-              (io.grpc.stub.StreamObserver<util.errors.SummaryOuterClass.Summary>) responseObserver);
+              (io.grpc.stub.StreamObserver<util.errors.Summary.SummaryProto>) responseObserver);
           break;
         default:
           throw new AssertionError();

@@ -118,7 +118,9 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
             position.setFieldValue(field, fieldValue);
         });
 
-        proto.getMeasuresList().forEach(measureProto -> {
+        List<MeasureMapFieldEntry> measuresList = proto.getMeasuresList();
+
+        measuresList.forEach(measureProto -> {
             Measure measure = Measure.valueOf(measureProto.getMeasure().name());
             BigDecimal value = ProtoSerializationUtil.deserializeBigDecimal(measureProto.getMeasureDecimalValue());
 

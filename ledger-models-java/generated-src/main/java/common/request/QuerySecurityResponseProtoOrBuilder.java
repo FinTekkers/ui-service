@@ -101,4 +101,48 @@ public interface QuerySecurityResponseProtoOrBuilder extends
    */
   common.models.security.SecurityProtoOrBuilder getSecurityResponseOrBuilder(
       int index);
+
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  java.util.List<util.errors.Summary.SummaryProto> 
+      getErrorsOrWarningsList();
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  util.errors.Summary.SummaryProto getErrorsOrWarnings(int index);
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  int getErrorsOrWarningsCount();
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  java.util.List<? extends util.errors.Summary.SummaryProtoOrBuilder> 
+      getErrorsOrWarningsOrBuilderList();
+  /**
+   * <pre>
+   *Any errors or warnings related to this request
+   * </pre>
+   *
+   * <code>repeated .util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder(
+      int index);
 }

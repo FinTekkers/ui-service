@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package transaction;
+
+import "models/transaction/transaction.proto";
+
+option java_multiple_files = true;
+option java_package = "common.request";
+option java_outer_classname = "CreateTransactionRequestProtos";
+
+message CreateTransactionRequestProto {
+  string object_class = 1;
+  string version = 2;
+
+  transaction.TransactionProto create_transaction_input = 20;
+}
+
+

@@ -3,17 +3,17 @@ syntax = "proto3";
 package portfolio;
 
 import "models/portfolio/portfolio.proto";
-import "requests/portfolio/portfolio_request.proto";
+import "requests/portfolio/query_portfolio_request.proto";
 
 option java_multiple_files = true;
 option java_package = "common.request";
-option java_outer_classname = "PortfolioResponseProtos";
+option java_outer_classname = "QueryPortfolioResponseProtos";
 
-message PortfolioResponseProto {
+message QueryPortfolioResponseProto {
   string object_class = 1;
   string version = 2;
 
-  portfolio.PortfolioRequestProto create_portfolio_request = 20;
+  portfolio.QueryPortfolioRequestProto query_portfolio_request = 20;
 
   repeated portfolio.PortfolioProto portfolio_response = 30;
 }

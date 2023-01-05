@@ -289,7 +289,7 @@ pub struct PositionFilterProto {
     pub filters: ::prost::alloc::vec::Vec<FieldMapEntry>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PositionRequestProto {
+pub struct QueryPositionRequestProto {
     #[prost(string, tag = "1")]
     pub object_class: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
@@ -310,13 +310,13 @@ pub struct PositionRequestProto {
     pub as_of: ::core::option::Option<super::util::LocalTimestampProto>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PositionResponseProto {
+pub struct QueryPositionResponseProto {
     #[prost(string, tag = "1")]
     pub object_class: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub version: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "11")]
-    pub position_request: ::core::option::Option<PositionRequestProto>,
+    pub position_request: ::core::option::Option<QueryPositionRequestProto>,
     /// TODO - Think about how to model this long term; ISO code vs. UUID vs. full security object
     #[prost(string, tag = "12")]
     pub reporting_currency: ::prost::alloc::string::String,

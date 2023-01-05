@@ -2,22 +2,17 @@ syntax = "proto3";
 
 package portfolio;
 
-import "models/portfolio/portfolio.proto";
 import "models/util/uuid.proto";
-import "requests/util/operation.proto";
 import "models/position/position_filter.proto";
 
 option java_multiple_files = true;
 option java_package = "common.request";
-option java_outer_classname = "PortfolioRequestProtos";
+option java_outer_classname = "QueryPortfolioRequestProtos";
 
-message PortfolioRequestProto {
+message QueryPortfolioRequestProto {
   string object_class = 1;
   string version = 2;
 
-  util.RequestOperationTypeProto operation_type = 10;
-
-  portfolio.PortfolioProto create_portfolio_input = 20;
   repeated util.UUIDProto uuids = 21;
 
   position.PositionFilterProto search_portfolio_input = 22;
