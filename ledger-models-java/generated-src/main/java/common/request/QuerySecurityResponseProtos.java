@@ -31,28 +31,32 @@ public final class QuerySecurityResponseProtos {
       "\n/requests/security/query_security_respo" +
       "nse.proto\022\010security\032\036models/security/sec" +
       "urity.proto\032.requests/security/query_sec" +
-      "urity_request.proto\"\272\001\n\032QuerySecurityRes" +
-      "ponseProto\022\024\n\014object_class\030\001 \001(\t\022\017\n\007vers" +
-      "ion\030\002 \001(\t\022A\n\024query_security_input\030\024 \001(\0132" +
-      "#.security.QuerySecurityRequestProto\0222\n\021" +
-      "security_response\030\036 \003(\0132\027.security.Secur" +
-      "ityProtoB/\n\016common.requestB\033QuerySecurit" +
-      "yResponseProtosP\001b\006proto3"
+      "urity_request.proto\032\"requests/util/error" +
+      "s/summary.proto\"\361\001\n\032QuerySecurityRespons" +
+      "eProto\022\024\n\014object_class\030\001 \001(\t\022\017\n\007version\030" +
+      "\002 \001(\t\022A\n\024query_security_input\030\024 \001(\0132#.se" +
+      "curity.QuerySecurityRequestProto\0222\n\021secu" +
+      "rity_response\030\036 \003(\0132\027.security.SecurityP" +
+      "roto\0225\n\022errors_or_warnings\030( \003(\0132\031.util." +
+      "errors.SummaryProtoB/\n\016common.requestB\033Q" +
+      "uerySecurityResponseProtosP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           common.models.security.SecurityProtos.getDescriptor(),
           common.request.QuerySecurityRequestProtos.getDescriptor(),
+          util.errors.Summary.getDescriptor(),
         });
     internal_static_security_QuerySecurityResponseProto_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_security_QuerySecurityResponseProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_security_QuerySecurityResponseProto_descriptor,
-        new java.lang.String[] { "ObjectClass", "Version", "QuerySecurityInput", "SecurityResponse", });
+        new java.lang.String[] { "ObjectClass", "Version", "QuerySecurityInput", "SecurityResponse", "ErrorsOrWarnings", });
     common.models.security.SecurityProtos.getDescriptor();
     common.request.QuerySecurityRequestProtos.getDescriptor();
+    util.errors.Summary.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

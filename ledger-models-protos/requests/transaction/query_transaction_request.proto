@@ -2,24 +2,21 @@ syntax = "proto3";
 
 package transaction;
 
-import "models/transaction/transaction.proto";
 import "models/util/uuid.proto";
-import "requests/util/operation.proto";
 import "models/position/position_filter.proto";
 
 option java_multiple_files = true;
 option java_package = "common.request";
-option java_outer_classname = "TransactionRequestProtos";
+option java_outer_classname = "QueryTransactionRequestProtos";
 
-message TransactionRequestProto {
+message QueryTransactionRequestProto {
   string object_class = 1;
   string version = 2;
 
-  util.RequestOperationTypeProto operation_type = 10;
-
-  transaction.TransactionProto create_transaction_input = 20;
+  //The list of UUIDs to return
   repeated util.UUIDProto uuids = 21;
 
+  //A list of position filters that will filter securities that match.
   position.PositionFilterProto search_transaction_input = 22;
 }
 

@@ -74,30 +74,50 @@ pub struct TransactionProto {
     pub is_cancelled: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct TransactionRequestProto {
+pub struct QueryTransactionRequestProto {
     #[prost(string, tag = "1")]
     pub object_class: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub version: ::prost::alloc::string::String,
-    #[prost(enumeration = "super::util::RequestOperationTypeProto", tag = "10")]
-    pub operation_type: i32,
-    #[prost(message, optional, tag = "20")]
-    pub create_transaction_input: ::core::option::Option<TransactionProto>,
+    /// The list of UUIDs to return
     #[prost(message, repeated, tag = "21")]
     pub uuids: ::prost::alloc::vec::Vec<super::util::UuidProto>,
+    /// A list of position filters that will filter securities that match.
     #[prost(message, optional, tag = "22")]
     pub search_transaction_input: ::core::option::Option<
         super::position::PositionFilterProto,
     >,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct TransactionResponseProto {
+pub struct QueryTransactionResponseProto {
     #[prost(string, tag = "1")]
     pub object_class: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub version: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "20")]
-    pub create_transaction_request: ::core::option::Option<TransactionRequestProto>,
+    pub create_transaction_request: ::core::option::Option<QueryTransactionRequestProto>,
     #[prost(message, repeated, tag = "30")]
     pub transaction_response: ::prost::alloc::vec::Vec<TransactionProto>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateTransactionRequestProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "20")]
+    pub create_transaction_input: ::core::option::Option<TransactionProto>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateTransactionResponseProto {
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "20")]
+    pub create_transaction_request: ::core::option::Option<
+        CreateTransactionRequestProto,
+    >,
+    #[prost(message, optional, tag = "30")]
+    pub transaction_response: ::core::option::Option<TransactionProto>,
 }

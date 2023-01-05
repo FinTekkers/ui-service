@@ -30,18 +30,16 @@ public final class CreateSecurityRequestProtos {
     java.lang.String[] descriptorData = {
       "\n/requests/security/create_security_requ" +
       "est.proto\022\010security\032\036models/security/sec" +
-      "urity.proto\032%models/position/position_fi" +
-      "lter.proto\"t\n\032CreateSecurityRequestProto" +
-      "\022\024\n\014object_class\030\001 \001(\t\022\017\n\007version\030\002 \001(\t\022" +
-      "/\n\016security_input\030\024 \001(\0132\027.security.Secur" +
-      "ityProtoB/\n\016common.requestB\033CreateSecuri" +
-      "tyRequestProtosP\001b\006proto3"
+      "urity.proto\"t\n\032CreateSecurityRequestProt" +
+      "o\022\024\n\014object_class\030\001 \001(\t\022\017\n\007version\030\002 \001(\t" +
+      "\022/\n\016security_input\030\024 \001(\0132\027.security.Secu" +
+      "rityProtoB/\n\016common.requestB\033CreateSecur" +
+      "ityRequestProtosP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           common.models.security.SecurityProtos.getDescriptor(),
-          common.models.position.PositionFilterProtos.getDescriptor(),
         });
     internal_static_security_CreateSecurityRequestProto_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -50,7 +48,6 @@ public final class CreateSecurityRequestProtos {
         internal_static_security_CreateSecurityRequestProto_descriptor,
         new java.lang.String[] { "ObjectClass", "Version", "SecurityInput", });
     common.models.security.SecurityProtos.getDescriptor();
-    common.models.position.PositionFilterProtos.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

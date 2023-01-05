@@ -12,9 +12,9 @@ import "requests/util/operation.proto";
 
 option java_multiple_files = true;
 option java_package = "common.request";
-option java_outer_classname = "PositionRequestProtos";
+option java_outer_classname = "QueryPositionRequestProtos";
 
-message PositionRequestProto {
+message QueryPositionRequestProto {
   string object_class = 1;
   string version = 2;
 

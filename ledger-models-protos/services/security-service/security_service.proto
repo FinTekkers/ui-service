@@ -17,8 +17,8 @@ service Security {
     rpc Search (security.QuerySecurityRequestProto) returns (security.QuerySecurityResponseProto);
     rpc ListIDs (security.QuerySecurityRequestProto) returns (security.QuerySecurityResponseProto);
 
-    rpc ValidateCreateOrUpdate (security.QuerySecurityRequestProto) returns (util.errors.Summary);
-    rpc ValidateQueryRequest (security.QuerySecurityRequestProto) returns (util.errors.Summary);
+    rpc ValidateCreateOrUpdate (security.QuerySecurityRequestProto) returns (util.errors.SummaryProto);
+    rpc ValidateQueryRequest (security.QuerySecurityRequestProto) returns (util.errors.SummaryProto);
 
 //    rpc CreateSampleSecurity (security.SecurityRequestProto) returns (security.SecurityResponseProto);
 //    rpc CreateSampleSecurities (security.SecurityRequestProto) returns (security.SecurityResponseProto);

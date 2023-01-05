@@ -18,8 +18,6 @@ private static final long serialVersionUID = 0L;
   private CreateSecurityResponseProto() {
     objectClass_ = "";
     version_ = "";
-    securityRequest_ = java.util.Collections.emptyList();
-    securityResponse_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -42,7 +40,6 @@ private static final long serialVersionUID = 0L;
     if (extensionRegistry == null) {
       throw new java.lang.NullPointerException();
     }
-    int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
         com.google.protobuf.UnknownFieldSet.newBuilder();
     try {
@@ -66,21 +63,42 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 162: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              securityRequest_ = new java.util.ArrayList<common.request.CreateSecurityRequestProto>();
-              mutable_bitField0_ |= 0x00000001;
+            common.request.CreateSecurityRequestProto.Builder subBuilder = null;
+            if (securityRequest_ != null) {
+              subBuilder = securityRequest_.toBuilder();
             }
-            securityRequest_.add(
-                input.readMessage(common.request.CreateSecurityRequestProto.parser(), extensionRegistry));
+            securityRequest_ = input.readMessage(common.request.CreateSecurityRequestProto.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(securityRequest_);
+              securityRequest_ = subBuilder.buildPartial();
+            }
+
             break;
           }
           case 242: {
-            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-              securityResponse_ = new java.util.ArrayList<common.models.security.SecurityProto>();
-              mutable_bitField0_ |= 0x00000002;
+            common.models.security.SecurityProto.Builder subBuilder = null;
+            if (securityResponse_ != null) {
+              subBuilder = securityResponse_.toBuilder();
             }
-            securityResponse_.add(
-                input.readMessage(common.models.security.SecurityProto.parser(), extensionRegistry));
+            securityResponse_ = input.readMessage(common.models.security.SecurityProto.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(securityResponse_);
+              securityResponse_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
+          case 322: {
+            util.errors.Summary.SummaryProto.Builder subBuilder = null;
+            if (errorsOrWarnings_ != null) {
+              subBuilder = errorsOrWarnings_.toBuilder();
+            }
+            errorsOrWarnings_ = input.readMessage(util.errors.Summary.SummaryProto.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(errorsOrWarnings_);
+              errorsOrWarnings_ = subBuilder.buildPartial();
+            }
+
             break;
           }
           default: {
@@ -98,12 +116,6 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        securityRequest_ = java.util.Collections.unmodifiableList(securityRequest_);
-      }
-      if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        securityResponse_ = java.util.Collections.unmodifiableList(securityResponse_);
-      }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
@@ -198,123 +210,120 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int SECURITY_REQUEST_FIELD_NUMBER = 20;
-  private java.util.List<common.request.CreateSecurityRequestProto> securityRequest_;
+  private common.request.CreateSecurityRequestProto securityRequest_;
   /**
    * <pre>
    *The input that was provided for this request.
    * </pre>
    *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+   * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
+   * @return Whether the securityRequest field is set.
    */
   @java.lang.Override
-  public java.util.List<common.request.CreateSecurityRequestProto> getSecurityRequestList() {
-    return securityRequest_;
+  public boolean hasSecurityRequest() {
+    return securityRequest_ != null;
   }
   /**
    * <pre>
    *The input that was provided for this request.
    * </pre>
    *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+   * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
+   * @return The securityRequest.
    */
   @java.lang.Override
-  public java.util.List<? extends common.request.CreateSecurityRequestProtoOrBuilder> 
-      getSecurityRequestOrBuilderList() {
-    return securityRequest_;
+  public common.request.CreateSecurityRequestProto getSecurityRequest() {
+    return securityRequest_ == null ? common.request.CreateSecurityRequestProto.getDefaultInstance() : securityRequest_;
   }
   /**
    * <pre>
    *The input that was provided for this request.
    * </pre>
    *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+   * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
    */
   @java.lang.Override
-  public int getSecurityRequestCount() {
-    return securityRequest_.size();
-  }
-  /**
-   * <pre>
-   *The input that was provided for this request.
-   * </pre>
-   *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-   */
-  @java.lang.Override
-  public common.request.CreateSecurityRequestProto getSecurityRequest(int index) {
-    return securityRequest_.get(index);
-  }
-  /**
-   * <pre>
-   *The input that was provided for this request.
-   * </pre>
-   *
-   * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-   */
-  @java.lang.Override
-  public common.request.CreateSecurityRequestProtoOrBuilder getSecurityRequestOrBuilder(
-      int index) {
-    return securityRequest_.get(index);
+  public common.request.CreateSecurityRequestProtoOrBuilder getSecurityRequestOrBuilder() {
+    return getSecurityRequest();
   }
 
   public static final int SECURITY_RESPONSE_FIELD_NUMBER = 30;
-  private java.util.List<common.models.security.SecurityProto> securityResponse_;
+  private common.models.security.SecurityProto securityResponse_;
   /**
    * <pre>
    *The security (or securities) that were created in response to this request
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.security.SecurityProto security_response = 30;</code>
+   * @return Whether the securityResponse field is set.
    */
   @java.lang.Override
-  public java.util.List<common.models.security.SecurityProto> getSecurityResponseList() {
-    return securityResponse_;
+  public boolean hasSecurityResponse() {
+    return securityResponse_ != null;
   }
   /**
    * <pre>
    *The security (or securities) that were created in response to this request
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.security.SecurityProto security_response = 30;</code>
+   * @return The securityResponse.
    */
   @java.lang.Override
-  public java.util.List<? extends common.models.security.SecurityProtoOrBuilder> 
-      getSecurityResponseOrBuilderList() {
-    return securityResponse_;
+  public common.models.security.SecurityProto getSecurityResponse() {
+    return securityResponse_ == null ? common.models.security.SecurityProto.getDefaultInstance() : securityResponse_;
   }
   /**
    * <pre>
    *The security (or securities) that were created in response to this request
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.security.SecurityProto security_response = 30;</code>
    */
   @java.lang.Override
-  public int getSecurityResponseCount() {
-    return securityResponse_.size();
+  public common.models.security.SecurityProtoOrBuilder getSecurityResponseOrBuilder() {
+    return getSecurityResponse();
+  }
+
+  public static final int ERRORS_OR_WARNINGS_FIELD_NUMBER = 40;
+  private util.errors.Summary.SummaryProto errorsOrWarnings_;
+  /**
+   * <pre>
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
+   * </pre>
+   *
+   * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   * @return Whether the errorsOrWarnings field is set.
+   */
+  @java.lang.Override
+  public boolean hasErrorsOrWarnings() {
+    return errorsOrWarnings_ != null;
   }
   /**
    * <pre>
-   *The security (or securities) that were created in response to this request
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   * @return The errorsOrWarnings.
    */
   @java.lang.Override
-  public common.models.security.SecurityProto getSecurityResponse(int index) {
-    return securityResponse_.get(index);
+  public util.errors.Summary.SummaryProto getErrorsOrWarnings() {
+    return errorsOrWarnings_ == null ? util.errors.Summary.SummaryProto.getDefaultInstance() : errorsOrWarnings_;
   }
   /**
    * <pre>
-   *The security (or securities) that were created in response to this request
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
    * </pre>
    *
-   * <code>repeated .security.SecurityProto security_response = 30;</code>
+   * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
    */
   @java.lang.Override
-  public common.models.security.SecurityProtoOrBuilder getSecurityResponseOrBuilder(
-      int index) {
-    return securityResponse_.get(index);
+  public util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder() {
+    return getErrorsOrWarnings();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -337,11 +346,14 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
     }
-    for (int i = 0; i < securityRequest_.size(); i++) {
-      output.writeMessage(20, securityRequest_.get(i));
+    if (securityRequest_ != null) {
+      output.writeMessage(20, getSecurityRequest());
     }
-    for (int i = 0; i < securityResponse_.size(); i++) {
-      output.writeMessage(30, securityResponse_.get(i));
+    if (securityResponse_ != null) {
+      output.writeMessage(30, getSecurityResponse());
+    }
+    if (errorsOrWarnings_ != null) {
+      output.writeMessage(40, getErrorsOrWarnings());
     }
     unknownFields.writeTo(output);
   }
@@ -358,13 +370,17 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
     }
-    for (int i = 0; i < securityRequest_.size(); i++) {
+    if (securityRequest_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(20, securityRequest_.get(i));
+        .computeMessageSize(20, getSecurityRequest());
     }
-    for (int i = 0; i < securityResponse_.size(); i++) {
+    if (securityResponse_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(30, securityResponse_.get(i));
+        .computeMessageSize(30, getSecurityResponse());
+    }
+    if (errorsOrWarnings_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(40, getErrorsOrWarnings());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -385,10 +401,21 @@ private static final long serialVersionUID = 0L;
         .equals(other.getObjectClass())) return false;
     if (!getVersion()
         .equals(other.getVersion())) return false;
-    if (!getSecurityRequestList()
-        .equals(other.getSecurityRequestList())) return false;
-    if (!getSecurityResponseList()
-        .equals(other.getSecurityResponseList())) return false;
+    if (hasSecurityRequest() != other.hasSecurityRequest()) return false;
+    if (hasSecurityRequest()) {
+      if (!getSecurityRequest()
+          .equals(other.getSecurityRequest())) return false;
+    }
+    if (hasSecurityResponse() != other.hasSecurityResponse()) return false;
+    if (hasSecurityResponse()) {
+      if (!getSecurityResponse()
+          .equals(other.getSecurityResponse())) return false;
+    }
+    if (hasErrorsOrWarnings() != other.hasErrorsOrWarnings()) return false;
+    if (hasErrorsOrWarnings()) {
+      if (!getErrorsOrWarnings()
+          .equals(other.getErrorsOrWarnings())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -404,13 +431,17 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getObjectClass().hashCode();
     hash = (37 * hash) + VERSION_FIELD_NUMBER;
     hash = (53 * hash) + getVersion().hashCode();
-    if (getSecurityRequestCount() > 0) {
+    if (hasSecurityRequest()) {
       hash = (37 * hash) + SECURITY_REQUEST_FIELD_NUMBER;
-      hash = (53 * hash) + getSecurityRequestList().hashCode();
+      hash = (53 * hash) + getSecurityRequest().hashCode();
     }
-    if (getSecurityResponseCount() > 0) {
+    if (hasSecurityResponse()) {
       hash = (37 * hash) + SECURITY_RESPONSE_FIELD_NUMBER;
-      hash = (53 * hash) + getSecurityResponseList().hashCode();
+      hash = (53 * hash) + getSecurityResponse().hashCode();
+    }
+    if (hasErrorsOrWarnings()) {
+      hash = (37 * hash) + ERRORS_OR_WARNINGS_FIELD_NUMBER;
+      hash = (53 * hash) + getErrorsOrWarnings().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -540,8 +571,6 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
-        getSecurityRequestFieldBuilder();
-        getSecurityResponseFieldBuilder();
       }
     }
     @java.lang.Override
@@ -552,16 +581,22 @@ private static final long serialVersionUID = 0L;
       version_ = "";
 
       if (securityRequestBuilder_ == null) {
-        securityRequest_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        securityRequest_ = null;
       } else {
-        securityRequestBuilder_.clear();
+        securityRequest_ = null;
+        securityRequestBuilder_ = null;
       }
       if (securityResponseBuilder_ == null) {
-        securityResponse_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        securityResponse_ = null;
       } else {
-        securityResponseBuilder_.clear();
+        securityResponse_ = null;
+        securityResponseBuilder_ = null;
+      }
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarnings_ = null;
+      } else {
+        errorsOrWarnings_ = null;
+        errorsOrWarningsBuilder_ = null;
       }
       return this;
     }
@@ -589,26 +624,22 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public common.request.CreateSecurityResponseProto buildPartial() {
       common.request.CreateSecurityResponseProto result = new common.request.CreateSecurityResponseProto(this);
-      int from_bitField0_ = bitField0_;
       result.objectClass_ = objectClass_;
       result.version_ = version_;
       if (securityRequestBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
-          securityRequest_ = java.util.Collections.unmodifiableList(securityRequest_);
-          bitField0_ = (bitField0_ & ~0x00000001);
-        }
         result.securityRequest_ = securityRequest_;
       } else {
         result.securityRequest_ = securityRequestBuilder_.build();
       }
       if (securityResponseBuilder_ == null) {
-        if (((bitField0_ & 0x00000002) != 0)) {
-          securityResponse_ = java.util.Collections.unmodifiableList(securityResponse_);
-          bitField0_ = (bitField0_ & ~0x00000002);
-        }
         result.securityResponse_ = securityResponse_;
       } else {
         result.securityResponse_ = securityResponseBuilder_.build();
+      }
+      if (errorsOrWarningsBuilder_ == null) {
+        result.errorsOrWarnings_ = errorsOrWarnings_;
+      } else {
+        result.errorsOrWarnings_ = errorsOrWarningsBuilder_.build();
       }
       onBuilt();
       return result;
@@ -666,57 +697,14 @@ private static final long serialVersionUID = 0L;
         version_ = other.version_;
         onChanged();
       }
-      if (securityRequestBuilder_ == null) {
-        if (!other.securityRequest_.isEmpty()) {
-          if (securityRequest_.isEmpty()) {
-            securityRequest_ = other.securityRequest_;
-            bitField0_ = (bitField0_ & ~0x00000001);
-          } else {
-            ensureSecurityRequestIsMutable();
-            securityRequest_.addAll(other.securityRequest_);
-          }
-          onChanged();
-        }
-      } else {
-        if (!other.securityRequest_.isEmpty()) {
-          if (securityRequestBuilder_.isEmpty()) {
-            securityRequestBuilder_.dispose();
-            securityRequestBuilder_ = null;
-            securityRequest_ = other.securityRequest_;
-            bitField0_ = (bitField0_ & ~0x00000001);
-            securityRequestBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getSecurityRequestFieldBuilder() : null;
-          } else {
-            securityRequestBuilder_.addAllMessages(other.securityRequest_);
-          }
-        }
+      if (other.hasSecurityRequest()) {
+        mergeSecurityRequest(other.getSecurityRequest());
       }
-      if (securityResponseBuilder_ == null) {
-        if (!other.securityResponse_.isEmpty()) {
-          if (securityResponse_.isEmpty()) {
-            securityResponse_ = other.securityResponse_;
-            bitField0_ = (bitField0_ & ~0x00000002);
-          } else {
-            ensureSecurityResponseIsMutable();
-            securityResponse_.addAll(other.securityResponse_);
-          }
-          onChanged();
-        }
-      } else {
-        if (!other.securityResponse_.isEmpty()) {
-          if (securityResponseBuilder_.isEmpty()) {
-            securityResponseBuilder_.dispose();
-            securityResponseBuilder_ = null;
-            securityResponse_ = other.securityResponse_;
-            bitField0_ = (bitField0_ & ~0x00000002);
-            securityResponseBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getSecurityResponseFieldBuilder() : null;
-          } else {
-            securityResponseBuilder_.addAllMessages(other.securityResponse_);
-          }
-        }
+      if (other.hasSecurityResponse()) {
+        mergeSecurityResponse(other.getSecurityResponse());
+      }
+      if (other.hasErrorsOrWarnings()) {
+        mergeErrorsOrWarnings(other.getErrorsOrWarnings());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -746,7 +734,6 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    private int bitField0_;
 
     private java.lang.Object objectClass_ = "";
     /**
@@ -900,156 +887,71 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.util.List<common.request.CreateSecurityRequestProto> securityRequest_ =
-      java.util.Collections.emptyList();
-    private void ensureSecurityRequestIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
-        securityRequest_ = new java.util.ArrayList<common.request.CreateSecurityRequestProto>(securityRequest_);
-        bitField0_ |= 0x00000001;
-       }
-    }
-
-    private com.google.protobuf.RepeatedFieldBuilderV3<
+    private common.request.CreateSecurityRequestProto securityRequest_;
+    private com.google.protobuf.SingleFieldBuilderV3<
         common.request.CreateSecurityRequestProto, common.request.CreateSecurityRequestProto.Builder, common.request.CreateSecurityRequestProtoOrBuilder> securityRequestBuilder_;
+    /**
+     * <pre>
+     *The input that was provided for this request.
+     * </pre>
+     *
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
+     * @return Whether the securityRequest field is set.
+     */
+    public boolean hasSecurityRequest() {
+      return securityRequestBuilder_ != null || securityRequest_ != null;
+    }
+    /**
+     * <pre>
+     *The input that was provided for this request.
+     * </pre>
+     *
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
+     * @return The securityRequest.
+     */
+    public common.request.CreateSecurityRequestProto getSecurityRequest() {
+      if (securityRequestBuilder_ == null) {
+        return securityRequest_ == null ? common.request.CreateSecurityRequestProto.getDefaultInstance() : securityRequest_;
+      } else {
+        return securityRequestBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     *The input that was provided for this request.
+     * </pre>
+     *
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
+     */
+    public Builder setSecurityRequest(common.request.CreateSecurityRequestProto value) {
+      if (securityRequestBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        securityRequest_ = value;
+        onChanged();
+      } else {
+        securityRequestBuilder_.setMessage(value);
+      }
 
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public java.util.List<common.request.CreateSecurityRequestProto> getSecurityRequestList() {
-      if (securityRequestBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(securityRequest_);
-      } else {
-        return securityRequestBuilder_.getMessageList();
-      }
+      return this;
     }
     /**
      * <pre>
      *The input that was provided for this request.
      * </pre>
      *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public int getSecurityRequestCount() {
-      if (securityRequestBuilder_ == null) {
-        return securityRequest_.size();
-      } else {
-        return securityRequestBuilder_.getCount();
-      }
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public common.request.CreateSecurityRequestProto getSecurityRequest(int index) {
-      if (securityRequestBuilder_ == null) {
-        return securityRequest_.get(index);
-      } else {
-        return securityRequestBuilder_.getMessage(index);
-      }
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
      */
     public Builder setSecurityRequest(
-        int index, common.request.CreateSecurityRequestProto value) {
-      if (securityRequestBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityRequestIsMutable();
-        securityRequest_.set(index, value);
-        onChanged();
-      } else {
-        securityRequestBuilder_.setMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public Builder setSecurityRequest(
-        int index, common.request.CreateSecurityRequestProto.Builder builderForValue) {
-      if (securityRequestBuilder_ == null) {
-        ensureSecurityRequestIsMutable();
-        securityRequest_.set(index, builderForValue.build());
-        onChanged();
-      } else {
-        securityRequestBuilder_.setMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public Builder addSecurityRequest(common.request.CreateSecurityRequestProto value) {
-      if (securityRequestBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityRequestIsMutable();
-        securityRequest_.add(value);
-        onChanged();
-      } else {
-        securityRequestBuilder_.addMessage(value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public Builder addSecurityRequest(
-        int index, common.request.CreateSecurityRequestProto value) {
-      if (securityRequestBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityRequestIsMutable();
-        securityRequest_.add(index, value);
-        onChanged();
-      } else {
-        securityRequestBuilder_.addMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public Builder addSecurityRequest(
         common.request.CreateSecurityRequestProto.Builder builderForValue) {
       if (securityRequestBuilder_ == null) {
-        ensureSecurityRequestIsMutable();
-        securityRequest_.add(builderForValue.build());
+        securityRequest_ = builderForValue.build();
         onChanged();
       } else {
-        securityRequestBuilder_.addMessage(builderForValue.build());
+        securityRequestBuilder_.setMessage(builderForValue.build());
       }
+
       return this;
     }
     /**
@@ -1057,17 +959,21 @@ private static final long serialVersionUID = 0L;
      *The input that was provided for this request.
      * </pre>
      *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
      */
-    public Builder addSecurityRequest(
-        int index, common.request.CreateSecurityRequestProto.Builder builderForValue) {
+    public Builder mergeSecurityRequest(common.request.CreateSecurityRequestProto value) {
       if (securityRequestBuilder_ == null) {
-        ensureSecurityRequestIsMutable();
-        securityRequest_.add(index, builderForValue.build());
+        if (securityRequest_ != null) {
+          securityRequest_ =
+            common.request.CreateSecurityRequestProto.newBuilder(securityRequest_).mergeFrom(value).buildPartial();
+        } else {
+          securityRequest_ = value;
+        }
         onChanged();
       } else {
-        securityRequestBuilder_.addMessage(index, builderForValue.build());
+        securityRequestBuilder_.mergeFrom(value);
       }
+
       return this;
     }
     /**
@@ -1075,35 +981,17 @@ private static final long serialVersionUID = 0L;
      *The input that was provided for this request.
      * </pre>
      *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public Builder addAllSecurityRequest(
-        java.lang.Iterable<? extends common.request.CreateSecurityRequestProto> values) {
-      if (securityRequestBuilder_ == null) {
-        ensureSecurityRequestIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, securityRequest_);
-        onChanged();
-      } else {
-        securityRequestBuilder_.addAllMessages(values);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
      */
     public Builder clearSecurityRequest() {
       if (securityRequestBuilder_ == null) {
-        securityRequest_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        securityRequest_ = null;
         onChanged();
       } else {
-        securityRequestBuilder_.clear();
+        securityRequest_ = null;
+        securityRequestBuilder_ = null;
       }
+
       return this;
     }
     /**
@@ -1111,56 +999,26 @@ private static final long serialVersionUID = 0L;
      *The input that was provided for this request.
      * </pre>
      *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
      */
-    public Builder removeSecurityRequest(int index) {
-      if (securityRequestBuilder_ == null) {
-        ensureSecurityRequestIsMutable();
-        securityRequest_.remove(index);
-        onChanged();
-      } else {
-        securityRequestBuilder_.remove(index);
-      }
-      return this;
+    public common.request.CreateSecurityRequestProto.Builder getSecurityRequestBuilder() {
+      
+      onChanged();
+      return getSecurityRequestFieldBuilder().getBuilder();
     }
     /**
      * <pre>
      *The input that was provided for this request.
      * </pre>
      *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
      */
-    public common.request.CreateSecurityRequestProto.Builder getSecurityRequestBuilder(
-        int index) {
-      return getSecurityRequestFieldBuilder().getBuilder(index);
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public common.request.CreateSecurityRequestProtoOrBuilder getSecurityRequestOrBuilder(
-        int index) {
-      if (securityRequestBuilder_ == null) {
-        return securityRequest_.get(index);  } else {
-        return securityRequestBuilder_.getMessageOrBuilder(index);
-      }
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public java.util.List<? extends common.request.CreateSecurityRequestProtoOrBuilder> 
-         getSecurityRequestOrBuilderList() {
+    public common.request.CreateSecurityRequestProtoOrBuilder getSecurityRequestOrBuilder() {
       if (securityRequestBuilder_ != null) {
-        return securityRequestBuilder_.getMessageOrBuilderList();
+        return securityRequestBuilder_.getMessageOrBuilder();
       } else {
-        return java.util.Collections.unmodifiableList(securityRequest_);
+        return securityRequest_ == null ?
+            common.request.CreateSecurityRequestProto.getDefaultInstance() : securityRequest_;
       }
     }
     /**
@@ -1168,43 +1026,15 @@ private static final long serialVersionUID = 0L;
      *The input that was provided for this request.
      * </pre>
      *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
+     * <code>.security.CreateSecurityRequestProto security_request = 20;</code>
      */
-    public common.request.CreateSecurityRequestProto.Builder addSecurityRequestBuilder() {
-      return getSecurityRequestFieldBuilder().addBuilder(
-          common.request.CreateSecurityRequestProto.getDefaultInstance());
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public common.request.CreateSecurityRequestProto.Builder addSecurityRequestBuilder(
-        int index) {
-      return getSecurityRequestFieldBuilder().addBuilder(
-          index, common.request.CreateSecurityRequestProto.getDefaultInstance());
-    }
-    /**
-     * <pre>
-     *The input that was provided for this request.
-     * </pre>
-     *
-     * <code>repeated .security.CreateSecurityRequestProto security_request = 20;</code>
-     */
-    public java.util.List<common.request.CreateSecurityRequestProto.Builder> 
-         getSecurityRequestBuilderList() {
-      return getSecurityRequestFieldBuilder().getBuilderList();
-    }
-    private com.google.protobuf.RepeatedFieldBuilderV3<
+    private com.google.protobuf.SingleFieldBuilderV3<
         common.request.CreateSecurityRequestProto, common.request.CreateSecurityRequestProto.Builder, common.request.CreateSecurityRequestProtoOrBuilder> 
         getSecurityRequestFieldBuilder() {
       if (securityRequestBuilder_ == null) {
-        securityRequestBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+        securityRequestBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
             common.request.CreateSecurityRequestProto, common.request.CreateSecurityRequestProto.Builder, common.request.CreateSecurityRequestProtoOrBuilder>(
-                securityRequest_,
-                ((bitField0_ & 0x00000001) != 0),
+                getSecurityRequest(),
                 getParentForChildren(),
                 isClean());
         securityRequest_ = null;
@@ -1212,156 +1042,71 @@ private static final long serialVersionUID = 0L;
       return securityRequestBuilder_;
     }
 
-    private java.util.List<common.models.security.SecurityProto> securityResponse_ =
-      java.util.Collections.emptyList();
-    private void ensureSecurityResponseIsMutable() {
-      if (!((bitField0_ & 0x00000002) != 0)) {
-        securityResponse_ = new java.util.ArrayList<common.models.security.SecurityProto>(securityResponse_);
-        bitField0_ |= 0x00000002;
-       }
-    }
-
-    private com.google.protobuf.RepeatedFieldBuilderV3<
+    private common.models.security.SecurityProto securityResponse_;
+    private com.google.protobuf.SingleFieldBuilderV3<
         common.models.security.SecurityProto, common.models.security.SecurityProto.Builder, common.models.security.SecurityProtoOrBuilder> securityResponseBuilder_;
+    /**
+     * <pre>
+     *The security (or securities) that were created in response to this request
+     * </pre>
+     *
+     * <code>.security.SecurityProto security_response = 30;</code>
+     * @return Whether the securityResponse field is set.
+     */
+    public boolean hasSecurityResponse() {
+      return securityResponseBuilder_ != null || securityResponse_ != null;
+    }
+    /**
+     * <pre>
+     *The security (or securities) that were created in response to this request
+     * </pre>
+     *
+     * <code>.security.SecurityProto security_response = 30;</code>
+     * @return The securityResponse.
+     */
+    public common.models.security.SecurityProto getSecurityResponse() {
+      if (securityResponseBuilder_ == null) {
+        return securityResponse_ == null ? common.models.security.SecurityProto.getDefaultInstance() : securityResponse_;
+      } else {
+        return securityResponseBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     *The security (or securities) that were created in response to this request
+     * </pre>
+     *
+     * <code>.security.SecurityProto security_response = 30;</code>
+     */
+    public Builder setSecurityResponse(common.models.security.SecurityProto value) {
+      if (securityResponseBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        securityResponse_ = value;
+        onChanged();
+      } else {
+        securityResponseBuilder_.setMessage(value);
+      }
 
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public java.util.List<common.models.security.SecurityProto> getSecurityResponseList() {
-      if (securityResponseBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(securityResponse_);
-      } else {
-        return securityResponseBuilder_.getMessageList();
-      }
+      return this;
     }
     /**
      * <pre>
      *The security (or securities) that were created in response to this request
      * </pre>
      *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public int getSecurityResponseCount() {
-      if (securityResponseBuilder_ == null) {
-        return securityResponse_.size();
-      } else {
-        return securityResponseBuilder_.getCount();
-      }
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public common.models.security.SecurityProto getSecurityResponse(int index) {
-      if (securityResponseBuilder_ == null) {
-        return securityResponse_.get(index);
-      } else {
-        return securityResponseBuilder_.getMessage(index);
-      }
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
+     * <code>.security.SecurityProto security_response = 30;</code>
      */
     public Builder setSecurityResponse(
-        int index, common.models.security.SecurityProto value) {
-      if (securityResponseBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityResponseIsMutable();
-        securityResponse_.set(index, value);
-        onChanged();
-      } else {
-        securityResponseBuilder_.setMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public Builder setSecurityResponse(
-        int index, common.models.security.SecurityProto.Builder builderForValue) {
-      if (securityResponseBuilder_ == null) {
-        ensureSecurityResponseIsMutable();
-        securityResponse_.set(index, builderForValue.build());
-        onChanged();
-      } else {
-        securityResponseBuilder_.setMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public Builder addSecurityResponse(common.models.security.SecurityProto value) {
-      if (securityResponseBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityResponseIsMutable();
-        securityResponse_.add(value);
-        onChanged();
-      } else {
-        securityResponseBuilder_.addMessage(value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public Builder addSecurityResponse(
-        int index, common.models.security.SecurityProto value) {
-      if (securityResponseBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureSecurityResponseIsMutable();
-        securityResponse_.add(index, value);
-        onChanged();
-      } else {
-        securityResponseBuilder_.addMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public Builder addSecurityResponse(
         common.models.security.SecurityProto.Builder builderForValue) {
       if (securityResponseBuilder_ == null) {
-        ensureSecurityResponseIsMutable();
-        securityResponse_.add(builderForValue.build());
+        securityResponse_ = builderForValue.build();
         onChanged();
       } else {
-        securityResponseBuilder_.addMessage(builderForValue.build());
+        securityResponseBuilder_.setMessage(builderForValue.build());
       }
+
       return this;
     }
     /**
@@ -1369,17 +1114,21 @@ private static final long serialVersionUID = 0L;
      *The security (or securities) that were created in response to this request
      * </pre>
      *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
+     * <code>.security.SecurityProto security_response = 30;</code>
      */
-    public Builder addSecurityResponse(
-        int index, common.models.security.SecurityProto.Builder builderForValue) {
+    public Builder mergeSecurityResponse(common.models.security.SecurityProto value) {
       if (securityResponseBuilder_ == null) {
-        ensureSecurityResponseIsMutable();
-        securityResponse_.add(index, builderForValue.build());
+        if (securityResponse_ != null) {
+          securityResponse_ =
+            common.models.security.SecurityProto.newBuilder(securityResponse_).mergeFrom(value).buildPartial();
+        } else {
+          securityResponse_ = value;
+        }
         onChanged();
       } else {
-        securityResponseBuilder_.addMessage(index, builderForValue.build());
+        securityResponseBuilder_.mergeFrom(value);
       }
+
       return this;
     }
     /**
@@ -1387,35 +1136,17 @@ private static final long serialVersionUID = 0L;
      *The security (or securities) that were created in response to this request
      * </pre>
      *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public Builder addAllSecurityResponse(
-        java.lang.Iterable<? extends common.models.security.SecurityProto> values) {
-      if (securityResponseBuilder_ == null) {
-        ensureSecurityResponseIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, securityResponse_);
-        onChanged();
-      } else {
-        securityResponseBuilder_.addAllMessages(values);
-      }
-      return this;
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
+     * <code>.security.SecurityProto security_response = 30;</code>
      */
     public Builder clearSecurityResponse() {
       if (securityResponseBuilder_ == null) {
-        securityResponse_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        securityResponse_ = null;
         onChanged();
       } else {
-        securityResponseBuilder_.clear();
+        securityResponse_ = null;
+        securityResponseBuilder_ = null;
       }
+
       return this;
     }
     /**
@@ -1423,56 +1154,26 @@ private static final long serialVersionUID = 0L;
      *The security (or securities) that were created in response to this request
      * </pre>
      *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
+     * <code>.security.SecurityProto security_response = 30;</code>
      */
-    public Builder removeSecurityResponse(int index) {
-      if (securityResponseBuilder_ == null) {
-        ensureSecurityResponseIsMutable();
-        securityResponse_.remove(index);
-        onChanged();
-      } else {
-        securityResponseBuilder_.remove(index);
-      }
-      return this;
+    public common.models.security.SecurityProto.Builder getSecurityResponseBuilder() {
+      
+      onChanged();
+      return getSecurityResponseFieldBuilder().getBuilder();
     }
     /**
      * <pre>
      *The security (or securities) that were created in response to this request
      * </pre>
      *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
+     * <code>.security.SecurityProto security_response = 30;</code>
      */
-    public common.models.security.SecurityProto.Builder getSecurityResponseBuilder(
-        int index) {
-      return getSecurityResponseFieldBuilder().getBuilder(index);
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public common.models.security.SecurityProtoOrBuilder getSecurityResponseOrBuilder(
-        int index) {
-      if (securityResponseBuilder_ == null) {
-        return securityResponse_.get(index);  } else {
-        return securityResponseBuilder_.getMessageOrBuilder(index);
-      }
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public java.util.List<? extends common.models.security.SecurityProtoOrBuilder> 
-         getSecurityResponseOrBuilderList() {
+    public common.models.security.SecurityProtoOrBuilder getSecurityResponseOrBuilder() {
       if (securityResponseBuilder_ != null) {
-        return securityResponseBuilder_.getMessageOrBuilderList();
+        return securityResponseBuilder_.getMessageOrBuilder();
       } else {
-        return java.util.Collections.unmodifiableList(securityResponse_);
+        return securityResponse_ == null ?
+            common.models.security.SecurityProto.getDefaultInstance() : securityResponse_;
       }
     }
     /**
@@ -1480,48 +1181,184 @@ private static final long serialVersionUID = 0L;
      *The security (or securities) that were created in response to this request
      * </pre>
      *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
+     * <code>.security.SecurityProto security_response = 30;</code>
      */
-    public common.models.security.SecurityProto.Builder addSecurityResponseBuilder() {
-      return getSecurityResponseFieldBuilder().addBuilder(
-          common.models.security.SecurityProto.getDefaultInstance());
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public common.models.security.SecurityProto.Builder addSecurityResponseBuilder(
-        int index) {
-      return getSecurityResponseFieldBuilder().addBuilder(
-          index, common.models.security.SecurityProto.getDefaultInstance());
-    }
-    /**
-     * <pre>
-     *The security (or securities) that were created in response to this request
-     * </pre>
-     *
-     * <code>repeated .security.SecurityProto security_response = 30;</code>
-     */
-    public java.util.List<common.models.security.SecurityProto.Builder> 
-         getSecurityResponseBuilderList() {
-      return getSecurityResponseFieldBuilder().getBuilderList();
-    }
-    private com.google.protobuf.RepeatedFieldBuilderV3<
+    private com.google.protobuf.SingleFieldBuilderV3<
         common.models.security.SecurityProto, common.models.security.SecurityProto.Builder, common.models.security.SecurityProtoOrBuilder> 
         getSecurityResponseFieldBuilder() {
       if (securityResponseBuilder_ == null) {
-        securityResponseBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+        securityResponseBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
             common.models.security.SecurityProto, common.models.security.SecurityProto.Builder, common.models.security.SecurityProtoOrBuilder>(
-                securityResponse_,
-                ((bitField0_ & 0x00000002) != 0),
+                getSecurityResponse(),
                 getParentForChildren(),
                 isClean());
         securityResponse_ = null;
       }
       return securityResponseBuilder_;
+    }
+
+    private util.errors.Summary.SummaryProto errorsOrWarnings_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        util.errors.Summary.SummaryProto, util.errors.Summary.SummaryProto.Builder, util.errors.Summary.SummaryProtoOrBuilder> errorsOrWarningsBuilder_;
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     * @return Whether the errorsOrWarnings field is set.
+     */
+    public boolean hasErrorsOrWarnings() {
+      return errorsOrWarningsBuilder_ != null || errorsOrWarnings_ != null;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     * @return The errorsOrWarnings.
+     */
+    public util.errors.Summary.SummaryProto getErrorsOrWarnings() {
+      if (errorsOrWarningsBuilder_ == null) {
+        return errorsOrWarnings_ == null ? util.errors.Summary.SummaryProto.getDefaultInstance() : errorsOrWarnings_;
+      } else {
+        return errorsOrWarningsBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder setErrorsOrWarnings(util.errors.Summary.SummaryProto value) {
+      if (errorsOrWarningsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        errorsOrWarnings_ = value;
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder setErrorsOrWarnings(
+        util.errors.Summary.SummaryProto.Builder builderForValue) {
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarnings_ = builderForValue.build();
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder mergeErrorsOrWarnings(util.errors.Summary.SummaryProto value) {
+      if (errorsOrWarningsBuilder_ == null) {
+        if (errorsOrWarnings_ != null) {
+          errorsOrWarnings_ =
+            util.errors.Summary.SummaryProto.newBuilder(errorsOrWarnings_).mergeFrom(value).buildPartial();
+        } else {
+          errorsOrWarnings_ = value;
+        }
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder clearErrorsOrWarnings() {
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarnings_ = null;
+        onChanged();
+      } else {
+        errorsOrWarnings_ = null;
+        errorsOrWarningsBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public util.errors.Summary.SummaryProto.Builder getErrorsOrWarningsBuilder() {
+      
+      onChanged();
+      return getErrorsOrWarningsFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder() {
+      if (errorsOrWarningsBuilder_ != null) {
+        return errorsOrWarningsBuilder_.getMessageOrBuilder();
+      } else {
+        return errorsOrWarnings_ == null ?
+            util.errors.Summary.SummaryProto.getDefaultInstance() : errorsOrWarnings_;
+      }
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        util.errors.Summary.SummaryProto, util.errors.Summary.SummaryProto.Builder, util.errors.Summary.SummaryProtoOrBuilder> 
+        getErrorsOrWarningsFieldBuilder() {
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarningsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            util.errors.Summary.SummaryProto, util.errors.Summary.SummaryProto.Builder, util.errors.Summary.SummaryProtoOrBuilder>(
+                getErrorsOrWarnings(),
+                getParentForChildren(),
+                isClean());
+        errorsOrWarnings_ = null;
+      }
+      return errorsOrWarningsBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(
