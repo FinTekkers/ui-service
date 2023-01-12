@@ -1,3 +1,4 @@
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct NodeStateProto {
     #[prost(string, tag = "1")]
@@ -17,6 +18,7 @@ pub struct NodeStateProto {
     #[prost(bool, tag = "6")]
     pub is_expired: bool,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LockRequestProto {
     #[prost(string, tag = "1")]
@@ -29,6 +31,7 @@ pub struct LockRequestProto {
     #[prost(message, optional, tag = "11")]
     pub node_state: ::core::option::Option<NodeStateProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LockResponseProto {
     #[prost(string, tag = "1")]

@@ -25,7 +25,21 @@ impl TransactionTypeProto {
             TransactionTypeProto::MaturationOffset => "MATURATION_OFFSET",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN" => Some(Self::Unknown),
+            "BUY" => Some(Self::Buy),
+            "SELL" => Some(Self::Sell),
+            "DEPOSIT" => Some(Self::Deposit),
+            "WITHDRAWAL" => Some(Self::Withdrawal),
+            "MATURATION" => Some(Self::Maturation),
+            "MATURATION_OFFSET" => Some(Self::MaturationOffset),
+            _ => None,
+        }
+    }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TransactionProto {
     #[prost(string, tag = "1")]
@@ -73,6 +87,7 @@ pub struct TransactionProto {
     #[prost(bool, tag = "30")]
     pub is_cancelled: bool,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryTransactionRequestProto {
     #[prost(string, tag = "1")]
@@ -88,6 +103,7 @@ pub struct QueryTransactionRequestProto {
         super::position::PositionFilterProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryTransactionResponseProto {
     #[prost(string, tag = "1")]
@@ -99,6 +115,7 @@ pub struct QueryTransactionResponseProto {
     #[prost(message, repeated, tag = "30")]
     pub transaction_response: ::prost::alloc::vec::Vec<TransactionProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateTransactionRequestProto {
     #[prost(string, tag = "1")]
@@ -108,6 +125,7 @@ pub struct CreateTransactionRequestProto {
     #[prost(message, optional, tag = "20")]
     pub create_transaction_input: ::core::option::Option<TransactionProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateTransactionResponseProto {
     #[prost(string, tag = "1")]
