@@ -22,6 +22,16 @@ impl PositionStatusProto {
             PositionStatusProto::Executed => "EXECUTED",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN" => Some(Self::Unknown),
+            "HYPOTHETICAL" => Some(Self::Hypothetical),
+            "INTENDED" => Some(Self::Intended),
+            "EXECUTED" => Some(Self::Executed),
+            _ => None,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
@@ -57,6 +67,19 @@ impl MeasureProto {
             MeasureProto::AdjustedCostBasis => "ADJUSTED_COST_BASIS",
             MeasureProto::CurrentYield => "CURRENT_YIELD",
             MeasureProto::YieldToMaturity => "YIELD_TO_MATURITY",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_MEASURE" => Some(Self::UnknownMeasure),
+            "DIRECTED_QUANTITY" => Some(Self::DirectedQuantity),
+            "MARKET_VALUE" => Some(Self::MarketValue),
+            "UNADJUSTED_COST_BASIS" => Some(Self::UnadjustedCostBasis),
+            "ADJUSTED_COST_BASIS" => Some(Self::AdjustedCostBasis),
+            "CURRENT_YIELD" => Some(Self::CurrentYield),
+            "YIELD_TO_MATURITY" => Some(Self::YieldToMaturity),
+            _ => None,
         }
     }
 }
@@ -157,7 +180,41 @@ impl FieldProto {
             FieldProto::TaxLotCloseDate => "TAX_LOT_CLOSE_DATE",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_FIELD" => Some(Self::UnknownField),
+            "ID" => Some(Self::Id),
+            "EFFECTIVE_DATE" => Some(Self::EffectiveDate),
+            "STRATEGY" => Some(Self::Strategy),
+            "SECURITY" => Some(Self::Security),
+            "SECURITY_DESCRIPTION" => Some(Self::SecurityDescription),
+            "CASH_IMPACT_SECURITY" => Some(Self::CashImpactSecurity),
+            "ASSET_CLASS" => Some(Self::AssetClass),
+            "PRODUCT_CLASS" => Some(Self::ProductClass),
+            "PRODUCT_TYPE" => Some(Self::ProductType),
+            "SECURITY_ID" => Some(Self::SecurityId),
+            "IDENTIFIER" => Some(Self::Identifier),
+            "TENOR" => Some(Self::Tenor),
+            "MATURITY_DATE" => Some(Self::MaturityDate),
+            "ADJUSTED_TENOR" => Some(Self::AdjustedTenor),
+            "PORTFOLIO" => Some(Self::Portfolio),
+            "PORTFOLIO_ID" => Some(Self::PortfolioId),
+            "PORTFOLIO_NAME" => Some(Self::PortfolioName),
+            "PRICE" => Some(Self::Price),
+            "PRICE_ID" => Some(Self::PriceId),
+            "IS_CANCELLED" => Some(Self::IsCancelled),
+            "POSITION_STATUS" => Some(Self::PositionStatus),
+            "TRADE_DATE" => Some(Self::TradeDate),
+            "SETTLEMENT_DATE" => Some(Self::SettlementDate),
+            "TRANSACTION_TYPE" => Some(Self::TransactionType),
+            "TAX_LOT_OPEN_DATE" => Some(Self::TaxLotOpenDate),
+            "TAX_LOT_CLOSE_DATE" => Some(Self::TaxLotCloseDate),
+            _ => None,
+        }
+    }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MeasureMapEntry {
     #[prost(enumeration = "MeasureProto", tag = "1")]
@@ -165,6 +222,7 @@ pub struct MeasureMapEntry {
     #[prost(message, optional, tag = "2")]
     pub measure_value: ::core::option::Option<super::util::DecimalValueProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FieldMapEntry {
     #[prost(enumeration = "FieldProto", tag = "1")]
@@ -179,6 +237,7 @@ pub struct FieldMapEntry {
 }
 /// Nested message and enum types in `FieldMapEntry`.
 pub mod field_map_entry {
+    #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum FieldMapValueOneOf {
         #[prost(message, tag = "4")]
@@ -216,7 +275,21 @@ impl PositionFilterOperator {
             PositionFilterOperator::MoreThanOrEquals => "MORE_THAN_OR_EQUALS",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_OPERATOR" => Some(Self::UnknownOperator),
+            "EQUALS" => Some(Self::Equals),
+            "NOT_EQUALS" => Some(Self::NotEquals),
+            "LESS_THAN" => Some(Self::LessThan),
+            "LESS_THAN_OR_EQUALS" => Some(Self::LessThanOrEquals),
+            "MORE_THAN" => Some(Self::MoreThan),
+            "MORE_THAN_OR_EQUALS" => Some(Self::MoreThanOrEquals),
+            _ => None,
+        }
+    }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MeasureMapFieldEntry {
     #[prost(enumeration = "MeasureProto", tag = "1")]
@@ -224,6 +297,7 @@ pub struct MeasureMapFieldEntry {
     #[prost(message, optional, tag = "2")]
     pub measure_decimal_value: ::core::option::Option<super::util::DecimalValueProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PositionProto {
     #[prost(string, tag = "1")]
@@ -258,6 +332,15 @@ impl PositionViewProto {
             PositionViewProto::StrategyView => "STRATEGY_VIEW",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_POSITION_VIEW" => Some(Self::UnknownPositionView),
+            "DEFAULT_VIEW" => Some(Self::DefaultView),
+            "STRATEGY_VIEW" => Some(Self::StrategyView),
+            _ => None,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
@@ -278,7 +361,17 @@ impl PositionTypeProto {
             PositionTypeProto::TaxLot => "TAX_LOT",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_POSITION_TYPE" => Some(Self::UnknownPositionType),
+            "TRANSACTION" => Some(Self::Transaction),
+            "TAX_LOT" => Some(Self::TaxLot),
+            _ => None,
+        }
+    }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PositionFilterProto {
     #[prost(string, tag = "1")]
@@ -288,6 +381,7 @@ pub struct PositionFilterProto {
     #[prost(message, repeated, tag = "21")]
     pub filters: ::prost::alloc::vec::Vec<FieldMapEntry>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPositionRequestProto {
     #[prost(string, tag = "1")]
@@ -309,6 +403,7 @@ pub struct QueryPositionRequestProto {
     #[prost(message, optional, tag = "33")]
     pub as_of: ::core::option::Option<super::util::LocalTimestampProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPositionResponseProto {
     #[prost(string, tag = "1")]

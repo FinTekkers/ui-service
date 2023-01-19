@@ -1,3 +1,4 @@
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct StrategyProto {
     #[prost(string, tag = "1")]
@@ -17,6 +18,7 @@ pub struct StrategyProto {
     #[prost(message, optional, boxed, tag = "11")]
     pub parent: ::core::option::Option<::prost::alloc::boxed::Box<StrategyProto>>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MapFieldEntry {
     #[prost(message, optional, tag = "1")]
@@ -24,6 +26,7 @@ pub struct MapFieldEntry {
     #[prost(message, optional, tag = "2")]
     pub value: ::core::option::Option<super::util::DecimalValueProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct StrategyAllocationProto {
     #[prost(string, tag = "1")]
