@@ -1,3 +1,4 @@
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DecimalValueProto {
     #[prost(uint32, tag = "1")]
@@ -5,6 +6,7 @@ pub struct DecimalValueProto {
     #[prost(bytes = "vec", tag = "3")]
     pub value: ::prost::alloc::vec::Vec<u8>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LocalDateProto {
     #[prost(uint32, tag = "1")]
@@ -14,6 +16,7 @@ pub struct LocalDateProto {
     #[prost(uint32, tag = "3")]
     pub day: u32,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LocalTimestampProto {
     #[prost(message, optional, tag = "1")]
@@ -23,6 +26,7 @@ pub struct LocalTimestampProto {
     #[prost(string, tag = "2")]
     pub time_zone: ::prost::alloc::string::String,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UuidProto {
     #[prost(bytes = "vec", tag = "1")]
@@ -54,6 +58,17 @@ impl RequestOperationTypeProto {
             RequestOperationTypeProto::Create => "CREATE",
             RequestOperationTypeProto::Get => "GET",
             RequestOperationTypeProto::Search => "SEARCH",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_OPERATION" => Some(Self::UnknownOperation),
+            "VALIDATE" => Some(Self::Validate),
+            "CREATE" => Some(Self::Create),
+            "GET" => Some(Self::Get),
+            "SEARCH" => Some(Self::Search),
+            _ => None,
         }
     }
 }
