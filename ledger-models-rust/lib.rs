@@ -28,16 +28,3 @@ pub mod fintekkers {
         include!("fintekkers.services.valuation_service.rs");
     }
 }
-
-// #[path = "fintekkers.requests.portfolio.rs"]
-// pub mod fintekkers_requests_portfolio;
-
-// pub mod portfolio;
-// pub mod position;
-// pub mod price;
-// pub mod security;
-// pub mod strategy;
-// pub mod transaction;
-// pub mod util;
-// pub mod valuation_service;
-// pub mod valuation;
