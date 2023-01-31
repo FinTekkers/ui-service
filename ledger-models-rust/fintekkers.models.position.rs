@@ -182,7 +182,7 @@ pub mod field_map_entry {
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum FieldMapValueOneOf {
         #[prost(message, tag = "4")]
-        FieldValuePacked(super::super::super::super::google::protobuf::Any),
+        FieldValuePacked(::prost_types::Any),
         #[prost(string, tag = "5")]
         EnumValue(::prost::alloc::string::String),
         #[prost(message, tag = "6")]

@@ -17,9 +17,7 @@ pub struct LocalDateProto {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LocalTimestampProto {
     #[prost(message, optional, tag = "1")]
-    pub timestamp: ::core::option::Option<
-        super::super::super::google::protobuf::Timestamp,
-    >,
+    pub timestamp: ::core::option::Option<::prost_types::Timestamp>,
     /// TODO: Need to decide how to model this: <https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations>
     /// <https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html>
     #[prost(string, tag = "2")]
