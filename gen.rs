@@ -30,7 +30,6 @@ fn main() {
         .build_client(true)
         .build_server(true)
         .out_dir("ledger-models-rust")
-        .compile_well_known_types(true)
         .compile(&proto_files,
             &["ledger-models-protos"],
         )
