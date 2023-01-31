@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package fintekkers.services.lock_service;
+import "fintekkers/requests/util/lock/lock_request.proto";
+import "fintekkers/requests/util/lock/lock_response.proto";
+
+option java_generic_services = true;
+
+
+service Lock {
+    rpc ClaimLock (fintekkers.requests.util.lock.LockRequestProto) returns (fintekkers.requests.util.lock.LockResponseProto);
+}

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package fintekkers.models.util;
+
+message DecimalValueProto {
+  uint32 scale = 1;
+  bytes value = 3;
+}

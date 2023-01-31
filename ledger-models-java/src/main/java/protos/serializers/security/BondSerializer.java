@@ -1,12 +1,12 @@
 package protos.serializers.security;
 
-import common.models.security.CouponFrequencyProto;
-import common.models.security.CouponTypeProto;
-import common.models.security.SecurityProto;
-import common.models.security.SecurityTypeProto;
 import common.models.security.*;
 import common.models.security.bonds.FloatingRateNote;
 import common.models.security.bonds.TIPSBond;
+import fintekkers.models.security.CouponFrequencyProto;
+import fintekkers.models.security.CouponTypeProto;
+import fintekkers.models.security.SecurityProto;
+import fintekkers.models.security.SecurityTypeProto;
 import protos.serializers.util.proto.ProtoSerializationUtil;
 
 import java.time.ZonedDateTime;

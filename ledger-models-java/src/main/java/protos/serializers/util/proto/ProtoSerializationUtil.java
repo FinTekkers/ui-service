@@ -2,19 +2,18 @@ package protos.serializers.util.proto;
 
 import com.google.protobuf.*;
 import common.models.portfolio.Portfolio;
-import common.models.portfolio.PortfolioProto;
 import common.models.price.Price;
-import common.models.price.PriceProto;
-import common.models.protoUtils.DecimalValue.DecimalValueProto;
-import common.models.protoUtils.LocalDate.LocalDateProto;
-import common.models.protoUtils.LocalTimestamp.LocalTimestampProto;
-import common.models.protoUtils.Uuid.UUIDProto;
-import common.models.security.identifier.IdentifierProto;
 import common.models.security.Security;
-import common.models.security.SecurityProto;
 import common.models.security.identifier.Identifier;
 import common.models.strategy.Strategy;
-import common.models.strategy.StrategyProto;
+import fintekkers.models.portfolio.PortfolioProto;
+import fintekkers.models.price.PriceProto;
+import fintekkers.models.security.IdentifierProto;
+import fintekkers.models.security.SecurityProto;
+import fintekkers.models.strategy.StrategyProto;
+import fintekkers.models.util.DecimalValue;
+import fintekkers.models.util.LocalTimestamp;
+import fintekkers.models.util.Uuid;
 import protos.serializers.portfolio.PortfolioSerializer;
 import protos.serializers.price.PriceSerializer;
 import protos.serializers.security.IdentifierSerializer;
@@ -67,17 +66,17 @@ public class ProtoSerializationUtil {
 
     public static Object deserialize(Any any) {
         try {
-            if (any.is(DecimalValueProto.class)) {
-                DecimalValueProto decimalValueProto = any.unpack(DecimalValueProto.class);
+            if (any.is(DecimalValue.DecimalValueProto.class)) {
+                DecimalValue.DecimalValueProto decimalValueProto = any.unpack(DecimalValue.DecimalValueProto.class);
                 return deserializeBigDecimal(decimalValueProto);
-            } else if (any.is(LocalDateProto.class)) {
-                LocalDateProto localDateProto = any.unpack(LocalDateProto.class);
+            } else if (any.is(fintekkers.models.util.LocalDate.LocalDateProto.class)) {
+                fintekkers.models.util.LocalDate.LocalDateProto localDateProto = any.unpack(fintekkers.models.util.LocalDate.LocalDateProto.class);
                 return deserializeLocalDate(localDateProto);
-            } else if (any.is(LocalTimestampProto.class)) {
-                LocalTimestampProto timestamp = any.unpack(LocalTimestampProto.class);
+            } else if (any.is(LocalTimestamp.LocalTimestampProto.class)) {
+                LocalTimestamp.LocalTimestampProto timestamp = any.unpack(LocalTimestamp.LocalTimestampProto.class);
                 return deserializeTimestamp(timestamp);
-            } else if (any.is(UUIDProto.class)) {
-                UUIDProto uuid = any.unpack(UUIDProto.class);
+            } else if (any.is(Uuid.UUIDProto.class)) {
+                Uuid.UUIDProto uuid = any.unpack(Uuid.UUIDProto.class);
                 return deserializeUUID(uuid);
             } else if(any.is(PriceProto.class)) {
                 return PriceSerializer.getInstance().deserialize(any.unpack(PriceProto.class));
@@ -100,28 +99,28 @@ public class ProtoSerializationUtil {
         }
     }
 
-    public static UUIDProto serializeUUID(UUID uuid) {
+    public static Uuid.UUIDProto serializeUUID(UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
-        return UUIDProto.newBuilder().setRawUuid(ByteString.copyFrom(bb.array())).build();
+        return Uuid.UUIDProto.newBuilder().setRawUuid(ByteString.copyFrom(bb.array())).build();
     }
 
-    public static UUID deserializeUUID(UUIDProto rawUUID) {
+    public static UUID deserializeUUID(Uuid.UUIDProto rawUUID) {
         ByteBuffer bb = ByteBuffer.wrap(rawUUID.getRawUuid().toByteArray());
         long firstLong = bb.getLong();
         long secondLong = bb.getLong();
         return new UUID(firstLong, secondLong);
     }
 
-    public static DecimalValueProto serializeBigDecimal(BigDecimal quantity) {
-        return DecimalValueProto.newBuilder()
+    public static DecimalValue.DecimalValueProto serializeBigDecimal(BigDecimal quantity) {
+        return DecimalValue.DecimalValueProto.newBuilder()
                 .setScale(quantity.scale())
                 .setValue(ByteString.copyFrom(quantity.unscaledValue().toByteArray()))
                 .build();
     }
 
-    public static BigDecimal deserializeBigDecimal(DecimalValueProto quantity) {
+    public static BigDecimal deserializeBigDecimal(DecimalValue.DecimalValueProto quantity) {
         if(quantity == null)
             return null;
 
@@ -130,20 +129,20 @@ public class ProtoSerializationUtil {
                 quantity.getScale());
     }
 
-    public static LocalDate deserializeLocalDate(LocalDateProto date) {
+    public static LocalDate deserializeLocalDate(fintekkers.models.util.LocalDate.LocalDateProto date) {
         return LocalDate.of(date.getYear(), date.getMonth(), date.getDay());
     }
 
 
-    public static LocalDateProto serializeLocalDate(LocalDate date) {
-        return LocalDateProto.newBuilder()
+    public static fintekkers.models.util.LocalDate.LocalDateProto serializeLocalDate(LocalDate date) {
+        return fintekkers.models.util.LocalDate.LocalDateProto.newBuilder()
                 .setYear(date.getYear())
                 .setMonth(date.getMonthValue())
                 .setDay(date.getDayOfMonth())
                 .build();
     }
 
-    public static ZonedDateTime deserializeTimestamp(LocalTimestampProto ts) {
+    public static ZonedDateTime deserializeTimestamp(LocalTimestamp.LocalTimestampProto ts) {
         ZoneId zoneId = ZoneId.of(ts.getTimeZone());
 
         LocalDateTime localDateTime = Instant.ofEpochSecond(
@@ -154,12 +153,12 @@ public class ProtoSerializationUtil {
         return ZonedDateTime.of(localDateTime, zoneId);
     }
 
-    public static LocalTimestampProto serializeTimestamp(ZonedDateTime ts) {
+    public static LocalTimestamp.LocalTimestampProto serializeTimestamp(ZonedDateTime ts) {
         Instant instant = ts.toInstant();
 
         long epochSecond = ts.toLocalDateTime().toInstant(ZoneOffset.UTC).getEpochSecond();
 
-        return LocalTimestampProto.newBuilder()
+        return LocalTimestamp.LocalTimestampProto.newBuilder()
             .setTimeZone(ts.getZone().getId())
             .setTimestamp(
                     Timestamp.newBuilder().setSeconds(epochSecond)
