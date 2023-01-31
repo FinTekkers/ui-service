@@ -1,8 +1,5 @@
 package client.security;
 
-import common.models.position.FieldProto;
-import common.models.position.PositionFilterProto;
-import common.request.CreateSecurityRequestProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

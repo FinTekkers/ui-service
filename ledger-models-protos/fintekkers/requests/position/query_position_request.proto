@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package fintekkers.requests.position;
+
+import "fintekkers/models/position/field.proto";
+import "fintekkers/models/position/measure.proto";
+import "fintekkers/models/position/position.proto";
+import "fintekkers/models/position/position_filter.proto";
+
+import "fintekkers/models/util/local_timestamp.proto";
+import "fintekkers/requests/util/operation.proto";
+
+option java_multiple_files = true;
+
+option java_outer_classname = "QueryPositionRequestProtos";
+
+message QueryPositionRequestProto {
+  string object_class = 1;
+  string version = 2;
+
+  util.RequestOperationTypeProto operation_type = 10;
+
+  fintekkers.models.position.PositionTypeProto position_type = 20;
+  fintekkers.models.position.PositionViewProto position_view = 21;
+
+  repeated fintekkers.models.position.FieldProto fields = 30;
+  repeated fintekkers.models.position.MeasureProto measures = 31;
+
+  fintekkers.models.position.PositionFilterProto filter_fields = 32;
+  fintekkers.models.util.LocalTimestampProto as_of = 33;
+}
+
+

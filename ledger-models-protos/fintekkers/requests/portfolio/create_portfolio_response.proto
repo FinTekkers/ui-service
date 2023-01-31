@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package fintekkers.requests.portfolio;
+
+import "fintekkers/models/portfolio/portfolio.proto";
+import "fintekkers/requests/portfolio/create_portfolio_request.proto";
+
+option java_multiple_files = true;
+
+option java_outer_classname = "CreatePortfolioResponseProtos";
+
+message CreatePortfolioResponseProto {
+  string object_class = 1;
+  string version = 2;
+
+  CreatePortfolioRequestProto create_portfolio_request = 20;
+
+  repeated fintekkers.models.portfolio.PortfolioProto portfolio_response = 30;
+}
+
+

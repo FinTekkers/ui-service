@@ -4,7 +4,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import common.models.protoUtils.LocalTimestamp;
+import fintekkers.models.util.LocalTimestamp;
 import protos.serializers.util.proto.ProtoSerializationUtil;
 
 import java.io.IOException;

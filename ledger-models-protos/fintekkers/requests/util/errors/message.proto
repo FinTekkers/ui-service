@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package fintekkers.requests.util.errors;
+
+message Message {
+  //This message should not have any technical knowledge requirements to be understood
+  //and provide a suggested action for how to avoid. Examples:
+  //
+  // A server throws an exception -> "Please retry your operation, and if it fails again,
+  // contact customer support".
+  //
+  // A bond security is set as having a fixed coupon, but a reference index and spread is
+  // provided -> "A fixed income bond needs a static coupon, and shouldn't have an index
+  // or spread provided."
+  string message_for_user = 1;
+
+  //This message can be used to instruct a developer operating on APIs how best to approach
+  //resolving this issue.
+  // A server throws an exception -> "The <x> service timed out or rejected this message.
+  //  Please consider whether you are spamming the backend server and reach out to developer
+  //  support to see how to optimize your usage".
+  string message_for_developer = 2;
+}

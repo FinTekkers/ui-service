@@ -4,7 +4,6 @@ import common.models.postion.Field;
 import common.models.postion.Measure;
 import common.models.postion.Position;
 import common.models.postion.PositionFilter;
-import common.request.PositionRequestProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import testutil.DummyEquityObjects;

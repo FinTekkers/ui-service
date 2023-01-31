@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package fintekkers.requests.transaction;
+
+import "fintekkers/models/util/uuid.proto";
+import "fintekkers/models/position/position_filter.proto";
+
+option java_multiple_files = true;
+
+option java_outer_classname = "QueryTransactionRequestProtos";
+
+message QueryTransactionRequestProto {
+  string object_class = 1;
+  string version = 2;
+
+  //The list of UUIDs to return
+  repeated fintekkers.models.util.UUIDProto uuids = 21;
+
+  //A list of position filters that will filter securities that match.
+  fintekkers.models.position.PositionFilterProto search_transaction_input = 22;
+}
+
+

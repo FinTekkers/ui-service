@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package fintekkers.models.security;
+
+import "fintekkers/models/util/decimal_value.proto";
+import "fintekkers/models/util/local_date.proto";
+import "fintekkers/models/util/local_timestamp.proto";
+import "fintekkers/models/util/uuid.proto";
+
+import "fintekkers/models/security/identifier/identifier.proto";
+import "fintekkers/models/security/security_type.proto";
+import "fintekkers/models/security/security_quantity_type.proto";
+import "fintekkers/models/security/coupon_frequency.proto";
+import "fintekkers/models/security/coupon_type.proto";
+
+option java_multiple_files = true;
+
+option java_outer_classname = "SecurityProtos";
+
+message SecurityProto {
+  string object_class = 1;
+  string version = 2;
+
+  //Primary Key
+  fintekkers.models.util.UUIDProto uuid = 5;
+  fintekkers.models.util.LocalTimestampProto as_of = 6;
+  bool is_link = 7;
+  SecurityTypeProto security_type = 10;
+
+  //Biz fields
+  string asset_class = 11;
+  string issuer_name = 12;
+  SecurityProto settlement_currency = 13;
+  SecurityQuantityTypeProto quantity_type = 14;
+
+  security.IdentifierProto identifier = 40;
+  string description = 41;
+
+  //Cash Security fields
+  string cash_id = 50;
+
+  //Equity Security fields
+
+  //Bond Security fields
+  fintekkers.models.util.DecimalValueProto coupon_rate = 60;
+  CouponTypeProto coupon_type = 61;
+  CouponFrequencyProto coupon_frequency = 62;
+  fintekkers.models.util.LocalDateProto dated_date = 63;
+  fintekkers.models.util.DecimalValueProto face_value = 64;
+  fintekkers.models.util.LocalDateProto issue_date = 65;
+  fintekkers.models.util.LocalDateProto maturity_date = 66;
+}
