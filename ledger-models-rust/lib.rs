@@ -1,30 +1,83 @@
 pub mod fintekkers {
     pub mod models {
-        include!("fintekkers.models.portfolio.rs");
-        include!("fintekkers.models.position.rs");
-        include!("fintekkers.models.price.rs");
-        include!("fintekkers.models.security.rs");
-        include!("fintekkers.models.strategy.rs");
-        include!("fintekkers.models.transaction.rs");
-        include!("fintekkers.models.util.lock.rs");
-        include!("fintekkers.models.util.rs");
+        pub mod portfolio {
+            include!("fintekkers.models.portfolio.rs");
+        }
+        pub mod position {
+            include!("fintekkers.models.position.rs");
+
+        }
+        pub mod price {
+            include!("fintekkers.models.price.rs");
+            
+        }
+        pub mod security {
+            include!("fintekkers.models.security.rs");  
+        }
+        pub mod strategy {
+            include!("fintekkers.models.strategy.rs");
+            
+        }
+        pub mod transaction { 
+            include!("fintekkers.models.transaction.rs");
+
+        }
+        pub mod util {
+            include!("fintekkers.models.util.rs");
+
+            pub mod lock {
+                include!("fintekkers.models.util.lock.rs");
+            }
+        }
     }
 
     pub mod requests {
-        include!("fintekkers.requests.portfolio.rs");
-        include!("fintekkers.requests.position.rs");
-        include!("fintekkers.requests.security.rs");
-        include!("fintekkers.requests.transaction.rs");
-        include!("fintekkers.requests.util.errors.rs");
-        include!("fintekkers.requests.util.lock.rs");
-        include!("fintekkers.requests.util.rs");
-        include!("fintekkers.requests.valuation.rs");
+        pub mod portfolio {
+            include!("fintekkers.requests.portfolio.rs");
+        }
+        pub mod position {
+            include!("fintekkers.requests.position.rs");
+        }
+        pub mod price {
+            
+        }
+        pub mod security {
+            include!("fintekkers.requests.security.rs");
+        }
+        pub mod strategy {
+            
+        }
+        pub mod transaction { 
+            include!("fintekkers.requests.transaction.rs");
+
+        }
+        pub mod util {
+            pub mod lock {
+                include!("fintekkers.requests.util.lock.rs");
+                
+            }
+            pub mod errors {
+                include!("fintekkers.requests.util.errors.rs");
+            }
+            include!("fintekkers.requests.util.rs");
+        }
+        pub mod valuation {
+            include!("fintekkers.requests.valuation.rs");
+        }
     }
 
     pub mod services {
-        include!("fintekkers.services.lock_service.rs");
-        include!("fintekkers.services.position_service.rs");
-        include!("fintekkers.services.security_service.rs");
-        include!("fintekkers.services.valuation_service.rs");
+        pub mod lock_service {
+            include!("fintekkers.services.lock_service.rs");
+        }
+        pub mod position_service {
+            include!("fintekkers.services.position_service.rs");
+        }
+        pub mod security_service {
+            include!("fintekkers.services.security_service.rs");
+        }
+        pub mod valuation_service {
+            include!("fintekkers.services.valuation_service.rs");
+        }
     }
 }
