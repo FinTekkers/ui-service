@@ -26,4 +26,15 @@ impl RequestOperationTypeProto {
             RequestOperationTypeProto::Search => "SEARCH",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_OPERATION" => Some(Self::UnknownOperation),
+            "VALIDATE" => Some(Self::Validate),
+            "CREATE" => Some(Self::Create),
+            "GET" => Some(Self::Get),
+            "SEARCH" => Some(Self::Search),
+            _ => None,
+        }
+    }
 }

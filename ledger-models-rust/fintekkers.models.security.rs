@@ -25,7 +25,21 @@ impl IdentifierTypeProto {
             IdentifierTypeProto::Cash => "CASH",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_IDENTIFIER_TYPE" => Some(Self::UnknownIdentifierType),
+            "EXCH_TICKER" => Some(Self::ExchTicker),
+            "ISIN" => Some(Self::Isin),
+            "CUSIP" => Some(Self::Cusip),
+            "OSI" => Some(Self::Osi),
+            "FIGI" => Some(Self::Figi),
+            "CASH" => Some(Self::Cash),
+            _ => None,
+        }
+    }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IdentifierProto {
     #[prost(string, tag = "1")]
@@ -64,6 +78,18 @@ impl SecurityTypeProto {
             SecurityTypeProto::Frn => "FRN",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_SECURITY_TYPE" => Some(Self::UnknownSecurityType),
+            "CASH_SECURITY" => Some(Self::CashSecurity),
+            "EQUITY_SECURITY" => Some(Self::EquitySecurity),
+            "BOND_SECURITY" => Some(Self::BondSecurity),
+            "TIPS" => Some(Self::Tips),
+            "FRN" => Some(Self::Frn),
+            _ => None,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
@@ -85,6 +111,16 @@ impl SecurityQuantityTypeProto {
             SecurityQuantityTypeProto::OriginalFaceValue => "ORIGINAL_FACE_VALUE",
             SecurityQuantityTypeProto::Notional => "NOTIONAL",
             SecurityQuantityTypeProto::Units => "UNITS",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_QUANTITY_TYPE" => Some(Self::UnknownQuantityType),
+            "ORIGINAL_FACE_VALUE" => Some(Self::OriginalFaceValue),
+            "NOTIONAL" => Some(Self::Notional),
+            "UNITS" => Some(Self::Units),
+            _ => None,
         }
     }
 }
@@ -114,6 +150,18 @@ impl CouponFrequencyProto {
             CouponFrequencyProto::NoCoupon => "NO_COUPON",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_COUPON_FREQUENCY" => Some(Self::UnknownCouponFrequency),
+            "ANNUALLY" => Some(Self::Annually),
+            "SEMIANNUALLY" => Some(Self::Semiannually),
+            "QUARTERLY" => Some(Self::Quarterly),
+            "MONTHLY" => Some(Self::Monthly),
+            "NO_COUPON" => Some(Self::NoCoupon),
+            _ => None,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
@@ -137,7 +185,18 @@ impl CouponTypeProto {
             CouponTypeProto::Zero => "ZERO",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_COUPON_TYPE" => Some(Self::UnknownCouponType),
+            "FIXED" => Some(Self::Fixed),
+            "FLOAT" => Some(Self::Float),
+            "ZERO" => Some(Self::Zero),
+            _ => None,
+        }
+    }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct SecurityProto {
     #[prost(string, tag = "1")]
@@ -206,7 +265,17 @@ impl TenorTypeProto {
             TenorTypeProto::Term => "TERM",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_TENOR_TYPE" => Some(Self::UnknownTenorType),
+            "PERPETUAL" => Some(Self::Perpetual),
+            "TERM" => Some(Self::Term),
+            _ => None,
+        }
+    }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TenorProto {
     #[prost(string, tag = "1")]

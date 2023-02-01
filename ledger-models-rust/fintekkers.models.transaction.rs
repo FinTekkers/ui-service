@@ -25,7 +25,21 @@ impl TransactionTypeProto {
             TransactionTypeProto::MaturationOffset => "MATURATION_OFFSET",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN" => Some(Self::Unknown),
+            "BUY" => Some(Self::Buy),
+            "SELL" => Some(Self::Sell),
+            "DEPOSIT" => Some(Self::Deposit),
+            "WITHDRAWAL" => Some(Self::Withdrawal),
+            "MATURATION" => Some(Self::Maturation),
+            "MATURATION_OFFSET" => Some(Self::MaturationOffset),
+            _ => None,
+        }
+    }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TransactionProto {
     #[prost(string, tag = "1")]

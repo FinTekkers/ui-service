@@ -1,3 +1,4 @@
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Message {
     /// This message should not have any technical knowledge requirements to be understood
@@ -21,6 +22,7 @@ pub struct Message {
 }
 /// An error is used for situations where a request cannot be processed successfully, either
 /// from a technical perspective or a business perspective.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ErrorProto {
     #[prost(enumeration = "ErrorCode", tag = "1")]
@@ -31,6 +33,7 @@ pub struct ErrorProto {
 /// Warnings can have error codes, if it is useful in categorizing the severity of the warning.
 /// For example a warning may be thrown if 2 securities are created with the same identifier.
 /// Another example may be usage of a deprecated API.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct WarningProto {
     #[prost(enumeration = "ErrorCode", tag = "1")]
@@ -59,6 +62,14 @@ impl ErrorCode {
             ErrorCode::Warning => "WARNING",
         }
     }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "UNKNOWN_ERROR" => Some(Self::UnknownError),
+            "WARNING" => Some(Self::Warning),
+            _ => None,
+        }
+    }
 }
 /// GRPC error codes are used to indicate if there was any substantial issue. They cover situations
 /// like OK, Cancelled, AlreadyExists, InvalidArgument, ResourceExhausted, Unauthenticated, etc.
@@ -67,6 +78,7 @@ impl ErrorCode {
 ///
 /// If there are any errors, the GRPC response should not return OK (code=0).
 /// Warnings may be returned at any time, and may be done even with successful responses.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct SummaryProto {
     #[prost(message, repeated, tag = "1")]
