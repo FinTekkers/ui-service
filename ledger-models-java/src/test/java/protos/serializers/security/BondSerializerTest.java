@@ -3,6 +3,7 @@ package protos.serializers.security;
 import common.models.security.*;
 import common.models.security.bonds.FloatingRateNote;
 import common.models.security.bonds.TIPSBond;
+import fintekkers.models.security.SecurityProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

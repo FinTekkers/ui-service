@@ -4,7 +4,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import common.models.protoUtils.DecimalValue;
+import fintekkers.models.util.DecimalValue;
 import protos.serializers.util.proto.ProtoSerializationUtil;
 
 import java.io.IOException;

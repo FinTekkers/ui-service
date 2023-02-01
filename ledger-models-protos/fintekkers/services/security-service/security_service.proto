@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package fintekkers.services.security_service;
+import "fintekkers/requests/security/query_security_request.proto";
+import "fintekkers/requests/security/query_security_response.proto";
+import "fintekkers/requests/security/create_security_request.proto";
+import "fintekkers/requests/security/create_security_response.proto";
+import "fintekkers/requests/util/errors/summary.proto";
+
+option java_generic_services = true;
+
+
+service Security {
+    rpc CreateOrUpdate   (fintekkers.requests.security.CreateSecurityRequestProto) returns   (fintekkers.requests.security.CreateSecurityResponseProto);
+
+    rpc GetByIDs   (fintekkers.requests.security.QuerySecurityRequestProto) returns   (fintekkers.requests.security.QuerySecurityResponseProto);
+    rpc Search   (fintekkers.requests.security.QuerySecurityRequestProto) returns   (fintekkers.requests.security.QuerySecurityResponseProto);
+    rpc ListIDs   (fintekkers.requests.security.QuerySecurityRequestProto) returns   (fintekkers.requests.security.QuerySecurityResponseProto);
+
+    rpc ValidateCreateOrUpdate   (fintekkers.requests.security.QuerySecurityRequestProto) returns (fintekkers.requests.util.errors.SummaryProto);
+    rpc ValidateQueryRequest   (fintekkers.requests.security.QuerySecurityRequestProto) returns (fintekkers.requests.util.errors.SummaryProto);
+}

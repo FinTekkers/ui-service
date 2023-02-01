@@ -3,12 +3,11 @@ package protos.serializers.position;
 import com.google.gson.*;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
-import common.models.position.FieldProto;
 import common.models.JSONFieldNames;
 import common.models.postion.Field;
 import common.models.postion.Measure;
 import common.models.postion.Position;
-import common.models.position.*;
+import fintekkers.models.position.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import protos.serializers.IRawDataModelObjectSerializer;
@@ -19,7 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static common.models.JSONFieldNames.*;
-import static common.models.position.FieldMapEntry.FieldMapValueOneOfCase.ENUM_VALUE;
+import static fintekkers.models.position.FieldMapEntry.FieldMapValueOneOfCase.ENUM_VALUE;
 
 /**
  * Serializes/deserializes between position protos and position objects. Note that positions are a derived form of

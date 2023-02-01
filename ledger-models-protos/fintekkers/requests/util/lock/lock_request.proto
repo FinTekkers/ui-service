@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package fintekkers.requests.util.lock;
+
+import "fintekkers/models/util/lock/node_state.proto";
+import "fintekkers/requests/util/operation.proto";
+
+option java_multiple_files = true;
+
+option java_outer_classname = "LockRequestProtos";
+
+message LockRequestProto {
+  string object_class = 1;
+  string version = 2;
+
+  //Only supports GET
+  fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;
+
+  fintekkers.models.util.lock.NodeStateProto node_state = 11;
+}
+
+

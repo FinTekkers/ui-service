@@ -1,0 +1,17 @@
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct PortfolioProto {
+    /// 1-4 reserved
+    #[prost(string, tag = "1")]
+    pub object_class: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub version: ::prost::alloc::string::String,
+    /// Primary Key
+    #[prost(message, optional, tag = "5")]
+    pub uuid: ::core::option::Option<super::util::UuidProto>,
+    #[prost(message, optional, tag = "6")]
+    pub as_of: ::core::option::Option<super::util::LocalTimestampProto>,
+    #[prost(bool, tag = "7")]
+    pub is_link: bool,
+    #[prost(string, tag = "10")]
+    pub portfolio_name: ::prost::alloc::string::String,
+}

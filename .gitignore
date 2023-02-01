@@ -6,8 +6,13 @@ valuation-service/target
 #Java / Gradle related folders (Java build)
 .gradle
 
+#Python related folders
+__pycache__
+*egg-info
+
 #Build related folders:
 build/
+dist/
 out/
 target
 target/**
@@ -16,4 +21,5 @@ target/**
 .vscode
 .idea
 
+#Mac related folders
 .DS_Store

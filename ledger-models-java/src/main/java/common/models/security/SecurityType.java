@@ -2,6 +2,7 @@ package common.models.security;
 
 import common.models.security.bonds.FloatingRateNote;
 import common.models.security.bonds.TIPSBond;
+import fintekkers.models.security.SecurityTypeProto;
 
 /**
  * The type of security, as modelled in code. This should not be used for business purposes

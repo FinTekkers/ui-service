@@ -4,10 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import common.models.JSONFieldNames;
-import common.models.security.identifier.IdentifierProto;
-import common.models.security.identifier.IdentifierTypeProto;
 import common.models.security.identifier.Identifier;
 import common.models.security.identifier.IdentifierType;
+import fintekkers.models.security.IdentifierProto;
+import fintekkers.models.security.IdentifierTypeProto;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
 

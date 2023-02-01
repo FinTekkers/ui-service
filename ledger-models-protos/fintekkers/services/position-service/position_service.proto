@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package fintekkers.services.position_service;
+import "fintekkers/requests/position/query_position_request.proto";
+import "fintekkers/requests/position/query_position_response.proto";
+
+import "fintekkers/requests/util/errors/summary.proto";
+
+option java_generic_services = true;
+
+
+service Position {
+//    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+    rpc Search (fintekkers.requests.position.QueryPositionRequestProto) returns (fintekkers.requests.position.QueryPositionResponseProto);
+//    rpc ListIDs (transaction.QueryTransactionRequestProto) returns (transaction.QueryTransactionResponseProto);
+
+//    rpc ValidateCreateOrUpdate (transaction.CreateTransactionRequestProto) returns (util.errors.SummaryProto);
+    rpc ValidateQueryRequest (fintekkers.requests.position.QueryPositionRequestProto) returns (fintekkers.requests.util.errors.SummaryProto);
+}

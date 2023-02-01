@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package fintekkers.requests.security;
+
+import "fintekkers/models/security/security.proto";
+import "fintekkers/requests/security/create_security_request.proto";
+import "fintekkers/requests/util/errors/summary.proto";
+
+option java_multiple_files = true;
+
+option java_outer_classname = "CreateSecurityResponseProtos";
+
+message CreateSecurityResponseProto {
+  string object_class = 1;
+  string version = 2;
+
+  //The input that was provided for this request.
+  CreateSecurityRequestProto security_request = 20;
+
+  //The security (or securities) that were created in response to this request
+  fintekkers.models.security.SecurityProto security_response = 30;
+
+  //If no errors or warnings in the response then the request was processed successfully without any
+  //contingencies.
+  util.errors.SummaryProto errors_or_warnings = 40;
+}
+
+

@@ -2,7 +2,7 @@ package protos.serializers;
 
 import com.google.gson.Gson;
 import common.models.portfolio.Portfolio;
-import common.models.portfolio.PortfolioProto;
+import fintekkers.models.portfolio.PortfolioProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.portfolio.PortfolioSerializer;

@@ -2,7 +2,7 @@ package protos.serializers;
 
 import common.models.strategy.Strategy;
 import common.models.strategy.StrategyAllocation;
-import common.models.strategy.StrategyAllocationProto;
+import fintekkers.models.strategy.StrategyAllocationProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.strategy.StrategySerializer;
