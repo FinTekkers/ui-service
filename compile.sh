@@ -8,4 +8,4 @@ gradle build
 
 echo "generating python protos"
 cd ../ledger-models-protos
-protoc --python_out=../ledger-models-python $(find . -iname "*.proto")
+protoc --python_out=../ledger-models-python/src $(find . -iname "*.proto")

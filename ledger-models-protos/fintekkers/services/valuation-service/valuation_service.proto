@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package fintekkers.services.valuation_service;
+import "fintekkers/requests/valuation/valuation_request.proto";
+import "fintekkers/requests/valuation/valuation_response.proto";
+
+option java_generic_services = true;
+
+
+service Valuation {
+    rpc RunValuation (fintekkers.requests.valuation.ValuationRequestProto)
+        returns (fintekkers.requests.valuation.ValuationResponseProto);
+}

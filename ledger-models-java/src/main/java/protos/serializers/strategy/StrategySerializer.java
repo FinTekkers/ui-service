@@ -2,6 +2,9 @@ package protos.serializers.strategy;
 
 import com.google.gson.Gson;
 import common.models.strategy.*;
+import fintekkers.models.strategy.MapFieldEntry;
+import fintekkers.models.strategy.StrategyAllocationProto;
+import fintekkers.models.strategy.StrategyProto;
 import protos.serializers.IRawDataModelObjectSerializer;
 import protos.serializers.util.json.JsonSerializationUtil;
 import protos.serializers.util.proto.ProtoSerializationUtil;

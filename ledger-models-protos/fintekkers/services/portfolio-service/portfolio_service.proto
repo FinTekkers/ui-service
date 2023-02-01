@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package fintekkers.services.security_service;
+import "fintekkers/requests/portfolio/create_portfolio_request.proto";
+import "fintekkers/requests/portfolio/create_portfolio_response.proto";
+import "fintekkers/requests/portfolio/query_portfolio_request.proto";
+import "fintekkers/requests/portfolio/query_portfolio_response.proto";
+
+import "fintekkers/requests/util/errors/summary.proto";
+
+option java_generic_services = true;
+
+
+service Portfolio {
+    rpc CreateOrUpdate (fintekkers.requests.portfolio.CreatePortfolioRequestProto) returns (fintekkers.requests.portfolio.CreatePortfolioResponseProto);
+
+    rpc GetByIDs (fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (fintekkers.requests.portfolio.QueryPortfolioResponseProto);
+    rpc Search (fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (fintekkers.requests.portfolio.QueryPortfolioResponseProto);
+    rpc ListIDs (fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (fintekkers.requests.portfolio.QueryPortfolioResponseProto);
+
+    rpc ValidateCreateOrUpdate (fintekkers.requests.portfolio.CreatePortfolioRequestProto) returns (fintekkers.requests.util.errors.SummaryProto);
+    rpc ValidateQueryRequest (fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (fintekkers.requests.util.errors.SummaryProto);
+}

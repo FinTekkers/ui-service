@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package fintekkers.requests.portfolio;
+
+import "fintekkers/models/util/uuid.proto";
+import "fintekkers/models/position/position_filter.proto";
+
+option java_multiple_files = true;
+
+option java_outer_classname = "QueryPortfolioRequestProtos";
+
+message QueryPortfolioRequestProto {
+  string object_class = 1;
+  string version = 2;
+
+  repeated fintekkers.models.util.UUIDProto uuids = 21;
+
+  fintekkers.models.position.PositionFilterProto search_portfolio_input = 22;
+}
+
+

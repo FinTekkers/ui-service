@@ -1,7 +1,7 @@
 package protos.serializers;
 
 import common.models.transaction.Transaction;
-import common.models.transaction.TransactionProto;
+import fintekkers.models.transaction.TransactionProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.transaction.TransactionSerializer;

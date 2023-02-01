@@ -1,6 +1,8 @@
 use walkdir::WalkDir;
 
 fn main() {
+    print!("{}", "Generating Rust code from ledger-models-protos to ledger-models-rust");
+
     //find paths of all proto files
     let proto_files: Vec<String> = WalkDir::new("ledger-models-protos")
         .into_iter()

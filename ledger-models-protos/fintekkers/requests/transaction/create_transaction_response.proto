@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package fintekkers.requests.transaction;
+
+import "fintekkers/models/transaction/transaction.proto";
+import "fintekkers/requests/transaction/create_transaction_request.proto";
+
+option java_multiple_files = true;
+
+option java_outer_classname = "CreateTransactionResponseProtos";
+
+message CreateTransactionResponseProto {
+  string object_class = 1;
+  string version = 2;
+
+  transaction.CreateTransactionRequestProto create_transaction_request = 20;
+
+  fintekkers.models.transaction.TransactionProto transaction_response = 30;
+}
+
+
