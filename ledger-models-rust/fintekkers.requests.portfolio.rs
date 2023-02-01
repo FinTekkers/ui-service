@@ -1,3 +1,4 @@
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPortfolioRequestProto {
     #[prost(string, tag = "1")]
@@ -11,6 +12,7 @@ pub struct QueryPortfolioRequestProto {
         super::super::models::position::PositionFilterProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreatePortfolioRequestProto {
     #[prost(string, tag = "1")]
@@ -22,6 +24,7 @@ pub struct CreatePortfolioRequestProto {
         super::super::models::portfolio::PortfolioProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreatePortfolioResponseProto {
     #[prost(string, tag = "1")]
@@ -35,6 +38,7 @@ pub struct CreatePortfolioResponseProto {
         super::super::models::portfolio::PortfolioProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPortfolioResponseProto {
     #[prost(string, tag = "1")]

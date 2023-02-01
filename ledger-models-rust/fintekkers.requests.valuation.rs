@@ -1,6 +1,7 @@
 /// Developer notes. This will need some re-organization once we start thinking through
 /// varied valuations (e.g. value over a time range, value multiple securities in the same
 /// request/etc. For now, the caller will need to make individual requests.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ValuationRequestProto {
     #[prost(string, tag = "1")]
@@ -31,6 +32,7 @@ pub struct ValuationRequestProto {
     #[prost(message, optional, tag = "22")]
     pub price_input: ::core::option::Option<super::super::models::price::PriceProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ValuationResponseProto {
     #[prost(string, tag = "1")]
