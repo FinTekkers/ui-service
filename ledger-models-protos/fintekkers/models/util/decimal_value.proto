@@ -4,5 +4,7 @@ package fintekkers.models.util;
 
 message DecimalValueProto {
   uint32 scale = 1;
+
+  //An integer serialized in little endian form.
   bytes value = 3;
 }
