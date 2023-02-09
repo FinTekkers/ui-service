@@ -17,7 +17,7 @@ setup(
     name='fintekkers-ledger-models',
     version='0.0.1',
     packages=packages,
-    package_data=['fintekkers'],
+    # package_data=['fintekkers'],
     # py_modules=['fintekkers']
 )
 

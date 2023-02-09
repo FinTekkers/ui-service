@@ -7,7 +7,7 @@ import "fintekkers/requests/position/query_position_response.proto";
 import "fintekkers/requests/util/errors/summary.proto";
 
 option java_generic_services = true;
-
+option py_generic_services = true;
 
 service Position {
 //    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
