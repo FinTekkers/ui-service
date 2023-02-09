@@ -639,7 +639,7 @@ public final class SecurityService {
       "roto\022~\n\024ValidateQueryRequest\0227.fintekker" +
       "s.requests.security.QuerySecurityRequest" +
       "Proto\032-.fintekkers.requests.util.errors." +
-      "SummaryProtoB\003\210\001\001b\006proto3"
+      "SummaryProtoB\006\210\001\001\220\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
