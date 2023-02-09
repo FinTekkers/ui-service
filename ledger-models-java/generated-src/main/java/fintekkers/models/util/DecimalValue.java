@@ -25,6 +25,10 @@ public final class DecimalValue {
     int getScale();
 
     /**
+     * <pre>
+     *An integer serialized in little endian form.
+     * </pre>
+     *
      * <code>bytes value = 3;</code>
      * @return The value.
      */
@@ -132,6 +136,10 @@ public final class DecimalValue {
     public static final int VALUE_FIELD_NUMBER = 3;
     private com.google.protobuf.ByteString value_;
     /**
+     * <pre>
+     *An integer serialized in little endian form.
+     * </pre>
+     *
      * <code>bytes value = 3;</code>
      * @return The value.
      */
@@ -492,6 +500,10 @@ public final class DecimalValue {
 
       private com.google.protobuf.ByteString value_ = com.google.protobuf.ByteString.EMPTY;
       /**
+       * <pre>
+       *An integer serialized in little endian form.
+       * </pre>
+       *
        * <code>bytes value = 3;</code>
        * @return The value.
        */
@@ -500,6 +512,10 @@ public final class DecimalValue {
         return value_;
       }
       /**
+       * <pre>
+       *An integer serialized in little endian form.
+       * </pre>
+       *
        * <code>bytes value = 3;</code>
        * @param value The value to set.
        * @return This builder for chaining.
@@ -514,6 +530,10 @@ public final class DecimalValue {
         return this;
       }
       /**
+       * <pre>
+       *An integer serialized in little endian form.
+       * </pre>
+       *
        * <code>bytes value = 3;</code>
        * @return This builder for chaining.
        */

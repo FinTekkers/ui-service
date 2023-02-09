@@ -4,11 +4,21 @@ import java.net.URL;
 import java.util.Objects;
 
 public class Endpoint {
-    public Endpoint(String url) {
+    public Endpoint(String url, int port) {
+        this.port = port;
         setUrl(url);
     }
 
     private URL url;
+    private int port;
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
 
     public URL getUrl() {
         return url;
