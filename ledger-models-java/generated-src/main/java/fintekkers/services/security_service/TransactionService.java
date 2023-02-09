@@ -641,8 +641,8 @@ public final class TransactionService {
       "rs.SummaryProto\022\204\001\n\024ValidateQueryRequest" +
       "\022=.fintekkers.requests.transaction.Query" +
       "TransactionRequestProto\032-.fintekkers.req" +
-      "uests.util.errors.SummaryProtoB\003\210\001\001b\006pro" +
-      "to3"
+      "uests.util.errors.SummaryProtoB\006\210\001\001\220\001\001b\006" +
+      "proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

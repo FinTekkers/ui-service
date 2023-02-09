@@ -9,7 +9,7 @@ import "fintekkers/requests/transaction/query_transaction_response.proto";
 import "fintekkers/requests/util/errors/summary.proto";
 
 option java_generic_services = true;
-
+option py_generic_services = true;
 
 service Transaction {
     rpc CreateOrUpdate  (fintekkers.requests.transaction.CreateTransactionRequestProto) returns  (fintekkers.requests.transaction.CreateTransactionResponseProto);
