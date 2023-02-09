@@ -263,8 +263,8 @@ public final class ValuationService {
       "esponse.proto2\210\001\n\tValuation\022{\n\014RunValuat" +
       "ion\0224.fintekkers.requests.valuation.Valu" +
       "ationRequestProto\0325.fintekkers.requests." +
-      "valuation.ValuationResponseProtoB\003\210\001\001b\006p" +
-      "roto3"
+      "valuation.ValuationResponseProtoB\006\210\001\001\220\001\001" +
+      "b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

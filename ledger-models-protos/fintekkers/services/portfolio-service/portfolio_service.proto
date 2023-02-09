@@ -9,7 +9,7 @@ import "fintekkers/requests/portfolio/query_portfolio_response.proto";
 import "fintekkers/requests/util/errors/summary.proto";
 
 option java_generic_services = true;
-
+option py_generic_services = true;
 
 service Portfolio {
     rpc CreateOrUpdate (fintekkers.requests.portfolio.CreatePortfolioRequestProto) returns (fintekkers.requests.portfolio.CreatePortfolioResponseProto);
