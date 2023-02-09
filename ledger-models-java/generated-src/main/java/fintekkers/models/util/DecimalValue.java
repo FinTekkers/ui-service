@@ -19,22 +19,32 @@ public final class DecimalValue {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>uint32 scale = 1;</code>
-     * @return The scale.
-     */
-    int getScale();
-
-    /**
      * <pre>
-     *An integer serialized in little endian form.
+     *This is a string representation of a float number.
+     *This will be deprecated in the future for a more space efficient approach
      * </pre>
      *
-     * <code>bytes value = 3;</code>
-     * @return The value.
+     * <code>string arbitrary_precision_value = 10;</code>
+     * @return The arbitraryPrecisionValue.
      */
-    com.google.protobuf.ByteString getValue();
+    java.lang.String getArbitraryPrecisionValue();
+    /**
+     * <pre>
+     *This is a string representation of a float number.
+     *This will be deprecated in the future for a more space efficient approach
+     * </pre>
+     *
+     * <code>string arbitrary_precision_value = 10;</code>
+     * @return The bytes for arbitraryPrecisionValue.
+     */
+    com.google.protobuf.ByteString
+        getArbitraryPrecisionValueBytes();
   }
   /**
+   * <pre>
+   *  uint32 scale = 1;
+   * </pre>
+   *
    * Protobuf type {@code fintekkers.models.util.DecimalValueProto}
    */
   public static final class DecimalValueProto extends
@@ -47,7 +57,7 @@ public final class DecimalValue {
       super(builder);
     }
     private DecimalValueProto() {
-      value_ = com.google.protobuf.ByteString.EMPTY;
+      arbitraryPrecisionValue_ = "";
     }
 
     @java.lang.Override
@@ -80,14 +90,10 @@ public final class DecimalValue {
             case 0:
               done = true;
               break;
-            case 8: {
+            case 82: {
+              java.lang.String s = input.readStringRequireUtf8();
 
-              scale_ = input.readUInt32();
-              break;
-            }
-            case 26: {
-
-              value_ = input.readBytes();
+              arbitraryPrecisionValue_ = s;
               break;
             }
             default: {
@@ -122,30 +128,52 @@ public final class DecimalValue {
               fintekkers.models.util.DecimalValue.DecimalValueProto.class, fintekkers.models.util.DecimalValue.DecimalValueProto.Builder.class);
     }
 
-    public static final int SCALE_FIELD_NUMBER = 1;
-    private int scale_;
-    /**
-     * <code>uint32 scale = 1;</code>
-     * @return The scale.
-     */
-    @java.lang.Override
-    public int getScale() {
-      return scale_;
-    }
-
-    public static final int VALUE_FIELD_NUMBER = 3;
-    private com.google.protobuf.ByteString value_;
+    public static final int ARBITRARY_PRECISION_VALUE_FIELD_NUMBER = 10;
+    private volatile java.lang.Object arbitraryPrecisionValue_;
     /**
      * <pre>
-     *An integer serialized in little endian form.
+     *This is a string representation of a float number.
+     *This will be deprecated in the future for a more space efficient approach
      * </pre>
      *
-     * <code>bytes value = 3;</code>
-     * @return The value.
+     * <code>string arbitrary_precision_value = 10;</code>
+     * @return The arbitraryPrecisionValue.
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString getValue() {
-      return value_;
+    public java.lang.String getArbitraryPrecisionValue() {
+      java.lang.Object ref = arbitraryPrecisionValue_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        arbitraryPrecisionValue_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *This is a string representation of a float number.
+     *This will be deprecated in the future for a more space efficient approach
+     * </pre>
+     *
+     * <code>string arbitrary_precision_value = 10;</code>
+     * @return The bytes for arbitraryPrecisionValue.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getArbitraryPrecisionValueBytes() {
+      java.lang.Object ref = arbitraryPrecisionValue_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        arbitraryPrecisionValue_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     private byte memoizedIsInitialized = -1;
@@ -162,11 +190,8 @@ public final class DecimalValue {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (scale_ != 0) {
-        output.writeUInt32(1, scale_);
-      }
-      if (!value_.isEmpty()) {
-        output.writeBytes(3, value_);
+      if (!getArbitraryPrecisionValueBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, arbitraryPrecisionValue_);
       }
       unknownFields.writeTo(output);
     }
@@ -177,13 +202,8 @@ public final class DecimalValue {
       if (size != -1) return size;
 
       size = 0;
-      if (scale_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(1, scale_);
-      }
-      if (!value_.isEmpty()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, value_);
+      if (!getArbitraryPrecisionValueBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, arbitraryPrecisionValue_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -200,10 +220,8 @@ public final class DecimalValue {
       }
       fintekkers.models.util.DecimalValue.DecimalValueProto other = (fintekkers.models.util.DecimalValue.DecimalValueProto) obj;
 
-      if (getScale()
-          != other.getScale()) return false;
-      if (!getValue()
-          .equals(other.getValue())) return false;
+      if (!getArbitraryPrecisionValue()
+          .equals(other.getArbitraryPrecisionValue())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -215,10 +233,8 @@ public final class DecimalValue {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + SCALE_FIELD_NUMBER;
-      hash = (53 * hash) + getScale();
-      hash = (37 * hash) + VALUE_FIELD_NUMBER;
-      hash = (53 * hash) + getValue().hashCode();
+      hash = (37 * hash) + ARBITRARY_PRECISION_VALUE_FIELD_NUMBER;
+      hash = (53 * hash) + getArbitraryPrecisionValue().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -315,6 +331,10 @@ public final class DecimalValue {
       return builder;
     }
     /**
+     * <pre>
+     *  uint32 scale = 1;
+     * </pre>
+     *
      * Protobuf type {@code fintekkers.models.util.DecimalValueProto}
      */
     public static final class Builder extends
@@ -352,9 +372,7 @@ public final class DecimalValue {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        scale_ = 0;
-
-        value_ = com.google.protobuf.ByteString.EMPTY;
+        arbitraryPrecisionValue_ = "";
 
         return this;
       }
@@ -382,8 +400,7 @@ public final class DecimalValue {
       @java.lang.Override
       public fintekkers.models.util.DecimalValue.DecimalValueProto buildPartial() {
         fintekkers.models.util.DecimalValue.DecimalValueProto result = new fintekkers.models.util.DecimalValue.DecimalValueProto(this);
-        result.scale_ = scale_;
-        result.value_ = value_;
+        result.arbitraryPrecisionValue_ = arbitraryPrecisionValue_;
         onBuilt();
         return result;
       }
@@ -432,11 +449,9 @@ public final class DecimalValue {
 
       public Builder mergeFrom(fintekkers.models.util.DecimalValue.DecimalValueProto other) {
         if (other == fintekkers.models.util.DecimalValue.DecimalValueProto.getDefaultInstance()) return this;
-        if (other.getScale() != 0) {
-          setScale(other.getScale());
-        }
-        if (other.getValue() != com.google.protobuf.ByteString.EMPTY) {
-          setValue(other.getValue());
+        if (!other.getArbitraryPrecisionValue().isEmpty()) {
+          arbitraryPrecisionValue_ = other.arbitraryPrecisionValue_;
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -467,79 +482,103 @@ public final class DecimalValue {
         return this;
       }
 
-      private int scale_ ;
-      /**
-       * <code>uint32 scale = 1;</code>
-       * @return The scale.
-       */
-      @java.lang.Override
-      public int getScale() {
-        return scale_;
-      }
-      /**
-       * <code>uint32 scale = 1;</code>
-       * @param value The scale to set.
-       * @return This builder for chaining.
-       */
-      public Builder setScale(int value) {
-        
-        scale_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>uint32 scale = 1;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearScale() {
-        
-        scale_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.ByteString value_ = com.google.protobuf.ByteString.EMPTY;
+      private java.lang.Object arbitraryPrecisionValue_ = "";
       /**
        * <pre>
-       *An integer serialized in little endian form.
+       *This is a string representation of a float number.
+       *This will be deprecated in the future for a more space efficient approach
        * </pre>
        *
-       * <code>bytes value = 3;</code>
-       * @return The value.
+       * <code>string arbitrary_precision_value = 10;</code>
+       * @return The arbitraryPrecisionValue.
        */
-      @java.lang.Override
-      public com.google.protobuf.ByteString getValue() {
-        return value_;
+      public java.lang.String getArbitraryPrecisionValue() {
+        java.lang.Object ref = arbitraryPrecisionValue_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          arbitraryPrecisionValue_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
       }
       /**
        * <pre>
-       *An integer serialized in little endian form.
+       *This is a string representation of a float number.
+       *This will be deprecated in the future for a more space efficient approach
        * </pre>
        *
-       * <code>bytes value = 3;</code>
-       * @param value The value to set.
+       * <code>string arbitrary_precision_value = 10;</code>
+       * @return The bytes for arbitraryPrecisionValue.
+       */
+      public com.google.protobuf.ByteString
+          getArbitraryPrecisionValueBytes() {
+        java.lang.Object ref = arbitraryPrecisionValue_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          arbitraryPrecisionValue_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *This is a string representation of a float number.
+       *This will be deprecated in the future for a more space efficient approach
+       * </pre>
+       *
+       * <code>string arbitrary_precision_value = 10;</code>
+       * @param value The arbitraryPrecisionValue to set.
        * @return This builder for chaining.
        */
-      public Builder setValue(com.google.protobuf.ByteString value) {
+      public Builder setArbitraryPrecisionValue(
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   
-        value_ = value;
+        arbitraryPrecisionValue_ = value;
         onChanged();
         return this;
       }
       /**
        * <pre>
-       *An integer serialized in little endian form.
+       *This is a string representation of a float number.
+       *This will be deprecated in the future for a more space efficient approach
        * </pre>
        *
-       * <code>bytes value = 3;</code>
+       * <code>string arbitrary_precision_value = 10;</code>
        * @return This builder for chaining.
        */
-      public Builder clearValue() {
+      public Builder clearArbitraryPrecisionValue() {
         
-        value_ = getDefaultInstance().getValue();
+        arbitraryPrecisionValue_ = getDefaultInstance().getArbitraryPrecisionValue();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *This is a string representation of a float number.
+       *This will be deprecated in the future for a more space efficient approach
+       * </pre>
+       *
+       * <code>string arbitrary_precision_value = 10;</code>
+       * @param value The bytes for arbitraryPrecisionValue to set.
+       * @return This builder for chaining.
+       */
+      public Builder setArbitraryPrecisionValueBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        arbitraryPrecisionValue_ = value;
         onChanged();
         return this;
       }
@@ -611,9 +650,9 @@ public final class DecimalValue {
   static {
     java.lang.String[] descriptorData = {
       "\n*fintekkers/models/util/decimal_value.p" +
-      "roto\022\026fintekkers.models.util\"1\n\021DecimalV" +
-      "alueProto\022\r\n\005scale\030\001 \001(\r\022\r\n\005value\030\003 \001(\014b" +
-      "\006proto3"
+      "roto\022\026fintekkers.models.util\"6\n\021DecimalV" +
+      "alueProto\022!\n\031arbitrary_precision_value\030\n" +
+      " \001(\tb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -624,7 +663,7 @@ public final class DecimalValue {
     internal_static_fintekkers_models_util_DecimalValueProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fintekkers_models_util_DecimalValueProto_descriptor,
-        new java.lang.String[] { "Scale", "Value", });
+        new java.lang.String[] { "ArbitraryPrecisionValue", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
