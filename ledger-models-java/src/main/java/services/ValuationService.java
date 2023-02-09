@@ -19,13 +19,14 @@ import protos.serializers.util.proto.ProtoSerializationUtil;
 
 import java.math.BigDecimal;
 
-public class ValuationService extends Endpoint {
+public class ValuationService {
     public static ValuationService LOCAL_VALUATION_SERVICE = new ValuationService("127.0.0.1", 8080);
+    private final Endpoint endpoint;
+
     public ValuationService(String url, int port) {
-        super(url, port);
+        this.endpoint = new Endpoint(url, port);
 
         ManagedChannel channel = ManagedChannelBuilder.forAddress(url, port).usePlaintext().build();
-
         this.valuationGrpc = ValuationGrpc.newBlockingStub(channel);
     }
 

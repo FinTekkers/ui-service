@@ -640,7 +640,7 @@ public final class PortfolioService {
       "\024ValidateQueryRequest\0229.fintekkers.reque" +
       "sts.portfolio.QueryPortfolioRequestProto" +
       "\032-.fintekkers.requests.util.errors.Summa" +
-      "ryProtoB\003\210\001\001b\006proto3"
+      "ryProtoB\006\210\001\001\220\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

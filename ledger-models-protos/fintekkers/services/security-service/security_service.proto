@@ -8,7 +8,7 @@ import "fintekkers/requests/security/create_security_response.proto";
 import "fintekkers/requests/util/errors/summary.proto";
 
 option java_generic_services = true;
-
+option py_generic_services = true;
 
 service Security {
     rpc CreateOrUpdate   (fintekkers.requests.security.CreateSecurityRequestProto) returns   (fintekkers.requests.security.CreateSecurityResponseProto);

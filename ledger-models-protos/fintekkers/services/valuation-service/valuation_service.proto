@@ -5,7 +5,7 @@ import "fintekkers/requests/valuation/valuation_request.proto";
 import "fintekkers/requests/valuation/valuation_response.proto";
 
 option java_generic_services = true;
-
+option py_generic_services = true;
 
 service Valuation {
     rpc RunValuation (fintekkers.requests.valuation.ValuationRequestProto)
