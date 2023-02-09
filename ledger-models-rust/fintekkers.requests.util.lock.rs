@@ -1,3 +1,4 @@
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LockRequestProto {
     #[prost(string, tag = "1")]
@@ -12,6 +13,7 @@ pub struct LockRequestProto {
         super::super::super::models::util::lock::NodeStateProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LockResponseProto {
     #[prost(string, tag = "1")]
