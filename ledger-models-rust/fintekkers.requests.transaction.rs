@@ -1,3 +1,4 @@
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryTransactionRequestProto {
     #[prost(string, tag = "1")]
@@ -13,6 +14,7 @@ pub struct QueryTransactionRequestProto {
         super::super::models::position::PositionFilterProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryTransactionResponseProto {
     #[prost(string, tag = "1")]
@@ -26,6 +28,7 @@ pub struct QueryTransactionResponseProto {
         super::super::models::transaction::TransactionProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateTransactionRequestProto {
     #[prost(string, tag = "1")]
@@ -37,6 +40,7 @@ pub struct CreateTransactionRequestProto {
         super::super::models::transaction::TransactionProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateTransactionResponseProto {
     #[prost(string, tag = "1")]

@@ -1,4 +1,5 @@
 /// A request to allow clients to find existing securities.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuerySecurityRequestProto {
     #[prost(string, tag = "1")]
@@ -14,6 +15,7 @@ pub struct QuerySecurityRequestProto {
         super::super::models::position::PositionFilterProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuerySecurityResponseProto {
     #[prost(string, tag = "1")]
@@ -41,6 +43,7 @@ pub struct QuerySecurityResponseProto {
 ///
 /// It is preferred that the client generates the UUID. This will avoid issues in the network leading
 /// to duplicate securities.
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateSecurityRequestProto {
     #[prost(string, tag = "1")]
@@ -55,6 +58,7 @@ pub struct CreateSecurityRequestProto {
         super::super::models::security::SecurityProto,
     >,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateSecurityResponseProto {
     #[prost(string, tag = "1")]

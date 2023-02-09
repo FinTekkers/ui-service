@@ -115,14 +115,8 @@ public class ProtoSerializationUtil {
     }
 
     public static DecimalValue.DecimalValueProto serializeBigDecimal(BigDecimal quantity) {
-        //Java serializes to big endian by default, but most architectures use little endian.
-        //We'll reverse the order.
-        byte[] bytes = quantity.unscaledValue().toByteArray();
-        ArrayUtils.reverse(bytes);
-
         return DecimalValue.DecimalValueProto.newBuilder()
-                .setScale(quantity.scale())
-                .setValue(ByteString.copyFrom(bytes))
+                .setArbitraryPrecisionValue(quantity.toString())
                 .build();
     }
 
@@ -130,14 +124,7 @@ public class ProtoSerializationUtil {
         if(quantity == null)
             return null;
 
-        //The serialization standard is little endian (e.g. used by Rust).
-        //We'll reverse the order.
-        byte[] bytes = quantity.getValue().toByteArray();
-        ArrayUtils.reverse(bytes);
-
-        return new BigDecimal(
-                new BigInteger(bytes),
-                quantity.getScale());
+        return new BigDecimal(quantity.getArbitraryPrecisionValue());
     }
 
     public static LocalDate deserializeLocalDate(fintekkers.models.util.LocalDate.LocalDateProto date) {
