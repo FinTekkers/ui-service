@@ -14,6 +14,7 @@ import fintekkers.models.strategy.StrategyProto;
 import fintekkers.models.util.DecimalValue;
 import fintekkers.models.util.LocalTimestamp;
 import fintekkers.models.util.Uuid;
+import org.apache.commons.lang3.ArrayUtils;
 import protos.serializers.portfolio.PortfolioSerializer;
 import protos.serializers.price.PriceSerializer;
 import protos.serializers.security.IdentifierSerializer;
@@ -114,9 +115,14 @@ public class ProtoSerializationUtil {
     }
 
     public static DecimalValue.DecimalValueProto serializeBigDecimal(BigDecimal quantity) {
+        //Java serializes to big endian by default, but most architectures use little endian.
+        //We'll reverse the order.
+        byte[] bytes = quantity.unscaledValue().toByteArray();
+        ArrayUtils.reverse(bytes);
+
         return DecimalValue.DecimalValueProto.newBuilder()
                 .setScale(quantity.scale())
-                .setValue(ByteString.copyFrom(quantity.unscaledValue().toByteArray()))
+                .setValue(ByteString.copyFrom(bytes))
                 .build();
     }
 
@@ -124,8 +130,13 @@ public class ProtoSerializationUtil {
         if(quantity == null)
             return null;
 
+        //The serialization standard is little endian (e.g. used by Rust).
+        //We'll reverse the order.
+        byte[] bytes = quantity.getValue().toByteArray();
+        ArrayUtils.reverse(bytes);
+
         return new BigDecimal(
-                new BigInteger(quantity.getValue().toByteArray()),
+                new BigInteger(bytes),
                 quantity.getScale());
     }
 
