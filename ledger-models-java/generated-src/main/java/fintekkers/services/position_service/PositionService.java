@@ -355,7 +355,7 @@ public final class PositionService {
       "oto\022~\n\024ValidateQueryRequest\0227.fintekkers" +
       ".requests.position.QueryPositionRequestP" +
       "roto\032-.fintekkers.requests.util.errors.S" +
-      "ummaryProtoB\003\210\001\001b\006proto3"
+      "ummaryProtoB\006\210\001\001\220\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

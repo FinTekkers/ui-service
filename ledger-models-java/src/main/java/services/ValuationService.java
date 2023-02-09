@@ -19,18 +19,24 @@ import protos.serializers.util.proto.ProtoSerializationUtil;
 
 import java.math.BigDecimal;
 
-public class ValuationService extends Endpoint{
-    public static ValuationService LOCAL_VALUATION_SERVICE = new ValuationService("https://127.0.0.1", 8080);
-    public ValuationService(String url, int port) {
-        super(url, port);
+public class ValuationService {
+    public static ValuationService LOCAL_VALUATION_SERVICE = new ValuationService("127.0.0.1", 8080);
+    private final Endpoint endpoint;
 
-//        valuationGrpc = new ValuationGrpc();
+    public ValuationService(String url, int port) {
+        this.endpoint = new Endpoint(url, port);
+
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(url, port).usePlaintext().build();
+        this.valuationGrpc = ValuationGrpc.newBlockingStub(channel);
     }
 
-    private ValuationGrpc valuationGrpc;
+    private ValuationGrpc.ValuationBlockingStub valuationGrpc;
+
+    public ValuationResponseProto runValuation(ValuationRequestProto requestProto) {
+        return this.valuationGrpc.runValuation(requestProto);
+    }
 
     public static void main(String[] args) {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("127.0.0.1", 8080).usePlaintext().build();
 
         LocalTimestamp.LocalTimestampProto asOf = LocalTimestamp.LocalTimestampProto.newBuilder()
                 .setTimestamp(Timestamp.newBuilder().setSeconds(1).setNanos(1).build())
@@ -69,8 +75,8 @@ public class ValuationService extends Endpoint{
                 .addMeasures(MeasureProto.MARKET_VALUE)
                 .build();
 
-        ValuationResponseProto responseProto = ValuationGrpc.newBlockingStub(channel).runValuation(requestProto);
 
+        ValuationResponseProto responseProto = LOCAL_VALUATION_SERVICE.runValuation(requestProto);
         BigDecimal result = ProtoSerializationUtil.deserializeBigDecimal(responseProto.getMeasureResults(0).getMeasureValue());
         System.out.println(responseProto);
 
