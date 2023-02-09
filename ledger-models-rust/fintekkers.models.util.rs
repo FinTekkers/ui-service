@@ -1,10 +1,13 @@
+///   uint32 scale = 1;
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DecimalValueProto {
-    #[prost(uint32, tag = "1")]
-    pub scale: u32,
-    #[prost(bytes = "vec", tag = "3")]
-    pub value: ::prost::alloc::vec::Vec<u8>,
+    /// This is a string representation of a float number.
+    /// This will be deprecated in the future for a more space efficient approach
+    #[prost(string, tag = "10")]
+    pub arbitrary_precision_value: ::prost::alloc::string::String,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LocalDateProto {
     #[prost(uint32, tag = "1")]
@@ -14,6 +17,7 @@ pub struct LocalDateProto {
     #[prost(uint32, tag = "3")]
     pub day: u32,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LocalTimestampProto {
     #[prost(message, optional, tag = "1")]
@@ -23,6 +27,7 @@ pub struct LocalTimestampProto {
     #[prost(string, tag = "2")]
     pub time_zone: ::prost::alloc::string::String,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UuidProto {
     #[prost(bytes = "vec", tag = "1")]

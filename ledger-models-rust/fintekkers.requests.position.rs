@@ -1,3 +1,4 @@
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPositionRequestProto {
     #[prost(string, tag = "1")]
@@ -35,6 +36,7 @@ pub struct QueryPositionRequestProto {
     #[prost(message, optional, tag = "33")]
     pub as_of: ::core::option::Option<super::super::models::util::LocalTimestampProto>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPositionResponseProto {
     #[prost(string, tag = "1")]

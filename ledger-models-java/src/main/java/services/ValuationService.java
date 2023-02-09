@@ -79,7 +79,7 @@ public class ValuationService extends Endpoint{
         System.out.println("*************************************************************************************");
 
         DecimalValue.DecimalValueProto oneHundred = ProtoSerializationUtil.serializeBigDecimal(BigDecimal.valueOf(-100));
-        System.out.println(oneHundred.getValue());
+        System.out.println(oneHundred.getArbitraryPrecisionValue());
 
         System.out.println(result);
 
