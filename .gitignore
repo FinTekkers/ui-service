@@ -27,3 +27,4 @@ target/**
 
 #npm
 .npmrc
+node_modules/
