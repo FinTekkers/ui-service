@@ -2,11 +2,18 @@
   "name": "ledger-models",
   "version": "1.0.0",
   "description": "ledger model protos ",
-  "author": "",
+  "author": "Sam Sheridan",
   "license": "ISC",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FinTekkers/ledger-models"
+  },
   "peerDependencies": {
     "google-protobuf": "^3.21.2",
     "grpc-web": "^1.4.2"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
