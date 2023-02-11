@@ -1,5 +1,5 @@
 {
-  "name": "ledger-models",
+  "name": "@fintekkers/ledger-models",
   "version": "1.0.0",
   "description": "ledger model protos ",
   "author": "Sam Sheridan",
@@ -7,7 +7,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/FinTekkers/ledger-models"
+    "url": "https://github.com/FinTekkers/ledger-models.git"
   },
   "peerDependencies": {
     "google-protobuf": "^3.21.2",
