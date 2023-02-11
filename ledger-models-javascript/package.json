@@ -4,6 +4,7 @@
   "description": "ledger model protos ",
   "author": "",
   "license": "ISC",
+  "main": "index.js",
   "peerDependencies": {
     "google-protobuf": "^3.21.2",
     "grpc-web": "^1.4.2"
