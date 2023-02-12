@@ -23,3 +23,8 @@ target/**
 
 #Mac related folders
 .DS_Store
+
+
+#npm
+.npmrc
+node_modules/
