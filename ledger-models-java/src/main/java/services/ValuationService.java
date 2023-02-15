@@ -20,14 +20,25 @@ import protos.serializers.util.proto.ProtoSerializationUtil;
 import java.math.BigDecimal;
 
 public class ValuationService {
-    public static ValuationService LOCAL_VALUATION_SERVICE = new ValuationService("127.0.0.1", 8080);
+    private static ValuationService DEFAULT_VALUATION_SERVICE_INSTANCE = new ValuationService("api.fintekkers.org", 8080, false);
     private final Endpoint endpoint;
 
-    public ValuationService(String url, int port) {
-        this.endpoint = new Endpoint(url, port);
+    public ValuationService(String url, int port, boolean isHttp) {
+        ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forAddress(url, port);
+        if(isHttp) builder.usePlaintext();
 
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(url, port).usePlaintext().build();
+        ManagedChannel channel = builder.build();
         this.valuationGrpc = ValuationGrpc.newBlockingStub(channel);
+
+        this.endpoint = new Endpoint(url, port, isHttp);
+    }
+
+    public Endpoint getEndpoint() {
+        return endpoint;
+    }
+
+    public static ValuationService getInstance() {
+        return DEFAULT_VALUATION_SERVICE_INSTANCE;
     }
 
     private ValuationGrpc.ValuationBlockingStub valuationGrpc;
@@ -76,7 +87,7 @@ public class ValuationService {
                 .build();
 
 
-        ValuationResponseProto responseProto = LOCAL_VALUATION_SERVICE.runValuation(requestProto);
+        ValuationResponseProto responseProto = getInstance().runValuation(requestProto);
         BigDecimal result = ProtoSerializationUtil.deserializeBigDecimal(responseProto.getMeasureResults(0).getMeasureValue());
         System.out.println(responseProto);
 
