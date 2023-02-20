@@ -139,27 +139,27 @@ public final class SecurityGrpc {
     return getListIDsMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto,
+  private static volatile io.grpc.MethodDescriptor<fintekkers.requests.security.CreateSecurityRequestProto,
       fintekkers.requests.util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "ValidateCreateOrUpdate",
-      requestType = fintekkers.requests.security.QuerySecurityRequestProto.class,
+      requestType = fintekkers.requests.security.CreateSecurityRequestProto.class,
       responseType = fintekkers.requests.util.errors.Summary.SummaryProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto,
+  public static io.grpc.MethodDescriptor<fintekkers.requests.security.CreateSecurityRequestProto,
       fintekkers.requests.util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto, fintekkers.requests.util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod;
+    io.grpc.MethodDescriptor<fintekkers.requests.security.CreateSecurityRequestProto, fintekkers.requests.util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod;
     if ((getValidateCreateOrUpdateMethod = SecurityGrpc.getValidateCreateOrUpdateMethod) == null) {
       synchronized (SecurityGrpc.class) {
         if ((getValidateCreateOrUpdateMethod = SecurityGrpc.getValidateCreateOrUpdateMethod) == null) {
           SecurityGrpc.getValidateCreateOrUpdateMethod = getValidateCreateOrUpdateMethod =
-              io.grpc.MethodDescriptor.<fintekkers.requests.security.QuerySecurityRequestProto, fintekkers.requests.util.errors.Summary.SummaryProto>newBuilder()
+              io.grpc.MethodDescriptor.<fintekkers.requests.security.CreateSecurityRequestProto, fintekkers.requests.util.errors.Summary.SummaryProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ValidateCreateOrUpdate"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance()))
+                  fintekkers.requests.security.CreateSecurityRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.util.errors.Summary.SummaryProto.getDefaultInstance()))
               .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ValidateCreateOrUpdate"))
@@ -279,7 +279,7 @@ public final class SecurityGrpc {
 
     /**
      */
-    public void validateCreateOrUpdate(fintekkers.requests.security.QuerySecurityRequestProto request,
+    public void validateCreateOrUpdate(fintekkers.requests.security.CreateSecurityRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.util.errors.Summary.SummaryProto> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getValidateCreateOrUpdateMethod(), responseObserver);
     }
@@ -325,7 +325,7 @@ public final class SecurityGrpc {
             getValidateCreateOrUpdateMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                fintekkers.requests.security.QuerySecurityRequestProto,
+                fintekkers.requests.security.CreateSecurityRequestProto,
                 fintekkers.requests.util.errors.Summary.SummaryProto>(
                   this, METHODID_VALIDATE_CREATE_OR_UPDATE)))
           .addMethod(
@@ -387,7 +387,7 @@ public final class SecurityGrpc {
 
     /**
      */
-    public void validateCreateOrUpdate(fintekkers.requests.security.QuerySecurityRequestProto request,
+    public void validateCreateOrUpdate(fintekkers.requests.security.CreateSecurityRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.util.errors.Summary.SummaryProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getValidateCreateOrUpdateMethod(), getCallOptions()), request, responseObserver);
@@ -446,7 +446,7 @@ public final class SecurityGrpc {
 
     /**
      */
-    public fintekkers.requests.util.errors.Summary.SummaryProto validateCreateOrUpdate(fintekkers.requests.security.QuerySecurityRequestProto request) {
+    public fintekkers.requests.util.errors.Summary.SummaryProto validateCreateOrUpdate(fintekkers.requests.security.CreateSecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getValidateCreateOrUpdateMethod(), getCallOptions(), request);
     }
@@ -508,7 +508,7 @@ public final class SecurityGrpc {
     /**
      */
     public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.util.errors.Summary.SummaryProto> validateCreateOrUpdate(
-        fintekkers.requests.security.QuerySecurityRequestProto request) {
+        fintekkers.requests.security.CreateSecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getValidateCreateOrUpdateMethod(), getCallOptions()), request);
     }
@@ -563,7 +563,7 @@ public final class SecurityGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.security.QuerySecurityResponseProto>) responseObserver);
           break;
         case METHODID_VALIDATE_CREATE_OR_UPDATE:
-          serviceImpl.validateCreateOrUpdate((fintekkers.requests.security.QuerySecurityRequestProto) request,
+          serviceImpl.validateCreateOrUpdate((fintekkers.requests.security.CreateSecurityRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.util.errors.Summary.SummaryProto>) responseObserver);
           break;
         case METHODID_VALIDATE_QUERY_REQUEST:

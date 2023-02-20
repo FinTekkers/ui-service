@@ -1,9 +1,9 @@
 package common.models.security;
 
-import common.models.postion.PositionStatus;
 import common.models.price.Price;
 import common.models.transaction.Transaction;
 import common.models.transaction.TransactionType;
+import fintekkers.models.position.PositionStatusProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import testutil.DummyEquityObjects;
@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 class BondSecurityTest {
     @Test
@@ -42,7 +41,7 @@ class BondSecurityTest {
                 LocalDate.now(), LocalDate.now().plusDays(2),
                 totalFaceValue,
                 security, buySell, null, ZonedDateTime.now(), null,
-                "No trade name", PositionStatus.HYPOTHETICAL);
+                "No trade name", PositionStatusProto.HYPOTHETICAL);
 
 
         BigDecimal directedQuantity = totalFaceValue.multiply(multiplier).multiply(BigDecimal.valueOf(-1));
@@ -62,8 +61,7 @@ class BondSecurityTest {
         Assertions.assertEquals(2, transaction.getChildTransactions().size());
 
         Transaction futureCashImpact =
-                transaction.getChildTransactions().stream().filter(t -> !t.getSecurity().isCash())
-                        .collect(Collectors.toList()).get(0);
+                transaction.getChildTransactions().stream().filter(t -> !t.getSecurity().isCash()).toList().get(0);
 
         //The maturation cash impact should be the face value of the bond, i.e. not based on the price paid
         Assertions.assertEquals(transaction.getDirectedQuantity(), futureCashImpact.getCashTransaction().getDirectedQuantity());

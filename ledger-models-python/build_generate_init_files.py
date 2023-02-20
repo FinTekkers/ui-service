@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-root = './src'
+root = './generated-src'
 paths = os.listdir(root)
 
 ignore_folders = [

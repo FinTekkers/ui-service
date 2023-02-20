@@ -40,7 +40,7 @@ class SecurityStub(object):
                 )
         self.ValidateCreateOrUpdate = channel.unary_unary(
                 '/fintekkers.services.security_service.Security/ValidateCreateOrUpdate',
-                request_serializer=fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.SerializeToString,
+                request_serializer=fintekkers_dot_requests_dot_security_dot_create__security__request__pb2.CreateSecurityRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
                 )
         self.ValidateQueryRequest = channel.unary_unary(
@@ -114,7 +114,7 @@ def add_SecurityServicer_to_server(servicer, server):
             ),
             'ValidateCreateOrUpdate': grpc.unary_unary_rpc_method_handler(
                     servicer.ValidateCreateOrUpdate,
-                    request_deserializer=fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.FromString,
+                    request_deserializer=fintekkers_dot_requests_dot_security_dot_create__security__request__pb2.CreateSecurityRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.SerializeToString,
             ),
             'ValidateQueryRequest': grpc.unary_unary_rpc_method_handler(
@@ -212,7 +212,7 @@ class Security(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Security/ValidateCreateOrUpdate',
-            fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.SerializeToString,
+            fintekkers_dot_requests_dot_security_dot_create__security__request__pb2.CreateSecurityRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

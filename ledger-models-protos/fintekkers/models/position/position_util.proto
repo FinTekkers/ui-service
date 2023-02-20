@@ -23,8 +23,7 @@ message FieldMapEntry {
 
   oneof FieldMapValueOneOf {
     google.protobuf.Any field_value_packed = 4;
-    string enum_value = 5;
-    fintekkers.models.security.IdentifierProto identifier = 6;
+    int32 enum_value = 5;
   }
 
   PositionFilterOperator operator = 20; //Used for position filters, but not for responses

@@ -18,18 +18,16 @@ NOT_EQUALS: PositionFilterOperator
 UNKNOWN_OPERATOR: PositionFilterOperator
 
 class FieldMapEntry(_message.Message):
-    __slots__ = ["enum_value", "field", "field_value_packed", "identifier", "operator"]
+    __slots__ = ["enum_value", "field", "field_value_packed", "operator"]
     ENUM_VALUE_FIELD_NUMBER: _ClassVar[int]
     FIELD_FIELD_NUMBER: _ClassVar[int]
     FIELD_VALUE_PACKED_FIELD_NUMBER: _ClassVar[int]
-    IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     OPERATOR_FIELD_NUMBER: _ClassVar[int]
-    enum_value: str
+    enum_value: int
     field: _field_pb2.FieldProto
     field_value_packed: _any_pb2.Any
-    identifier: _identifier_pb2.IdentifierProto
     operator: PositionFilterOperator
-    def __init__(self, field: _Optional[_Union[_field_pb2.FieldProto, str]] = ..., field_value_packed: _Optional[_Union[_any_pb2.Any, _Mapping]] = ..., enum_value: _Optional[str] = ..., identifier: _Optional[_Union[_identifier_pb2.IdentifierProto, _Mapping]] = ..., operator: _Optional[_Union[PositionFilterOperator, str]] = ...) -> None: ...
+    def __init__(self, field: _Optional[_Union[_field_pb2.FieldProto, str]] = ..., field_value_packed: _Optional[_Union[_any_pb2.Any, _Mapping]] = ..., enum_value: _Optional[int] = ..., operator: _Optional[_Union[PositionFilterOperator, str]] = ...) -> None: ...
 
 class MeasureMapEntry(_message.Message):
     __slots__ = ["field", "measure_value"]

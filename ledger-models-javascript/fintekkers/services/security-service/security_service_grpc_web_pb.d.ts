@@ -41,7 +41,7 @@ export class SecurityClient {
   ): grpcWeb.ClientReadableStream<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
 
   validateCreateOrUpdate(
-    request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
+    request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
                response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void
@@ -82,7 +82,7 @@ export class SecurityPromiseClient {
   ): Promise<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
 
   validateCreateOrUpdate(
-    request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
+    request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_util_errors_summary_pb.SummaryProto>;
 

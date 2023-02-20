@@ -3,11 +3,13 @@ package protos.serializers.position;
 import com.google.gson.*;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.ProtocolMessageEnum;
 import common.models.JSONFieldNames;
 import common.models.postion.Field;
 import common.models.postion.Measure;
 import common.models.postion.Position;
 import fintekkers.models.position.*;
+import fintekkers.models.security.SecurityTypeProto;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import protos.serializers.IRawDataModelObjectSerializer;
@@ -77,17 +79,21 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
         FieldMapEntry.Builder fieldBuilder =
                 FieldMapEntry.newBuilder().setField(FieldProto.valueOf(field.name()));
 
-        if(field.getType().isEnum()) {
+        /*if(field.getType().isEnum()) {
             //If enum then we serialize as a string
             fieldBuilder.setEnumValue(fieldValue.toString());
-        } /*else if (Field.IDENTIFIER.equals(field)){
+        }*/ /*else if (Field.IDENTIFIER.equals(field)){
             assert Identifier.class.equals(fieldValue.getClass());
             Identifier identifier = (Identifier) fieldValue;
             IdentifierProto identifierProto = IdentifierProto.newBuilder()
                             .setIdentifierType(IdentifierTypeProto.valueOf(identifier.getIdentifierType().name()))
                                     .setIdentifierValue(identifier.getIdentifier()).build();
             fieldBuilder.setIdentifier(identifierProto);
-        } */else if (fieldValue != null){
+        } */
+//        else
+        if(fieldValue instanceof ProtocolMessageEnum)
+            fieldBuilder.setEnumValue(((ProtocolMessageEnum)fieldValue).getNumber());
+        else if (fieldValue != null){
             Any valuePacked = ProtoSerializationUtil.serializeToAny(fieldValue);
             fieldBuilder.setFieldValuePacked(valuePacked);
         }
@@ -110,7 +116,9 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
             Object fieldValue;
 
             if(ENUM_VALUE.equals(fieldProto.getFieldMapValueOneOfCase())) {
-                fieldValue = Enum.valueOf(field.getType(), fieldProto.getEnumValue());
+                //Dynamically sources the appropriate enum, and gets it based on the number serialized in the proto.
+                Object enumConstant = field.getType().getEnumConstants()[fieldProto.getEnumValue()];
+                fieldValue = enumConstant;
             } else {
                 fieldValue = ProtoSerializationUtil.deserialize(fieldProto.getFieldValuePacked());
             }
@@ -237,23 +245,31 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
     public static void serializeField(Gson gson, FieldMapEntry field, JsonObject outputJson) {
         Any fieldValuePacked = field.getFieldValuePacked();
 
-        String enumValue = field.getEnumValue();
-        if(StringUtils.isNotEmpty(enumValue)) {
-            serializePrimitiveType(outputJson, field.getField().name(), enumValue);
+        //If the packed value size is zero then it doesn't exist; we should assume it's an enum
+        if(fieldValuePacked.getValue().size() == 0) {
+            int enumValue = field.getEnumValue();
+
+            serializeEnum(outputJson, field.getField().name(), enumValue);
             return;
         }
 
         Object deserialized = ProtoSerializationUtil.deserialize(fieldValuePacked);
 
         if(String.class.equals(deserialized.getClass())) {
-            serializePrimitiveType(outputJson, "String", deserialized.toString());
+            serializeStringType(outputJson, "String", deserialized.toString());
             return;
         }
 
         serializeComplexType(gson, outputJson, deserialized);
     }
 
-    public static void serializePrimitiveType(JsonObject fieldMap, String fieldType, String fieldValue) {
+
+    public static void serializeEnum(JsonObject fieldMap, String enumName, int fieldValue) {
+        fieldMap.add(FIELD_TYPE, new JsonPrimitive(enumName));
+        fieldMap.add(FIELD_DISPLAY_VALUE, new JsonPrimitive(fieldValue));
+    }
+
+    public static void serializeStringType(JsonObject fieldMap, String fieldType, String fieldValue) {
         fieldMap.add(FIELD_TYPE, new JsonPrimitive(fieldType));
         fieldMap.add(FIELD_DISPLAY_VALUE, new JsonPrimitive(fieldValue));
     }
