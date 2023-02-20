@@ -8,7 +8,7 @@ option java_outer_classname = "PositionStatusProtos";
 
 enum PositionStatusProto {
   UNKNOWN=0;
-  HYPOTHETICAL=1; //This trade may never happen
-  INTENDED=2; //This trade is expected to happen, but hasn't been executed yet
-  EXECUTED=3; //Beneficial ownership changes related to this transaction are now legally binding
+  HYPOTHETICAL=1; //Hypothetical status means a transaction, tax lot or position that may never occur. This can be used to understand how potential actions could impact a portfolio
+  INTENDED=2; //Intended status means a transaction, tax lot or position that is expected to occur if nothing changes. For example a fixed income bond that is expected to pay a coupon, or a security that is expected to mature in a specific point in the future
+  EXECUTED=3; //Executed status means a transaction, tax lot or position that is the result of a legally binding transaction
 }

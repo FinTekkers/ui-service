@@ -1,6 +1,7 @@
 package common.models.security.bonds;
 
 import common.models.security.*;
+import fintekkers.models.security.SecurityTypeProto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -73,8 +74,8 @@ public class FloatingRateNote extends BondSecurity implements IndexLinkedSecurit
     }
 
     @Override
-    public SecurityType getSecurityType() {
-        return SecurityType.FRN;
+    public SecurityTypeProto getSecurityType() {
+        return SecurityTypeProto.FRN;
     }
 
     @Override

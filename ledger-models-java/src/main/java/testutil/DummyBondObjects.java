@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static common.models.postion.PositionStatus.EXECUTED;
+import static fintekkers.models.position.PositionStatusProto.EXECUTED;
 import static testutil.DummyEquityObjects.getDummyPortfolio;
 
 public class DummyBondObjects {
@@ -74,7 +74,8 @@ public class DummyBondObjects {
                             BigDecimal.ONE
                     );
                 }},
-                ZonedDateTime.now(), null, "No Trade Name", EXECUTED);
+                ZonedDateTime.now(), null, "No Trade Name",
+                EXECUTED);
 
         Transaction.addCashImpact(transaction);
         Transaction.addDerivedTransactions(transaction);

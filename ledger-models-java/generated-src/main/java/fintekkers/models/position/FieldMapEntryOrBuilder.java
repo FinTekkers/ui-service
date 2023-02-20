@@ -34,31 +34,10 @@ public interface FieldMapEntryOrBuilder extends
   com.google.protobuf.AnyOrBuilder getFieldValuePackedOrBuilder();
 
   /**
-   * <code>string enum_value = 5;</code>
+   * <code>int32 enum_value = 5;</code>
    * @return The enumValue.
    */
-  java.lang.String getEnumValue();
-  /**
-   * <code>string enum_value = 5;</code>
-   * @return The bytes for enumValue.
-   */
-  com.google.protobuf.ByteString
-      getEnumValueBytes();
-
-  /**
-   * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-   * @return Whether the identifier field is set.
-   */
-  boolean hasIdentifier();
-  /**
-   * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-   * @return The identifier.
-   */
-  fintekkers.models.security.IdentifierProto getIdentifier();
-  /**
-   * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-   */
-  fintekkers.models.security.IdentifierProtoOrBuilder getIdentifierOrBuilder();
+  int getEnumValue();
 
   /**
    * <pre>

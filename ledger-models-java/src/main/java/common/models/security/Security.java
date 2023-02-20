@@ -5,6 +5,7 @@ import common.models.RawDataModelObject;
 import common.models.postion.Field;
 import common.models.postion.Measure;
 import common.models.security.identifier.Identifier;
+import fintekkers.models.security.SecurityTypeProto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -69,6 +70,7 @@ public class Security extends RawDataModelObject implements Comparable, IFinanci
     public Object getField(Field field) {
         switch(field) {
             case ID:
+            case SECURITY_ID:
                 return getID();
             case ASSET_CLASS:
                 return getAssetClass();
@@ -158,7 +160,7 @@ public class Security extends RawDataModelObject implements Comparable, IFinanci
         return getID().hashCode();
     }
 
-    public SecurityType getSecurityType() {
+    public SecurityTypeProto getSecurityType() {
         throw new RuntimeException("Not supported. Need to code this in");
     }
 

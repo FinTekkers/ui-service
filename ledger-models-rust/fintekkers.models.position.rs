@@ -2,11 +2,11 @@
 #[repr(i32)]
 pub enum PositionStatusProto {
     Unknown = 0,
-    /// This trade may never happen
+    /// Hypothetical status means a transaction, tax lot or position that may never occur. This can be used to understand how potential actions could impact a portfolio
     Hypothetical = 1,
-    /// This trade is expected to happen, but hasn't been executed yet
+    /// Intended status means a transaction, tax lot or position that is expected to occur if nothing changes. For example a fixed income bond that is expected to pay a coupon, or a security that is expected to mature in a specific point in the future
     Intended = 2,
-    /// Beneficial ownership changes related to this transaction are now legally binding
+    /// Executed status means a transaction, tax lot or position that is the result of a legally binding transaction
     Executed = 3,
 }
 impl PositionStatusProto {
@@ -230,7 +230,7 @@ pub struct FieldMapEntry {
     /// Used for position filters, but not for responses
     #[prost(enumeration = "PositionFilterOperator", tag = "20")]
     pub operator: i32,
-    #[prost(oneof = "field_map_entry::FieldMapValueOneOf", tags = "4, 5, 6")]
+    #[prost(oneof = "field_map_entry::FieldMapValueOneOf", tags = "4, 5")]
     pub field_map_value_one_of: ::core::option::Option<
         field_map_entry::FieldMapValueOneOf,
     >,
@@ -242,10 +242,8 @@ pub mod field_map_entry {
     pub enum FieldMapValueOneOf {
         #[prost(message, tag = "4")]
         FieldValuePacked(::prost_types::Any),
-        #[prost(string, tag = "5")]
-        EnumValue(::prost::alloc::string::String),
-        #[prost(message, tag = "6")]
-        Identifier(super::super::security::IdentifierProto),
+        #[prost(int32, tag = "5")]
+        EnumValue(i32),
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]

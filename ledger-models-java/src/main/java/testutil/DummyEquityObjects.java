@@ -23,7 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static common.models.postion.PositionStatus.EXECUTED;
+import static fintekkers.models.position.PositionStatusProto.EXECUTED;
 
 public class DummyEquityObjects {
     public static Security getDummySecurity() {

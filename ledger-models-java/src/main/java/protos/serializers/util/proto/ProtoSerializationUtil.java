@@ -1,6 +1,7 @@
 package protos.serializers.util.proto;
 
 import com.google.protobuf.*;
+import common.models.IFintekkersEnum;
 import common.models.portfolio.Portfolio;
 import common.models.price.Price;
 import common.models.security.Security;
@@ -10,6 +11,7 @@ import fintekkers.models.portfolio.PortfolioProto;
 import fintekkers.models.price.PriceProto;
 import fintekkers.models.security.IdentifierProto;
 import fintekkers.models.security.SecurityProto;
+import fintekkers.models.security.SecurityTypeProto;
 import fintekkers.models.strategy.StrategyProto;
 import fintekkers.models.util.DecimalValue;
 import fintekkers.models.util.LocalTimestamp;
@@ -21,6 +23,7 @@ import protos.serializers.security.IdentifierSerializer;
 import protos.serializers.security.SecuritySerializer;
 import protos.serializers.strategy.StrategySerializer;
 
+import java.lang.Enum;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -33,7 +36,18 @@ public class ProtoSerializationUtil {
         GeneratedMessageV3 unpacked;
         if(object instanceof BigDecimal) {
             unpacked = serializeBigDecimal((BigDecimal) object);
-        } else if(object instanceof LocalDate) {
+        }
+        /*} else if(object instanceof IFintekkersEnum) {
+            unpacked = Int32Value.of(((IFintekkersEnum)object).getProtoOrdinal());
+        }*/ /*else if(object instanceof ProtocolMessageEnum) {
+            //For regular Java enums we will serialize the name as a string.
+            //NOTE: If you want to use this in other languages you should decide whether to
+            //implement this as a protobuf enum or not. If you implement as a Java enum, but serialize
+            //to a string, you are running the risk that another language implementation may simply send
+            //a string and it may break. TODO: Implement a StringableEnum that can accept a generic string
+            //and put into an uncategorized value.
+            unpacked = Int32Value.of(((ProtocolMessageEnum)object).getNumber());
+        }*/ else if(object instanceof LocalDate) {
             unpacked =  serializeLocalDate((LocalDate) object);
         } else if(object instanceof ZonedDateTime) {
             unpacked = serializeTimestamp((ZonedDateTime) object);
@@ -67,6 +81,9 @@ public class ProtoSerializationUtil {
 
     public static Object deserialize(Any any) {
         try {
+//            if (any.is(Int32Value.class)) {
+//                return SecurityTypeProto.forNumber(any.unpack(Int32Value.class).getValue());
+//            }
             if (any.is(DecimalValue.DecimalValueProto.class)) {
                 DecimalValue.DecimalValueProto decimalValueProto = any.unpack(DecimalValue.DecimalValueProto.class);
                 return deserializeBigDecimal(decimalValueProto);
