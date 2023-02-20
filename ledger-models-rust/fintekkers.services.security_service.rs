@@ -1460,7 +1460,7 @@ pub mod security_client {
         pub async fn validate_create_or_update(
             &mut self,
             request: impl tonic::IntoRequest<
-                super::super::super::requests::security::QuerySecurityRequestProto,
+                super::super::super::requests::security::CreateSecurityRequestProto,
             >,
         ) -> Result<
             tonic::Response<super::super::super::requests::util::errors::SummaryProto>,
@@ -1561,7 +1561,7 @@ pub mod security_server {
         async fn validate_create_or_update(
             &self,
             request: tonic::Request<
-                super::super::super::requests::security::QuerySecurityRequestProto,
+                super::super::super::requests::security::CreateSecurityRequestProto,
             >,
         ) -> Result<
             tonic::Response<super::super::super::requests::util::errors::SummaryProto>,
@@ -1808,7 +1808,7 @@ pub mod security_server {
                     impl<
                         T: Security,
                     > tonic::server::UnaryService<
-                        super::super::super::requests::security::QuerySecurityRequestProto,
+                        super::super::super::requests::security::CreateSecurityRequestProto,
                     > for ValidateCreateOrUpdateSvc<T> {
                         type Response = super::super::super::requests::util::errors::SummaryProto;
                         type Future = BoxFuture<
@@ -1818,7 +1818,7 @@ pub mod security_server {
                         fn call(
                             &mut self,
                             request: tonic::Request<
-                                super::super::super::requests::security::QuerySecurityRequestProto,
+                                super::super::super::requests::security::CreateSecurityRequestProto,
                             >,
                         ) -> Self::Future {
                             let inner = self.0.clone();

@@ -43,7 +43,7 @@ public class SecuritySerializer implements IRawDataModelObjectSerializer<Securit
                 .setIssuerName(security.getIssuer())
                 .setAssetClass(security.getAssetClass())
                 .setQuantityType(SecurityQuantityTypeProto.valueOf(security.getQuantityType().name()))
-                .setSecurityType(security.getSecurityType().getSecurityProtoValue());
+                .setSecurityType(security.getSecurityType());
 
         if(security.getDescription() != null)
             builder.setDescription(security.getDescription());
@@ -76,7 +76,7 @@ public class SecuritySerializer implements IRawDataModelObjectSerializer<Securit
         CashSecurity settlementCurrency = proto.hasSettlementCurrency() ?
                 (CashSecurity) this.deserialize(proto.getSettlementCurrency()) : null;
 
-        SecurityType securityType = SecurityType.from(proto.getSecurityType());
+        SecurityTypeProto securityType = proto.getSecurityType();
 
         switch (securityType) {
             case CASH_SECURITY:
@@ -204,7 +204,7 @@ public class SecuritySerializer implements IRawDataModelObjectSerializer<Securit
         JsonObject securityJsonObject = gson.fromJson(json, JsonObject.class);
 
         String securityTypeString = securityJsonObject.get(SECURITY_TYPE).getAsString();
-        SecurityType securityType = SecurityType.from(securityTypeString);
+        SecurityTypeProto securityType = SecurityTypeProto.valueOf(securityTypeString);
 
         if(securityJsonObject.has(IDENTIFIER)) {
             String idType = securityJsonObject.get(IDENTIFIER).getAsJsonObject().get(IDENTIFIER_TYPE).getAsString();
@@ -215,14 +215,14 @@ public class SecuritySerializer implements IRawDataModelObjectSerializer<Securit
 
         SecurityProto settlementSecurityProto = null;
 
-        if(!SecurityType.CASH_SECURITY.equals(securityType)) {
+        if(!SecurityTypeProto.CASH_SECURITY.equals(securityType)) {
             JsonObject settlementSecurityJsonObject = securityJsonObject.getAsJsonObject(SETTLEMENT_CURRENCY);
             settlementSecurityProto = deserializeFromJson(settlementSecurityJsonObject.toString());
             securityJsonObject.remove(SETTLEMENT_CURRENCY);
         }
 
         securityJsonObject.add(SECURITY_TYPE,
-                new JsonPrimitive(securityType.getSecurityProtoValue().getNumber()));
+                new JsonPrimitive(securityType.getNumber()));
 
         String quantityTypeString = securityJsonObject.get(QUANTITY_TYPE).getAsString();
         securityJsonObject.add(QUANTITY_TYPE,

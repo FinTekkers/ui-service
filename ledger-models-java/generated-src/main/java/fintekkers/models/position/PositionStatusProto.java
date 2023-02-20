@@ -14,7 +14,7 @@ public enum PositionStatusProto
   UNKNOWN(0),
   /**
    * <pre>
-   *This trade may never happen
+   *Hypothetical status means a transaction, tax lot or position that may never occur. This can be used to understand how potential actions could impact a portfolio
    * </pre>
    *
    * <code>HYPOTHETICAL = 1;</code>
@@ -22,7 +22,7 @@ public enum PositionStatusProto
   HYPOTHETICAL(1),
   /**
    * <pre>
-   *This trade is expected to happen, but hasn't been executed yet
+   *Intended status means a transaction, tax lot or position that is expected to occur if nothing changes. For example a fixed income bond that is expected to pay a coupon, or a security that is expected to mature in a specific point in the future
    * </pre>
    *
    * <code>INTENDED = 2;</code>
@@ -30,7 +30,7 @@ public enum PositionStatusProto
   INTENDED(2),
   /**
    * <pre>
-   *Beneficial ownership changes related to this transaction are now legally binding
+   *Executed status means a transaction, tax lot or position that is the result of a legally binding transaction
    * </pre>
    *
    * <code>EXECUTED = 3;</code>
@@ -45,7 +45,7 @@ public enum PositionStatusProto
   public static final int UNKNOWN_VALUE = 0;
   /**
    * <pre>
-   *This trade may never happen
+   *Hypothetical status means a transaction, tax lot or position that may never occur. This can be used to understand how potential actions could impact a portfolio
    * </pre>
    *
    * <code>HYPOTHETICAL = 1;</code>
@@ -53,7 +53,7 @@ public enum PositionStatusProto
   public static final int HYPOTHETICAL_VALUE = 1;
   /**
    * <pre>
-   *This trade is expected to happen, but hasn't been executed yet
+   *Intended status means a transaction, tax lot or position that is expected to occur if nothing changes. For example a fixed income bond that is expected to pay a coupon, or a security that is expected to mature in a specific point in the future
    * </pre>
    *
    * <code>INTENDED = 2;</code>
@@ -61,7 +61,7 @@ public enum PositionStatusProto
   public static final int INTENDED_VALUE = 2;
   /**
    * <pre>
-   *Beneficial ownership changes related to this transaction are now legally binding
+   *Executed status means a transaction, tax lot or position that is the result of a legally binding transaction
    * </pre>
    *
    * <code>EXECUTED = 3;</code>

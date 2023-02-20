@@ -55,11 +55,11 @@ public final class SecurityService {
           com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done);
 
       /**
-       * <code>rpc ValidateCreateOrUpdate(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.util.errors.SummaryProto);</code>
+       * <code>rpc ValidateCreateOrUpdate(.fintekkers.requests.security.CreateSecurityRequestProto) returns (.fintekkers.requests.util.errors.SummaryProto);</code>
        */
       public abstract void validateCreateOrUpdate(
           com.google.protobuf.RpcController controller,
-          fintekkers.requests.security.QuerySecurityRequestProto request,
+          fintekkers.requests.security.CreateSecurityRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.util.errors.Summary.SummaryProto> done);
 
       /**
@@ -110,7 +110,7 @@ public final class SecurityService {
         @java.lang.Override
         public  void validateCreateOrUpdate(
             com.google.protobuf.RpcController controller,
-            fintekkers.requests.security.QuerySecurityRequestProto request,
+            fintekkers.requests.security.CreateSecurityRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.util.errors.Summary.SummaryProto> done) {
           impl.validateCreateOrUpdate(controller, request, done);
         }
@@ -154,7 +154,7 @@ public final class SecurityService {
             case 3:
               return impl.listIDs(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request);
             case 4:
-              return impl.validateCreateOrUpdate(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request);
+              return impl.validateCreateOrUpdate(controller, (fintekkers.requests.security.CreateSecurityRequestProto)request);
             case 5:
               return impl.validateQueryRequest(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request);
             default:
@@ -180,7 +180,7 @@ public final class SecurityService {
             case 3:
               return fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance();
             case 4:
-              return fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance();
+              return fintekkers.requests.security.CreateSecurityRequestProto.getDefaultInstance();
             case 5:
               return fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance();
             default:
@@ -250,11 +250,11 @@ public final class SecurityService {
         com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done);
 
     /**
-     * <code>rpc ValidateCreateOrUpdate(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.util.errors.SummaryProto);</code>
+     * <code>rpc ValidateCreateOrUpdate(.fintekkers.requests.security.CreateSecurityRequestProto) returns (.fintekkers.requests.util.errors.SummaryProto);</code>
      */
     public abstract void validateCreateOrUpdate(
         com.google.protobuf.RpcController controller,
-        fintekkers.requests.security.QuerySecurityRequestProto request,
+        fintekkers.requests.security.CreateSecurityRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.util.errors.Summary.SummaryProto> done);
 
     /**
@@ -308,7 +308,7 @@ public final class SecurityService {
               done));
           return;
         case 4:
-          this.validateCreateOrUpdate(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request,
+          this.validateCreateOrUpdate(controller, (fintekkers.requests.security.CreateSecurityRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.util.errors.Summary.SummaryProto>specializeCallback(
               done));
           return;
@@ -340,7 +340,7 @@ public final class SecurityService {
         case 3:
           return fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance();
         case 4:
-          return fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance();
+          return fintekkers.requests.security.CreateSecurityRequestProto.getDefaultInstance();
         case 5:
           return fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance();
         default:
@@ -452,7 +452,7 @@ public final class SecurityService {
 
       public  void validateCreateOrUpdate(
           com.google.protobuf.RpcController controller,
-          fintekkers.requests.security.QuerySecurityRequestProto request,
+          fintekkers.requests.security.CreateSecurityRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.util.errors.Summary.SummaryProto> done) {
         channel.callMethod(
           getDescriptor().getMethods().get(4),
@@ -509,7 +509,7 @@ public final class SecurityService {
 
       public fintekkers.requests.util.errors.Summary.SummaryProto validateCreateOrUpdate(
           com.google.protobuf.RpcController controller,
-          fintekkers.requests.security.QuerySecurityRequestProto request)
+          fintekkers.requests.security.CreateSecurityRequestProto request)
           throws com.google.protobuf.ServiceException;
 
       public fintekkers.requests.util.errors.Summary.SummaryProto validateQueryRequest(
@@ -575,7 +575,7 @@ public final class SecurityService {
 
       public fintekkers.requests.util.errors.Summary.SummaryProto validateCreateOrUpdate(
           com.google.protobuf.RpcController controller,
-          fintekkers.requests.security.QuerySecurityRequestProto request)
+          fintekkers.requests.security.CreateSecurityRequestProto request)
           throws com.google.protobuf.ServiceException {
         return (fintekkers.requests.util.errors.Summary.SummaryProto) channel.callBlockingMethod(
           getDescriptor().getMethods().get(4),
@@ -619,7 +619,7 @@ public final class SecurityService {
       "security/create_security_request.proto\032;" +
       "fintekkers/requests/security/create_secu" +
       "rity_response.proto\032-fintekkers/requests" +
-      "/util/errors/summary.proto2\217\006\n\010Security\022" +
+      "/util/errors/summary.proto2\220\006\n\010Security\022" +
       "\205\001\n\016CreateOrUpdate\0228.fintekkers.requests" +
       ".security.CreateSecurityRequestProto\0329.f" +
       "intekkers.requests.security.CreateSecuri" +
@@ -632,14 +632,14 @@ public final class SecurityService {
       ".QuerySecurityResponseProto\022|\n\007ListIDs\0227" +
       ".fintekkers.requests.security.QuerySecur" +
       "ityRequestProto\0328.fintekkers.requests.se" +
-      "curity.QuerySecurityResponseProto\022\200\001\n\026Va" +
-      "lidateCreateOrUpdate\0227.fintekkers.reques" +
-      "ts.security.QuerySecurityRequestProto\032-." +
-      "fintekkers.requests.util.errors.SummaryP" +
-      "roto\022~\n\024ValidateQueryRequest\0227.fintekker" +
-      "s.requests.security.QuerySecurityRequest" +
-      "Proto\032-.fintekkers.requests.util.errors." +
-      "SummaryProtoB\006\210\001\001\220\001\001b\006proto3"
+      "curity.QuerySecurityResponseProto\022\201\001\n\026Va" +
+      "lidateCreateOrUpdate\0228.fintekkers.reques" +
+      "ts.security.CreateSecurityRequestProto\032-" +
+      ".fintekkers.requests.util.errors.Summary" +
+      "Proto\022~\n\024ValidateQueryRequest\0227.fintekke" +
+      "rs.requests.security.QuerySecurityReques" +
+      "tProto\032-.fintekkers.requests.util.errors" +
+      ".SummaryProtoB\006\210\001\001\220\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

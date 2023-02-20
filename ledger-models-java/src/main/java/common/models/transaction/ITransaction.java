@@ -6,10 +6,10 @@ import common.models.portfolio.Portfolio;
 import common.models.postion.Field;
 import common.models.postion.Measure;
 import common.models.postion.PositionFilter;
-import common.models.postion.PositionStatus;
 import common.models.price.Price;
 import common.models.security.Security;
 import common.models.strategy.StrategyAllocation;
+import fintekkers.models.position.PositionStatusProto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -39,7 +39,7 @@ public interface ITransaction extends IRawDataModelObject, IFinancialModelObject
 
     String getTradeName();
 
-    PositionStatus getPositionStatus();
+    PositionStatusProto getPositionStatus();
 
     Object getField(Field field);
 

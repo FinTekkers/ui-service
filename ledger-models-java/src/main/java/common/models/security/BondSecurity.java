@@ -1,6 +1,7 @@
 package common.models.security;
 
 import common.models.JSONFieldNames;
+import fintekkers.models.security.SecurityTypeProto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -139,8 +140,8 @@ public class BondSecurity extends Security {
     }
 
     @Override
-    public SecurityType getSecurityType() {
-        return SecurityType.BOND_SECURITY;
+    public SecurityTypeProto getSecurityType() {
+        return SecurityTypeProto.BOND_SECURITY;
     }
 
     @Override

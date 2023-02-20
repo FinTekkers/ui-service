@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import common.models.JSONFieldNames;
-import common.models.postion.PositionStatus;
 import common.models.transaction.Transaction;
 import common.models.transaction.TransactionType;
 import fintekkers.models.position.PositionStatusProto;
@@ -88,8 +87,7 @@ public class TransactionSerializer implements IRawDataModelObjectSerializer<Tran
                 ProtoSerializationUtil.deserializeTimestamp(proto.getAsOf()),
                 null,
                 proto.getTradeName(),
-                PositionStatus.valueOf(proto.getPositionStatus().name())
-        );
+                proto.getPositionStatus());
 
         for(TransactionProto childTransactionProto : proto.getChildTransactionsList()) {
             Transaction childTransaction = this.deserialize(childTransactionProto);
