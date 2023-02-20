@@ -40,13 +40,8 @@ export class FieldMapEntry extends jspb.Message {
   hasFieldValuePacked(): boolean;
   clearFieldValuePacked(): FieldMapEntry;
 
-  getEnumValue(): string;
-  setEnumValue(value: string): FieldMapEntry;
-
-  getIdentifier(): fintekkers_models_security_identifier_identifier_pb.IdentifierProto | undefined;
-  setIdentifier(value?: fintekkers_models_security_identifier_identifier_pb.IdentifierProto): FieldMapEntry;
-  hasIdentifier(): boolean;
-  clearIdentifier(): FieldMapEntry;
+  getEnumValue(): number;
+  setEnumValue(value: number): FieldMapEntry;
 
   getOperator(): PositionFilterOperator;
   setOperator(value: PositionFilterOperator): FieldMapEntry;
@@ -65,8 +60,7 @@ export namespace FieldMapEntry {
   export type AsObject = {
     field: fintekkers_models_position_field_pb.FieldProto,
     fieldValuePacked?: google_protobuf_any_pb.Any.AsObject,
-    enumValue: string,
-    identifier?: fintekkers_models_security_identifier_identifier_pb.IdentifierProto.AsObject,
+    enumValue: number,
     operator: PositionFilterOperator,
   }
 
@@ -74,7 +68,6 @@ export namespace FieldMapEntry {
     FIELDMAPVALUEONEOF_NOT_SET = 0,
     FIELD_VALUE_PACKED = 4,
     ENUM_VALUE = 5,
-    IDENTIFIER = 6,
   }
 }
 
