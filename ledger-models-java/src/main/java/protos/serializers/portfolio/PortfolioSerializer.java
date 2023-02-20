@@ -2,7 +2,6 @@ package protos.serializers.portfolio;
 
 import com.google.gson.Gson;
 import common.models.portfolio.Portfolio;
-import common.models.postion.PositionStatus;
 import fintekkers.models.portfolio.PortfolioProto;
 import fintekkers.models.position.PositionStatusProto;
 import protos.serializers.IRawDataModelObjectSerializer;
@@ -44,7 +43,7 @@ public class PortfolioSerializer implements IRawDataModelObjectSerializer<Portfo
         );
     }
 
-    public PositionStatusProto serialize(PositionStatus status) {
+    public PositionStatusProto serialize(PositionStatusProto status) {
         return PositionStatusProto.valueOf(status.name());
     }
 

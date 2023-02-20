@@ -2,6 +2,7 @@ package common.models.security;
 
 import common.models.security.identifier.Identifier;
 import common.models.security.identifier.IdentifierType;
+import fintekkers.models.security.SecurityTypeProto;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -41,8 +42,8 @@ public class CashSecurity extends Security {
     }
 
     @Override
-    public SecurityType getSecurityType() {
-        return SecurityType.CASH_SECURITY;
+    public SecurityTypeProto getSecurityType() {
+        return SecurityTypeProto.CASH_SECURITY;
     }
 
     @Override

@@ -5,14 +5,14 @@ import common.models.portfolio.Portfolio;
 import common.models.postion.Field;
 import common.models.postion.Measure;
 import common.models.postion.PositionFilter;
-import common.models.postion.PositionStatus;
 import common.models.price.Price;
 import common.models.security.BondSecurity;
 import common.models.security.CashSecurity;
 import common.models.security.Security;
-import common.models.security.SecurityType;
 import common.models.strategy.StrategyAllocation;
 import common.models.util.persistence.IForeignKey;
+import fintekkers.models.position.PositionStatusProto;
+import fintekkers.models.security.SecurityTypeProto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -59,7 +59,7 @@ public class Transaction extends RawDataModelObject implements ITransaction {
      */
     public Transaction(UUID id, Portfolio portfolioId, Price price, LocalDate tradeDate, LocalDate settlementDate,
                        BigDecimal quantity, Security security, TransactionType transactionType, StrategyAllocation strategy,
-                       ZonedDateTime asOf, Transaction parentTransaction, String tradeName, PositionStatus status) {
+                       ZonedDateTime asOf, Transaction parentTransaction, String tradeName, PositionStatusProto status) {
         super(id, asOf);
 
         if (quantity.doubleValue() <= 0) {
@@ -86,7 +86,7 @@ public class Transaction extends RawDataModelObject implements ITransaction {
         this.strategy = Objects.requireNonNullElseGet(strategy, () -> new StrategyAllocation(UUID.randomUUID(), ZonedDateTime.now()));
         this.isCancelled = Boolean.FALSE;
         this.tradeName = tradeName == null ? "" : tradeName;
-        this.status = Objects.requireNonNullElse(status, PositionStatus.HYPOTHETICAL); //Default to hypothetical
+        this.status = Objects.requireNonNullElse(status, PositionStatusProto.HYPOTHETICAL); //Default to hypothetical
     }
 
     @IForeignKey
@@ -96,7 +96,7 @@ public class Transaction extends RawDataModelObject implements ITransaction {
     private Security security;
     private final StrategyAllocation strategy;
     private final String tradeName;
-    private PositionStatus status;
+    private PositionStatusProto status;
     private Boolean isCancelled;
 
     private TransactionType transactionType;
@@ -201,11 +201,11 @@ public class Transaction extends RawDataModelObject implements ITransaction {
     }
 
     @Override
-    public PositionStatus getPositionStatus() {
+    public PositionStatusProto getPositionStatus() {
         return status;
     }
 
-    public void setPositionStatus(PositionStatus status) {
+    public void setPositionStatus(PositionStatusProto status) {
         this.status = status;
     }
 
@@ -459,9 +459,9 @@ public class Transaction extends RawDataModelObject implements ITransaction {
      */
     public static void addDerivedTransactions(Transaction transaction) {
         //TODO: Best to co-locate this with the transaction instantiator where we calculate the cash impacts, right?!
-        boolean isBond = SecurityType.BOND_SECURITY.equals(transaction.getSecurity().getSecurityType())
-                || SecurityType.FRN.equals(transaction.getSecurity().getSecurityType())
-                || SecurityType.TIPS.equals(transaction.getSecurity().getSecurityType());
+        boolean isBond = SecurityTypeProto.BOND_SECURITY.equals(transaction.getSecurity().getSecurityType())
+                || SecurityTypeProto.FRN.equals(transaction.getSecurity().getSecurityType())
+                || SecurityTypeProto.TIPS.equals(transaction.getSecurity().getSecurityType());
         boolean isABuyTransaction = TransactionType.BUY.equals(transaction.getTransactionType());
         boolean isASellTransaction = TransactionType.SELL.equals(transaction.getTransactionType());
         boolean isaMaturationTransaction = !TransactionType.MATURATION.equals(transaction.getTransactionType())

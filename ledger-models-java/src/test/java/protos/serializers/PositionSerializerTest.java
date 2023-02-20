@@ -8,12 +8,12 @@ import common.models.portfolio.Portfolio;
 import common.models.postion.Field;
 import common.models.postion.Measure;
 import common.models.postion.Position;
-import common.models.postion.PositionStatus;
 import common.models.security.ProductType;
 import common.models.security.Security;
 import common.models.security.identifier.Identifier;
 import common.models.security.identifier.IdentifierType;
 import fintekkers.models.position.PositionProto;
+import fintekkers.models.position.PositionStatusProto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import protos.serializers.position.PositionSerializer;
@@ -65,9 +65,9 @@ class PositionSerializerTest {
         position.setFieldValue(Field.CASH_IMPACT_SECURITY, equitySecurity.getSettlementCurrency());
         position.setFieldValue(Field.ASSET_CLASS, equitySecurity.getAssetClass());
         position.setFieldValue(Field.PRODUCT_CLASS, equitySecurity.getClass().getSimpleName());
-        position.setFieldValue(Field.PRODUCT_TYPE, ProductType.BOND);
+        position.setFieldValue(Field.PRODUCT_TYPE, ProductType.BOND.name());
 
-        position.setFieldValue(Field.POSITION_STATUS, PositionStatus.HYPOTHETICAL);
+        position.setFieldValue(Field.POSITION_STATUS, PositionStatusProto.HYPOTHETICAL);
         position.setFieldValue(Field.STRATEGY, transaction.getStrategyAllocation().getAllocations().keySet().iterator().next());
         position.setFieldValue(Field.PRICE, transaction.getPrice());
 

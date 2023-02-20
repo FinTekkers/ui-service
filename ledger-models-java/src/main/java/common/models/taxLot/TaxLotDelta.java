@@ -6,12 +6,12 @@ import common.models.portfolio.Portfolio;
 import common.models.postion.Field;
 import common.models.postion.Measure;
 import common.models.postion.PositionFilter;
-import common.models.postion.PositionStatus;
 import common.models.price.Price;
 import common.models.security.Security;
 import common.models.strategy.StrategyAllocation;
 import common.models.transaction.Transaction;
 import common.models.transaction.TransactionType;
+import fintekkers.models.position.PositionStatusProto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -126,7 +126,7 @@ public class TaxLotDelta extends RawDataModelObject implements IFinancialModelOb
         throw new RuntimeException("Not supported");
     }
 
-    public PositionStatus getPositionStatus() {
+    public PositionStatusProto getPositionStatus() {
         return positionStatus;
     }
 
@@ -152,7 +152,7 @@ public class TaxLotDelta extends RawDataModelObject implements IFinancialModelOb
     public TaxLotDelta(UUID id, Portfolio portfolio, TaxLotStatus taxLotStatus, Price price,
                        LocalDate openDate, LocalDate closedDate,
                        BigDecimal quantity, Security security, ZonedDateTime asOf,
-                       TaxLotSource source, PositionStatus positionStatus) {
+                       TaxLotSource source, PositionStatusProto positionStatus) {
         super(id, asOf);
         this.portfolio = portfolio;
         this.taxLotStatus = taxLotStatus;
@@ -173,7 +173,7 @@ public class TaxLotDelta extends RawDataModelObject implements IFinancialModelOb
     private Security security;
 
     private final TaxLotSource source;
-    private PositionStatus positionStatus;
+    private PositionStatusProto positionStatus;
     private LocalDate closedDate;
     private Boolean isInvalidated = Boolean.FALSE;
 

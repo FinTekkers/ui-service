@@ -32,15 +32,13 @@ class SerializerFactoryTest {
         assertEquals(Any.class, proto.getClass());
         assertTrue(((Any)proto).is(SecurityProto.class));
         proto = ((Any) proto).unpack(SecurityProto.class);
-        SecurityTypeProto productClass = ((SecurityProto) proto).getSecurityType();
-        assertEquals(BondSecurity.class, SecurityType.from(productClass).getSecurityTypeClass());
+        assertEquals(SecurityTypeProto.BOND_SECURITY, ((SecurityProto) proto).getSecurityType());
 
         proto = factory.serialize(equitySecurity);
         assertEquals(Any.class, proto.getClass());
         assertTrue(((Any)proto).is(SecurityProto.class));
         proto = ((Any) proto).unpack(SecurityProto.class);
-        productClass = ((SecurityProto) proto).getSecurityType();
-        assertEquals(EquitySecurity.class, SecurityType.from(productClass).getSecurityTypeClass());
+        assertEquals(SecurityTypeProto.EQUITY_SECURITY, ((SecurityProto) proto).getSecurityType());
 
         Transaction transaction = DummyBondObjects.getDummyTransaction();
         proto = factory.serialize(transaction);

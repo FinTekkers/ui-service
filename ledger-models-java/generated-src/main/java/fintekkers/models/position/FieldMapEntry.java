@@ -70,24 +70,9 @@ private static final long serialVersionUID = 0L;
             fieldMapValueOneOfCase_ = 4;
             break;
           }
-          case 42: {
-            java.lang.String s = input.readStringRequireUtf8();
+          case 40: {
             fieldMapValueOneOfCase_ = 5;
-            fieldMapValueOneOf_ = s;
-            break;
-          }
-          case 50: {
-            fintekkers.models.security.IdentifierProto.Builder subBuilder = null;
-            if (fieldMapValueOneOfCase_ == 6) {
-              subBuilder = ((fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_).toBuilder();
-            }
-            fieldMapValueOneOf_ =
-                input.readMessage(fintekkers.models.security.IdentifierProto.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom((fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_);
-              fieldMapValueOneOf_ = subBuilder.buildPartial();
-            }
-            fieldMapValueOneOfCase_ = 6;
+            fieldMapValueOneOf_ = input.readInt32();
             break;
           }
           case 160: {
@@ -135,7 +120,6 @@ private static final long serialVersionUID = 0L;
           com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     FIELD_VALUE_PACKED(4),
     ENUM_VALUE(5),
-    IDENTIFIER(6),
     FIELDMAPVALUEONEOF_NOT_SET(0);
     private final int value;
     private FieldMapValueOneOfCase(int value) {
@@ -155,7 +139,6 @@ private static final long serialVersionUID = 0L;
       switch (value) {
         case 4: return FIELD_VALUE_PACKED;
         case 5: return ENUM_VALUE;
-        case 6: return IDENTIFIER;
         case 0: return FIELDMAPVALUEONEOF_NOT_SET;
         default: return null;
       }
@@ -223,78 +206,15 @@ private static final long serialVersionUID = 0L;
 
   public static final int ENUM_VALUE_FIELD_NUMBER = 5;
   /**
-   * <code>string enum_value = 5;</code>
+   * <code>int32 enum_value = 5;</code>
    * @return The enumValue.
    */
-  public java.lang.String getEnumValue() {
-    java.lang.Object ref = "";
+  @java.lang.Override
+  public int getEnumValue() {
     if (fieldMapValueOneOfCase_ == 5) {
-      ref = fieldMapValueOneOf_;
+      return (java.lang.Integer) fieldMapValueOneOf_;
     }
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      if (fieldMapValueOneOfCase_ == 5) {
-        fieldMapValueOneOf_ = s;
-      }
-      return s;
-    }
-  }
-  /**
-   * <code>string enum_value = 5;</code>
-   * @return The bytes for enumValue.
-   */
-  public com.google.protobuf.ByteString
-      getEnumValueBytes() {
-    java.lang.Object ref = "";
-    if (fieldMapValueOneOfCase_ == 5) {
-      ref = fieldMapValueOneOf_;
-    }
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      if (fieldMapValueOneOfCase_ == 5) {
-        fieldMapValueOneOf_ = b;
-      }
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int IDENTIFIER_FIELD_NUMBER = 6;
-  /**
-   * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-   * @return Whether the identifier field is set.
-   */
-  @java.lang.Override
-  public boolean hasIdentifier() {
-    return fieldMapValueOneOfCase_ == 6;
-  }
-  /**
-   * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-   * @return The identifier.
-   */
-  @java.lang.Override
-  public fintekkers.models.security.IdentifierProto getIdentifier() {
-    if (fieldMapValueOneOfCase_ == 6) {
-       return (fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_;
-    }
-    return fintekkers.models.security.IdentifierProto.getDefaultInstance();
-  }
-  /**
-   * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-   */
-  @java.lang.Override
-  public fintekkers.models.security.IdentifierProtoOrBuilder getIdentifierOrBuilder() {
-    if (fieldMapValueOneOfCase_ == 6) {
-       return (fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_;
-    }
-    return fintekkers.models.security.IdentifierProto.getDefaultInstance();
+    return 0;
   }
 
   public static final int OPERATOR_FIELD_NUMBER = 20;
@@ -345,10 +265,8 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(4, (com.google.protobuf.Any) fieldMapValueOneOf_);
     }
     if (fieldMapValueOneOfCase_ == 5) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, fieldMapValueOneOf_);
-    }
-    if (fieldMapValueOneOfCase_ == 6) {
-      output.writeMessage(6, (fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_);
+      output.writeInt32(
+          5, (int)((java.lang.Integer) fieldMapValueOneOf_));
     }
     if (operator_ != fintekkers.models.position.PositionFilterOperator.UNKNOWN_OPERATOR.getNumber()) {
       output.writeEnum(20, operator_);
@@ -371,11 +289,9 @@ private static final long serialVersionUID = 0L;
         .computeMessageSize(4, (com.google.protobuf.Any) fieldMapValueOneOf_);
     }
     if (fieldMapValueOneOfCase_ == 5) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, fieldMapValueOneOf_);
-    }
-    if (fieldMapValueOneOfCase_ == 6) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, (fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_);
+        .computeInt32Size(
+            5, (int)((java.lang.Integer) fieldMapValueOneOf_));
     }
     if (operator_ != fintekkers.models.position.PositionFilterOperator.UNKNOWN_OPERATOR.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
@@ -405,12 +321,8 @@ private static final long serialVersionUID = 0L;
             .equals(other.getFieldValuePacked())) return false;
         break;
       case 5:
-        if (!getEnumValue()
-            .equals(other.getEnumValue())) return false;
-        break;
-      case 6:
-        if (!getIdentifier()
-            .equals(other.getIdentifier())) return false;
+        if (getEnumValue()
+            != other.getEnumValue()) return false;
         break;
       case 0:
       default:
@@ -437,11 +349,7 @@ private static final long serialVersionUID = 0L;
         break;
       case 5:
         hash = (37 * hash) + ENUM_VALUE_FIELD_NUMBER;
-        hash = (53 * hash) + getEnumValue().hashCode();
-        break;
-      case 6:
-        hash = (37 * hash) + IDENTIFIER_FIELD_NUMBER;
-        hash = (53 * hash) + getIdentifier().hashCode();
+        hash = (53 * hash) + getEnumValue();
         break;
       case 0:
       default:
@@ -622,13 +530,6 @@ private static final long serialVersionUID = 0L;
       if (fieldMapValueOneOfCase_ == 5) {
         result.fieldMapValueOneOf_ = fieldMapValueOneOf_;
       }
-      if (fieldMapValueOneOfCase_ == 6) {
-        if (identifierBuilder_ == null) {
-          result.fieldMapValueOneOf_ = fieldMapValueOneOf_;
-        } else {
-          result.fieldMapValueOneOf_ = identifierBuilder_.build();
-        }
-      }
       result.operator_ = operator_;
       result.fieldMapValueOneOfCase_ = fieldMapValueOneOfCase_;
       onBuilt();
@@ -691,13 +592,7 @@ private static final long serialVersionUID = 0L;
           break;
         }
         case ENUM_VALUE: {
-          fieldMapValueOneOfCase_ = 5;
-          fieldMapValueOneOf_ = other.fieldMapValueOneOf_;
-          onChanged();
-          break;
-        }
-        case IDENTIFIER: {
-          mergeIdentifier(other.getIdentifier());
+          setEnumValue(other.getEnumValue());
           break;
         }
         case FIELDMAPVALUEONEOF_NOT_SET: {
@@ -944,67 +839,28 @@ private static final long serialVersionUID = 0L;
     }
 
     /**
-     * <code>string enum_value = 5;</code>
+     * <code>int32 enum_value = 5;</code>
      * @return The enumValue.
      */
-    @java.lang.Override
-    public java.lang.String getEnumValue() {
-      java.lang.Object ref = "";
+    public int getEnumValue() {
       if (fieldMapValueOneOfCase_ == 5) {
-        ref = fieldMapValueOneOf_;
+        return (java.lang.Integer) fieldMapValueOneOf_;
       }
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (fieldMapValueOneOfCase_ == 5) {
-          fieldMapValueOneOf_ = s;
-        }
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
+      return 0;
     }
     /**
-     * <code>string enum_value = 5;</code>
-     * @return The bytes for enumValue.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getEnumValueBytes() {
-      java.lang.Object ref = "";
-      if (fieldMapValueOneOfCase_ == 5) {
-        ref = fieldMapValueOneOf_;
-      }
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        if (fieldMapValueOneOfCase_ == 5) {
-          fieldMapValueOneOf_ = b;
-        }
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string enum_value = 5;</code>
+     * <code>int32 enum_value = 5;</code>
      * @param value The enumValue to set.
      * @return This builder for chaining.
      */
-    public Builder setEnumValue(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  fieldMapValueOneOfCase_ = 5;
+    public Builder setEnumValue(int value) {
+      fieldMapValueOneOfCase_ = 5;
       fieldMapValueOneOf_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>string enum_value = 5;</code>
+     * <code>int32 enum_value = 5;</code>
      * @return This builder for chaining.
      */
     public Builder clearEnumValue() {
@@ -1014,163 +870,6 @@ private static final long serialVersionUID = 0L;
         onChanged();
       }
       return this;
-    }
-    /**
-     * <code>string enum_value = 5;</code>
-     * @param value The bytes for enumValue to set.
-     * @return This builder for chaining.
-     */
-    public Builder setEnumValueBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      fieldMapValueOneOfCase_ = 5;
-      fieldMapValueOneOf_ = value;
-      onChanged();
-      return this;
-    }
-
-    private com.google.protobuf.SingleFieldBuilderV3<
-        fintekkers.models.security.IdentifierProto, fintekkers.models.security.IdentifierProto.Builder, fintekkers.models.security.IdentifierProtoOrBuilder> identifierBuilder_;
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     * @return Whether the identifier field is set.
-     */
-    @java.lang.Override
-    public boolean hasIdentifier() {
-      return fieldMapValueOneOfCase_ == 6;
-    }
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     * @return The identifier.
-     */
-    @java.lang.Override
-    public fintekkers.models.security.IdentifierProto getIdentifier() {
-      if (identifierBuilder_ == null) {
-        if (fieldMapValueOneOfCase_ == 6) {
-          return (fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_;
-        }
-        return fintekkers.models.security.IdentifierProto.getDefaultInstance();
-      } else {
-        if (fieldMapValueOneOfCase_ == 6) {
-          return identifierBuilder_.getMessage();
-        }
-        return fintekkers.models.security.IdentifierProto.getDefaultInstance();
-      }
-    }
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     */
-    public Builder setIdentifier(fintekkers.models.security.IdentifierProto value) {
-      if (identifierBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        fieldMapValueOneOf_ = value;
-        onChanged();
-      } else {
-        identifierBuilder_.setMessage(value);
-      }
-      fieldMapValueOneOfCase_ = 6;
-      return this;
-    }
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     */
-    public Builder setIdentifier(
-        fintekkers.models.security.IdentifierProto.Builder builderForValue) {
-      if (identifierBuilder_ == null) {
-        fieldMapValueOneOf_ = builderForValue.build();
-        onChanged();
-      } else {
-        identifierBuilder_.setMessage(builderForValue.build());
-      }
-      fieldMapValueOneOfCase_ = 6;
-      return this;
-    }
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     */
-    public Builder mergeIdentifier(fintekkers.models.security.IdentifierProto value) {
-      if (identifierBuilder_ == null) {
-        if (fieldMapValueOneOfCase_ == 6 &&
-            fieldMapValueOneOf_ != fintekkers.models.security.IdentifierProto.getDefaultInstance()) {
-          fieldMapValueOneOf_ = fintekkers.models.security.IdentifierProto.newBuilder((fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_)
-              .mergeFrom(value).buildPartial();
-        } else {
-          fieldMapValueOneOf_ = value;
-        }
-        onChanged();
-      } else {
-        if (fieldMapValueOneOfCase_ == 6) {
-          identifierBuilder_.mergeFrom(value);
-        }
-        identifierBuilder_.setMessage(value);
-      }
-      fieldMapValueOneOfCase_ = 6;
-      return this;
-    }
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     */
-    public Builder clearIdentifier() {
-      if (identifierBuilder_ == null) {
-        if (fieldMapValueOneOfCase_ == 6) {
-          fieldMapValueOneOfCase_ = 0;
-          fieldMapValueOneOf_ = null;
-          onChanged();
-        }
-      } else {
-        if (fieldMapValueOneOfCase_ == 6) {
-          fieldMapValueOneOfCase_ = 0;
-          fieldMapValueOneOf_ = null;
-        }
-        identifierBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     */
-    public fintekkers.models.security.IdentifierProto.Builder getIdentifierBuilder() {
-      return getIdentifierFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     */
-    @java.lang.Override
-    public fintekkers.models.security.IdentifierProtoOrBuilder getIdentifierOrBuilder() {
-      if ((fieldMapValueOneOfCase_ == 6) && (identifierBuilder_ != null)) {
-        return identifierBuilder_.getMessageOrBuilder();
-      } else {
-        if (fieldMapValueOneOfCase_ == 6) {
-          return (fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_;
-        }
-        return fintekkers.models.security.IdentifierProto.getDefaultInstance();
-      }
-    }
-    /**
-     * <code>.fintekkers.models.security.IdentifierProto identifier = 6;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        fintekkers.models.security.IdentifierProto, fintekkers.models.security.IdentifierProto.Builder, fintekkers.models.security.IdentifierProtoOrBuilder> 
-        getIdentifierFieldBuilder() {
-      if (identifierBuilder_ == null) {
-        if (!(fieldMapValueOneOfCase_ == 6)) {
-          fieldMapValueOneOf_ = fintekkers.models.security.IdentifierProto.getDefaultInstance();
-        }
-        identifierBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            fintekkers.models.security.IdentifierProto, fintekkers.models.security.IdentifierProto.Builder, fintekkers.models.security.IdentifierProtoOrBuilder>(
-                (fintekkers.models.security.IdentifierProto) fieldMapValueOneOf_,
-                getParentForChildren(),
-                isClean());
-        fieldMapValueOneOf_ = null;
-      }
-      fieldMapValueOneOfCase_ = 6;
-      onChanged();;
-      return identifierBuilder_;
     }
 
     private int operator_ = 0;
