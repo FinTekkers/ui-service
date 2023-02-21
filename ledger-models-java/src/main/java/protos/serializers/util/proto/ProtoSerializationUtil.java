@@ -7,6 +7,7 @@ import common.models.price.Price;
 import common.models.security.Security;
 import common.models.security.identifier.Identifier;
 import common.models.strategy.Strategy;
+import common.models.transaction.TransactionType;
 import fintekkers.models.portfolio.PortfolioProto;
 import fintekkers.models.price.PriceProto;
 import fintekkers.models.security.IdentifierProto;

@@ -106,10 +106,8 @@ public class Transaction extends RawDataModelObject implements ITransaction {
     private Price price;
     private BigDecimal quantity;
     private Transaction parentTransaction;
-    private List<Transaction> childrenTransactions = new ArrayList<>();
-//    private Transaction cashTxn;
+    private final List<Transaction> childrenTransactions = new ArrayList<>();
 
-    //Overridden methods
     @Override
     public String toString() {
         try {
@@ -217,7 +215,7 @@ public class Transaction extends RawDataModelObject implements ITransaction {
         return switch (field) {
             //Transaction Fields
             case ID -> getID();
-            case TRANSACTION_TYPE -> getTransactionType().name();
+            case TRANSACTION_TYPE -> getTransactionType();
             case TRADE_DATE -> getTradeDate();
             case SETTLEMENT_DATE -> getSettlementDate();
             case POSITION_STATUS -> getPositionStatus();
@@ -335,11 +333,10 @@ public class Transaction extends RawDataModelObject implements ITransaction {
      */
     @Override
     public boolean equals(Object other) {
-        if(!(other instanceof Transaction)) {
+        if(!(other instanceof Transaction otherTransaction)) {
             return false;
         }
 
-        Transaction otherTransaction = (Transaction) other;
         return getID().equals(otherTransaction.getID()) && getAsOf().equals(otherTransaction.getAsOf());
     }
 
@@ -482,7 +479,6 @@ public class Transaction extends RawDataModelObject implements ITransaction {
             (C) All transactions indexed in the in-memory layer, so are searchable
             (D) We create tax lot modifiers at that point in time
 
-            TODO: We need to create bi-directionality in the data models
             TODO: We need to create multi-level tax lots, i.e. the ability to have a form of tax lot that are proposed
             but not concrete. For example, if there is a SELL transaction then the mature transaction needs to be down
             sized.
