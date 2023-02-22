@@ -1,5 +1,5 @@
 Arguments: 
-  /opt/homebrew/Cellar/node/19.6.0/bin/node /opt/homebrew/bin/yarn install
+  /opt/homebrew/Cellar/node/19.6.0/bin/node /opt/homebrew/bin/yarn add @ag-grid-community
 
 PATH: 
   /Users/samsheridan/.cargo/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Library/Apple/usr/bin:/Users/samsheridan/.cargo/bin:/Users/samsheridan/opt/anaconda3/bin:/Users/samsheridan/opt/anaconda3/condabin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/samsheridan/go/bin:/usr/local/go/bin:/usr/local/smlnj/bin:/Users/samsheridan/go/bin:/usr/local/go//bin:/usr/local/smlnj/bin
@@ -14,8 +14,8 @@ Platform:
   darwin arm64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@fintekkers%2fledger-models: Not found
-      at params.callback [as _callback] (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:66140:18)
+  Error: https://registry.yarnpkg.com/@ag-grid-community: Request "https://registry.yarnpkg.com/@ag-grid-community" returned a 405
+      at params.callback [as _callback] (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:66149:18)
       at self.callback (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:140885:22)
       at Request.emit (node:events:512:28)
       at Request.<anonymous> (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:141857:10)
@@ -43,7 +43,10 @@ npm manifest:
   		"format": "prettier --plugin-search-dir . --write ."
   	},
   	"dependencies": {
-  		"@fintekkers/ledger-models": "1.0.0"
+  		"@fintekkers/ledger-models": "1.0.0",
+  		"carbon-icons-svelte": "^11.4.0",
+  		"google-protobuf": "^3.21.2",
+  		"grpc-web": "^1.4.2"
   	},
   	"devDependencies": {
   		"@playwright/test": "^1.28.1",
@@ -51,9 +54,12 @@ npm manifest:
   		"@sveltejs/kit": "^1.5.0",
   		"@typescript-eslint/eslint-plugin": "^5.45.0",
   		"@typescript-eslint/parser": "^5.45.0",
+  		"autoprefixer": "^10.4.13",
+  		"carbon-components-svelte": "^0.72.3",
   		"eslint": "^8.28.0",
   		"eslint-config-prettier": "^8.5.0",
   		"eslint-plugin-svelte3": "^4.0.0",
+  		"postcss": "^8.4.21",
   		"prettier": "^2.8.0",
   		"prettier-plugin-svelte": "^2.8.1",
   		"svelte": "^3.54.0",
@@ -198,6 +204,11 @@ Lockfile:
       js-yaml "^4.1.0"
       minimatch "^3.1.2"
       strip-json-comments "^3.1.1"
+  
+  "@fintekkers/ledger-models@1.0.0":
+    version "1.0.0"
+    resolved "https://npm.pkg.github.com/download/@fintekkers/ledger-models/1.0.0/a93e0d9b72a1dee85296806d2a060a47fe1a0163#a93e0d9b72a1dee85296806d2a060a47fe1a0163"
+    integrity sha512-NrSrFRrW+3CmjXThZ7U0gqlBqpe0rSC5vj5ivmQ5KRKVpWmxf64IgGUVYsiM5pcmkRpUvjglKON3vLc9zOto+Q==
   
   "@humanwhocodes/config-array@^0.11.8":
     version "0.11.8"
@@ -496,6 +507,18 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.1.0.tgz#e60b6b0e8f301bd97e5375215bda406c85118c0b"
     integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
   
+  autoprefixer@^10.4.13:
+    version "10.4.13"
+    resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-10.4.13.tgz#b5136b59930209a321e9fa3dca2e7c4d223e83a8"
+    integrity sha512-49vKpMqcZYsJjwotvt4+h/BCjJVnhGwcLpDt5xkcaOG3eLrG/HUYLagrihYsQ+qrIBgIzX1Rw7a6L8I/ZA1Atg==
+    dependencies:
+      browserslist "^4.21.4"
+      caniuse-lite "^1.0.30001426"
+      fraction.js "^4.2.0"
+      normalize-range "^0.1.2"
+      picocolors "^1.0.0"
+      postcss-value-parser "^4.2.0"
+  
   balanced-match@^1.0.0:
     version "1.0.2"
     resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
@@ -521,6 +544,16 @@ Lockfile:
     dependencies:
       fill-range "^7.0.1"
   
+  browserslist@^4.21.4:
+    version "4.21.5"
+    resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.21.5.tgz#75c5dae60063ee641f977e00edd3cfb2fb7af6a7"
+    integrity sha512-tUkiguQGW7S3IhB7N+c2MV/HZPSCPAAiYBZXLsBhFB/PCy6ZKKsZrmBayHV9fdGV/ARIfJ14NkxKzRDjvp7L6w==
+    dependencies:
+      caniuse-lite "^1.0.30001449"
+      electron-to-chromium "^1.4.284"
+      node-releases "^2.0.8"
+      update-browserslist-db "^1.0.10"
+  
   buffer-crc32@^0.2.5:
     version "0.2.13"
     resolved "https://registry.yarnpkg.com/buffer-crc32/-/buffer-crc32-0.2.13.tgz#0d333e3f00eac50aa1454abd30ef8c2a5d9a7242"
@@ -537,6 +570,23 @@ Lockfile:
     version "3.1.0"
     resolved "https://registry.yarnpkg.com/callsites/-/callsites-3.1.0.tgz#b3630abd8943432f54b3f0519238e33cd7df2f73"
     integrity sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==
+  
+  caniuse-lite@^1.0.30001426, caniuse-lite@^1.0.30001449:
+    version "1.0.30001451"
+    resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001451.tgz#2e197c698fc1373d63e1406d6607ea4617c613f1"
+    integrity sha512-XY7UbUpGRatZzoRft//5xOa69/1iGJRBlrieH6QYrkKLIFn3m7OVEJ81dSrKoy2BnKsdbX5cLrOispZNYo9v2w==
+  
+  carbon-components-svelte@^0.72.3:
+    version "0.72.3"
+    resolved "https://registry.yarnpkg.com/carbon-components-svelte/-/carbon-components-svelte-0.72.3.tgz#a17b2f6edcd1f3aaf11f326b08ae22ae7ce3afff"
+    integrity sha512-ill4KeWH7THXDLRfuxg0panknTvl75U54+6366yNmtkPbzmCqp/gw5aW3JPlJcOyYny1F9X+fTYY3kQkEigORA==
+    dependencies:
+      flatpickr "4.6.9"
+  
+  carbon-icons-svelte@^11.4.0:
+    version "11.4.0"
+    resolved "https://registry.yarnpkg.com/carbon-icons-svelte/-/carbon-icons-svelte-11.4.0.tgz#1bab38ac0c8f778e0431f8df54324829c81cfd30"
+    integrity sha512-p/llZde2kP2BI9SOqM+QFKGfQnYrW+4dVxF1rAYriEADXDsjt9EYlh+KpQ5qf4JpXAq+e2+TB/r/lIG1xdUbAQ==
   
   chai@^4.3.7:
     version "4.3.7"
@@ -658,6 +708,11 @@ Lockfile:
     dependencies:
       esutils "^2.0.2"
   
+  electron-to-chromium@^1.4.284:
+    version "1.4.295"
+    resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.295.tgz#911d5df67542bf7554336142eb302c5ec90bba66"
+    integrity sha512-lEO94zqf1bDA3aepxwnWoHUjA8sZ+2owgcSZjYQy0+uOSEclJX0VieZC+r+wLpSxUHRd6gG32znTWmr+5iGzFw==
+  
   es6-promise@^3.1.2:
     version "3.3.1"
     resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-3.3.1.tgz#a08cdde84ccdbf34d027a1451bc91d4bcd28a613"
@@ -690,6 +745,11 @@ Lockfile:
       "@esbuild/win32-arm64" "0.16.17"
       "@esbuild/win32-ia32" "0.16.17"
       "@esbuild/win32-x64" "0.16.17"
+  
+  escalade@^3.1.1:
+    version "3.1.1"
+    resolved "https://registry.yarnpkg.com/escalade/-/escalade-3.1.1.tgz#d8cfdc7000965c5a0174b4a82eaa5c0552742e40"
+    integrity sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==
   
   escape-string-regexp@^4.0.0:
     version "4.0.0"
@@ -890,10 +950,20 @@ Lockfile:
       flatted "^3.1.0"
       rimraf "^3.0.2"
   
+  flatpickr@4.6.9:
+    version "4.6.9"
+    resolved "https://registry.yarnpkg.com/flatpickr/-/flatpickr-4.6.9.tgz#9a13383e8a6814bda5d232eae3fcdccb97dc1499"
+    integrity sha512-F0azNNi8foVWKSF+8X+ZJzz8r9sE1G4hl06RyceIaLvyltKvDl6vqk9Lm/6AUUCi5HWaIjiUbk7UpeE/fOXOpw==
+  
   flatted@^3.1.0:
     version "3.2.7"
     resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.2.7.tgz#609f39207cb614b89d0765b477cb2d437fbf9787"
     integrity sha512-5nqDSxl8nn5BSNxyR3n4I6eDmbolI6WT+QqR547RwxQapgjQBmtktdP+HTBb/a/zLsbzERTONyUB5pefh5TtjQ==
+  
+  fraction.js@^4.2.0:
+    version "4.2.0"
+    resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.2.0.tgz#448e5109a313a3527f5a3ab2119ec4cf0e0e2950"
+    integrity sha512-MhLuK+2gUcnZe8ZHlaaINnQLl0xRIGRfcGk2yl8xoQAfHrSsL3rYu6FCmBdkdbhc9EPlwyGHewaRsvwRMJtAlA==
   
   fs.realpath@^1.0.0:
     version "1.0.0"
@@ -970,6 +1040,11 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/globrex/-/globrex-0.1.2.tgz#dd5d9ec826232730cd6793a5e33a9302985e6098"
     integrity sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==
   
+  google-protobuf@^3.21.2:
+    version "3.21.2"
+    resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.21.2.tgz#4580a2bea8bbb291ee579d1fefb14d6fa3070ea4"
+    integrity sha512-3MSOYFO5U9mPGikIYCzK0SaThypfGgS6bHqrUGXG3DPHCrb+txNqeEcns1W0lkGfk0rCyNXm7xB9rMxnCiZOoA==
+  
   graceful-fs@^4.1.3:
     version "4.2.10"
     resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.10.tgz#147d3a006da4ca3ce14728c7aefc287c367d7a6c"
@@ -979,6 +1054,11 @@ Lockfile:
     version "1.0.4"
     resolved "https://registry.yarnpkg.com/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz#9cf3a665c6247479896834af35cf1dbb4400767e"
     integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
+  
+  grpc-web@^1.4.2:
+    version "1.4.2"
+    resolved "https://registry.yarnpkg.com/grpc-web/-/grpc-web-1.4.2.tgz#86995f76471ce6b2119106ec26f909b7b69e7d43"
+    integrity sha512-gUxWq42l5ldaRplcKb4Pw5O4XBONWZgz3vxIIXnfIeJj8Jc3wYiq2O4c9xzx/NGbbPEej4rhI62C9eTENwLGNw==
   
   has-flag@^4.0.0:
     version "4.0.0"
@@ -1214,10 +1294,20 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
     integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
   
+  node-releases@^2.0.8:
+    version "2.0.10"
+    resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.10.tgz#c311ebae3b6a148c89b1813fd7c4d3c024ef537f"
+    integrity sha512-5GFldHPXVG/YZmFzJvKK2zDSzPKhEp0+ZR5SVaoSag9fsL5YgHbUHDfnG5494ISANDcK4KwPXAx2xqVEydmd7w==
+  
   normalize-path@^3.0.0, normalize-path@~3.0.0:
     version "3.0.0"
     resolved "https://registry.yarnpkg.com/normalize-path/-/normalize-path-3.0.0.tgz#0dcd69ff23a1c9b11fd0978316644a0388216a65"
     integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
+  
+  normalize-range@^0.1.2:
+    version "0.1.2"
+    resolved "https://registry.yarnpkg.com/normalize-range/-/normalize-range-0.1.2.tgz#2d10c06bdfd312ea9777695a4d28439456b75942"
+    integrity sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA==
   
   once@^1.3.0:
     version "1.4.0"
@@ -1303,6 +1393,11 @@ Lockfile:
     version "1.30.0"
     resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.30.0.tgz#de987cea2e86669e3b85732d230c277771873285"
     integrity sha512-7AnRmTCf+GVYhHbLJsGUtskWTE33SwMZkybJ0v6rqR1boxq2x36U7p1vDRV7HO2IwTZgmycracLxPEJI49wu4g==
+  
+  postcss-value-parser@^4.2.0:
+    version "4.2.0"
+    resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz#723c09920836ba6d3e5af019f92bc0971c02e514"
+    integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
   
   postcss@^8.4.21:
     version "8.4.21"
@@ -1636,6 +1731,14 @@ Lockfile:
     integrity sha512-1iVwbhonhFytNdg0P4PqyIAXbdlVZVebtPDvuM36m66mRw4OGrCm2MYynJv/UENFLdP13J1nPVQzVE2zTs1OeA==
     dependencies:
       busboy "^1.6.0"
+  
+  update-browserslist-db@^1.0.10:
+    version "1.0.10"
+    resolved "https://registry.yarnpkg.com/update-browserslist-db/-/update-browserslist-db-1.0.10.tgz#0f54b876545726f17d00cd9a2561e6dade943ff3"
+    integrity sha512-OztqDenkfFkbSG+tRxBeAnCVPckDBcvibKd35yDONx6OU8N7sqgwc7rCbkJ/WcYtVRZ4ba68d6byhC21GFh7sQ==
+    dependencies:
+      escalade "^3.1.1"
+      picocolors "^1.0.0"
   
   uri-js@^4.2.2:
     version "4.4.1"

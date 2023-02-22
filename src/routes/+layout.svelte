@@ -5,8 +5,6 @@
 		HeaderNavItem,
 		SkipToContent,
 		Content,
-		Tile,
-		Button,
 		HeaderUtilities,
 		HeaderSearch,
 		HeaderAction,
@@ -26,9 +24,8 @@
 		<SkipToContent />
 	</svelte:fragment>
 	<HeaderNav>
-		<HeaderNavItem href="/valuation" text="Valuation" />
-		<HeaderNavItem href="/" text="Portfolios" />
-		<HeaderNavItem href="/" text="Securities" />
+		<HeaderNavItem href="/portfolios" text="Portfolios" />
+		<HeaderNavItem href="/transactions" text="Transactions" />
 	</HeaderNav>
 	<HeaderUtilities>
 		<HeaderSearch />
@@ -50,13 +47,3 @@
 <Content>
 	<slot />
 </Content>
-
-<style>
-	.centered {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		text-align: center;
-		min-height: 85vh;
-	}
-</style>
