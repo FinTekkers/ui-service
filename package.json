@@ -15,7 +15,6 @@
 	},
 	"dependencies": {
 		"@fintekkers/ledger-models": "1.0.0",
-		"ag-grid-community": "^29.1.0",
 		"carbon-icons-svelte": "^11.4.0",
 		"google-protobuf": "^3.21.2",
 		"grpc-web": "^1.4.2"
