@@ -8,7 +8,7 @@
 		Pagination
 	} from 'carbon-components-svelte';
 
-	export let rows: Array<{ portfolio: string; portfolioId: number; id: number }>;
+	export let rows: Array<{ portfolio: string; portfolioId: string | undefined; id: string }>;
 
 	let pageSize = 5;
 	let page = 1;

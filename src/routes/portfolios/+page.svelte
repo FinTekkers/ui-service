@@ -7,7 +7,7 @@
 
 <div>
 	<Tile>
-		<PortfolioGrid rows={data.rows} />
+		<PortfolioGrid rows={data.portfolioData} />
 	</Tile>
 </div>
 

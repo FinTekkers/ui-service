@@ -14,7 +14,9 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"dependencies": {
-		"@fintekkers/ledger-models": "1.0.0",
+		"@fintekkers/ledger-models": "1.0.3",
+		"@grpc/grpc-js": "^1.8.10",
+		"@grpc/proto-loader": "^0.7.5",
 		"carbon-icons-svelte": "^11.4.0",
 		"google-protobuf": "^3.21.2",
 		"grpc-web": "^1.4.2"
@@ -35,6 +37,7 @@
 		"prettier-plugin-svelte": "^2.8.1",
 		"svelte": "^3.54.0",
 		"svelte-check": "^3.0.1",
+		"ts-node": "^10.9.1",
 		"tslib": "^2.4.1",
 		"typescript": "^4.9.3",
 		"vite": "^4.0.0",
