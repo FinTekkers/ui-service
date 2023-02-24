@@ -27,5 +27,4 @@ target/**
 
 
 #npm
-ledger-models-javascript/protos
 node_modules/
