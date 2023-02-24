@@ -134,10 +134,10 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@fintekkers/ledger-models@1.0.3":
-  version "1.0.3"
-  resolved "https://npm.pkg.github.com/download/@fintekkers/ledger-models/1.0.3/02964409f3792533b368a78b736edc6c11dbe893#02964409f3792533b368a78b736edc6c11dbe893"
-  integrity sha512-RTTJK+VctxtLEi+p6kXdIBsi0c6pZ/iH6uEWdozM2SOnCroC5gfdKdeir3I8PPKyPOztTDyaOt+XHd2vBMiGzQ==
+"@fintekkers/ledger-models@1.0.5":
+  version "1.0.5"
+  resolved "https://npm.pkg.github.com/download/@fintekkers/ledger-models/1.0.5/552e6f6a32ad036423b826badf651ee4591438b8#552e6f6a32ad036423b826badf651ee4591438b8"
+  integrity sha512-lKTevfMiH4ecvo/97gEPoTmMaWgHd9DfgZKawZu/In9t754adz1wD5jS0TwM2MslA0NLmSAMOcm35v/xPYewhg==
 
 "@grpc/grpc-js@^1.8.10":
   version "1.8.10"

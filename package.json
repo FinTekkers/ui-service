@@ -14,7 +14,7 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"dependencies": {
-		"@fintekkers/ledger-models": "1.0.3",
+		"@fintekkers/ledger-models": "1.0.5",
 		"@grpc/grpc-js": "^1.8.10",
 		"@grpc/proto-loader": "^0.7.5",
 		"carbon-icons-svelte": "^11.4.0",
