@@ -1,10 +1,11 @@
 {
   "name": "@fintekkers/ledger-models",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "ledger model protos ",
   "author": "Sam Sheridan",
   "license": "ISC",
   "main": "index.js",
+  "type": "commonjs",
   "repository": {
     "type": "git",
     "url": "https://github.com/FinTekkers/ledger-models.git"
