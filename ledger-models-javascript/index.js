@@ -1,2 +1,2 @@
-export * from "./fintekkers"
-
+export * from "./web/fintekkers";
+export * from "./node";
