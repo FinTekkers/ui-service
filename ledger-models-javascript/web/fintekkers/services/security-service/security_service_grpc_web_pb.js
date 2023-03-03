@@ -10,25 +10,29 @@
 // 	protoc              v3.21.9
 // source: fintekkers/services/security-service/security_service.proto
 
+
 /* eslint-disable */
 // @ts-nocheck
 
+
+
 const grpc = {};
-grpc.web = require("grpc-web");
+grpc.web = require('grpc-web');
 
-var fintekkers_requests_security_query_security_request_pb = require("../../requests/security/query_security_request_pb.js");
 
-var fintekkers_requests_security_query_security_response_pb = require("../../requests/security/query_security_response_pb.js");
+var fintekkers_requests_security_query_security_request_pb = require('../../../fintekkers/requests/security/query_security_request_pb.js')
 
-var fintekkers_requests_security_create_security_request_pb = require("../../requests/security/create_security_request_pb.js");
+var fintekkers_requests_security_query_security_response_pb = require('../../../fintekkers/requests/security/query_security_response_pb.js')
 
-var fintekkers_requests_security_create_security_response_pb = require("../../requests/security/create_security_response_pb.js");
+var fintekkers_requests_security_create_security_request_pb = require('../../../fintekkers/requests/security/create_security_request_pb.js')
 
-var fintekkers_requests_util_errors_summary_pb = require("../../requests/util/errors/summary_pb.js");
+var fintekkers_requests_security_create_security_response_pb = require('../../../fintekkers/requests/security/create_security_response_pb.js')
+
+var fintekkers_requests_util_errors_summary_pb = require('../../../fintekkers/requests/util/errors/summary_pb.js')
 const proto = {};
 proto.fintekkers = {};
 proto.fintekkers.services = {};
-proto.fintekkers.services.security_service = require("./security_service_pb.js");
+proto.fintekkers.services.security_service = require('./security_service_pb.js');
 
 /**
  * @param {string} hostname
@@ -38,13 +42,10 @@ proto.fintekkers.services.security_service = require("./security_service_pb.js")
  * @struct
  * @final
  */
-proto.fintekkers.services.security_service.SecurityClient = function (
-  hostname,
-  credentials,
-  options
-) {
+proto.fintekkers.services.security_service.SecurityClient =
+    function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = "text";
+  options.format = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -54,8 +55,10 @@ proto.fintekkers.services.security_service.SecurityClient = function (
   /**
    * @private @const {string} The hostname
    */
-  this.hostname_ = hostname.replace(/\/+$/, "");
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
 };
+
 
 /**
  * @param {string} hostname
@@ -65,13 +68,10 @@ proto.fintekkers.services.security_service.SecurityClient = function (
  * @struct
  * @final
  */
-proto.fintekkers.services.security_service.SecurityPromiseClient = function (
-  hostname,
-  credentials,
-  options
-) {
+proto.fintekkers.services.security_service.SecurityPromiseClient =
+    function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = "text";
+  options.format = 'text';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -81,8 +81,10 @@ proto.fintekkers.services.security_service.SecurityPromiseClient = function (
   /**
    * @private @const {string} The hostname
    */
-  this.hostname_ = hostname.replace(/\/+$/, "");
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
 };
+
 
 /**
  * @const
@@ -91,7 +93,7 @@ proto.fintekkers.services.security_service.SecurityPromiseClient = function (
  *   !proto.fintekkers.requests.security.CreateSecurityResponseProto>}
  */
 const methodDescriptor_Security_CreateOrUpdate = new grpc.web.MethodDescriptor(
-  "/fintekkers.services.security_service.Security/CreateOrUpdate",
+  '/fintekkers.services.security_service.Security/CreateOrUpdate',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto,
   fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto,
@@ -99,11 +101,12 @@ const methodDescriptor_Security_CreateOrUpdate = new grpc.web.MethodDescriptor(
    * @param {!proto.fintekkers.requests.security.CreateSecurityRequestProto} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto.deserializeBinary
 );
+
 
 /**
  * @param {!proto.fintekkers.requests.security.CreateSecurityRequestProto} request The
@@ -116,16 +119,15 @@ const methodDescriptor_Security_CreateOrUpdate = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.fintekkers.services.security_service.SecurityClient.prototype.createOrUpdate =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(
-      this.hostname_ +
-        "/fintekkers.services.security_service.Security/CreateOrUpdate",
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/CreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Security_CreateOrUpdate,
-      callback
-    );
-  };
+      callback);
+};
+
 
 /**
  * @param {!proto.fintekkers.requests.security.CreateSecurityRequestProto} request The
@@ -136,15 +138,14 @@ proto.fintekkers.services.security_service.SecurityClient.prototype.createOrUpda
  *     Promise that resolves to the response
  */
 proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.createOrUpdate =
-  function (request, metadata) {
-    return this.client_.unaryCall(
-      this.hostname_ +
-        "/fintekkers.services.security_service.Security/CreateOrUpdate",
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/CreateOrUpdate',
       request,
       metadata || {},
-      methodDescriptor_Security_CreateOrUpdate
-    );
-  };
+      methodDescriptor_Security_CreateOrUpdate);
+};
+
 
 /**
  * @const
@@ -153,7 +154,7 @@ proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.creat
  *   !proto.fintekkers.requests.security.QuerySecurityResponseProto>}
  */
 const methodDescriptor_Security_GetByIDs = new grpc.web.MethodDescriptor(
-  "/fintekkers.services.security_service.Security/GetByIDs",
+  '/fintekkers.services.security_service.Security/GetByIDs',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
   fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto,
@@ -161,11 +162,12 @@ const methodDescriptor_Security_GetByIDs = new grpc.web.MethodDescriptor(
    * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto.deserializeBinary
 );
+
 
 /**
  * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request The
@@ -178,16 +180,15 @@ const methodDescriptor_Security_GetByIDs = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.fintekkers.services.security_service.SecurityClient.prototype.getByIDs =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(
-      this.hostname_ +
-        "/fintekkers.services.security_service.Security/GetByIDs",
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/GetByIDs',
       request,
       metadata || {},
       methodDescriptor_Security_GetByIDs,
-      callback
-    );
-  };
+      callback);
+};
+
 
 /**
  * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request The
@@ -198,15 +199,14 @@ proto.fintekkers.services.security_service.SecurityClient.prototype.getByIDs =
  *     Promise that resolves to the response
  */
 proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.getByIDs =
-  function (request, metadata) {
-    return this.client_.unaryCall(
-      this.hostname_ +
-        "/fintekkers.services.security_service.Security/GetByIDs",
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/GetByIDs',
       request,
       metadata || {},
-      methodDescriptor_Security_GetByIDs
-    );
-  };
+      methodDescriptor_Security_GetByIDs);
+};
+
 
 /**
  * @const
@@ -215,7 +215,7 @@ proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.getBy
  *   !proto.fintekkers.requests.security.QuerySecurityResponseProto>}
  */
 const methodDescriptor_Security_Search = new grpc.web.MethodDescriptor(
-  "/fintekkers.services.security_service.Security/Search",
+  '/fintekkers.services.security_service.Security/Search',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
   fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto,
@@ -223,11 +223,12 @@ const methodDescriptor_Security_Search = new grpc.web.MethodDescriptor(
    * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto.deserializeBinary
 );
+
 
 /**
  * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request The
@@ -240,15 +241,15 @@ const methodDescriptor_Security_Search = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.fintekkers.services.security_service.SecurityClient.prototype.search =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(
-      this.hostname_ + "/fintekkers.services.security_service.Security/Search",
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/Search',
       request,
       metadata || {},
       methodDescriptor_Security_Search,
-      callback
-    );
-  };
+      callback);
+};
+
 
 /**
  * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request The
@@ -259,14 +260,14 @@ proto.fintekkers.services.security_service.SecurityClient.prototype.search =
  *     Promise that resolves to the response
  */
 proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.search =
-  function (request, metadata) {
-    return this.client_.unaryCall(
-      this.hostname_ + "/fintekkers.services.security_service.Security/Search",
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/Search',
       request,
       metadata || {},
-      methodDescriptor_Security_Search
-    );
-  };
+      methodDescriptor_Security_Search);
+};
+
 
 /**
  * @const
@@ -275,7 +276,7 @@ proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.searc
  *   !proto.fintekkers.requests.security.QuerySecurityResponseProto>}
  */
 const methodDescriptor_Security_ListIDs = new grpc.web.MethodDescriptor(
-  "/fintekkers.services.security_service.Security/ListIDs",
+  '/fintekkers.services.security_service.Security/ListIDs',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
   fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto,
@@ -283,11 +284,12 @@ const methodDescriptor_Security_ListIDs = new grpc.web.MethodDescriptor(
    * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto.deserializeBinary
 );
+
 
 /**
  * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request The
@@ -300,15 +302,15 @@ const methodDescriptor_Security_ListIDs = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.fintekkers.services.security_service.SecurityClient.prototype.listIDs =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(
-      this.hostname_ + "/fintekkers.services.security_service.Security/ListIDs",
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/ListIDs',
       request,
       metadata || {},
       methodDescriptor_Security_ListIDs,
-      callback
-    );
-  };
+      callback);
+};
+
 
 /**
  * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request The
@@ -319,14 +321,14 @@ proto.fintekkers.services.security_service.SecurityClient.prototype.listIDs =
  *     Promise that resolves to the response
  */
 proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.listIDs =
-  function (request, metadata) {
-    return this.client_.unaryCall(
-      this.hostname_ + "/fintekkers.services.security_service.Security/ListIDs",
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/ListIDs',
       request,
       metadata || {},
-      methodDescriptor_Security_ListIDs
-    );
-  };
+      methodDescriptor_Security_ListIDs);
+};
+
 
 /**
  * @const
@@ -334,21 +336,21 @@ proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.listI
  *   !proto.fintekkers.requests.security.CreateSecurityRequestProto,
  *   !proto.fintekkers.requests.util.errors.SummaryProto>}
  */
-const methodDescriptor_Security_ValidateCreateOrUpdate =
-  new grpc.web.MethodDescriptor(
-    "/fintekkers.services.security_service.Security/ValidateCreateOrUpdate",
-    grpc.web.MethodType.UNARY,
-    fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto,
-    fintekkers_requests_util_errors_summary_pb.SummaryProto,
-    /**
-     * @param {!proto.fintekkers.requests.security.CreateSecurityRequestProto} request
-     * @return {!Uint8Array}
-     */
-    function (request) {
-      return request.serializeBinary();
-    },
-    fintekkers_requests_util_errors_summary_pb.SummaryProto.deserializeBinary
-  );
+const methodDescriptor_Security_ValidateCreateOrUpdate = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.security_service.Security/ValidateCreateOrUpdate',
+  grpc.web.MethodType.UNARY,
+  fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto,
+  fintekkers_requests_util_errors_summary_pb.SummaryProto,
+  /**
+   * @param {!proto.fintekkers.requests.security.CreateSecurityRequestProto} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  fintekkers_requests_util_errors_summary_pb.SummaryProto.deserializeBinary
+);
+
 
 /**
  * @param {!proto.fintekkers.requests.security.CreateSecurityRequestProto} request The
@@ -361,16 +363,15 @@ const methodDescriptor_Security_ValidateCreateOrUpdate =
  *     The XHR Node Readable Stream
  */
 proto.fintekkers.services.security_service.SecurityClient.prototype.validateCreateOrUpdate =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(
-      this.hostname_ +
-        "/fintekkers.services.security_service.Security/ValidateCreateOrUpdate",
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/ValidateCreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Security_ValidateCreateOrUpdate,
-      callback
-    );
-  };
+      callback);
+};
+
 
 /**
  * @param {!proto.fintekkers.requests.security.CreateSecurityRequestProto} request The
@@ -381,15 +382,14 @@ proto.fintekkers.services.security_service.SecurityClient.prototype.validateCrea
  *     Promise that resolves to the response
  */
 proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.validateCreateOrUpdate =
-  function (request, metadata) {
-    return this.client_.unaryCall(
-      this.hostname_ +
-        "/fintekkers.services.security_service.Security/ValidateCreateOrUpdate",
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/ValidateCreateOrUpdate',
       request,
       metadata || {},
-      methodDescriptor_Security_ValidateCreateOrUpdate
-    );
-  };
+      methodDescriptor_Security_ValidateCreateOrUpdate);
+};
+
 
 /**
  * @const
@@ -397,21 +397,21 @@ proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.valid
  *   !proto.fintekkers.requests.security.QuerySecurityRequestProto,
  *   !proto.fintekkers.requests.util.errors.SummaryProto>}
  */
-const methodDescriptor_Security_ValidateQueryRequest =
-  new grpc.web.MethodDescriptor(
-    "/fintekkers.services.security_service.Security/ValidateQueryRequest",
-    grpc.web.MethodType.UNARY,
-    fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
-    fintekkers_requests_util_errors_summary_pb.SummaryProto,
-    /**
-     * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request
-     * @return {!Uint8Array}
-     */
-    function (request) {
-      return request.serializeBinary();
-    },
-    fintekkers_requests_util_errors_summary_pb.SummaryProto.deserializeBinary
-  );
+const methodDescriptor_Security_ValidateQueryRequest = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.security_service.Security/ValidateQueryRequest',
+  grpc.web.MethodType.UNARY,
+  fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
+  fintekkers_requests_util_errors_summary_pb.SummaryProto,
+  /**
+   * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  fintekkers_requests_util_errors_summary_pb.SummaryProto.deserializeBinary
+);
+
 
 /**
  * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request The
@@ -424,16 +424,15 @@ const methodDescriptor_Security_ValidateQueryRequest =
  *     The XHR Node Readable Stream
  */
 proto.fintekkers.services.security_service.SecurityClient.prototype.validateQueryRequest =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(
-      this.hostname_ +
-        "/fintekkers.services.security_service.Security/ValidateQueryRequest",
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/ValidateQueryRequest',
       request,
       metadata || {},
       methodDescriptor_Security_ValidateQueryRequest,
-      callback
-    );
-  };
+      callback);
+};
+
 
 /**
  * @param {!proto.fintekkers.requests.security.QuerySecurityRequestProto} request The
@@ -444,14 +443,14 @@ proto.fintekkers.services.security_service.SecurityClient.prototype.validateQuer
  *     Promise that resolves to the response
  */
 proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.validateQueryRequest =
-  function (request, metadata) {
-    return this.client_.unaryCall(
-      this.hostname_ +
-        "/fintekkers.services.security_service.Security/ValidateQueryRequest",
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/fintekkers.services.security_service.Security/ValidateQueryRequest',
       request,
       metadata || {},
-      methodDescriptor_Security_ValidateQueryRequest
-    );
-  };
+      methodDescriptor_Security_ValidateQueryRequest);
+};
+
 
 module.exports = proto.fintekkers.services.security_service;
+
