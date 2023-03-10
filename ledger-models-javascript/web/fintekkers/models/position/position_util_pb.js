@@ -13,13 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global =
-    (typeof globalThis !== 'undefined' && globalThis) ||
-    (typeof window !== 'undefined' && window) ||
-    (typeof global !== 'undefined' && global) ||
-    (typeof self !== 'undefined' && self) ||
-    (function () { return this; }).call(null) ||
-    Function('return this')();
+var global = (function() { return this || window || global || self || Function('return this')(); }).call(null);
 
 var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js');
 goog.object.extend(proto, google_protobuf_any_pb);
@@ -27,8 +21,6 @@ var fintekkers_models_position_field_pb = require('../../../fintekkers/models/po
 goog.object.extend(proto, fintekkers_models_position_field_pb);
 var fintekkers_models_position_measure_pb = require('../../../fintekkers/models/position/measure_pb.js');
 goog.object.extend(proto, fintekkers_models_position_measure_pb);
-var fintekkers_models_security_identifier_identifier_pb = require('../../../fintekkers/models/security/identifier/identifier_pb.js');
-goog.object.extend(proto, fintekkers_models_security_identifier_identifier_pb);
 var fintekkers_models_util_decimal_value_pb = require('../../../fintekkers/models/util/decimal_value_pb.js');
 goog.object.extend(proto, fintekkers_models_util_decimal_value_pb);
 goog.exportSymbol('proto.fintekkers.models.position.FieldMapEntry', null, global);

@@ -32,28 +32,33 @@ public final class LockResponseProtos {
       "ponse.proto\022\035fintekkers.requests.util.lo" +
       "ck\032,fintekkers/models/util/lock/node_sta" +
       "te.proto\0320fintekkers/requests/util/lock/" +
-      "lock_request.proto\"\314\001\n\021LockResponseProto" +
-      "\022\024\n\014object_class\030\001 \001(\t\022\017\n\007version\030\002 \001(\t\022" +
-      "L\n\023create_lock_request\030\003 \001(\0132/.fintekker" +
-      "s.requests.util.lock.LockRequestProto\022B\n" +
-      "\rlock_response\030\004 \001(\0132+.fintekkers.models" +
-      ".util.lock.NodeStateProtoB\026B\022LockRespons" +
-      "eProtosP\001b\006proto3"
+      "lock_request.proto\032-fintekkers/requests/" +
+      "util/errors/summary.proto\"\217\002\n\021LockRespon" +
+      "seProto\022\024\n\014object_class\030\001 \001(\t\022\017\n\007version" +
+      "\030\002 \001(\t\022I\n\020get_lock_request\030\003 \001(\0132/.finte" +
+      "kkers.requests.util.lock.LockRequestProt" +
+      "o\022=\n\rlock_response\030\004 \001(\0132&.fintekkers.mo" +
+      "dels.util.lock.NodeState\022I\n\022errors_or_wa" +
+      "rnings\030( \001(\0132-.fintekkers.requests.util." +
+      "errors.SummaryProtoB\026B\022LockResponseProto" +
+      "sP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          fintekkers.models.util.lock.NodeStateProtos.getDescriptor(),
+          fintekkers.models.util.lock.NodeStateOuterClass.getDescriptor(),
           fintekkers.requests.util.lock.LockRequestProtos.getDescriptor(),
+          fintekkers.requests.util.errors.Summary.getDescriptor(),
         });
     internal_static_fintekkers_requests_util_lock_LockResponseProto_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_fintekkers_requests_util_lock_LockResponseProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fintekkers_requests_util_lock_LockResponseProto_descriptor,
-        new java.lang.String[] { "ObjectClass", "Version", "CreateLockRequest", "LockResponse", });
-    fintekkers.models.util.lock.NodeStateProtos.getDescriptor();
+        new java.lang.String[] { "ObjectClass", "Version", "GetLockRequest", "LockResponse", "ErrorsOrWarnings", });
+    fintekkers.models.util.lock.NodeStateOuterClass.getDescriptor();
     fintekkers.requests.util.lock.LockRequestProtos.getDescriptor();
+    fintekkers.requests.util.errors.Summary.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

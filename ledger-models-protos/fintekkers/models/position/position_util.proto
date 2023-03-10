@@ -5,7 +5,7 @@ package fintekkers.models.position;
 import "google/protobuf/any.proto";
 import "fintekkers/models/position/field.proto";
 import "fintekkers/models/position/measure.proto";
-import "fintekkers/models/security/identifier/identifier.proto";
+
 import "fintekkers/models/util/decimal_value.proto";
 
 option java_multiple_files = true;

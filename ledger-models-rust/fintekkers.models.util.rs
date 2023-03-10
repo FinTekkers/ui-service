@@ -33,3 +33,19 @@ pub struct UuidProto {
     #[prost(bytes = "vec", tag = "1")]
     pub raw_uuid: ::prost::alloc::vec::Vec<u8>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Endpoint {
+    /// The IP address that an endpoint is exposed through. The assumption is the IP
+    /// is exposed to internal clients through VPC/Security rules, or to the public
+    /// internet if public-facing
+    #[prost(string, tag = "1")]
+    pub ip: ::prost::alloc::string::String,
+    /// The port that the service is listening to on the specified IP address.
+    #[prost(uint32, tag = "2")]
+    pub port: u32,
+    /// Placeholder for the future. For public-facing traffic a URL will be used, and
+    /// the resolution to IP occurs via DNS.
+    #[prost(string, tag = "3")]
+    pub fully_qualified_url: ::prost::alloc::string::String,
+}

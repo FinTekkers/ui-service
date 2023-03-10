@@ -90,7 +90,7 @@ var PortfolioService = exports.PortfolioService = {
   search: {
     path: '/fintekkers.services.security_service.Portfolio/Search',
     requestStream: false,
-    responseStream: false,
+    responseStream: true,
     requestType: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
     responseType: fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto,
     requestSerialize: serialize_fintekkers_requests_portfolio_QueryPortfolioRequestProto,

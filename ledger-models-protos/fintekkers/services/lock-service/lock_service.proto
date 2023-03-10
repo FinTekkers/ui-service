@@ -1,12 +1,40 @@
 syntax = "proto3";
 
 package fintekkers.services.lock_service;
+
+import "google/protobuf/empty.proto";
+
 import "fintekkers/requests/util/lock/lock_request.proto";
 import "fintekkers/requests/util/lock/lock_response.proto";
+
+import "fintekkers/models/util/lock/node_partition.proto";
+import "fintekkers/models/util/lock/node_state.proto";
 
 option java_generic_services = true;
 
 
-service Lock {
-    rpc ClaimLock (fintekkers.requests.util.lock.LockRequestProto) returns (fintekkers.requests.util.lock.LockResponseProto);
+message NamespaceList {
+    repeated string namespaces = 1;
 }
+
+message PartitionsList {
+    repeated fintekkers.models.util.lock.NodePartition namespaces = 1;
+}
+
+service Lock {
+    // Allows a Fintekkers service to claim the lock for a partition. 
+    // See {fintekkers.request.util.lock.LockRequestProto} for details
+    rpc ClaimLock (fintekkers.requests.util.lock.LockRequestProto) returns (fintekkers.requests.util.lock.LockResponseProto);
+
+    //In: Nothing
+    //Out: just a list of strings?
+    rpc ListNamespaces (google.protobuf.Empty) returns (NamespaceList);
+
+    //In: namespace string
+    //OUt: just a list of parition ids?
+    rpc ListPartitions (google.protobuf.Empty) returns (PartitionsList);
+
+    //In namespace / parition
+    rpc GetPartitionStatus (fintekkers.models.util.lock.NodePartition) returns (fintekkers.models.util.lock.NodeState);
+}
+
