@@ -45,7 +45,7 @@ var PositionService = exports.PositionService = {
 search: {
     path: '/fintekkers.services.position_service.Position/Search',
     requestStream: false,
-    responseStream: false,
+    responseStream: true,
     requestType: fintekkers_requests_position_query_position_request_pb.QueryPositionRequestProto,
     responseType: fintekkers_requests_position_query_position_response_pb.QueryPositionResponseProto,
     requestSerialize: serialize_fintekkers_requests_position_QueryPositionRequestProto,

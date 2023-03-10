@@ -6,11 +6,17 @@
 
 import * as grpc from "@grpc/grpc-js";
 import * as fintekkers_services_lock_service_lock_service_pb from "../../../fintekkers/services/lock-service/lock_service_pb";
+import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 import * as fintekkers_requests_util_lock_lock_request_pb from "../../../fintekkers/requests/util/lock/lock_request_pb";
 import * as fintekkers_requests_util_lock_lock_response_pb from "../../../fintekkers/requests/util/lock/lock_response_pb";
+import * as fintekkers_models_util_lock_node_partition_pb from "../../../fintekkers/models/util/lock/node_partition_pb";
+import * as fintekkers_models_util_lock_node_state_pb from "../../../fintekkers/models/util/lock/node_state_pb";
 
 interface ILockService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     claimLock: ILockService_IClaimLock;
+    listNamespaces: ILockService_IListNamespaces;
+    listPartitions: ILockService_IListPartitions;
+    getPartitionStatus: ILockService_IGetPartitionStatus;
 }
 
 interface ILockService_IClaimLock extends grpc.MethodDefinition<fintekkers_requests_util_lock_lock_request_pb.LockRequestProto, fintekkers_requests_util_lock_lock_response_pb.LockResponseProto> {
@@ -22,17 +28,56 @@ interface ILockService_IClaimLock extends grpc.MethodDefinition<fintekkers_reque
     responseSerialize: grpc.serialize<fintekkers_requests_util_lock_lock_response_pb.LockResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_util_lock_lock_response_pb.LockResponseProto>;
 }
+interface ILockService_IListNamespaces extends grpc.MethodDefinition<google_protobuf_empty_pb.Empty, fintekkers_services_lock_service_lock_service_pb.NamespaceList> {
+    path: "/fintekkers.services.lock_service.Lock/ListNamespaces";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<google_protobuf_empty_pb.Empty>;
+    requestDeserialize: grpc.deserialize<google_protobuf_empty_pb.Empty>;
+    responseSerialize: grpc.serialize<fintekkers_services_lock_service_lock_service_pb.NamespaceList>;
+    responseDeserialize: grpc.deserialize<fintekkers_services_lock_service_lock_service_pb.NamespaceList>;
+}
+interface ILockService_IListPartitions extends grpc.MethodDefinition<google_protobuf_empty_pb.Empty, fintekkers_services_lock_service_lock_service_pb.PartitionsList> {
+    path: "/fintekkers.services.lock_service.Lock/ListPartitions";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<google_protobuf_empty_pb.Empty>;
+    requestDeserialize: grpc.deserialize<google_protobuf_empty_pb.Empty>;
+    responseSerialize: grpc.serialize<fintekkers_services_lock_service_lock_service_pb.PartitionsList>;
+    responseDeserialize: grpc.deserialize<fintekkers_services_lock_service_lock_service_pb.PartitionsList>;
+}
+interface ILockService_IGetPartitionStatus extends grpc.MethodDefinition<fintekkers_models_util_lock_node_partition_pb.NodePartition, fintekkers_models_util_lock_node_state_pb.NodeState> {
+    path: "/fintekkers.services.lock_service.Lock/GetPartitionStatus";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<fintekkers_models_util_lock_node_partition_pb.NodePartition>;
+    requestDeserialize: grpc.deserialize<fintekkers_models_util_lock_node_partition_pb.NodePartition>;
+    responseSerialize: grpc.serialize<fintekkers_models_util_lock_node_state_pb.NodeState>;
+    responseDeserialize: grpc.deserialize<fintekkers_models_util_lock_node_state_pb.NodeState>;
+}
 
 export const LockService: ILockService;
 
 export interface ILockServer extends grpc.UntypedServiceImplementation {
     claimLock: grpc.handleUnaryCall<fintekkers_requests_util_lock_lock_request_pb.LockRequestProto, fintekkers_requests_util_lock_lock_response_pb.LockResponseProto>;
+    listNamespaces: grpc.handleUnaryCall<google_protobuf_empty_pb.Empty, fintekkers_services_lock_service_lock_service_pb.NamespaceList>;
+    listPartitions: grpc.handleUnaryCall<google_protobuf_empty_pb.Empty, fintekkers_services_lock_service_lock_service_pb.PartitionsList>;
+    getPartitionStatus: grpc.handleUnaryCall<fintekkers_models_util_lock_node_partition_pb.NodePartition, fintekkers_models_util_lock_node_state_pb.NodeState>;
 }
 
 export interface ILockClient {
     claimLock(request: fintekkers_requests_util_lock_lock_request_pb.LockRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_lock_lock_response_pb.LockResponseProto) => void): grpc.ClientUnaryCall;
     claimLock(request: fintekkers_requests_util_lock_lock_request_pb.LockRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_lock_lock_response_pb.LockResponseProto) => void): grpc.ClientUnaryCall;
     claimLock(request: fintekkers_requests_util_lock_lock_request_pb.LockRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_lock_lock_response_pb.LockResponseProto) => void): grpc.ClientUnaryCall;
+    listNamespaces(request: google_protobuf_empty_pb.Empty, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.NamespaceList) => void): grpc.ClientUnaryCall;
+    listNamespaces(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.NamespaceList) => void): grpc.ClientUnaryCall;
+    listNamespaces(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.NamespaceList) => void): grpc.ClientUnaryCall;
+    listPartitions(request: google_protobuf_empty_pb.Empty, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.PartitionsList) => void): grpc.ClientUnaryCall;
+    listPartitions(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.PartitionsList) => void): grpc.ClientUnaryCall;
+    listPartitions(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.PartitionsList) => void): grpc.ClientUnaryCall;
+    getPartitionStatus(request: fintekkers_models_util_lock_node_partition_pb.NodePartition, callback: (error: grpc.ServiceError | null, response: fintekkers_models_util_lock_node_state_pb.NodeState) => void): grpc.ClientUnaryCall;
+    getPartitionStatus(request: fintekkers_models_util_lock_node_partition_pb.NodePartition, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_models_util_lock_node_state_pb.NodeState) => void): grpc.ClientUnaryCall;
+    getPartitionStatus(request: fintekkers_models_util_lock_node_partition_pb.NodePartition, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_models_util_lock_node_state_pb.NodeState) => void): grpc.ClientUnaryCall;
 }
 
 export class LockClient extends grpc.Client implements ILockClient {
@@ -40,4 +85,13 @@ export class LockClient extends grpc.Client implements ILockClient {
     public claimLock(request: fintekkers_requests_util_lock_lock_request_pb.LockRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_lock_lock_response_pb.LockResponseProto) => void): grpc.ClientUnaryCall;
     public claimLock(request: fintekkers_requests_util_lock_lock_request_pb.LockRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_lock_lock_response_pb.LockResponseProto) => void): grpc.ClientUnaryCall;
     public claimLock(request: fintekkers_requests_util_lock_lock_request_pb.LockRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_lock_lock_response_pb.LockResponseProto) => void): grpc.ClientUnaryCall;
+    public listNamespaces(request: google_protobuf_empty_pb.Empty, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.NamespaceList) => void): grpc.ClientUnaryCall;
+    public listNamespaces(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.NamespaceList) => void): grpc.ClientUnaryCall;
+    public listNamespaces(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.NamespaceList) => void): grpc.ClientUnaryCall;
+    public listPartitions(request: google_protobuf_empty_pb.Empty, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.PartitionsList) => void): grpc.ClientUnaryCall;
+    public listPartitions(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.PartitionsList) => void): grpc.ClientUnaryCall;
+    public listPartitions(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_services_lock_service_lock_service_pb.PartitionsList) => void): grpc.ClientUnaryCall;
+    public getPartitionStatus(request: fintekkers_models_util_lock_node_partition_pb.NodePartition, callback: (error: grpc.ServiceError | null, response: fintekkers_models_util_lock_node_state_pb.NodeState) => void): grpc.ClientUnaryCall;
+    public getPartitionStatus(request: fintekkers_models_util_lock_node_partition_pb.NodePartition, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_models_util_lock_node_state_pb.NodeState) => void): grpc.ClientUnaryCall;
+    public getPartitionStatus(request: fintekkers_models_util_lock_node_partition_pb.NodePartition, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_models_util_lock_node_state_pb.NodeState) => void): grpc.ClientUnaryCall;
 }

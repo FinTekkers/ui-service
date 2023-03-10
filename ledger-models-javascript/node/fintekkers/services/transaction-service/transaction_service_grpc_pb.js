@@ -90,7 +90,7 @@ var TransactionService = exports.TransactionService = {
   search: {
     path: '/fintekkers.services.security_service.Transaction/Search',
     requestStream: false,
-    responseStream: false,
+    responseStream: true,
     requestType: fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
     responseType: fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto,
     requestSerialize: serialize_fintekkers_requests_transaction_QueryTransactionRequestProto,
