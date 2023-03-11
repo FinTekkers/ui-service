@@ -32,32 +32,89 @@ public interface LockResponseProtoOrBuilder extends
       getVersionBytes();
 
   /**
-   * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
-   * @return Whether the createLockRequest field is set.
+   * <pre>
+   *The request that this response is for
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
+   * @return Whether the getLockRequest field is set.
    */
-  boolean hasCreateLockRequest();
+  boolean hasGetLockRequest();
   /**
-   * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
-   * @return The createLockRequest.
+   * <pre>
+   *The request that this response is for
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
+   * @return The getLockRequest.
    */
-  fintekkers.requests.util.lock.LockRequestProto getCreateLockRequest();
+  fintekkers.requests.util.lock.LockRequestProto getGetLockRequest();
   /**
-   * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+   * <pre>
+   *The request that this response is for
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
    */
-  fintekkers.requests.util.lock.LockRequestProtoOrBuilder getCreateLockRequestOrBuilder();
+  fintekkers.requests.util.lock.LockRequestProtoOrBuilder getGetLockRequestOrBuilder();
 
   /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+   * <pre>
+   *Returns the node, and its state that was granted to the caller. If this is empty
+   *then there will be details in the {errors_or_warning} variable
+   * </pre>
+   *
+   * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
    * @return Whether the lockResponse field is set.
    */
   boolean hasLockResponse();
   /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+   * <pre>
+   *Returns the node, and its state that was granted to the caller. If this is empty
+   *then there will be details in the {errors_or_warning} variable
+   * </pre>
+   *
+   * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
    * @return The lockResponse.
    */
-  fintekkers.models.util.lock.NodeStateProto getLockResponse();
+  fintekkers.models.util.lock.NodeStateOuterClass.NodeState getLockResponse();
   /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+   * <pre>
+   *Returns the node, and its state that was granted to the caller. If this is empty
+   *then there will be details in the {errors_or_warning} variable
+   * </pre>
+   *
+   * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
    */
-  fintekkers.models.util.lock.NodeStateProtoOrBuilder getLockResponseOrBuilder();
+  fintekkers.models.util.lock.NodeStateOuterClass.NodeStateOrBuilder getLockResponseOrBuilder();
+
+  /**
+   * <pre>
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   * @return Whether the errorsOrWarnings field is set.
+   */
+  boolean hasErrorsOrWarnings();
+  /**
+   * <pre>
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   * @return The errorsOrWarnings.
+   */
+  fintekkers.requests.util.errors.Summary.SummaryProto getErrorsOrWarnings();
+  /**
+   * <pre>
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  fintekkers.requests.util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder();
 }

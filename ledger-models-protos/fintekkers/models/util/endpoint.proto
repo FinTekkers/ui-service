@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package fintekkers.models.util;
+
+message Endpoint {
+  //The IP address that an endpoint is exposed through. The assumption is the IP 
+  //is exposed to internal clients through VPC/Security rules, or to the public 
+  //internet if public-facing
+  string ip = 1;
+  
+  //The port that the service is listening to on the specified IP address.
+  uint32 port = 2;
+  
+  //Placeholder for the future. For public-facing traffic a URL will be used, and
+  //the resolution to IP occurs via DNS.
+  string fully_qualified_url = 3;
+}

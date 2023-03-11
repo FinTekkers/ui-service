@@ -37,24 +37,22 @@ public final class PositionUtilProtos {
       "il.proto\022\032fintekkers.models.position\032\031go" +
       "ogle/protobuf/any.proto\032&fintekkers/mode" +
       "ls/position/field.proto\032(fintekkers/mode" +
-      "ls/position/measure.proto\0326fintekkers/mo" +
-      "dels/security/identifier/identifier.prot" +
-      "o\032*fintekkers/models/util/decimal_value." +
-      "proto\"\214\001\n\017MeasureMapEntry\0227\n\005field\030\001 \001(\016" +
-      "2(.fintekkers.models.position.MeasurePro" +
-      "to\022@\n\rmeasure_value\030\002 \001(\0132).fintekkers.m" +
-      "odels.util.DecimalValueProto\"\354\001\n\rFieldMa" +
-      "pEntry\0225\n\005field\030\001 \001(\0162&.fintekkers.model" +
-      "s.position.FieldProto\0222\n\022field_value_pac" +
-      "ked\030\004 \001(\0132\024.google.protobuf.AnyH\000\022\024\n\nenu" +
-      "m_value\030\005 \001(\005H\000\022D\n\010operator\030\024 \001(\01622.fint" +
-      "ekkers.models.position.PositionFilterOpe" +
-      "ratorB\024\n\022FieldMapValueOneOf*\232\001\n\026Position" +
-      "FilterOperator\022\024\n\020UNKNOWN_OPERATOR\020\000\022\n\n\006" +
-      "EQUALS\020\001\022\016\n\nNOT_EQUALS\020\002\022\r\n\tLESS_THAN\020\003\022" +
-      "\027\n\023LESS_THAN_OR_EQUALS\020\004\022\r\n\tMORE_THAN\020\005\022" +
-      "\027\n\023MORE_THAN_OR_EQUALS\020\006B\026B\022PositionUtil" +
-      "ProtosP\001b\006proto3"
+      "ls/position/measure.proto\032*fintekkers/mo" +
+      "dels/util/decimal_value.proto\"\214\001\n\017Measur" +
+      "eMapEntry\0227\n\005field\030\001 \001(\0162(.fintekkers.mo" +
+      "dels.position.MeasureProto\022@\n\rmeasure_va" +
+      "lue\030\002 \001(\0132).fintekkers.models.util.Decim" +
+      "alValueProto\"\354\001\n\rFieldMapEntry\0225\n\005field\030" +
+      "\001 \001(\0162&.fintekkers.models.position.Field" +
+      "Proto\0222\n\022field_value_packed\030\004 \001(\0132\024.goog" +
+      "le.protobuf.AnyH\000\022\024\n\nenum_value\030\005 \001(\005H\000\022" +
+      "D\n\010operator\030\024 \001(\01622.fintekkers.models.po" +
+      "sition.PositionFilterOperatorB\024\n\022FieldMa" +
+      "pValueOneOf*\232\001\n\026PositionFilterOperator\022\024" +
+      "\n\020UNKNOWN_OPERATOR\020\000\022\n\n\006EQUALS\020\001\022\016\n\nNOT_" +
+      "EQUALS\020\002\022\r\n\tLESS_THAN\020\003\022\027\n\023LESS_THAN_OR_" +
+      "EQUALS\020\004\022\r\n\tMORE_THAN\020\005\022\027\n\023MORE_THAN_OR_" +
+      "EQUALS\020\006B\026B\022PositionUtilProtosP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -62,7 +60,6 @@ public final class PositionUtilProtos {
           com.google.protobuf.AnyProto.getDescriptor(),
           fintekkers.models.position.FieldProtos.getDescriptor(),
           fintekkers.models.position.MeasureProtos.getDescriptor(),
-          fintekkers.models.security.IdentifierProtos.getDescriptor(),
           fintekkers.models.util.DecimalValue.getDescriptor(),
         });
     internal_static_fintekkers_models_position_MeasureMapEntry_descriptor =
@@ -80,7 +77,6 @@ public final class PositionUtilProtos {
     com.google.protobuf.AnyProto.getDescriptor();
     fintekkers.models.position.FieldProtos.getDescriptor();
     fintekkers.models.position.MeasureProtos.getDescriptor();
-    fintekkers.models.security.IdentifierProtos.getDescriptor();
     fintekkers.models.util.DecimalValue.getDescriptor();
   }
 

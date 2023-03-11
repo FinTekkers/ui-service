@@ -64,26 +64,39 @@ private static final long serialVersionUID = 0L;
           }
           case 26: {
             fintekkers.requests.util.lock.LockRequestProto.Builder subBuilder = null;
-            if (createLockRequest_ != null) {
-              subBuilder = createLockRequest_.toBuilder();
+            if (getLockRequest_ != null) {
+              subBuilder = getLockRequest_.toBuilder();
             }
-            createLockRequest_ = input.readMessage(fintekkers.requests.util.lock.LockRequestProto.parser(), extensionRegistry);
+            getLockRequest_ = input.readMessage(fintekkers.requests.util.lock.LockRequestProto.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom(createLockRequest_);
-              createLockRequest_ = subBuilder.buildPartial();
+              subBuilder.mergeFrom(getLockRequest_);
+              getLockRequest_ = subBuilder.buildPartial();
             }
 
             break;
           }
           case 34: {
-            fintekkers.models.util.lock.NodeStateProto.Builder subBuilder = null;
+            fintekkers.models.util.lock.NodeStateOuterClass.NodeState.Builder subBuilder = null;
             if (lockResponse_ != null) {
               subBuilder = lockResponse_.toBuilder();
             }
-            lockResponse_ = input.readMessage(fintekkers.models.util.lock.NodeStateProto.parser(), extensionRegistry);
+            lockResponse_ = input.readMessage(fintekkers.models.util.lock.NodeStateOuterClass.NodeState.parser(), extensionRegistry);
             if (subBuilder != null) {
               subBuilder.mergeFrom(lockResponse_);
               lockResponse_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
+          case 322: {
+            fintekkers.requests.util.errors.Summary.SummaryProto.Builder subBuilder = null;
+            if (errorsOrWarnings_ != null) {
+              subBuilder = errorsOrWarnings_.toBuilder();
+            }
+            errorsOrWarnings_ = input.readMessage(fintekkers.requests.util.errors.Summary.SummaryProto.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(errorsOrWarnings_);
+              errorsOrWarnings_ = subBuilder.buildPartial();
             }
 
             break;
@@ -196,36 +209,53 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int CREATE_LOCK_REQUEST_FIELD_NUMBER = 3;
-  private fintekkers.requests.util.lock.LockRequestProto createLockRequest_;
+  public static final int GET_LOCK_REQUEST_FIELD_NUMBER = 3;
+  private fintekkers.requests.util.lock.LockRequestProto getLockRequest_;
   /**
-   * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
-   * @return Whether the createLockRequest field is set.
+   * <pre>
+   *The request that this response is for
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
+   * @return Whether the getLockRequest field is set.
    */
   @java.lang.Override
-  public boolean hasCreateLockRequest() {
-    return createLockRequest_ != null;
+  public boolean hasGetLockRequest() {
+    return getLockRequest_ != null;
   }
   /**
-   * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
-   * @return The createLockRequest.
+   * <pre>
+   *The request that this response is for
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
+   * @return The getLockRequest.
    */
   @java.lang.Override
-  public fintekkers.requests.util.lock.LockRequestProto getCreateLockRequest() {
-    return createLockRequest_ == null ? fintekkers.requests.util.lock.LockRequestProto.getDefaultInstance() : createLockRequest_;
+  public fintekkers.requests.util.lock.LockRequestProto getGetLockRequest() {
+    return getLockRequest_ == null ? fintekkers.requests.util.lock.LockRequestProto.getDefaultInstance() : getLockRequest_;
   }
   /**
-   * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+   * <pre>
+   *The request that this response is for
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
    */
   @java.lang.Override
-  public fintekkers.requests.util.lock.LockRequestProtoOrBuilder getCreateLockRequestOrBuilder() {
-    return getCreateLockRequest();
+  public fintekkers.requests.util.lock.LockRequestProtoOrBuilder getGetLockRequestOrBuilder() {
+    return getGetLockRequest();
   }
 
   public static final int LOCK_RESPONSE_FIELD_NUMBER = 4;
-  private fintekkers.models.util.lock.NodeStateProto lockResponse_;
+  private fintekkers.models.util.lock.NodeStateOuterClass.NodeState lockResponse_;
   /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+   * <pre>
+   *Returns the node, and its state that was granted to the caller. If this is empty
+   *then there will be details in the {errors_or_warning} variable
+   * </pre>
+   *
+   * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
    * @return Whether the lockResponse field is set.
    */
   @java.lang.Override
@@ -233,19 +263,70 @@ private static final long serialVersionUID = 0L;
     return lockResponse_ != null;
   }
   /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+   * <pre>
+   *Returns the node, and its state that was granted to the caller. If this is empty
+   *then there will be details in the {errors_or_warning} variable
+   * </pre>
+   *
+   * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
    * @return The lockResponse.
    */
   @java.lang.Override
-  public fintekkers.models.util.lock.NodeStateProto getLockResponse() {
-    return lockResponse_ == null ? fintekkers.models.util.lock.NodeStateProto.getDefaultInstance() : lockResponse_;
+  public fintekkers.models.util.lock.NodeStateOuterClass.NodeState getLockResponse() {
+    return lockResponse_ == null ? fintekkers.models.util.lock.NodeStateOuterClass.NodeState.getDefaultInstance() : lockResponse_;
   }
   /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+   * <pre>
+   *Returns the node, and its state that was granted to the caller. If this is empty
+   *then there will be details in the {errors_or_warning} variable
+   * </pre>
+   *
+   * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
    */
   @java.lang.Override
-  public fintekkers.models.util.lock.NodeStateProtoOrBuilder getLockResponseOrBuilder() {
+  public fintekkers.models.util.lock.NodeStateOuterClass.NodeStateOrBuilder getLockResponseOrBuilder() {
     return getLockResponse();
+  }
+
+  public static final int ERRORS_OR_WARNINGS_FIELD_NUMBER = 40;
+  private fintekkers.requests.util.errors.Summary.SummaryProto errorsOrWarnings_;
+  /**
+   * <pre>
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   * @return Whether the errorsOrWarnings field is set.
+   */
+  @java.lang.Override
+  public boolean hasErrorsOrWarnings() {
+    return errorsOrWarnings_ != null;
+  }
+  /**
+   * <pre>
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   * @return The errorsOrWarnings.
+   */
+  @java.lang.Override
+  public fintekkers.requests.util.errors.Summary.SummaryProto getErrorsOrWarnings() {
+    return errorsOrWarnings_ == null ? fintekkers.requests.util.errors.Summary.SummaryProto.getDefaultInstance() : errorsOrWarnings_;
+  }
+  /**
+   * <pre>
+   *If no errors or warnings in the response then the request was processed successfully without any
+   *contingencies.
+   * </pre>
+   *
+   * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+   */
+  @java.lang.Override
+  public fintekkers.requests.util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder() {
+    return getErrorsOrWarnings();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -268,11 +349,14 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
     }
-    if (createLockRequest_ != null) {
-      output.writeMessage(3, getCreateLockRequest());
+    if (getLockRequest_ != null) {
+      output.writeMessage(3, getGetLockRequest());
     }
     if (lockResponse_ != null) {
       output.writeMessage(4, getLockResponse());
+    }
+    if (errorsOrWarnings_ != null) {
+      output.writeMessage(40, getErrorsOrWarnings());
     }
     unknownFields.writeTo(output);
   }
@@ -289,13 +373,17 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
     }
-    if (createLockRequest_ != null) {
+    if (getLockRequest_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, getCreateLockRequest());
+        .computeMessageSize(3, getGetLockRequest());
     }
     if (lockResponse_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(4, getLockResponse());
+    }
+    if (errorsOrWarnings_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(40, getErrorsOrWarnings());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -316,15 +404,20 @@ private static final long serialVersionUID = 0L;
         .equals(other.getObjectClass())) return false;
     if (!getVersion()
         .equals(other.getVersion())) return false;
-    if (hasCreateLockRequest() != other.hasCreateLockRequest()) return false;
-    if (hasCreateLockRequest()) {
-      if (!getCreateLockRequest()
-          .equals(other.getCreateLockRequest())) return false;
+    if (hasGetLockRequest() != other.hasGetLockRequest()) return false;
+    if (hasGetLockRequest()) {
+      if (!getGetLockRequest()
+          .equals(other.getGetLockRequest())) return false;
     }
     if (hasLockResponse() != other.hasLockResponse()) return false;
     if (hasLockResponse()) {
       if (!getLockResponse()
           .equals(other.getLockResponse())) return false;
+    }
+    if (hasErrorsOrWarnings() != other.hasErrorsOrWarnings()) return false;
+    if (hasErrorsOrWarnings()) {
+      if (!getErrorsOrWarnings()
+          .equals(other.getErrorsOrWarnings())) return false;
     }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
@@ -341,13 +434,17 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getObjectClass().hashCode();
     hash = (37 * hash) + VERSION_FIELD_NUMBER;
     hash = (53 * hash) + getVersion().hashCode();
-    if (hasCreateLockRequest()) {
-      hash = (37 * hash) + CREATE_LOCK_REQUEST_FIELD_NUMBER;
-      hash = (53 * hash) + getCreateLockRequest().hashCode();
+    if (hasGetLockRequest()) {
+      hash = (37 * hash) + GET_LOCK_REQUEST_FIELD_NUMBER;
+      hash = (53 * hash) + getGetLockRequest().hashCode();
     }
     if (hasLockResponse()) {
       hash = (37 * hash) + LOCK_RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getLockResponse().hashCode();
+    }
+    if (hasErrorsOrWarnings()) {
+      hash = (37 * hash) + ERRORS_OR_WARNINGS_FIELD_NUMBER;
+      hash = (53 * hash) + getErrorsOrWarnings().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -486,17 +583,23 @@ private static final long serialVersionUID = 0L;
 
       version_ = "";
 
-      if (createLockRequestBuilder_ == null) {
-        createLockRequest_ = null;
+      if (getLockRequestBuilder_ == null) {
+        getLockRequest_ = null;
       } else {
-        createLockRequest_ = null;
-        createLockRequestBuilder_ = null;
+        getLockRequest_ = null;
+        getLockRequestBuilder_ = null;
       }
       if (lockResponseBuilder_ == null) {
         lockResponse_ = null;
       } else {
         lockResponse_ = null;
         lockResponseBuilder_ = null;
+      }
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarnings_ = null;
+      } else {
+        errorsOrWarnings_ = null;
+        errorsOrWarningsBuilder_ = null;
       }
       return this;
     }
@@ -526,15 +629,20 @@ private static final long serialVersionUID = 0L;
       fintekkers.requests.util.lock.LockResponseProto result = new fintekkers.requests.util.lock.LockResponseProto(this);
       result.objectClass_ = objectClass_;
       result.version_ = version_;
-      if (createLockRequestBuilder_ == null) {
-        result.createLockRequest_ = createLockRequest_;
+      if (getLockRequestBuilder_ == null) {
+        result.getLockRequest_ = getLockRequest_;
       } else {
-        result.createLockRequest_ = createLockRequestBuilder_.build();
+        result.getLockRequest_ = getLockRequestBuilder_.build();
       }
       if (lockResponseBuilder_ == null) {
         result.lockResponse_ = lockResponse_;
       } else {
         result.lockResponse_ = lockResponseBuilder_.build();
+      }
+      if (errorsOrWarningsBuilder_ == null) {
+        result.errorsOrWarnings_ = errorsOrWarnings_;
+      } else {
+        result.errorsOrWarnings_ = errorsOrWarningsBuilder_.build();
       }
       onBuilt();
       return result;
@@ -592,11 +700,14 @@ private static final long serialVersionUID = 0L;
         version_ = other.version_;
         onChanged();
       }
-      if (other.hasCreateLockRequest()) {
-        mergeCreateLockRequest(other.getCreateLockRequest());
+      if (other.hasGetLockRequest()) {
+        mergeGetLockRequest(other.getGetLockRequest());
       }
       if (other.hasLockResponse()) {
         mergeLockResponse(other.getLockResponse());
+      }
+      if (other.hasErrorsOrWarnings()) {
+        mergeErrorsOrWarnings(other.getErrorsOrWarnings());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -779,150 +890,201 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private fintekkers.requests.util.lock.LockRequestProto createLockRequest_;
+    private fintekkers.requests.util.lock.LockRequestProto getLockRequest_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        fintekkers.requests.util.lock.LockRequestProto, fintekkers.requests.util.lock.LockRequestProto.Builder, fintekkers.requests.util.lock.LockRequestProtoOrBuilder> createLockRequestBuilder_;
+        fintekkers.requests.util.lock.LockRequestProto, fintekkers.requests.util.lock.LockRequestProto.Builder, fintekkers.requests.util.lock.LockRequestProtoOrBuilder> getLockRequestBuilder_;
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
-     * @return Whether the createLockRequest field is set.
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
+     * @return Whether the getLockRequest field is set.
      */
-    public boolean hasCreateLockRequest() {
-      return createLockRequestBuilder_ != null || createLockRequest_ != null;
+    public boolean hasGetLockRequest() {
+      return getLockRequestBuilder_ != null || getLockRequest_ != null;
     }
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
-     * @return The createLockRequest.
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
+     * @return The getLockRequest.
      */
-    public fintekkers.requests.util.lock.LockRequestProto getCreateLockRequest() {
-      if (createLockRequestBuilder_ == null) {
-        return createLockRequest_ == null ? fintekkers.requests.util.lock.LockRequestProto.getDefaultInstance() : createLockRequest_;
+    public fintekkers.requests.util.lock.LockRequestProto getGetLockRequest() {
+      if (getLockRequestBuilder_ == null) {
+        return getLockRequest_ == null ? fintekkers.requests.util.lock.LockRequestProto.getDefaultInstance() : getLockRequest_;
       } else {
-        return createLockRequestBuilder_.getMessage();
+        return getLockRequestBuilder_.getMessage();
       }
     }
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
      */
-    public Builder setCreateLockRequest(fintekkers.requests.util.lock.LockRequestProto value) {
-      if (createLockRequestBuilder_ == null) {
+    public Builder setGetLockRequest(fintekkers.requests.util.lock.LockRequestProto value) {
+      if (getLockRequestBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        createLockRequest_ = value;
+        getLockRequest_ = value;
         onChanged();
       } else {
-        createLockRequestBuilder_.setMessage(value);
+        getLockRequestBuilder_.setMessage(value);
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
      */
-    public Builder setCreateLockRequest(
+    public Builder setGetLockRequest(
         fintekkers.requests.util.lock.LockRequestProto.Builder builderForValue) {
-      if (createLockRequestBuilder_ == null) {
-        createLockRequest_ = builderForValue.build();
+      if (getLockRequestBuilder_ == null) {
+        getLockRequest_ = builderForValue.build();
         onChanged();
       } else {
-        createLockRequestBuilder_.setMessage(builderForValue.build());
+        getLockRequestBuilder_.setMessage(builderForValue.build());
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
      */
-    public Builder mergeCreateLockRequest(fintekkers.requests.util.lock.LockRequestProto value) {
-      if (createLockRequestBuilder_ == null) {
-        if (createLockRequest_ != null) {
-          createLockRequest_ =
-            fintekkers.requests.util.lock.LockRequestProto.newBuilder(createLockRequest_).mergeFrom(value).buildPartial();
+    public Builder mergeGetLockRequest(fintekkers.requests.util.lock.LockRequestProto value) {
+      if (getLockRequestBuilder_ == null) {
+        if (getLockRequest_ != null) {
+          getLockRequest_ =
+            fintekkers.requests.util.lock.LockRequestProto.newBuilder(getLockRequest_).mergeFrom(value).buildPartial();
         } else {
-          createLockRequest_ = value;
+          getLockRequest_ = value;
         }
         onChanged();
       } else {
-        createLockRequestBuilder_.mergeFrom(value);
+        getLockRequestBuilder_.mergeFrom(value);
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
      */
-    public Builder clearCreateLockRequest() {
-      if (createLockRequestBuilder_ == null) {
-        createLockRequest_ = null;
+    public Builder clearGetLockRequest() {
+      if (getLockRequestBuilder_ == null) {
+        getLockRequest_ = null;
         onChanged();
       } else {
-        createLockRequest_ = null;
-        createLockRequestBuilder_ = null;
+        getLockRequest_ = null;
+        getLockRequestBuilder_ = null;
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
      */
-    public fintekkers.requests.util.lock.LockRequestProto.Builder getCreateLockRequestBuilder() {
+    public fintekkers.requests.util.lock.LockRequestProto.Builder getGetLockRequestBuilder() {
       
       onChanged();
-      return getCreateLockRequestFieldBuilder().getBuilder();
+      return getGetLockRequestFieldBuilder().getBuilder();
     }
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
      */
-    public fintekkers.requests.util.lock.LockRequestProtoOrBuilder getCreateLockRequestOrBuilder() {
-      if (createLockRequestBuilder_ != null) {
-        return createLockRequestBuilder_.getMessageOrBuilder();
+    public fintekkers.requests.util.lock.LockRequestProtoOrBuilder getGetLockRequestOrBuilder() {
+      if (getLockRequestBuilder_ != null) {
+        return getLockRequestBuilder_.getMessageOrBuilder();
       } else {
-        return createLockRequest_ == null ?
-            fintekkers.requests.util.lock.LockRequestProto.getDefaultInstance() : createLockRequest_;
+        return getLockRequest_ == null ?
+            fintekkers.requests.util.lock.LockRequestProto.getDefaultInstance() : getLockRequest_;
       }
     }
     /**
-     * <code>.fintekkers.requests.util.lock.LockRequestProto create_lock_request = 3;</code>
+     * <pre>
+     *The request that this response is for
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.lock.LockRequestProto get_lock_request = 3;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         fintekkers.requests.util.lock.LockRequestProto, fintekkers.requests.util.lock.LockRequestProto.Builder, fintekkers.requests.util.lock.LockRequestProtoOrBuilder> 
-        getCreateLockRequestFieldBuilder() {
-      if (createLockRequestBuilder_ == null) {
-        createLockRequestBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+        getGetLockRequestFieldBuilder() {
+      if (getLockRequestBuilder_ == null) {
+        getLockRequestBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
             fintekkers.requests.util.lock.LockRequestProto, fintekkers.requests.util.lock.LockRequestProto.Builder, fintekkers.requests.util.lock.LockRequestProtoOrBuilder>(
-                getCreateLockRequest(),
+                getGetLockRequest(),
                 getParentForChildren(),
                 isClean());
-        createLockRequest_ = null;
+        getLockRequest_ = null;
       }
-      return createLockRequestBuilder_;
+      return getLockRequestBuilder_;
     }
 
-    private fintekkers.models.util.lock.NodeStateProto lockResponse_;
+    private fintekkers.models.util.lock.NodeStateOuterClass.NodeState lockResponse_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        fintekkers.models.util.lock.NodeStateProto, fintekkers.models.util.lock.NodeStateProto.Builder, fintekkers.models.util.lock.NodeStateProtoOrBuilder> lockResponseBuilder_;
+        fintekkers.models.util.lock.NodeStateOuterClass.NodeState, fintekkers.models.util.lock.NodeStateOuterClass.NodeState.Builder, fintekkers.models.util.lock.NodeStateOuterClass.NodeStateOrBuilder> lockResponseBuilder_;
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      * @return Whether the lockResponse field is set.
      */
     public boolean hasLockResponse() {
       return lockResponseBuilder_ != null || lockResponse_ != null;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      * @return The lockResponse.
      */
-    public fintekkers.models.util.lock.NodeStateProto getLockResponse() {
+    public fintekkers.models.util.lock.NodeStateOuterClass.NodeState getLockResponse() {
       if (lockResponseBuilder_ == null) {
-        return lockResponse_ == null ? fintekkers.models.util.lock.NodeStateProto.getDefaultInstance() : lockResponse_;
+        return lockResponse_ == null ? fintekkers.models.util.lock.NodeStateOuterClass.NodeState.getDefaultInstance() : lockResponse_;
       } else {
         return lockResponseBuilder_.getMessage();
       }
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      */
-    public Builder setLockResponse(fintekkers.models.util.lock.NodeStateProto value) {
+    public Builder setLockResponse(fintekkers.models.util.lock.NodeStateOuterClass.NodeState value) {
       if (lockResponseBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -936,10 +1098,15 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      */
     public Builder setLockResponse(
-        fintekkers.models.util.lock.NodeStateProto.Builder builderForValue) {
+        fintekkers.models.util.lock.NodeStateOuterClass.NodeState.Builder builderForValue) {
       if (lockResponseBuilder_ == null) {
         lockResponse_ = builderForValue.build();
         onChanged();
@@ -950,13 +1117,18 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      */
-    public Builder mergeLockResponse(fintekkers.models.util.lock.NodeStateProto value) {
+    public Builder mergeLockResponse(fintekkers.models.util.lock.NodeStateOuterClass.NodeState value) {
       if (lockResponseBuilder_ == null) {
         if (lockResponse_ != null) {
           lockResponse_ =
-            fintekkers.models.util.lock.NodeStateProto.newBuilder(lockResponse_).mergeFrom(value).buildPartial();
+            fintekkers.models.util.lock.NodeStateOuterClass.NodeState.newBuilder(lockResponse_).mergeFrom(value).buildPartial();
         } else {
           lockResponse_ = value;
         }
@@ -968,7 +1140,12 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      */
     public Builder clearLockResponse() {
       if (lockResponseBuilder_ == null) {
@@ -982,39 +1159,218 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      */
-    public fintekkers.models.util.lock.NodeStateProto.Builder getLockResponseBuilder() {
+    public fintekkers.models.util.lock.NodeStateOuterClass.NodeState.Builder getLockResponseBuilder() {
       
       onChanged();
       return getLockResponseFieldBuilder().getBuilder();
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      */
-    public fintekkers.models.util.lock.NodeStateProtoOrBuilder getLockResponseOrBuilder() {
+    public fintekkers.models.util.lock.NodeStateOuterClass.NodeStateOrBuilder getLockResponseOrBuilder() {
       if (lockResponseBuilder_ != null) {
         return lockResponseBuilder_.getMessageOrBuilder();
       } else {
         return lockResponse_ == null ?
-            fintekkers.models.util.lock.NodeStateProto.getDefaultInstance() : lockResponse_;
+            fintekkers.models.util.lock.NodeStateOuterClass.NodeState.getDefaultInstance() : lockResponse_;
       }
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto lock_response = 4;</code>
+     * <pre>
+     *Returns the node, and its state that was granted to the caller. If this is empty
+     *then there will be details in the {errors_or_warning} variable
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodeState lock_response = 4;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        fintekkers.models.util.lock.NodeStateProto, fintekkers.models.util.lock.NodeStateProto.Builder, fintekkers.models.util.lock.NodeStateProtoOrBuilder> 
+        fintekkers.models.util.lock.NodeStateOuterClass.NodeState, fintekkers.models.util.lock.NodeStateOuterClass.NodeState.Builder, fintekkers.models.util.lock.NodeStateOuterClass.NodeStateOrBuilder> 
         getLockResponseFieldBuilder() {
       if (lockResponseBuilder_ == null) {
         lockResponseBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            fintekkers.models.util.lock.NodeStateProto, fintekkers.models.util.lock.NodeStateProto.Builder, fintekkers.models.util.lock.NodeStateProtoOrBuilder>(
+            fintekkers.models.util.lock.NodeStateOuterClass.NodeState, fintekkers.models.util.lock.NodeStateOuterClass.NodeState.Builder, fintekkers.models.util.lock.NodeStateOuterClass.NodeStateOrBuilder>(
                 getLockResponse(),
                 getParentForChildren(),
                 isClean());
         lockResponse_ = null;
       }
       return lockResponseBuilder_;
+    }
+
+    private fintekkers.requests.util.errors.Summary.SummaryProto errorsOrWarnings_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        fintekkers.requests.util.errors.Summary.SummaryProto, fintekkers.requests.util.errors.Summary.SummaryProto.Builder, fintekkers.requests.util.errors.Summary.SummaryProtoOrBuilder> errorsOrWarningsBuilder_;
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     * @return Whether the errorsOrWarnings field is set.
+     */
+    public boolean hasErrorsOrWarnings() {
+      return errorsOrWarningsBuilder_ != null || errorsOrWarnings_ != null;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     * @return The errorsOrWarnings.
+     */
+    public fintekkers.requests.util.errors.Summary.SummaryProto getErrorsOrWarnings() {
+      if (errorsOrWarningsBuilder_ == null) {
+        return errorsOrWarnings_ == null ? fintekkers.requests.util.errors.Summary.SummaryProto.getDefaultInstance() : errorsOrWarnings_;
+      } else {
+        return errorsOrWarningsBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder setErrorsOrWarnings(fintekkers.requests.util.errors.Summary.SummaryProto value) {
+      if (errorsOrWarningsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        errorsOrWarnings_ = value;
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder setErrorsOrWarnings(
+        fintekkers.requests.util.errors.Summary.SummaryProto.Builder builderForValue) {
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarnings_ = builderForValue.build();
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder mergeErrorsOrWarnings(fintekkers.requests.util.errors.Summary.SummaryProto value) {
+      if (errorsOrWarningsBuilder_ == null) {
+        if (errorsOrWarnings_ != null) {
+          errorsOrWarnings_ =
+            fintekkers.requests.util.errors.Summary.SummaryProto.newBuilder(errorsOrWarnings_).mergeFrom(value).buildPartial();
+        } else {
+          errorsOrWarnings_ = value;
+        }
+        onChanged();
+      } else {
+        errorsOrWarningsBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public Builder clearErrorsOrWarnings() {
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarnings_ = null;
+        onChanged();
+      } else {
+        errorsOrWarnings_ = null;
+        errorsOrWarningsBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public fintekkers.requests.util.errors.Summary.SummaryProto.Builder getErrorsOrWarningsBuilder() {
+      
+      onChanged();
+      return getErrorsOrWarningsFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    public fintekkers.requests.util.errors.Summary.SummaryProtoOrBuilder getErrorsOrWarningsOrBuilder() {
+      if (errorsOrWarningsBuilder_ != null) {
+        return errorsOrWarningsBuilder_.getMessageOrBuilder();
+      } else {
+        return errorsOrWarnings_ == null ?
+            fintekkers.requests.util.errors.Summary.SummaryProto.getDefaultInstance() : errorsOrWarnings_;
+      }
+    }
+    /**
+     * <pre>
+     *If no errors or warnings in the response then the request was processed successfully without any
+     *contingencies.
+     * </pre>
+     *
+     * <code>.fintekkers.requests.util.errors.SummaryProto errors_or_warnings = 40;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        fintekkers.requests.util.errors.Summary.SummaryProto, fintekkers.requests.util.errors.Summary.SummaryProto.Builder, fintekkers.requests.util.errors.Summary.SummaryProtoOrBuilder> 
+        getErrorsOrWarningsFieldBuilder() {
+      if (errorsOrWarningsBuilder_ == null) {
+        errorsOrWarningsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            fintekkers.requests.util.errors.Summary.SummaryProto, fintekkers.requests.util.errors.Summary.SummaryProto.Builder, fintekkers.requests.util.errors.Summary.SummaryProtoOrBuilder>(
+                getErrorsOrWarnings(),
+                getParentForChildren(),
+                isClean());
+        errorsOrWarnings_ = null;
+      }
+      return errorsOrWarningsBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

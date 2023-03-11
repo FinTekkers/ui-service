@@ -18,7 +18,6 @@ private static final long serialVersionUID = 0L;
   private LockRequestProto() {
     objectClass_ = "";
     version_ = "";
-    operationType_ = 0;
   }
 
   @java.lang.Override
@@ -63,21 +62,15 @@ private static final long serialVersionUID = 0L;
             version_ = s;
             break;
           }
-          case 80: {
-            int rawValue = input.readEnum();
-
-            operationType_ = rawValue;
-            break;
-          }
           case 90: {
-            fintekkers.models.util.lock.NodeStateProto.Builder subBuilder = null;
-            if (nodeState_ != null) {
-              subBuilder = nodeState_.toBuilder();
+            fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.Builder subBuilder = null;
+            if (nodePartition_ != null) {
+              subBuilder = nodePartition_.toBuilder();
             }
-            nodeState_ = input.readMessage(fintekkers.models.util.lock.NodeStateProto.parser(), extensionRegistry);
+            nodePartition_ = input.readMessage(fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom(nodeState_);
-              nodeState_ = subBuilder.buildPartial();
+              subBuilder.mergeFrom(nodePartition_);
+              nodePartition_ = subBuilder.buildPartial();
             }
 
             break;
@@ -190,57 +183,54 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int OPERATION_TYPE_FIELD_NUMBER = 10;
-  private int operationType_;
+  public static final int NODE_PARTITION_FIELD_NUMBER = 11;
+  private fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition nodePartition_;
   /**
    * <pre>
-   *Only supports GET
+   *The namespace/partition to get the lock for. Generally, when requesting a 
+   *lock the caller should only specify the namespace, meaning that its up to 
+   *the lock service to pick a partition for you. 
+   *If the partition number is also specified the lock service will ONLY try
+   *to get the lock on that parition and fail if it the lock is already taken
    * </pre>
    *
-   * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-   * @return The enum numeric value on the wire for operationType.
+   * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
+   * @return Whether the nodePartition field is set.
    */
-  @java.lang.Override public int getOperationTypeValue() {
-    return operationType_;
+  @java.lang.Override
+  public boolean hasNodePartition() {
+    return nodePartition_ != null;
   }
   /**
    * <pre>
-   *Only supports GET
+   *The namespace/partition to get the lock for. Generally, when requesting a 
+   *lock the caller should only specify the namespace, meaning that its up to 
+   *the lock service to pick a partition for you. 
+   *If the partition number is also specified the lock service will ONLY try
+   *to get the lock on that parition and fail if it the lock is already taken
    * </pre>
    *
-   * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-   * @return The operationType.
-   */
-  @java.lang.Override public fintekkers.requests.util.RequestOperationTypeProto getOperationType() {
-    @SuppressWarnings("deprecation")
-    fintekkers.requests.util.RequestOperationTypeProto result = fintekkers.requests.util.RequestOperationTypeProto.valueOf(operationType_);
-    return result == null ? fintekkers.requests.util.RequestOperationTypeProto.UNRECOGNIZED : result;
-  }
-
-  public static final int NODE_STATE_FIELD_NUMBER = 11;
-  private fintekkers.models.util.lock.NodeStateProto nodeState_;
-  /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
-   * @return Whether the nodeState field is set.
+   * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
+   * @return The nodePartition.
    */
   @java.lang.Override
-  public boolean hasNodeState() {
-    return nodeState_ != null;
+  public fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition getNodePartition() {
+    return nodePartition_ == null ? fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.getDefaultInstance() : nodePartition_;
   }
   /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
-   * @return The nodeState.
+   * <pre>
+   *The namespace/partition to get the lock for. Generally, when requesting a 
+   *lock the caller should only specify the namespace, meaning that its up to 
+   *the lock service to pick a partition for you. 
+   *If the partition number is also specified the lock service will ONLY try
+   *to get the lock on that parition and fail if it the lock is already taken
+   * </pre>
+   *
+   * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
    */
   @java.lang.Override
-  public fintekkers.models.util.lock.NodeStateProto getNodeState() {
-    return nodeState_ == null ? fintekkers.models.util.lock.NodeStateProto.getDefaultInstance() : nodeState_;
-  }
-  /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
-   */
-  @java.lang.Override
-  public fintekkers.models.util.lock.NodeStateProtoOrBuilder getNodeStateOrBuilder() {
-    return getNodeState();
+  public fintekkers.models.util.lock.NodePartitionOuterClass.NodePartitionOrBuilder getNodePartitionOrBuilder() {
+    return getNodePartition();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -263,11 +253,8 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
     }
-    if (operationType_ != fintekkers.requests.util.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
-      output.writeEnum(10, operationType_);
-    }
-    if (nodeState_ != null) {
-      output.writeMessage(11, getNodeState());
+    if (nodePartition_ != null) {
+      output.writeMessage(11, getNodePartition());
     }
     unknownFields.writeTo(output);
   }
@@ -284,13 +271,9 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
     }
-    if (operationType_ != fintekkers.requests.util.RequestOperationTypeProto.UNKNOWN_OPERATION.getNumber()) {
+    if (nodePartition_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeEnumSize(10, operationType_);
-    }
-    if (nodeState_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(11, getNodeState());
+        .computeMessageSize(11, getNodePartition());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -311,11 +294,10 @@ private static final long serialVersionUID = 0L;
         .equals(other.getObjectClass())) return false;
     if (!getVersion()
         .equals(other.getVersion())) return false;
-    if (operationType_ != other.operationType_) return false;
-    if (hasNodeState() != other.hasNodeState()) return false;
-    if (hasNodeState()) {
-      if (!getNodeState()
-          .equals(other.getNodeState())) return false;
+    if (hasNodePartition() != other.hasNodePartition()) return false;
+    if (hasNodePartition()) {
+      if (!getNodePartition()
+          .equals(other.getNodePartition())) return false;
     }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
@@ -332,11 +314,9 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getObjectClass().hashCode();
     hash = (37 * hash) + VERSION_FIELD_NUMBER;
     hash = (53 * hash) + getVersion().hashCode();
-    hash = (37 * hash) + OPERATION_TYPE_FIELD_NUMBER;
-    hash = (53 * hash) + operationType_;
-    if (hasNodeState()) {
-      hash = (37 * hash) + NODE_STATE_FIELD_NUMBER;
-      hash = (53 * hash) + getNodeState().hashCode();
+    if (hasNodePartition()) {
+      hash = (37 * hash) + NODE_PARTITION_FIELD_NUMBER;
+      hash = (53 * hash) + getNodePartition().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -475,13 +455,11 @@ private static final long serialVersionUID = 0L;
 
       version_ = "";
 
-      operationType_ = 0;
-
-      if (nodeStateBuilder_ == null) {
-        nodeState_ = null;
+      if (nodePartitionBuilder_ == null) {
+        nodePartition_ = null;
       } else {
-        nodeState_ = null;
-        nodeStateBuilder_ = null;
+        nodePartition_ = null;
+        nodePartitionBuilder_ = null;
       }
       return this;
     }
@@ -511,11 +489,10 @@ private static final long serialVersionUID = 0L;
       fintekkers.requests.util.lock.LockRequestProto result = new fintekkers.requests.util.lock.LockRequestProto(this);
       result.objectClass_ = objectClass_;
       result.version_ = version_;
-      result.operationType_ = operationType_;
-      if (nodeStateBuilder_ == null) {
-        result.nodeState_ = nodeState_;
+      if (nodePartitionBuilder_ == null) {
+        result.nodePartition_ = nodePartition_;
       } else {
-        result.nodeState_ = nodeStateBuilder_.build();
+        result.nodePartition_ = nodePartitionBuilder_.build();
       }
       onBuilt();
       return result;
@@ -573,11 +550,8 @@ private static final long serialVersionUID = 0L;
         version_ = other.version_;
         onChanged();
       }
-      if (other.operationType_ != 0) {
-        setOperationTypeValue(other.getOperationTypeValue());
-      }
-      if (other.hasNodeState()) {
-        mergeNodeState(other.getNodeState());
+      if (other.hasNodePartition()) {
+        mergeNodePartition(other.getNodePartition());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -760,197 +734,195 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private int operationType_ = 0;
-    /**
-     * <pre>
-     *Only supports GET
-     * </pre>
-     *
-     * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-     * @return The enum numeric value on the wire for operationType.
-     */
-    @java.lang.Override public int getOperationTypeValue() {
-      return operationType_;
-    }
-    /**
-     * <pre>
-     *Only supports GET
-     * </pre>
-     *
-     * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-     * @param value The enum numeric value on the wire for operationType to set.
-     * @return This builder for chaining.
-     */
-    public Builder setOperationTypeValue(int value) {
-      
-      operationType_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     *Only supports GET
-     * </pre>
-     *
-     * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-     * @return The operationType.
-     */
-    @java.lang.Override
-    public fintekkers.requests.util.RequestOperationTypeProto getOperationType() {
-      @SuppressWarnings("deprecation")
-      fintekkers.requests.util.RequestOperationTypeProto result = fintekkers.requests.util.RequestOperationTypeProto.valueOf(operationType_);
-      return result == null ? fintekkers.requests.util.RequestOperationTypeProto.UNRECOGNIZED : result;
-    }
-    /**
-     * <pre>
-     *Only supports GET
-     * </pre>
-     *
-     * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-     * @param value The operationType to set.
-     * @return This builder for chaining.
-     */
-    public Builder setOperationType(fintekkers.requests.util.RequestOperationTypeProto value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-      
-      operationType_ = value.getNumber();
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     *Only supports GET
-     * </pre>
-     *
-     * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearOperationType() {
-      
-      operationType_ = 0;
-      onChanged();
-      return this;
-    }
-
-    private fintekkers.models.util.lock.NodeStateProto nodeState_;
+    private fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition nodePartition_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        fintekkers.models.util.lock.NodeStateProto, fintekkers.models.util.lock.NodeStateProto.Builder, fintekkers.models.util.lock.NodeStateProtoOrBuilder> nodeStateBuilder_;
+        fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition, fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.Builder, fintekkers.models.util.lock.NodePartitionOuterClass.NodePartitionOrBuilder> nodePartitionBuilder_;
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
-     * @return Whether the nodeState field is set.
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
+     * @return Whether the nodePartition field is set.
      */
-    public boolean hasNodeState() {
-      return nodeStateBuilder_ != null || nodeState_ != null;
+    public boolean hasNodePartition() {
+      return nodePartitionBuilder_ != null || nodePartition_ != null;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
-     * @return The nodeState.
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
+     * @return The nodePartition.
      */
-    public fintekkers.models.util.lock.NodeStateProto getNodeState() {
-      if (nodeStateBuilder_ == null) {
-        return nodeState_ == null ? fintekkers.models.util.lock.NodeStateProto.getDefaultInstance() : nodeState_;
+    public fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition getNodePartition() {
+      if (nodePartitionBuilder_ == null) {
+        return nodePartition_ == null ? fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.getDefaultInstance() : nodePartition_;
       } else {
-        return nodeStateBuilder_.getMessage();
+        return nodePartitionBuilder_.getMessage();
       }
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
      */
-    public Builder setNodeState(fintekkers.models.util.lock.NodeStateProto value) {
-      if (nodeStateBuilder_ == null) {
+    public Builder setNodePartition(fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition value) {
+      if (nodePartitionBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        nodeState_ = value;
+        nodePartition_ = value;
         onChanged();
       } else {
-        nodeStateBuilder_.setMessage(value);
+        nodePartitionBuilder_.setMessage(value);
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
      */
-    public Builder setNodeState(
-        fintekkers.models.util.lock.NodeStateProto.Builder builderForValue) {
-      if (nodeStateBuilder_ == null) {
-        nodeState_ = builderForValue.build();
+    public Builder setNodePartition(
+        fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.Builder builderForValue) {
+      if (nodePartitionBuilder_ == null) {
+        nodePartition_ = builderForValue.build();
         onChanged();
       } else {
-        nodeStateBuilder_.setMessage(builderForValue.build());
+        nodePartitionBuilder_.setMessage(builderForValue.build());
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
      */
-    public Builder mergeNodeState(fintekkers.models.util.lock.NodeStateProto value) {
-      if (nodeStateBuilder_ == null) {
-        if (nodeState_ != null) {
-          nodeState_ =
-            fintekkers.models.util.lock.NodeStateProto.newBuilder(nodeState_).mergeFrom(value).buildPartial();
+    public Builder mergeNodePartition(fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition value) {
+      if (nodePartitionBuilder_ == null) {
+        if (nodePartition_ != null) {
+          nodePartition_ =
+            fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.newBuilder(nodePartition_).mergeFrom(value).buildPartial();
         } else {
-          nodeState_ = value;
+          nodePartition_ = value;
         }
         onChanged();
       } else {
-        nodeStateBuilder_.mergeFrom(value);
+        nodePartitionBuilder_.mergeFrom(value);
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
      */
-    public Builder clearNodeState() {
-      if (nodeStateBuilder_ == null) {
-        nodeState_ = null;
+    public Builder clearNodePartition() {
+      if (nodePartitionBuilder_ == null) {
+        nodePartition_ = null;
         onChanged();
       } else {
-        nodeState_ = null;
-        nodeStateBuilder_ = null;
+        nodePartition_ = null;
+        nodePartitionBuilder_ = null;
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
      */
-    public fintekkers.models.util.lock.NodeStateProto.Builder getNodeStateBuilder() {
+    public fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.Builder getNodePartitionBuilder() {
       
       onChanged();
-      return getNodeStateFieldBuilder().getBuilder();
+      return getNodePartitionFieldBuilder().getBuilder();
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
      */
-    public fintekkers.models.util.lock.NodeStateProtoOrBuilder getNodeStateOrBuilder() {
-      if (nodeStateBuilder_ != null) {
-        return nodeStateBuilder_.getMessageOrBuilder();
+    public fintekkers.models.util.lock.NodePartitionOuterClass.NodePartitionOrBuilder getNodePartitionOrBuilder() {
+      if (nodePartitionBuilder_ != null) {
+        return nodePartitionBuilder_.getMessageOrBuilder();
       } else {
-        return nodeState_ == null ?
-            fintekkers.models.util.lock.NodeStateProto.getDefaultInstance() : nodeState_;
+        return nodePartition_ == null ?
+            fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.getDefaultInstance() : nodePartition_;
       }
     }
     /**
-     * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
+     * <pre>
+     *The namespace/partition to get the lock for. Generally, when requesting a 
+     *lock the caller should only specify the namespace, meaning that its up to 
+     *the lock service to pick a partition for you. 
+     *If the partition number is also specified the lock service will ONLY try
+     *to get the lock on that parition and fail if it the lock is already taken
+     * </pre>
+     *
+     * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        fintekkers.models.util.lock.NodeStateProto, fintekkers.models.util.lock.NodeStateProto.Builder, fintekkers.models.util.lock.NodeStateProtoOrBuilder> 
-        getNodeStateFieldBuilder() {
-      if (nodeStateBuilder_ == null) {
-        nodeStateBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            fintekkers.models.util.lock.NodeStateProto, fintekkers.models.util.lock.NodeStateProto.Builder, fintekkers.models.util.lock.NodeStateProtoOrBuilder>(
-                getNodeState(),
+        fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition, fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.Builder, fintekkers.models.util.lock.NodePartitionOuterClass.NodePartitionOrBuilder> 
+        getNodePartitionFieldBuilder() {
+      if (nodePartitionBuilder_ == null) {
+        nodePartitionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition, fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition.Builder, fintekkers.models.util.lock.NodePartitionOuterClass.NodePartitionOrBuilder>(
+                getNodePartition(),
                 getParentForChildren(),
                 isClean());
-        nodeState_ = null;
+        nodePartition_ = null;
       }
-      return nodeStateBuilder_;
+      return nodePartitionBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

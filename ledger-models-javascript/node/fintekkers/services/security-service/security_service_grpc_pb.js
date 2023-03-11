@@ -90,7 +90,7 @@ var SecurityService = exports.SecurityService = {
   search: {
     path: '/fintekkers.services.security_service.Security/Search',
     requestStream: false,
-    responseStream: false,
+    responseStream: true,
     requestType: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
     responseType: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto,
     requestSerialize: serialize_fintekkers_requests_security_QuerySecurityRequestProto,

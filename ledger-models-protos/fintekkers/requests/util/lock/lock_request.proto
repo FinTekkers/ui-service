@@ -2,8 +2,7 @@ syntax = "proto3";
 
 package fintekkers.requests.util.lock;
 
-import "fintekkers/models/util/lock/node_state.proto";
-import "fintekkers/requests/util/operation.proto";
+import "fintekkers/models/util/lock/node_partition.proto";
 
 option java_multiple_files = true;
 
@@ -13,10 +12,13 @@ message LockRequestProto {
   string object_class = 1;
   string version = 2;
 
-  //Only supports GET
-  fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;
-
-  fintekkers.models.util.lock.NodeStateProto node_state = 11;
+  //The namespace/partition to get the lock for. Generally, when requesting a 
+  //lock the caller should only specify the namespace, meaning that its up to 
+  //the lock service to pick a partition for you. 
+  //
+  //If the partition number is also specified the lock service will ONLY try
+  //to get the lock on that parition and fail if it the lock is already taken
+  fintekkers.models.util.lock.NodePartition node_partition = 11;
 }
 
 

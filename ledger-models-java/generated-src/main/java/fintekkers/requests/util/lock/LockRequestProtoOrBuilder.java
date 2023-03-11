@@ -33,35 +33,40 @@ public interface LockRequestProtoOrBuilder extends
 
   /**
    * <pre>
-   *Only supports GET
+   *The namespace/partition to get the lock for. Generally, when requesting a 
+   *lock the caller should only specify the namespace, meaning that its up to 
+   *the lock service to pick a partition for you. 
+   *If the partition number is also specified the lock service will ONLY try
+   *to get the lock on that parition and fail if it the lock is already taken
    * </pre>
    *
-   * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-   * @return The enum numeric value on the wire for operationType.
+   * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
+   * @return Whether the nodePartition field is set.
    */
-  int getOperationTypeValue();
+  boolean hasNodePartition();
   /**
    * <pre>
-   *Only supports GET
+   *The namespace/partition to get the lock for. Generally, when requesting a 
+   *lock the caller should only specify the namespace, meaning that its up to 
+   *the lock service to pick a partition for you. 
+   *If the partition number is also specified the lock service will ONLY try
+   *to get the lock on that parition and fail if it the lock is already taken
    * </pre>
    *
-   * <code>.fintekkers.requests.util.RequestOperationTypeProto operation_type = 10;</code>
-   * @return The operationType.
+   * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
+   * @return The nodePartition.
    */
-  fintekkers.requests.util.RequestOperationTypeProto getOperationType();
-
+  fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition getNodePartition();
   /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
-   * @return Whether the nodeState field is set.
+   * <pre>
+   *The namespace/partition to get the lock for. Generally, when requesting a 
+   *lock the caller should only specify the namespace, meaning that its up to 
+   *the lock service to pick a partition for you. 
+   *If the partition number is also specified the lock service will ONLY try
+   *to get the lock on that parition and fail if it the lock is already taken
+   * </pre>
+   *
+   * <code>.fintekkers.models.util.lock.NodePartition node_partition = 11;</code>
    */
-  boolean hasNodeState();
-  /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
-   * @return The nodeState.
-   */
-  fintekkers.models.util.lock.NodeStateProto getNodeState();
-  /**
-   * <code>.fintekkers.models.util.lock.NodeStateProto node_state = 11;</code>
-   */
-  fintekkers.models.util.lock.NodeStateProtoOrBuilder getNodeStateOrBuilder();
+  fintekkers.models.util.lock.NodePartitionOuterClass.NodePartitionOrBuilder getNodePartitionOrBuilder();
 }
