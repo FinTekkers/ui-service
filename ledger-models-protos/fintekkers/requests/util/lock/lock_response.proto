@@ -4,6 +4,7 @@ package fintekkers.requests.util.lock;
 
 import "fintekkers/models/util/lock/node_state.proto";
 import "fintekkers/requests/util/lock/lock_request.proto";
+import "fintekkers/requests/util/errors/summary.proto";
 
 option java_multiple_files = true;
 
@@ -13,9 +14,16 @@ message LockResponseProto {
   string object_class = 1;
   string version = 2;
 
-  LockRequestProto create_lock_request = 3;
+  //The request that this response is for
+  LockRequestProto get_lock_request = 3;
 
-  fintekkers.models.util.lock.NodeStateProto lock_response = 4;
+  //Returns the node, and its state that was granted to the caller. If this is empty
+  //then there will be details in the {errors_or_warning} variable
+  fintekkers.models.util.lock.NodeState lock_response = 4;
+
+  //If no errors or warnings in the response then the request was processed successfully without any
+  //contingencies.
+  util.errors.SummaryProto errors_or_warnings = 40;
 }
 
 

@@ -3,23 +3,23 @@ syntax = "proto3";
 package fintekkers.models.util.lock;
 
 import "fintekkers/models/util/local_timestamp.proto";
+import "fintekkers/models/util/endpoint.proto";
+import "fintekkers/models/util/lock/node_partition.proto";
 
-option java_multiple_files = true;
-option java_outer_classname = "NodeStateProtos";
-
-message NodeStateProto {
+message NodeState {
   string object_class = 1;
   string version = 2;
 
   //Placeholder, will change
-  string partition = 3;
+  fintekkers.models.util.lock.NodePartition partition = 5;
 
-  //Currently a URL, will change
-  string end_point = 4;
+  //The end point that serves responses for this partition
+  fintekkers.models.util.Endpoint end_point = 6;
 
-  //The last time a node was seen
-  fintekkers.models.util.LocalTimestampProto last_seen = 5;
+  //The last time the node for this partition was seen, meaning the 
+  //latest heartbeat
+  fintekkers.models.util.LocalTimestampProto last_seen = 7;
 
   //Whether the lock is expired or not (owned by the lock-service)
-  bool is_expired = 6;
+  bool is_expired = 8;
 }

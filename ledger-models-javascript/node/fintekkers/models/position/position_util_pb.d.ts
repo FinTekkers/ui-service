@@ -8,7 +8,6 @@ import * as jspb from "google-protobuf";
 import * as google_protobuf_any_pb from "google-protobuf/google/protobuf/any_pb";
 import * as fintekkers_models_position_field_pb from "../../../fintekkers/models/position/field_pb";
 import * as fintekkers_models_position_measure_pb from "../../../fintekkers/models/position/measure_pb";
-import * as fintekkers_models_security_identifier_identifier_pb from "../../../fintekkers/models/security/identifier/identifier_pb";
 import * as fintekkers_models_util_decimal_value_pb from "../../../fintekkers/models/util/decimal_value_pb";
 
 export class MeasureMapEntry extends jspb.Message { 
