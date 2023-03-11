@@ -47,6 +47,37 @@ public final class LockGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
+      fintekkers.models.util.lock.NodeStateOuterClass.NodeState> getSubscribeToLockUpdatesMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "SubscribeToLockUpdates",
+      requestType = com.google.protobuf.Empty.class,
+      responseType = fintekkers.models.util.lock.NodeStateOuterClass.NodeState.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+  public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
+      fintekkers.models.util.lock.NodeStateOuterClass.NodeState> getSubscribeToLockUpdatesMethod() {
+    io.grpc.MethodDescriptor<com.google.protobuf.Empty, fintekkers.models.util.lock.NodeStateOuterClass.NodeState> getSubscribeToLockUpdatesMethod;
+    if ((getSubscribeToLockUpdatesMethod = LockGrpc.getSubscribeToLockUpdatesMethod) == null) {
+      synchronized (LockGrpc.class) {
+        if ((getSubscribeToLockUpdatesMethod = LockGrpc.getSubscribeToLockUpdatesMethod) == null) {
+          LockGrpc.getSubscribeToLockUpdatesMethod = getSubscribeToLockUpdatesMethod =
+              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, fintekkers.models.util.lock.NodeStateOuterClass.NodeState>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "SubscribeToLockUpdates"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.google.protobuf.Empty.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  fintekkers.models.util.lock.NodeStateOuterClass.NodeState.getDefaultInstance()))
+              .setSchemaDescriptor(new LockMethodDescriptorSupplier("SubscribeToLockUpdates"))
+              .build();
+        }
+      }
+    }
+    return getSubscribeToLockUpdatesMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
       fintekkers.services.lock_service.LockService.NamespaceList> getListNamespacesMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
@@ -77,27 +108,27 @@ public final class LockGrpc {
     return getListNamespacesMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
+  private static volatile io.grpc.MethodDescriptor<fintekkers.services.lock_service.LockService.NamespaceList,
       fintekkers.services.lock_service.LockService.PartitionsList> getListPartitionsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "ListPartitions",
-      requestType = com.google.protobuf.Empty.class,
+      requestType = fintekkers.services.lock_service.LockService.NamespaceList.class,
       responseType = fintekkers.services.lock_service.LockService.PartitionsList.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
+  public static io.grpc.MethodDescriptor<fintekkers.services.lock_service.LockService.NamespaceList,
       fintekkers.services.lock_service.LockService.PartitionsList> getListPartitionsMethod() {
-    io.grpc.MethodDescriptor<com.google.protobuf.Empty, fintekkers.services.lock_service.LockService.PartitionsList> getListPartitionsMethod;
+    io.grpc.MethodDescriptor<fintekkers.services.lock_service.LockService.NamespaceList, fintekkers.services.lock_service.LockService.PartitionsList> getListPartitionsMethod;
     if ((getListPartitionsMethod = LockGrpc.getListPartitionsMethod) == null) {
       synchronized (LockGrpc.class) {
         if ((getListPartitionsMethod = LockGrpc.getListPartitionsMethod) == null) {
           LockGrpc.getListPartitionsMethod = getListPartitionsMethod =
-              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, fintekkers.services.lock_service.LockService.PartitionsList>newBuilder()
+              io.grpc.MethodDescriptor.<fintekkers.services.lock_service.LockService.NamespaceList, fintekkers.services.lock_service.LockService.PartitionsList>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListPartitions"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.google.protobuf.Empty.getDefaultInstance()))
+                  fintekkers.services.lock_service.LockService.NamespaceList.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.services.lock_service.LockService.PartitionsList.getDefaultInstance()))
               .setSchemaDescriptor(new LockMethodDescriptorSupplier("ListPartitions"))
@@ -106,6 +137,37 @@ public final class LockGrpc {
       }
     }
     return getListPartitionsMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
+      fintekkers.services.lock_service.LockService.NodeStateList> getGetAllPartitionStatusMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetAllPartitionStatus",
+      requestType = com.google.protobuf.Empty.class,
+      responseType = fintekkers.services.lock_service.LockService.NodeStateList.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
+      fintekkers.services.lock_service.LockService.NodeStateList> getGetAllPartitionStatusMethod() {
+    io.grpc.MethodDescriptor<com.google.protobuf.Empty, fintekkers.services.lock_service.LockService.NodeStateList> getGetAllPartitionStatusMethod;
+    if ((getGetAllPartitionStatusMethod = LockGrpc.getGetAllPartitionStatusMethod) == null) {
+      synchronized (LockGrpc.class) {
+        if ((getGetAllPartitionStatusMethod = LockGrpc.getGetAllPartitionStatusMethod) == null) {
+          LockGrpc.getGetAllPartitionStatusMethod = getGetAllPartitionStatusMethod =
+              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, fintekkers.services.lock_service.LockService.NodeStateList>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetAllPartitionStatus"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.google.protobuf.Empty.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  fintekkers.services.lock_service.LockService.NodeStateList.getDefaultInstance()))
+              .setSchemaDescriptor(new LockMethodDescriptorSupplier("GetAllPartitionStatus"))
+              .build();
+        }
+      }
+    }
+    return getGetAllPartitionStatusMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition,
@@ -200,8 +262,19 @@ public final class LockGrpc {
 
     /**
      * <pre>
-     *In: Nothing
-     *Out: just a list of strings?
+     *Streams any change in lock owner for any namespace/partition to the subscriber. 
+     *Heartbeat updates are not streamed to subscribers. If a subsciber wants to build an in-memory cache of parition state
+     *they should first subscribe to lock updates, then query the G
+     * </pre>
+     */
+    public void subscribeToLockUpdates(com.google.protobuf.Empty request,
+        io.grpc.stub.StreamObserver<fintekkers.models.util.lock.NodeStateOuterClass.NodeState> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSubscribeToLockUpdatesMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
+     *Lists the possible namespaces
      * </pre>
      */
     public void listNamespaces(com.google.protobuf.Empty request,
@@ -211,13 +284,22 @@ public final class LockGrpc {
 
     /**
      * <pre>
-     *In: namespace string
-     *OUt: just a list of parition ids?
+     *Lists all partitions for the given list of namespaces
      * </pre>
      */
-    public void listPartitions(com.google.protobuf.Empty request,
+    public void listPartitions(fintekkers.services.lock_service.LockService.NamespaceList request,
         io.grpc.stub.StreamObserver<fintekkers.services.lock_service.LockService.PartitionsList> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListPartitionsMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
+     *Returns the current status of all nodes, across all namespaces and partitions.
+     * </pre>
+     */
+    public void getAllPartitionStatus(com.google.protobuf.Empty request,
+        io.grpc.stub.StreamObserver<fintekkers.services.lock_service.LockService.NodeStateList> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetAllPartitionStatusMethod(), responseObserver);
     }
 
     /**
@@ -240,6 +322,13 @@ public final class LockGrpc {
                 fintekkers.requests.util.lock.LockResponseProto>(
                   this, METHODID_CLAIM_LOCK)))
           .addMethod(
+            getSubscribeToLockUpdatesMethod(),
+            io.grpc.stub.ServerCalls.asyncServerStreamingCall(
+              new MethodHandlers<
+                com.google.protobuf.Empty,
+                fintekkers.models.util.lock.NodeStateOuterClass.NodeState>(
+                  this, METHODID_SUBSCRIBE_TO_LOCK_UPDATES)))
+          .addMethod(
             getListNamespacesMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
@@ -250,9 +339,16 @@ public final class LockGrpc {
             getListPartitionsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                com.google.protobuf.Empty,
+                fintekkers.services.lock_service.LockService.NamespaceList,
                 fintekkers.services.lock_service.LockService.PartitionsList>(
                   this, METHODID_LIST_PARTITIONS)))
+          .addMethod(
+            getGetAllPartitionStatusMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                com.google.protobuf.Empty,
+                fintekkers.services.lock_service.LockService.NodeStateList>(
+                  this, METHODID_GET_ALL_PARTITION_STATUS)))
           .addMethod(
             getGetPartitionStatusMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -292,8 +388,20 @@ public final class LockGrpc {
 
     /**
      * <pre>
-     *In: Nothing
-     *Out: just a list of strings?
+     *Streams any change in lock owner for any namespace/partition to the subscriber. 
+     *Heartbeat updates are not streamed to subscribers. If a subsciber wants to build an in-memory cache of parition state
+     *they should first subscribe to lock updates, then query the G
+     * </pre>
+     */
+    public void subscribeToLockUpdates(com.google.protobuf.Empty request,
+        io.grpc.stub.StreamObserver<fintekkers.models.util.lock.NodeStateOuterClass.NodeState> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncServerStreamingCall(
+          getChannel().newCall(getSubscribeToLockUpdatesMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     *Lists the possible namespaces
      * </pre>
      */
     public void listNamespaces(com.google.protobuf.Empty request,
@@ -304,14 +412,24 @@ public final class LockGrpc {
 
     /**
      * <pre>
-     *In: namespace string
-     *OUt: just a list of parition ids?
+     *Lists all partitions for the given list of namespaces
      * </pre>
      */
-    public void listPartitions(com.google.protobuf.Empty request,
+    public void listPartitions(fintekkers.services.lock_service.LockService.NamespaceList request,
         io.grpc.stub.StreamObserver<fintekkers.services.lock_service.LockService.PartitionsList> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListPartitionsMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     *Returns the current status of all nodes, across all namespaces and partitions.
+     * </pre>
+     */
+    public void getAllPartitionStatus(com.google.protobuf.Empty request,
+        io.grpc.stub.StreamObserver<fintekkers.services.lock_service.LockService.NodeStateList> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getGetAllPartitionStatusMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -353,8 +471,20 @@ public final class LockGrpc {
 
     /**
      * <pre>
-     *In: Nothing
-     *Out: just a list of strings?
+     *Streams any change in lock owner for any namespace/partition to the subscriber. 
+     *Heartbeat updates are not streamed to subscribers. If a subsciber wants to build an in-memory cache of parition state
+     *they should first subscribe to lock updates, then query the G
+     * </pre>
+     */
+    public java.util.Iterator<fintekkers.models.util.lock.NodeStateOuterClass.NodeState> subscribeToLockUpdates(
+        com.google.protobuf.Empty request) {
+      return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
+          getChannel(), getSubscribeToLockUpdatesMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     *Lists the possible namespaces
      * </pre>
      */
     public fintekkers.services.lock_service.LockService.NamespaceList listNamespaces(com.google.protobuf.Empty request) {
@@ -364,13 +494,22 @@ public final class LockGrpc {
 
     /**
      * <pre>
-     *In: namespace string
-     *OUt: just a list of parition ids?
+     *Lists all partitions for the given list of namespaces
      * </pre>
      */
-    public fintekkers.services.lock_service.LockService.PartitionsList listPartitions(com.google.protobuf.Empty request) {
+    public fintekkers.services.lock_service.LockService.PartitionsList listPartitions(fintekkers.services.lock_service.LockService.NamespaceList request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getListPartitionsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     *Returns the current status of all nodes, across all namespaces and partitions.
+     * </pre>
+     */
+    public fintekkers.services.lock_service.LockService.NodeStateList getAllPartitionStatus(com.google.protobuf.Empty request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetAllPartitionStatusMethod(), getCallOptions(), request);
     }
 
     /**
@@ -412,8 +551,7 @@ public final class LockGrpc {
 
     /**
      * <pre>
-     *In: Nothing
-     *Out: just a list of strings?
+     *Lists the possible namespaces
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<fintekkers.services.lock_service.LockService.NamespaceList> listNamespaces(
@@ -424,14 +562,24 @@ public final class LockGrpc {
 
     /**
      * <pre>
-     *In: namespace string
-     *OUt: just a list of parition ids?
+     *Lists all partitions for the given list of namespaces
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<fintekkers.services.lock_service.LockService.PartitionsList> listPartitions(
-        com.google.protobuf.Empty request) {
+        fintekkers.services.lock_service.LockService.NamespaceList request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListPartitionsMethod(), getCallOptions()), request);
+    }
+
+    /**
+     * <pre>
+     *Returns the current status of all nodes, across all namespaces and partitions.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.services.lock_service.LockService.NodeStateList> getAllPartitionStatus(
+        com.google.protobuf.Empty request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetAllPartitionStatusMethod(), getCallOptions()), request);
     }
 
     /**
@@ -447,9 +595,11 @@ public final class LockGrpc {
   }
 
   private static final int METHODID_CLAIM_LOCK = 0;
-  private static final int METHODID_LIST_NAMESPACES = 1;
-  private static final int METHODID_LIST_PARTITIONS = 2;
-  private static final int METHODID_GET_PARTITION_STATUS = 3;
+  private static final int METHODID_SUBSCRIBE_TO_LOCK_UPDATES = 1;
+  private static final int METHODID_LIST_NAMESPACES = 2;
+  private static final int METHODID_LIST_PARTITIONS = 3;
+  private static final int METHODID_GET_ALL_PARTITION_STATUS = 4;
+  private static final int METHODID_GET_PARTITION_STATUS = 5;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -472,13 +622,21 @@ public final class LockGrpc {
           serviceImpl.claimLock((fintekkers.requests.util.lock.LockRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.util.lock.LockResponseProto>) responseObserver);
           break;
+        case METHODID_SUBSCRIBE_TO_LOCK_UPDATES:
+          serviceImpl.subscribeToLockUpdates((com.google.protobuf.Empty) request,
+              (io.grpc.stub.StreamObserver<fintekkers.models.util.lock.NodeStateOuterClass.NodeState>) responseObserver);
+          break;
         case METHODID_LIST_NAMESPACES:
           serviceImpl.listNamespaces((com.google.protobuf.Empty) request,
               (io.grpc.stub.StreamObserver<fintekkers.services.lock_service.LockService.NamespaceList>) responseObserver);
           break;
         case METHODID_LIST_PARTITIONS:
-          serviceImpl.listPartitions((com.google.protobuf.Empty) request,
+          serviceImpl.listPartitions((fintekkers.services.lock_service.LockService.NamespaceList) request,
               (io.grpc.stub.StreamObserver<fintekkers.services.lock_service.LockService.PartitionsList>) responseObserver);
+          break;
+        case METHODID_GET_ALL_PARTITION_STATUS:
+          serviceImpl.getAllPartitionStatus((com.google.protobuf.Empty) request,
+              (io.grpc.stub.StreamObserver<fintekkers.services.lock_service.LockService.NodeStateList>) responseObserver);
           break;
         case METHODID_GET_PARTITION_STATUS:
           serviceImpl.getPartitionStatus((fintekkers.models.util.lock.NodePartitionOuterClass.NodePartition) request,
@@ -546,8 +704,10 @@ public final class LockGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new LockFileDescriptorSupplier())
               .addMethod(getClaimLockMethod())
+              .addMethod(getSubscribeToLockUpdatesMethod())
               .addMethod(getListNamespacesMethod())
               .addMethod(getListPartitionsMethod())
+              .addMethod(getGetAllPartitionStatusMethod())
               .addMethod(getGetPartitionStatusMethod())
               .build();
         }

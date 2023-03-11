@@ -34,10 +34,10 @@ export namespace NamespaceList {
 }
 
 export class PartitionsList extends jspb.Message { 
-    clearNamespacesList(): void;
-    getNamespacesList(): Array<fintekkers_models_util_lock_node_partition_pb.NodePartition>;
-    setNamespacesList(value: Array<fintekkers_models_util_lock_node_partition_pb.NodePartition>): PartitionsList;
-    addNamespaces(value?: fintekkers_models_util_lock_node_partition_pb.NodePartition, index?: number): fintekkers_models_util_lock_node_partition_pb.NodePartition;
+    clearPartitionsList(): void;
+    getPartitionsList(): Array<fintekkers_models_util_lock_node_partition_pb.NodePartition>;
+    setPartitionsList(value: Array<fintekkers_models_util_lock_node_partition_pb.NodePartition>): PartitionsList;
+    addPartitions(value?: fintekkers_models_util_lock_node_partition_pb.NodePartition, index?: number): fintekkers_models_util_lock_node_partition_pb.NodePartition;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): PartitionsList.AsObject;
@@ -51,6 +51,28 @@ export class PartitionsList extends jspb.Message {
 
 export namespace PartitionsList {
     export type AsObject = {
-        namespacesList: Array<fintekkers_models_util_lock_node_partition_pb.NodePartition.AsObject>,
+        partitionsList: Array<fintekkers_models_util_lock_node_partition_pb.NodePartition.AsObject>,
+    }
+}
+
+export class NodeStateList extends jspb.Message { 
+    clearNodesList(): void;
+    getNodesList(): Array<fintekkers_models_util_lock_node_state_pb.NodeState>;
+    setNodesList(value: Array<fintekkers_models_util_lock_node_state_pb.NodeState>): NodeStateList;
+    addNodes(value?: fintekkers_models_util_lock_node_state_pb.NodeState, index?: number): fintekkers_models_util_lock_node_state_pb.NodeState;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): NodeStateList.AsObject;
+    static toObject(includeInstance: boolean, msg: NodeStateList): NodeStateList.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: NodeStateList, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): NodeStateList;
+    static deserializeBinaryFromReader(message: NodeStateList, reader: jspb.BinaryReader): NodeStateList;
+}
+
+export namespace NodeStateList {
+    export type AsObject = {
+        nodesList: Array<fintekkers_models_util_lock_node_state_pb.NodeState.AsObject>,
     }
 }

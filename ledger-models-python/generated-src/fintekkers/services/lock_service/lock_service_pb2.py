@@ -18,7 +18,7 @@ from fintekkers.models.util.lock import node_partition_pb2 as fintekkers_dot_mod
 from fintekkers.models.util.lock import node_state_pb2 as fintekkers_dot_models_dot_util_dot_lock_dot_node__state__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n3fintekkers/services/lock-service/lock_service.proto\x12 fintekkers.services.lock_service\x1a\x1bgoogle/protobuf/empty.proto\x1a\x30\x66intekkers/requests/util/lock/lock_request.proto\x1a\x31\x66intekkers/requests/util/lock/lock_response.proto\x1a\x30\x66intekkers/models/util/lock/node_partition.proto\x1a,fintekkers/models/util/lock/node_state.proto\"#\n\rNamespaceList\x12\x12\n\nnamespaces\x18\x01 \x03(\t\"P\n\x0ePartitionsList\x12>\n\nnamespaces\x18\x01 \x03(\x0b\x32*.fintekkers.models.util.lock.NodePartition2\x97\x03\n\x04Lock\x12n\n\tClaimLock\x12/.fintekkers.requests.util.lock.LockRequestProto\x1a\x30.fintekkers.requests.util.lock.LockResponseProto\x12Y\n\x0eListNamespaces\x12\x16.google.protobuf.Empty\x1a/.fintekkers.services.lock_service.NamespaceList\x12Z\n\x0eListPartitions\x12\x16.google.protobuf.Empty\x1a\x30.fintekkers.services.lock_service.PartitionsList\x12h\n\x12GetPartitionStatus\x12*.fintekkers.models.util.lock.NodePartition\x1a&.fintekkers.models.util.lock.NodeStateB\x03\x88\x01\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n3fintekkers/services/lock-service/lock_service.proto\x12 fintekkers.services.lock_service\x1a\x1bgoogle/protobuf/empty.proto\x1a\x30\x66intekkers/requests/util/lock/lock_request.proto\x1a\x31\x66intekkers/requests/util/lock/lock_response.proto\x1a\x30\x66intekkers/models/util/lock/node_partition.proto\x1a,fintekkers/models/util/lock/node_state.proto\"#\n\rNamespaceList\x12\x12\n\nnamespaces\x18\x01 \x03(\t\"P\n\x0ePartitionsList\x12>\n\npartitions\x18\x01 \x03(\x0b\x32*.fintekkers.models.util.lock.NodePartition\"F\n\rNodeStateList\x12\x35\n\x05nodes\x18\x01 \x03(\x0b\x32&.fintekkers.models.util.lock.NodeState2\xee\x04\n\x04Lock\x12n\n\tClaimLock\x12/.fintekkers.requests.util.lock.LockRequestProto\x1a\x30.fintekkers.requests.util.lock.LockResponseProto\x12Z\n\x16SubscribeToLockUpdates\x12\x16.google.protobuf.Empty\x1a&.fintekkers.models.util.lock.NodeState0\x01\x12Y\n\x0eListNamespaces\x12\x16.google.protobuf.Empty\x1a/.fintekkers.services.lock_service.NamespaceList\x12s\n\x0eListPartitions\x12/.fintekkers.services.lock_service.NamespaceList\x1a\x30.fintekkers.services.lock_service.PartitionsList\x12`\n\x15GetAllPartitionStatus\x12\x16.google.protobuf.Empty\x1a/.fintekkers.services.lock_service.NodeStateList\x12h\n\x12GetPartitionStatus\x12*.fintekkers.models.util.lock.NodePartition\x1a&.fintekkers.models.util.lock.NodeStateB\x03\x88\x01\x01\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'fintekkers.services.lock_service.lock_service_pb2', globals())
@@ -30,6 +30,8 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _NAMESPACELIST._serialized_end=350
   _PARTITIONSLIST._serialized_start=352
   _PARTITIONSLIST._serialized_end=432
-  _LOCK._serialized_start=435
-  _LOCK._serialized_end=842
+  _NODESTATELIST._serialized_start=434
+  _NODESTATELIST._serialized_end=504
+  _LOCK._serialized_start=507
+  _LOCK._serialized_end=1129
 # @@protoc_insertion_point(module_scope)

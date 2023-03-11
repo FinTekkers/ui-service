@@ -20,6 +20,11 @@ export class LockClient {
                response: fintekkers_requests_util_lock_lock_response_pb.LockResponseProto) => void
   ): grpcWeb.ClientReadableStream<fintekkers_requests_util_lock_lock_response_pb.LockResponseProto>;
 
+  subscribeToLockUpdates(
+    request: google_protobuf_empty_pb.Empty,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<fintekkers_models_util_lock_node_state_pb.NodeState>;
+
   listNamespaces(
     request: google_protobuf_empty_pb.Empty,
     metadata: grpcWeb.Metadata | undefined,
@@ -28,11 +33,18 @@ export class LockClient {
   ): grpcWeb.ClientReadableStream<fintekkers_services_lock$service_lock_service_pb.NamespaceList>;
 
   listPartitions(
-    request: google_protobuf_empty_pb.Empty,
+    request: fintekkers_services_lock$service_lock_service_pb.NamespaceList,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
                response: fintekkers_services_lock$service_lock_service_pb.PartitionsList) => void
   ): grpcWeb.ClientReadableStream<fintekkers_services_lock$service_lock_service_pb.PartitionsList>;
+
+  getAllPartitionStatus(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: fintekkers_services_lock$service_lock_service_pb.NodeStateList) => void
+  ): grpcWeb.ClientReadableStream<fintekkers_services_lock$service_lock_service_pb.NodeStateList>;
 
   getPartitionStatus(
     request: fintekkers_models_util_lock_node_partition_pb.NodePartition,
@@ -53,15 +65,25 @@ export class LockPromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_util_lock_lock_response_pb.LockResponseProto>;
 
+  subscribeToLockUpdates(
+    request: google_protobuf_empty_pb.Empty,
+    metadata?: grpcWeb.Metadata
+  ): grpcWeb.ClientReadableStream<fintekkers_models_util_lock_node_state_pb.NodeState>;
+
   listNamespaces(
     request: google_protobuf_empty_pb.Empty,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_services_lock$service_lock_service_pb.NamespaceList>;
 
   listPartitions(
-    request: google_protobuf_empty_pb.Empty,
+    request: fintekkers_services_lock$service_lock_service_pb.NamespaceList,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_services_lock$service_lock_service_pb.PartitionsList>;
+
+  getAllPartitionStatus(
+    request: google_protobuf_empty_pb.Empty,
+    metadata?: grpcWeb.Metadata
+  ): Promise<fintekkers_services_lock$service_lock_service_pb.NodeStateList>;
 
   getPartitionStatus(
     request: fintekkers_models_util_lock_node_partition_pb.NodePartition,

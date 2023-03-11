@@ -64,6 +64,17 @@ function deserialize_fintekkers_services_lock_service_NamespaceList(buffer_arg) 
   return fintekkers_services_lock$service_lock_service_pb.NamespaceList.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_fintekkers_services_lock_service_NodeStateList(arg) {
+  if (!(arg instanceof fintekkers_services_lock$service_lock_service_pb.NodeStateList)) {
+    throw new Error('Expected argument of type fintekkers.services.lock_service.NodeStateList');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_fintekkers_services_lock_service_NodeStateList(buffer_arg) {
+  return fintekkers_services_lock$service_lock_service_pb.NodeStateList.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_fintekkers_services_lock_service_PartitionsList(arg) {
   if (!(arg instanceof fintekkers_services_lock$service_lock_service_pb.PartitionsList)) {
     throw new Error('Expected argument of type fintekkers.services.lock_service.PartitionsList');
@@ -101,8 +112,21 @@ claimLock: {
     responseSerialize: serialize_fintekkers_requests_util_lock_LockResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_util_lock_LockResponseProto,
   },
-  // In: Nothing
-// Out: just a list of strings?
+  // Streams any change in lock owner for any namespace/partition to the subscriber. 
+// Heartbeat updates are not streamed to subscribers. If a subsciber wants to build an in-memory cache of parition state
+// they should first subscribe to lock updates, then query the G
+subscribeToLockUpdates: {
+    path: '/fintekkers.services.lock_service.Lock/SubscribeToLockUpdates',
+    requestStream: false,
+    responseStream: true,
+    requestType: google_protobuf_empty_pb.Empty,
+    responseType: fintekkers_models_util_lock_node_state_pb.NodeState,
+    requestSerialize: serialize_google_protobuf_Empty,
+    requestDeserialize: deserialize_google_protobuf_Empty,
+    responseSerialize: serialize_fintekkers_models_util_lock_NodeState,
+    responseDeserialize: deserialize_fintekkers_models_util_lock_NodeState,
+  },
+  // Lists the possible namespaces
 listNamespaces: {
     path: '/fintekkers.services.lock_service.Lock/ListNamespaces',
     requestStream: false,
@@ -114,18 +138,29 @@ listNamespaces: {
     responseSerialize: serialize_fintekkers_services_lock_service_NamespaceList,
     responseDeserialize: deserialize_fintekkers_services_lock_service_NamespaceList,
   },
-  // In: namespace string
-// OUt: just a list of parition ids?
+  // Lists all partitions for the given list of namespaces
 listPartitions: {
     path: '/fintekkers.services.lock_service.Lock/ListPartitions',
     requestStream: false,
     responseStream: false,
-    requestType: google_protobuf_empty_pb.Empty,
+    requestType: fintekkers_services_lock$service_lock_service_pb.NamespaceList,
     responseType: fintekkers_services_lock$service_lock_service_pb.PartitionsList,
-    requestSerialize: serialize_google_protobuf_Empty,
-    requestDeserialize: deserialize_google_protobuf_Empty,
+    requestSerialize: serialize_fintekkers_services_lock_service_NamespaceList,
+    requestDeserialize: deserialize_fintekkers_services_lock_service_NamespaceList,
     responseSerialize: serialize_fintekkers_services_lock_service_PartitionsList,
     responseDeserialize: deserialize_fintekkers_services_lock_service_PartitionsList,
+  },
+  // Returns the current status of all nodes, across all namespaces and partitions.
+getAllPartitionStatus: {
+    path: '/fintekkers.services.lock_service.Lock/GetAllPartitionStatus',
+    requestStream: false,
+    responseStream: false,
+    requestType: google_protobuf_empty_pb.Empty,
+    responseType: fintekkers_services_lock$service_lock_service_pb.NodeStateList,
+    requestSerialize: serialize_google_protobuf_Empty,
+    requestDeserialize: deserialize_google_protobuf_Empty,
+    responseSerialize: serialize_fintekkers_services_lock_service_NodeStateList,
+    responseDeserialize: deserialize_fintekkers_services_lock_service_NodeStateList,
   },
   // In namespace / parition
 getPartitionStatus: {

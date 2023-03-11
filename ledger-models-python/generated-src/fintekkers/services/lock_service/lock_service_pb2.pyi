@@ -16,8 +16,14 @@ class NamespaceList(_message.Message):
     namespaces: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, namespaces: _Optional[_Iterable[str]] = ...) -> None: ...
 
+class NodeStateList(_message.Message):
+    __slots__ = ["nodes"]
+    NODES_FIELD_NUMBER: _ClassVar[int]
+    nodes: _containers.RepeatedCompositeFieldContainer[_node_state_pb2.NodeState]
+    def __init__(self, nodes: _Optional[_Iterable[_Union[_node_state_pb2.NodeState, _Mapping]]] = ...) -> None: ...
+
 class PartitionsList(_message.Message):
-    __slots__ = ["namespaces"]
-    NAMESPACES_FIELD_NUMBER: _ClassVar[int]
-    namespaces: _containers.RepeatedCompositeFieldContainer[_node_partition_pb2.NodePartition]
-    def __init__(self, namespaces: _Optional[_Iterable[_Union[_node_partition_pb2.NodePartition, _Mapping]]] = ...) -> None: ...
+    __slots__ = ["partitions"]
+    PARTITIONS_FIELD_NUMBER: _ClassVar[int]
+    partitions: _containers.RepeatedCompositeFieldContainer[_node_partition_pb2.NodePartition]
+    def __init__(self, partitions: _Optional[_Iterable[_Union[_node_partition_pb2.NodePartition, _Mapping]]] = ...) -> None: ...
