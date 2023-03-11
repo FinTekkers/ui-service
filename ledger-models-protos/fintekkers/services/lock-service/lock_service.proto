@@ -18,7 +18,11 @@ message NamespaceList {
 }
 
 message PartitionsList {
-    repeated fintekkers.models.util.lock.NodePartition namespaces = 1;
+    repeated fintekkers.models.util.lock.NodePartition partitions = 1;
+}
+
+message NodeStateList {
+    repeated fintekkers.models.util.lock.NodeState nodes = 1;
 }
 
 service Lock {
@@ -26,13 +30,19 @@ service Lock {
     // See {fintekkers.request.util.lock.LockRequestProto} for details
     rpc ClaimLock (fintekkers.requests.util.lock.LockRequestProto) returns (fintekkers.requests.util.lock.LockResponseProto);
 
-    //In: Nothing
-    //Out: just a list of strings?
+    //Streams any change in lock owner for any namespace/partition to the subscriber. 
+    //Heartbeat updates are not streamed to subscribers. If a subsciber wants to build an in-memory cache of parition state
+    //they should first subscribe to lock updates, then query the G
+    rpc SubscribeToLockUpdates (google.protobuf.Empty) returns (stream fintekkers.models.util.lock.NodeState);
+
+    //Lists the possible namespaces
     rpc ListNamespaces (google.protobuf.Empty) returns (NamespaceList);
 
-    //In: namespace string
-    //OUt: just a list of parition ids?
-    rpc ListPartitions (google.protobuf.Empty) returns (PartitionsList);
+    //Lists all partitions for the given list of namespaces
+    rpc ListPartitions (NamespaceList) returns (PartitionsList);
+
+    //Returns the current status of all nodes, across all namespaces and partitions.
+    rpc GetAllPartitionStatus (google.protobuf.Empty) returns (NodeStateList);
 
     //In namespace / parition
     rpc GetPartitionStatus (fintekkers.models.util.lock.NodePartition) returns (fintekkers.models.util.lock.NodeState);

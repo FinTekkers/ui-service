@@ -151,6 +151,62 @@ proto.fintekkers.services.lock_service.LockPromiseClient.prototype.claimLock =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.google.protobuf.Empty,
+ *   !proto.fintekkers.models.util.lock.NodeState>}
+ */
+const methodDescriptor_Lock_SubscribeToLockUpdates = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.lock_service.Lock/SubscribeToLockUpdates',
+  grpc.web.MethodType.SERVER_STREAMING,
+  google_protobuf_empty_pb.Empty,
+  fintekkers_models_util_lock_node_state_pb.NodeState,
+  /**
+   * @param {!proto.google.protobuf.Empty} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  fintekkers_models_util_lock_node_state_pb.NodeState.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.models.util.lock.NodeState>}
+ *     The XHR Node Readable Stream
+ */
+proto.fintekkers.services.lock_service.LockClient.prototype.subscribeToLockUpdates =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/fintekkers.services.lock_service.Lock/SubscribeToLockUpdates',
+      request,
+      metadata || {},
+      methodDescriptor_Lock_SubscribeToLockUpdates);
+};
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.models.util.lock.NodeState>}
+ *     The XHR Node Readable Stream
+ */
+proto.fintekkers.services.lock_service.LockPromiseClient.prototype.subscribeToLockUpdates =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/fintekkers.services.lock_service.Lock/SubscribeToLockUpdates',
+      request,
+      metadata || {},
+      methodDescriptor_Lock_SubscribeToLockUpdates);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.google.protobuf.Empty,
  *   !proto.fintekkers.services.lock_service.NamespaceList>}
  */
 const methodDescriptor_Lock_ListNamespaces = new grpc.web.MethodDescriptor(
@@ -211,16 +267,16 @@ proto.fintekkers.services.lock_service.LockPromiseClient.prototype.listNamespace
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.google.protobuf.Empty,
+ *   !proto.fintekkers.services.lock_service.NamespaceList,
  *   !proto.fintekkers.services.lock_service.PartitionsList>}
  */
 const methodDescriptor_Lock_ListPartitions = new grpc.web.MethodDescriptor(
   '/fintekkers.services.lock_service.Lock/ListPartitions',
   grpc.web.MethodType.UNARY,
-  google_protobuf_empty_pb.Empty,
+  proto.fintekkers.services.lock_service.NamespaceList,
   proto.fintekkers.services.lock_service.PartitionsList,
   /**
-   * @param {!proto.google.protobuf.Empty} request
+   * @param {!proto.fintekkers.services.lock_service.NamespaceList} request
    * @return {!Uint8Array}
    */
   function(request) {
@@ -231,7 +287,7 @@ const methodDescriptor_Lock_ListPartitions = new grpc.web.MethodDescriptor(
 
 
 /**
- * @param {!proto.google.protobuf.Empty} request The
+ * @param {!proto.fintekkers.services.lock_service.NamespaceList} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
@@ -252,7 +308,7 @@ proto.fintekkers.services.lock_service.LockClient.prototype.listPartitions =
 
 
 /**
- * @param {!proto.google.protobuf.Empty} request The
+ * @param {!proto.fintekkers.services.lock_service.NamespaceList} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
@@ -266,6 +322,67 @@ proto.fintekkers.services.lock_service.LockPromiseClient.prototype.listPartition
       request,
       metadata || {},
       methodDescriptor_Lock_ListPartitions);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.google.protobuf.Empty,
+ *   !proto.fintekkers.services.lock_service.NodeStateList>}
+ */
+const methodDescriptor_Lock_GetAllPartitionStatus = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.lock_service.Lock/GetAllPartitionStatus',
+  grpc.web.MethodType.UNARY,
+  google_protobuf_empty_pb.Empty,
+  proto.fintekkers.services.lock_service.NodeStateList,
+  /**
+   * @param {!proto.google.protobuf.Empty} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.fintekkers.services.lock_service.NodeStateList.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.fintekkers.services.lock_service.NodeStateList)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.services.lock_service.NodeStateList>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.fintekkers.services.lock_service.LockClient.prototype.getAllPartitionStatus =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/fintekkers.services.lock_service.Lock/GetAllPartitionStatus',
+      request,
+      metadata || {},
+      methodDescriptor_Lock_GetAllPartitionStatus,
+      callback);
+};
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.fintekkers.services.lock_service.NodeStateList>}
+ *     Promise that resolves to the response
+ */
+proto.fintekkers.services.lock_service.LockPromiseClient.prototype.getAllPartitionStatus =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/fintekkers.services.lock_service.Lock/GetAllPartitionStatus',
+      request,
+      metadata || {},
+      methodDescriptor_Lock_GetAllPartitionStatus);
 };
 
 
