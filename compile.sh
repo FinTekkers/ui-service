@@ -1,14 +1,15 @@
 echo "generating rust protos"
+cd ledger-models-rust
 cargo run --bin gen
 
 echo "generating java protos"
-cd ledger-models-java
+cd ../ledger-models-java
 gradle clean
 gradle build
 
-cd ../ledger-models-protos
 
 echo "generating javascript protos"
+cd ../ledger-models-protos
 # generate web js
 protoc \
     --js_out=import_style=commonjs:../ledger-models-javascript/web/ \
