@@ -1,5 +1,5 @@
 use crate::fintekkers::models::util::DecimalValueProto;
-use crate::fintekkers::wrappers::errors::Error;
+use crate::fintekkers::wrappers::models::utils::errors::Error;
 
 use rust_decimal::Decimal;
 use std::fmt;
