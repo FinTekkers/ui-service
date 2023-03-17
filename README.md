@@ -18,37 +18,22 @@ Goals:
 
 # Proto Package Structure
 
-## proto/protos
+## ledger-models-protos
 
-The golden source protobuf definitions
+The golden source protobuf definitions. These are definitions for serialization. There is a balance between readability 
+and performance. 
 
-## proto/<language>
+APIs and models are schematized, with language specific implementations auto-generated. The goal is to make service 
+communication simple between languages.
 
-e.g. proto/java. Contains auto-generated code from protobuf libraries. YOUR CODE WILL BE OVERWITTEN IN HERE.
+Data modelling gets tough, e.g. a fixed income bond needs a coupon rate, whereas a floating rate bond needs a spread. 
+Logic like this is implemented in language-specific implementations.
 
-# Code Package Structure (Java)
+## ledger-models=<language>
 
-The Java contains a standalone implementation of models. This is to allow for behavioral aspects to be added to 
-models. For example the Transaction.java class has logic for creating cash impacts and 
-maturation children transactions. Behaviors can't be defined in protobuf, so have to be 
-implemented per language. 
-
-This philosophical approach requires great thought to go into data modelling. This is on purpose. Concepts like 
-'strategy' have far-reaching implementation trade-offs that need to be considered at design time.
-
-## src/main/java/Common.Model
-
-Contains packages for different groups of models, with the Java code:
-
-* Portfolio
-* Price
-* Security
-* Strategy
-* TaxLot
-* Transaction
-* Position
-
-All of the above are RawDataModelObjects meaning they are bi-temporal in nature. 
+Contains language specific implementations, including both auto-generated and hand-written code. Protobuf is a technical
+implementation and can be hard to interpret by some developers. Hand-coded wrappers are used to unburden developers 
+from this knowledge, as well as allow for improvements in the serialization formats with minimal impact to clients.
 
 ### Explanation of Bi-temporality
 
@@ -95,9 +80,6 @@ The above philosophy is very important so that we don't end up re-using a techni
 ## Compiling protobufs
 
 Run the contents of compile.sh manually on the command line
-
-## Rust
-If a new model is added it must be exported in lib.rs
 
 ## Publishing
 

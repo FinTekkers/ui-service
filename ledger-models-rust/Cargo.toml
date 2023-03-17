@@ -1,3 +1,5 @@
+build.incremental=false
+
 [package]
 name = "ledger-models"
 version = "0.1.14"
@@ -9,13 +11,12 @@ readme = "ledger-models-rust/README.md" # It is used at https://crates.io/crates
 repository = "https://github.com/fintekkers/ledger-models"
 include = ["Cargo.toml", "**/*.rs"]
 
-
 [[bin]]
 name = "gen"
-path="gen.rs"
+path= "gen.rs"
 
 [lib]
-path = "ledger-models-rust/lib.rs"
+path = "lib.rs"
 
 [dependencies]
 tonic = "0.8.2"
@@ -24,3 +25,5 @@ prost-types = "0.11.2"
 tonic-build = "0.8.2"
 walkdir = "2"
 
+##Used in all calculations. Equivalent of Java BigDecimal implementation
+rust_decimal = "1.29.0"

@@ -1,10 +1,12 @@
+use std::env;
+use std::path::PathBuf;
 use walkdir::WalkDir;
 
 fn main() {
     print!("{}", "Generating Rust code from ledger-models-protos to ledger-models-rust");
 
     //find paths of all proto files
-    let proto_files: Vec<String> = WalkDir::new("ledger-models-protos")
+    let proto_files: Vec<String> = WalkDir::new("../ledger-models-protos")
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| {
@@ -25,13 +27,20 @@ fn main() {
         })
         .collect();
 
+    // for (name, value) in env::vars() {
+    //     println!("{} {}", name, value);
+    // }
+
+    // let descriptor_path = PathBuf::from("../my_descriptor.bin");
+        // .join("my_descriptor.bin");
 
     tonic_build::configure()
         .build_client(true)
         .build_server(true)
-        .out_dir("ledger-models-rust")
+        .out_dir("")
+        // .file_descriptor_set_path(descriptor_path)
         .compile(&proto_files,
-            &["ledger-models-protos"],
+            &["../ledger-models-protos"],
         )
         .unwrap()
 }
