@@ -91,7 +91,6 @@ impl PortfolioProtoBuilder {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -126,6 +125,5 @@ mod test {
         //Check it's 36 chars long and has a hyphen (i.e. its the UUID)
         assert!(proto2.portfolio_name.contains("-"));
         assert_eq!(36, proto2.portfolio_name.len())
-
     }
 }
