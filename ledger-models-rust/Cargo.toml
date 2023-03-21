@@ -1,6 +1,8 @@
+build.incremental=false
+
 [package]
 name = "ledger-models"
-version = "0.1.14"
+version = "0.1.15"
 edition = "2021"
 authors = ["dado0583", "samiam376"]
 license = "Apache-2.0"
@@ -9,13 +11,12 @@ readme = "ledger-models-rust/README.md" # It is used at https://crates.io/crates
 repository = "https://github.com/fintekkers/ledger-models"
 include = ["Cargo.toml", "**/*.rs"]
 
-
 [[bin]]
 name = "gen"
-path="gen.rs"
+path= "gen.rs"
 
 [lib]
-path = "ledger-models-rust/lib.rs"
+path = "lib.rs"
 
 [dependencies]
 tonic = "0.8.2"
@@ -24,3 +25,17 @@ prost-types = "0.11.2"
 tonic-build = "0.8.2"
 walkdir = "2"
 
+##Used in all calculations. Equivalent of Java BigDecimal implementation
+rust_decimal = "1.29.0"
+
+chrono = "0.4.24" #Rust's most popular time package. Used for local date tiems
+chrono-tz = "0.8.1" #Used to parse IANA timezones into offsets (E.g. America/New_York to -5)
+iana-time-zone = "0.1.53" #Used to get the IANA formatted timezone across operating systems (e.g. America/New_York)
+
+[dependencies.uuid]
+version = "1.3.0"
+features = [
+    "v4",
+    #    "v7",
+    #    "js",
+]
