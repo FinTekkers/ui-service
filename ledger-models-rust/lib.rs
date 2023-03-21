@@ -1,4 +1,5 @@
 pub mod fintekkers {
+    pub mod wrappers;
     pub mod models {
         pub mod portfolio {
             include!("fintekkers.models.portfolio.rs");
