@@ -1,4 +1,4 @@
-// package: fintekkers.services.security_service
+// package: fintekkers.services.portfolio_service
 // file: fintekkers/services/portfolio-service/portfolio_service.proto
 
 /* tslint:disable */
