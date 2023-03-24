@@ -66,7 +66,7 @@ function deserialize_fintekkers_requests_util_errors_SummaryProto(buffer_arg) {
 
 var PortfolioService = exports.PortfolioService = {
   createOrUpdate: {
-    path: '/fintekkers.services.security_service.Portfolio/CreateOrUpdate',
+    path: '/fintekkers.services.portfolio_service.Portfolio/CreateOrUpdate',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_portfolio_create_portfolio_request_pb.CreatePortfolioRequestProto,
@@ -77,7 +77,7 @@ var PortfolioService = exports.PortfolioService = {
     responseDeserialize: deserialize_fintekkers_requests_portfolio_CreatePortfolioResponseProto,
   },
   getByIDs: {
-    path: '/fintekkers.services.security_service.Portfolio/GetByIDs',
+    path: '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
@@ -88,7 +88,7 @@ var PortfolioService = exports.PortfolioService = {
     responseDeserialize: deserialize_fintekkers_requests_portfolio_QueryPortfolioResponseProto,
   },
   search: {
-    path: '/fintekkers.services.security_service.Portfolio/Search',
+    path: '/fintekkers.services.portfolio_service.Portfolio/Search',
     requestStream: false,
     responseStream: true,
     requestType: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
@@ -99,7 +99,7 @@ var PortfolioService = exports.PortfolioService = {
     responseDeserialize: deserialize_fintekkers_requests_portfolio_QueryPortfolioResponseProto,
   },
   listIDs: {
-    path: '/fintekkers.services.security_service.Portfolio/ListIDs',
+    path: '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
@@ -110,7 +110,7 @@ var PortfolioService = exports.PortfolioService = {
     responseDeserialize: deserialize_fintekkers_requests_portfolio_QueryPortfolioResponseProto,
   },
   validateCreateOrUpdate: {
-    path: '/fintekkers.services.security_service.Portfolio/ValidateCreateOrUpdate',
+    path: '/fintekkers.services.portfolio_service.Portfolio/ValidateCreateOrUpdate',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_portfolio_create_portfolio_request_pb.CreatePortfolioRequestProto,
@@ -121,7 +121,7 @@ var PortfolioService = exports.PortfolioService = {
     responseDeserialize: deserialize_fintekkers_requests_util_errors_SummaryProto,
   },
   validateQueryRequest: {
-    path: '/fintekkers.services.security_service.Portfolio/ValidateQueryRequest',
+    path: '/fintekkers.services.portfolio_service.Portfolio/ValidateQueryRequest',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,

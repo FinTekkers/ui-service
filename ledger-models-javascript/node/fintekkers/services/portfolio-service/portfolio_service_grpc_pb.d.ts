@@ -1,4 +1,4 @@
-// package: fintekkers.services.security_service
+// package: fintekkers.services.portfolio_service
 // file: fintekkers/services/portfolio-service/portfolio_service.proto
 
 /* tslint:disable */
@@ -22,7 +22,7 @@ interface IPortfolioService extends grpc.ServiceDefinition<grpc.UntypedServiceIm
 }
 
 interface IPortfolioService_ICreateOrUpdate extends grpc.MethodDefinition<fintekkers_requests_portfolio_create_portfolio_request_pb.CreatePortfolioRequestProto, fintekkers_requests_portfolio_create_portfolio_response_pb.CreatePortfolioResponseProto> {
-    path: "/fintekkers.services.security_service.Portfolio/CreateOrUpdate";
+    path: "/fintekkers.services.portfolio_service.Portfolio/CreateOrUpdate";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_portfolio_create_portfolio_request_pb.CreatePortfolioRequestProto>;
@@ -31,7 +31,7 @@ interface IPortfolioService_ICreateOrUpdate extends grpc.MethodDefinition<fintek
     responseDeserialize: grpc.deserialize<fintekkers_requests_portfolio_create_portfolio_response_pb.CreatePortfolioResponseProto>;
 }
 interface IPortfolioService_IGetByIDs extends grpc.MethodDefinition<fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto, fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto> {
-    path: "/fintekkers.services.security_service.Portfolio/GetByIDs";
+    path: "/fintekkers.services.portfolio_service.Portfolio/GetByIDs";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto>;
@@ -40,7 +40,7 @@ interface IPortfolioService_IGetByIDs extends grpc.MethodDefinition<fintekkers_r
     responseDeserialize: grpc.deserialize<fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto>;
 }
 interface IPortfolioService_ISearch extends grpc.MethodDefinition<fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto, fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto> {
-    path: "/fintekkers.services.security_service.Portfolio/Search";
+    path: "/fintekkers.services.portfolio_service.Portfolio/Search";
     requestStream: false;
     responseStream: true;
     requestSerialize: grpc.serialize<fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto>;
@@ -49,7 +49,7 @@ interface IPortfolioService_ISearch extends grpc.MethodDefinition<fintekkers_req
     responseDeserialize: grpc.deserialize<fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto>;
 }
 interface IPortfolioService_IListIDs extends grpc.MethodDefinition<fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto, fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto> {
-    path: "/fintekkers.services.security_service.Portfolio/ListIDs";
+    path: "/fintekkers.services.portfolio_service.Portfolio/ListIDs";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto>;
@@ -58,7 +58,7 @@ interface IPortfolioService_IListIDs extends grpc.MethodDefinition<fintekkers_re
     responseDeserialize: grpc.deserialize<fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto>;
 }
 interface IPortfolioService_IValidateCreateOrUpdate extends grpc.MethodDefinition<fintekkers_requests_portfolio_create_portfolio_request_pb.CreatePortfolioRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto> {
-    path: "/fintekkers.services.security_service.Portfolio/ValidateCreateOrUpdate";
+    path: "/fintekkers.services.portfolio_service.Portfolio/ValidateCreateOrUpdate";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_portfolio_create_portfolio_request_pb.CreatePortfolioRequestProto>;
@@ -67,7 +67,7 @@ interface IPortfolioService_IValidateCreateOrUpdate extends grpc.MethodDefinitio
     responseDeserialize: grpc.deserialize<fintekkers_requests_util_errors_summary_pb.SummaryProto>;
 }
 interface IPortfolioService_IValidateQueryRequest extends grpc.MethodDefinition<fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto> {
-    path: "/fintekkers.services.security_service.Portfolio/ValidateQueryRequest";
+    path: "/fintekkers.services.portfolio_service.Portfolio/ValidateQueryRequest";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto>;

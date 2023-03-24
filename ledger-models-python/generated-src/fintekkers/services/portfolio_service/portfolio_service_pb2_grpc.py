@@ -19,32 +19,32 @@ class PortfolioStub(object):
             channel: A grpc.Channel.
         """
         self.CreateOrUpdate = channel.unary_unary(
-                '/fintekkers.services.security_service.Portfolio/CreateOrUpdate',
+                '/fintekkers.services.portfolio_service.Portfolio/CreateOrUpdate',
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__request__pb2.CreatePortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__response__pb2.CreatePortfolioResponseProto.FromString,
                 )
         self.GetByIDs = channel.unary_unary(
-                '/fintekkers.services.security_service.Portfolio/GetByIDs',
+                '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
                 )
         self.Search = channel.unary_stream(
-                '/fintekkers.services.security_service.Portfolio/Search',
+                '/fintekkers.services.portfolio_service.Portfolio/Search',
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
                 )
         self.ListIDs = channel.unary_unary(
-                '/fintekkers.services.security_service.Portfolio/ListIDs',
+                '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
                 )
         self.ValidateCreateOrUpdate = channel.unary_unary(
-                '/fintekkers.services.security_service.Portfolio/ValidateCreateOrUpdate',
+                '/fintekkers.services.portfolio_service.Portfolio/ValidateCreateOrUpdate',
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__request__pb2.CreatePortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
                 )
         self.ValidateQueryRequest = channel.unary_unary(
-                '/fintekkers.services.security_service.Portfolio/ValidateQueryRequest',
+                '/fintekkers.services.portfolio_service.Portfolio/ValidateQueryRequest',
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
                 )
@@ -124,7 +124,7 @@ def add_PortfolioServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'fintekkers.services.security_service.Portfolio', rpc_method_handlers)
+            'fintekkers.services.portfolio_service.Portfolio', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -143,7 +143,7 @@ class Portfolio(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Portfolio/CreateOrUpdate',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/CreateOrUpdate',
             fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__request__pb2.CreatePortfolioRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__response__pb2.CreatePortfolioResponseProto.FromString,
             options, channel_credentials,
@@ -160,7 +160,7 @@ class Portfolio(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Portfolio/GetByIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
             options, channel_credentials,
@@ -177,7 +177,7 @@ class Portfolio(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/fintekkers.services.security_service.Portfolio/Search',
+        return grpc.experimental.unary_stream(request, target, '/fintekkers.services.portfolio_service.Portfolio/Search',
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
             options, channel_credentials,
@@ -194,7 +194,7 @@ class Portfolio(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Portfolio/ListIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
             options, channel_credentials,
@@ -211,7 +211,7 @@ class Portfolio(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Portfolio/ValidateCreateOrUpdate',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/ValidateCreateOrUpdate',
             fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__request__pb2.CreatePortfolioRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
             options, channel_credentials,
@@ -228,7 +228,7 @@ class Portfolio(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Portfolio/ValidateQueryRequest',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/ValidateQueryRequest',
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
             options, channel_credentials,

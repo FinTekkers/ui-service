@@ -1,5 +1,5 @@
 /**
- * @fileoverview gRPC-Web generated client stub for fintekkers.services.security_service
+ * @fileoverview gRPC-Web generated client stub for fintekkers.services.transaction_service
  * @enhanceable
  * @public
  */
@@ -32,7 +32,7 @@ var fintekkers_requests_util_errors_summary_pb = require('../../../fintekkers/re
 const proto = {};
 proto.fintekkers = {};
 proto.fintekkers.services = {};
-proto.fintekkers.services.security_service = require('./transaction_service_pb.js');
+proto.fintekkers.services.transaction_service = require('./transaction_service_pb.js');
 
 /**
  * @param {string} hostname
@@ -42,7 +42,7 @@ proto.fintekkers.services.security_service = require('./transaction_service_pb.j
  * @struct
  * @final
  */
-proto.fintekkers.services.security_service.TransactionClient =
+proto.fintekkers.services.transaction_service.TransactionClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -68,7 +68,7 @@ proto.fintekkers.services.security_service.TransactionClient =
  * @struct
  * @final
  */
-proto.fintekkers.services.security_service.TransactionPromiseClient =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -93,7 +93,7 @@ proto.fintekkers.services.security_service.TransactionPromiseClient =
  *   !proto.fintekkers.requests.transaction.CreateTransactionResponseProto>}
  */
 const methodDescriptor_Transaction_CreateOrUpdate = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Transaction/CreateOrUpdate',
+  '/fintekkers.services.transaction_service.Transaction/CreateOrUpdate',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_transaction_create_transaction_request_pb.CreateTransactionRequestProto,
   fintekkers_requests_transaction_create_transaction_response_pb.CreateTransactionResponseProto,
@@ -118,10 +118,10 @@ const methodDescriptor_Transaction_CreateOrUpdate = new grpc.web.MethodDescripto
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.transaction.CreateTransactionResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.TransactionClient.prototype.createOrUpdate =
+proto.fintekkers.services.transaction_service.TransactionClient.prototype.createOrUpdate =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/CreateOrUpdate',
+      '/fintekkers.services.transaction_service.Transaction/CreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Transaction_CreateOrUpdate,
@@ -137,10 +137,10 @@ proto.fintekkers.services.security_service.TransactionClient.prototype.createOrU
  * @return {!Promise<!proto.fintekkers.requests.transaction.CreateTransactionResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.createOrUpdate =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.createOrUpdate =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/CreateOrUpdate',
+      '/fintekkers.services.transaction_service.Transaction/CreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Transaction_CreateOrUpdate);
@@ -154,7 +154,7 @@ proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.cr
  *   !proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  */
 const methodDescriptor_Transaction_GetByIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Transaction/GetByIDs',
+  '/fintekkers.services.transaction_service.Transaction/GetByIDs',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
   fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto,
@@ -179,10 +179,10 @@ const methodDescriptor_Transaction_GetByIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.TransactionClient.prototype.getByIDs =
+proto.fintekkers.services.transaction_service.TransactionClient.prototype.getByIDs =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/GetByIDs',
+      '/fintekkers.services.transaction_service.Transaction/GetByIDs',
       request,
       metadata || {},
       methodDescriptor_Transaction_GetByIDs,
@@ -198,10 +198,10 @@ proto.fintekkers.services.security_service.TransactionClient.prototype.getByIDs 
  * @return {!Promise<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.getByIDs =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.getByIDs =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/GetByIDs',
+      '/fintekkers.services.transaction_service.Transaction/GetByIDs',
       request,
       metadata || {},
       methodDescriptor_Transaction_GetByIDs);
@@ -215,7 +215,7 @@ proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.ge
  *   !proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  */
 const methodDescriptor_Transaction_Search = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Transaction/Search',
+  '/fintekkers.services.transaction_service.Transaction/Search',
   grpc.web.MethodType.SERVER_STREAMING,
   fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
   fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto,
@@ -237,10 +237,10 @@ const methodDescriptor_Transaction_Search = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.TransactionClient.prototype.search =
+proto.fintekkers.services.transaction_service.TransactionClient.prototype.search =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/Search',
+      '/fintekkers.services.transaction_service.Transaction/Search',
       request,
       metadata || {},
       methodDescriptor_Transaction_Search);
@@ -254,10 +254,10 @@ proto.fintekkers.services.security_service.TransactionClient.prototype.search =
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.search =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.search =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/Search',
+      '/fintekkers.services.transaction_service.Transaction/Search',
       request,
       metadata || {},
       methodDescriptor_Transaction_Search);
@@ -271,7 +271,7 @@ proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.se
  *   !proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  */
 const methodDescriptor_Transaction_ListIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Transaction/ListIDs',
+  '/fintekkers.services.transaction_service.Transaction/ListIDs',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
   fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto,
@@ -296,10 +296,10 @@ const methodDescriptor_Transaction_ListIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.TransactionClient.prototype.listIDs =
+proto.fintekkers.services.transaction_service.TransactionClient.prototype.listIDs =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/ListIDs',
+      '/fintekkers.services.transaction_service.Transaction/ListIDs',
       request,
       metadata || {},
       methodDescriptor_Transaction_ListIDs,
@@ -315,10 +315,10 @@ proto.fintekkers.services.security_service.TransactionClient.prototype.listIDs =
  * @return {!Promise<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.listIDs =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.listIDs =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/ListIDs',
+      '/fintekkers.services.transaction_service.Transaction/ListIDs',
       request,
       metadata || {},
       methodDescriptor_Transaction_ListIDs);
@@ -332,7 +332,7 @@ proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.li
  *   !proto.fintekkers.requests.util.errors.SummaryProto>}
  */
 const methodDescriptor_Transaction_ValidateCreateOrUpdate = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Transaction/ValidateCreateOrUpdate',
+  '/fintekkers.services.transaction_service.Transaction/ValidateCreateOrUpdate',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_transaction_create_transaction_request_pb.CreateTransactionRequestProto,
   fintekkers_requests_util_errors_summary_pb.SummaryProto,
@@ -357,10 +357,10 @@ const methodDescriptor_Transaction_ValidateCreateOrUpdate = new grpc.web.MethodD
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.util.errors.SummaryProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.TransactionClient.prototype.validateCreateOrUpdate =
+proto.fintekkers.services.transaction_service.TransactionClient.prototype.validateCreateOrUpdate =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/ValidateCreateOrUpdate',
+      '/fintekkers.services.transaction_service.Transaction/ValidateCreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Transaction_ValidateCreateOrUpdate,
@@ -376,10 +376,10 @@ proto.fintekkers.services.security_service.TransactionClient.prototype.validateC
  * @return {!Promise<!proto.fintekkers.requests.util.errors.SummaryProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.validateCreateOrUpdate =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.validateCreateOrUpdate =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/ValidateCreateOrUpdate',
+      '/fintekkers.services.transaction_service.Transaction/ValidateCreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Transaction_ValidateCreateOrUpdate);
@@ -393,7 +393,7 @@ proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.va
  *   !proto.fintekkers.requests.util.errors.SummaryProto>}
  */
 const methodDescriptor_Transaction_ValidateQueryRequest = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Transaction/ValidateQueryRequest',
+  '/fintekkers.services.transaction_service.Transaction/ValidateQueryRequest',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
   fintekkers_requests_util_errors_summary_pb.SummaryProto,
@@ -418,10 +418,10 @@ const methodDescriptor_Transaction_ValidateQueryRequest = new grpc.web.MethodDes
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.util.errors.SummaryProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.TransactionClient.prototype.validateQueryRequest =
+proto.fintekkers.services.transaction_service.TransactionClient.prototype.validateQueryRequest =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/ValidateQueryRequest',
+      '/fintekkers.services.transaction_service.Transaction/ValidateQueryRequest',
       request,
       metadata || {},
       methodDescriptor_Transaction_ValidateQueryRequest,
@@ -437,15 +437,15 @@ proto.fintekkers.services.security_service.TransactionClient.prototype.validateQ
  * @return {!Promise<!proto.fintekkers.requests.util.errors.SummaryProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.TransactionPromiseClient.prototype.validateQueryRequest =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.validateQueryRequest =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Transaction/ValidateQueryRequest',
+      '/fintekkers.services.transaction_service.Transaction/ValidateQueryRequest',
       request,
       metadata || {},
       methodDescriptor_Transaction_ValidateQueryRequest);
 };
 
 
-module.exports = proto.fintekkers.services.security_service;
+module.exports = proto.fintekkers.services.transaction_service;
 
