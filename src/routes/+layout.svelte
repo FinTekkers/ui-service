@@ -1,49 +1,53 @@
 <script>
-	import {
-		Header,
-		HeaderNav,
-		HeaderNavItem,
-		SkipToContent,
-		Content,
-		HeaderUtilities,
-		HeaderSearch,
-		HeaderAction,
-		HeaderPanelLink
-	} from 'carbon-components-svelte';
-
-	import UserAvatarFilledAlt from 'carbon-icons-svelte/lib/UserAvatarFilledAlt.svelte';
-
-	import 'carbon-components-svelte/css/white.css';
-
-	let isSideNavOpen = false;
-	let loggedIn = true;
+	import '../app.css';
 </script>
 
-<Header company="FNTKR" platformName="Ledger Modeling" bind:isSideNavOpen href="/">
-	<svelte:fragment slot="skip-to-content">
-		<SkipToContent />
-	</svelte:fragment>
-	<HeaderNav>
-		<HeaderNavItem href="/portfolios" text="Portfolios" />
-		<HeaderNavItem href="/transactions" text="Transactions" />
-	</HeaderNav>
-	<HeaderUtilities>
-		<HeaderSearch />
-		<HeaderAction icon={UserAvatarFilledAlt}>
-			<HeaderPanelLink
-				on:click={() => {
-					loggedIn = !loggedIn;
-				}}
-				>{#if loggedIn}
-					Log Out
-				{:else}
-					Log In
-				{/if}
-			</HeaderPanelLink>
-		</HeaderAction>
-	</HeaderUtilities>
-</Header>
+<nav class=" bg-slate-900">
+	<div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+		<div class="relative flex h-16 items-center justify-between">
+			<div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+				<div class="flex flex-shrink-0 items-center">
+					<img
+						class="block h-8 w-auto lg:hidden"
+						src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+						alt="Your Company"
+					/>
+					<img
+						class="hidden h-8 w-auto lg:block"
+						src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+						alt="Your Company"
+					/>
+				</div>
+				<div class="hidden sm:ml-6 sm:block">
+					<div class="flex space-x-4">
+						<a
+							href="/"
+							class="text-white hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-lg"
+							>Home</a
+						>
+						<a
+							href="/portfolios"
+							class="text-white hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-lg "
+							>Portfolios</a
+						>
+						<a
+							href="/transactions"
+							class="text-white hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-lg"
+							>Transactions</a
+						>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</nav>
 
-<Content>
+<div class="container mx-auto px-10 mb-20">
 	<slot />
-</Content>
+</div>
+
+<style lang="postcss">
+	:global(html) {
+		background-color: theme(colors.stone.100);
+	}
+</style>
