@@ -1,5 +1,5 @@
 /**
- * @fileoverview gRPC-Web generated client stub for fintekkers.services.security_service
+ * @fileoverview gRPC-Web generated client stub for fintekkers.services.portfolio_service
  * @enhanceable
  * @public
  */
@@ -32,7 +32,7 @@ var fintekkers_requests_util_errors_summary_pb = require('../../../fintekkers/re
 const proto = {};
 proto.fintekkers = {};
 proto.fintekkers.services = {};
-proto.fintekkers.services.security_service = require('./portfolio_service_pb.js');
+proto.fintekkers.services.portfolio_service = require('./portfolio_service_pb.js');
 
 /**
  * @param {string} hostname
@@ -42,7 +42,7 @@ proto.fintekkers.services.security_service = require('./portfolio_service_pb.js'
  * @struct
  * @final
  */
-proto.fintekkers.services.security_service.PortfolioClient =
+proto.fintekkers.services.portfolio_service.PortfolioClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -68,7 +68,7 @@ proto.fintekkers.services.security_service.PortfolioClient =
  * @struct
  * @final
  */
-proto.fintekkers.services.security_service.PortfolioPromiseClient =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -93,7 +93,7 @@ proto.fintekkers.services.security_service.PortfolioPromiseClient =
  *   !proto.fintekkers.requests.portfolio.CreatePortfolioResponseProto>}
  */
 const methodDescriptor_Portfolio_CreateOrUpdate = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Portfolio/CreateOrUpdate',
+  '/fintekkers.services.portfolio_service.Portfolio/CreateOrUpdate',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_portfolio_create_portfolio_request_pb.CreatePortfolioRequestProto,
   fintekkers_requests_portfolio_create_portfolio_response_pb.CreatePortfolioResponseProto,
@@ -118,10 +118,10 @@ const methodDescriptor_Portfolio_CreateOrUpdate = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.portfolio.CreatePortfolioResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.PortfolioClient.prototype.createOrUpdate =
+proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.createOrUpdate =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/CreateOrUpdate',
+      '/fintekkers.services.portfolio_service.Portfolio/CreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Portfolio_CreateOrUpdate,
@@ -137,10 +137,10 @@ proto.fintekkers.services.security_service.PortfolioClient.prototype.createOrUpd
  * @return {!Promise<!proto.fintekkers.requests.portfolio.CreatePortfolioResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.createOrUpdate =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.createOrUpdate =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/CreateOrUpdate',
+      '/fintekkers.services.portfolio_service.Portfolio/CreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Portfolio_CreateOrUpdate);
@@ -154,7 +154,7 @@ proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.crea
  *   !proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  */
 const methodDescriptor_Portfolio_GetByIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Portfolio/GetByIDs',
+  '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
   fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto,
@@ -179,10 +179,10 @@ const methodDescriptor_Portfolio_GetByIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.PortfolioClient.prototype.getByIDs =
+proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.getByIDs =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/GetByIDs',
+      '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
       request,
       metadata || {},
       methodDescriptor_Portfolio_GetByIDs,
@@ -198,10 +198,10 @@ proto.fintekkers.services.security_service.PortfolioClient.prototype.getByIDs =
  * @return {!Promise<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.getByIDs =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.getByIDs =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/GetByIDs',
+      '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
       request,
       metadata || {},
       methodDescriptor_Portfolio_GetByIDs);
@@ -215,7 +215,7 @@ proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.getB
  *   !proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  */
 const methodDescriptor_Portfolio_Search = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Portfolio/Search',
+  '/fintekkers.services.portfolio_service.Portfolio/Search',
   grpc.web.MethodType.SERVER_STREAMING,
   fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
   fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto,
@@ -237,10 +237,10 @@ const methodDescriptor_Portfolio_Search = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.PortfolioClient.prototype.search =
+proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.search =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/Search',
+      '/fintekkers.services.portfolio_service.Portfolio/Search',
       request,
       metadata || {},
       methodDescriptor_Portfolio_Search);
@@ -254,10 +254,10 @@ proto.fintekkers.services.security_service.PortfolioClient.prototype.search =
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.search =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.search =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/Search',
+      '/fintekkers.services.portfolio_service.Portfolio/Search',
       request,
       metadata || {},
       methodDescriptor_Portfolio_Search);
@@ -271,7 +271,7 @@ proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.sear
  *   !proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  */
 const methodDescriptor_Portfolio_ListIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Portfolio/ListIDs',
+  '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
   fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto,
@@ -296,10 +296,10 @@ const methodDescriptor_Portfolio_ListIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.PortfolioClient.prototype.listIDs =
+proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.listIDs =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/ListIDs',
+      '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
       request,
       metadata || {},
       methodDescriptor_Portfolio_ListIDs,
@@ -315,10 +315,10 @@ proto.fintekkers.services.security_service.PortfolioClient.prototype.listIDs =
  * @return {!Promise<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.listIDs =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.listIDs =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/ListIDs',
+      '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
       request,
       metadata || {},
       methodDescriptor_Portfolio_ListIDs);
@@ -332,7 +332,7 @@ proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.list
  *   !proto.fintekkers.requests.util.errors.SummaryProto>}
  */
 const methodDescriptor_Portfolio_ValidateCreateOrUpdate = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Portfolio/ValidateCreateOrUpdate',
+  '/fintekkers.services.portfolio_service.Portfolio/ValidateCreateOrUpdate',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_portfolio_create_portfolio_request_pb.CreatePortfolioRequestProto,
   fintekkers_requests_util_errors_summary_pb.SummaryProto,
@@ -357,10 +357,10 @@ const methodDescriptor_Portfolio_ValidateCreateOrUpdate = new grpc.web.MethodDes
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.util.errors.SummaryProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.PortfolioClient.prototype.validateCreateOrUpdate =
+proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.validateCreateOrUpdate =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/ValidateCreateOrUpdate',
+      '/fintekkers.services.portfolio_service.Portfolio/ValidateCreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Portfolio_ValidateCreateOrUpdate,
@@ -376,10 +376,10 @@ proto.fintekkers.services.security_service.PortfolioClient.prototype.validateCre
  * @return {!Promise<!proto.fintekkers.requests.util.errors.SummaryProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.validateCreateOrUpdate =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.validateCreateOrUpdate =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/ValidateCreateOrUpdate',
+      '/fintekkers.services.portfolio_service.Portfolio/ValidateCreateOrUpdate',
       request,
       metadata || {},
       methodDescriptor_Portfolio_ValidateCreateOrUpdate);
@@ -393,7 +393,7 @@ proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.vali
  *   !proto.fintekkers.requests.util.errors.SummaryProto>}
  */
 const methodDescriptor_Portfolio_ValidateQueryRequest = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Portfolio/ValidateQueryRequest',
+  '/fintekkers.services.portfolio_service.Portfolio/ValidateQueryRequest',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
   fintekkers_requests_util_errors_summary_pb.SummaryProto,
@@ -418,10 +418,10 @@ const methodDescriptor_Portfolio_ValidateQueryRequest = new grpc.web.MethodDescr
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.util.errors.SummaryProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.PortfolioClient.prototype.validateQueryRequest =
+proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.validateQueryRequest =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/ValidateQueryRequest',
+      '/fintekkers.services.portfolio_service.Portfolio/ValidateQueryRequest',
       request,
       metadata || {},
       methodDescriptor_Portfolio_ValidateQueryRequest,
@@ -437,15 +437,15 @@ proto.fintekkers.services.security_service.PortfolioClient.prototype.validateQue
  * @return {!Promise<!proto.fintekkers.requests.util.errors.SummaryProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.PortfolioPromiseClient.prototype.validateQueryRequest =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.validateQueryRequest =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Portfolio/ValidateQueryRequest',
+      '/fintekkers.services.portfolio_service.Portfolio/ValidateQueryRequest',
       request,
       metadata || {},
       methodDescriptor_Portfolio_ValidateQueryRequest);
 };
 
 
-module.exports = proto.fintekkers.services.security_service;
+module.exports = proto.fintekkers.services.portfolio_service;
 

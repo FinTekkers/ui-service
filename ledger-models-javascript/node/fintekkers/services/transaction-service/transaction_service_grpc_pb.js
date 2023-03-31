@@ -66,7 +66,7 @@ function deserialize_fintekkers_requests_util_errors_SummaryProto(buffer_arg) {
 
 var TransactionService = exports.TransactionService = {
   createOrUpdate: {
-    path: '/fintekkers.services.security_service.Transaction/CreateOrUpdate',
+    path: '/fintekkers.services.transaction_service.Transaction/CreateOrUpdate',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_transaction_create_transaction_request_pb.CreateTransactionRequestProto,
@@ -77,7 +77,7 @@ var TransactionService = exports.TransactionService = {
     responseDeserialize: deserialize_fintekkers_requests_transaction_CreateTransactionResponseProto,
   },
   getByIDs: {
-    path: '/fintekkers.services.security_service.Transaction/GetByIDs',
+    path: '/fintekkers.services.transaction_service.Transaction/GetByIDs',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
@@ -88,7 +88,7 @@ var TransactionService = exports.TransactionService = {
     responseDeserialize: deserialize_fintekkers_requests_transaction_QueryTransactionResponseProto,
   },
   search: {
-    path: '/fintekkers.services.security_service.Transaction/Search',
+    path: '/fintekkers.services.transaction_service.Transaction/Search',
     requestStream: false,
     responseStream: true,
     requestType: fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
@@ -99,7 +99,7 @@ var TransactionService = exports.TransactionService = {
     responseDeserialize: deserialize_fintekkers_requests_transaction_QueryTransactionResponseProto,
   },
   listIDs: {
-    path: '/fintekkers.services.security_service.Transaction/ListIDs',
+    path: '/fintekkers.services.transaction_service.Transaction/ListIDs',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
@@ -110,7 +110,7 @@ var TransactionService = exports.TransactionService = {
     responseDeserialize: deserialize_fintekkers_requests_transaction_QueryTransactionResponseProto,
   },
   validateCreateOrUpdate: {
-    path: '/fintekkers.services.security_service.Transaction/ValidateCreateOrUpdate',
+    path: '/fintekkers.services.transaction_service.Transaction/ValidateCreateOrUpdate',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_transaction_create_transaction_request_pb.CreateTransactionRequestProto,
@@ -121,7 +121,7 @@ var TransactionService = exports.TransactionService = {
     responseDeserialize: deserialize_fintekkers_requests_util_errors_SummaryProto,
   },
   validateQueryRequest: {
-    path: '/fintekkers.services.security_service.Transaction/ValidateQueryRequest',
+    path: '/fintekkers.services.transaction_service.Transaction/ValidateQueryRequest',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,

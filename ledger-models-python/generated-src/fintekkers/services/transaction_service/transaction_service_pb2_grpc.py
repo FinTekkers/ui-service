@@ -19,32 +19,32 @@ class TransactionStub(object):
             channel: A grpc.Channel.
         """
         self.CreateOrUpdate = channel.unary_unary(
-                '/fintekkers.services.security_service.Transaction/CreateOrUpdate',
+                '/fintekkers.services.transaction_service.Transaction/CreateOrUpdate',
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_create__transaction__request__pb2.CreateTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_transaction_dot_create__transaction__response__pb2.CreateTransactionResponseProto.FromString,
                 )
         self.GetByIDs = channel.unary_unary(
-                '/fintekkers.services.security_service.Transaction/GetByIDs',
+                '/fintekkers.services.transaction_service.Transaction/GetByIDs',
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
                 )
         self.Search = channel.unary_stream(
-                '/fintekkers.services.security_service.Transaction/Search',
+                '/fintekkers.services.transaction_service.Transaction/Search',
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
                 )
         self.ListIDs = channel.unary_unary(
-                '/fintekkers.services.security_service.Transaction/ListIDs',
+                '/fintekkers.services.transaction_service.Transaction/ListIDs',
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
                 )
         self.ValidateCreateOrUpdate = channel.unary_unary(
-                '/fintekkers.services.security_service.Transaction/ValidateCreateOrUpdate',
+                '/fintekkers.services.transaction_service.Transaction/ValidateCreateOrUpdate',
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_create__transaction__request__pb2.CreateTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
                 )
         self.ValidateQueryRequest = channel.unary_unary(
-                '/fintekkers.services.security_service.Transaction/ValidateQueryRequest',
+                '/fintekkers.services.transaction_service.Transaction/ValidateQueryRequest',
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
                 )
@@ -124,7 +124,7 @@ def add_TransactionServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'fintekkers.services.security_service.Transaction', rpc_method_handlers)
+            'fintekkers.services.transaction_service.Transaction', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -143,7 +143,7 @@ class Transaction(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Transaction/CreateOrUpdate',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/CreateOrUpdate',
             fintekkers_dot_requests_dot_transaction_dot_create__transaction__request__pb2.CreateTransactionRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_transaction_dot_create__transaction__response__pb2.CreateTransactionResponseProto.FromString,
             options, channel_credentials,
@@ -160,7 +160,7 @@ class Transaction(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Transaction/GetByIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/GetByIDs',
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
             options, channel_credentials,
@@ -177,7 +177,7 @@ class Transaction(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/fintekkers.services.security_service.Transaction/Search',
+        return grpc.experimental.unary_stream(request, target, '/fintekkers.services.transaction_service.Transaction/Search',
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
             options, channel_credentials,
@@ -194,7 +194,7 @@ class Transaction(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Transaction/ListIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/ListIDs',
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
             options, channel_credentials,
@@ -211,7 +211,7 @@ class Transaction(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Transaction/ValidateCreateOrUpdate',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/ValidateCreateOrUpdate',
             fintekkers_dot_requests_dot_transaction_dot_create__transaction__request__pb2.CreateTransactionRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
             options, channel_credentials,
@@ -228,7 +228,7 @@ class Transaction(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Transaction/ValidateQueryRequest',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/ValidateQueryRequest',
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
             options, channel_credentials,
