@@ -1,4 +1,10 @@
 pub mod fintekkers {
+
+    pub mod proto {
+        pub const LEDGER_MODELS_PROTO_FILE_DESCRIPTOR_SET: &[u8] =
+            include_bytes!("ledger_models_file_descriptor_set_v_todo.bin");
+    }
+
     pub mod wrappers;
     pub mod models {
         pub mod portfolio {
@@ -71,11 +77,17 @@ pub mod fintekkers {
         pub mod lock_service {
             include!("fintekkers.services.lock_service.rs");
         }
+        pub mod portfolio_service {
+            include!("fintekkers.services.portfolio_service.rs");
+        }
         pub mod position_service {
             include!("fintekkers.services.position_service.rs");
         }
         pub mod security_service {
             include!("fintekkers.services.security_service.rs");
+        }
+        pub mod transaction_service {
+            include!("fintekkers.services.transaction_service.rs");
         }
         pub mod valuation_service {
             include!("fintekkers.services.valuation_service.rs");

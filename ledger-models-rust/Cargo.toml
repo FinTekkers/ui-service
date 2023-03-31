@@ -2,14 +2,14 @@ build.incremental=false
 
 [package]
 name = "ledger-models"
-version = "0.1.15"
+version = "0.1.18"
 edition = "2021"
 authors = ["dado0583", "samiam376"]
 license = "Apache-2.0"
 description = "A comprehensive model library for financial products (securities, prices, transactions, etc). Protobuf used for serialization, with language-specific implementations"
-readme = "ledger-models-rust/README.md" # It is used at https://crates.io/crates/publish
+readme = "README.md" # It is used at https://crates.io/crates/publish
 repository = "https://github.com/fintekkers/ledger-models"
-include = ["Cargo.toml", "**/*.rs"]
+include = ["Cargo.toml", "**/*.rs", "ledger_models_file_descriptor_set_v_todo.bin"]
 
 [[bin]]
 name = "gen"
