@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use walkdir::WalkDir;
 
 fn main() {
@@ -29,14 +31,13 @@ fn main() {
     //     println!("{} {}", name, value);
     // }
 
-    // let descriptor_path = PathBuf::from("../my_descriptor.bin");
-        // .join("my_descriptor.bin");
+    let descriptor_path = PathBuf::from("ledger_models_file_descriptor_set_v_todo.bin");
 
     tonic_build::configure()
         .build_client(true)
         .build_server(true)
         .out_dir("")
-        // .file_descriptor_set_path(descriptor_path)
+        .file_descriptor_set_path(descriptor_path)
         .compile(&proto_files,
             &["../ledger-models-protos"],
         )
