@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package fintekkers.services.security_service;
+package fintekkers.services.transaction_service;
 import "fintekkers/requests/transaction/create_transaction_request.proto";
 import "fintekkers/requests/transaction/create_transaction_response.proto";
 import "fintekkers/requests/transaction/query_transaction_request.proto";

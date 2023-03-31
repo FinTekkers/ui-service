@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package fintekkers.services.security_service;
+package fintekkers.services.portfolio_service;
 import "fintekkers/requests/portfolio/create_portfolio_request.proto";
 import "fintekkers/requests/portfolio/create_portfolio_response.proto";
 import "fintekkers/requests/portfolio/query_portfolio_request.proto";

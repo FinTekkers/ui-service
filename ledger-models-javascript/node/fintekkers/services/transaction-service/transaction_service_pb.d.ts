@@ -1,4 +1,4 @@
-// package: fintekkers.services.security_service
+// package: fintekkers.services.transaction_service
 // file: fintekkers/services/transaction-service/transaction_service.proto
 
 /* tslint:disable */

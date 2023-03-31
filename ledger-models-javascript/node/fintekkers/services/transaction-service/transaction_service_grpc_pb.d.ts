@@ -1,4 +1,4 @@
-// package: fintekkers.services.security_service
+// package: fintekkers.services.transaction_service
 // file: fintekkers/services/transaction-service/transaction_service.proto
 
 /* tslint:disable */
@@ -22,7 +22,7 @@ interface ITransactionService extends grpc.ServiceDefinition<grpc.UntypedService
 }
 
 interface ITransactionService_ICreateOrUpdate extends grpc.MethodDefinition<fintekkers_requests_transaction_create_transaction_request_pb.CreateTransactionRequestProto, fintekkers_requests_transaction_create_transaction_response_pb.CreateTransactionResponseProto> {
-    path: "/fintekkers.services.security_service.Transaction/CreateOrUpdate";
+    path: "/fintekkers.services.transaction_service.Transaction/CreateOrUpdate";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_transaction_create_transaction_request_pb.CreateTransactionRequestProto>;
@@ -31,7 +31,7 @@ interface ITransactionService_ICreateOrUpdate extends grpc.MethodDefinition<fint
     responseDeserialize: grpc.deserialize<fintekkers_requests_transaction_create_transaction_response_pb.CreateTransactionResponseProto>;
 }
 interface ITransactionService_IGetByIDs extends grpc.MethodDefinition<fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto, fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto> {
-    path: "/fintekkers.services.security_service.Transaction/GetByIDs";
+    path: "/fintekkers.services.transaction_service.Transaction/GetByIDs";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto>;
@@ -40,7 +40,7 @@ interface ITransactionService_IGetByIDs extends grpc.MethodDefinition<fintekkers
     responseDeserialize: grpc.deserialize<fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto>;
 }
 interface ITransactionService_ISearch extends grpc.MethodDefinition<fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto, fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto> {
-    path: "/fintekkers.services.security_service.Transaction/Search";
+    path: "/fintekkers.services.transaction_service.Transaction/Search";
     requestStream: false;
     responseStream: true;
     requestSerialize: grpc.serialize<fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto>;
@@ -49,7 +49,7 @@ interface ITransactionService_ISearch extends grpc.MethodDefinition<fintekkers_r
     responseDeserialize: grpc.deserialize<fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto>;
 }
 interface ITransactionService_IListIDs extends grpc.MethodDefinition<fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto, fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto> {
-    path: "/fintekkers.services.security_service.Transaction/ListIDs";
+    path: "/fintekkers.services.transaction_service.Transaction/ListIDs";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto>;
@@ -58,7 +58,7 @@ interface ITransactionService_IListIDs extends grpc.MethodDefinition<fintekkers_
     responseDeserialize: grpc.deserialize<fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto>;
 }
 interface ITransactionService_IValidateCreateOrUpdate extends grpc.MethodDefinition<fintekkers_requests_transaction_create_transaction_request_pb.CreateTransactionRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto> {
-    path: "/fintekkers.services.security_service.Transaction/ValidateCreateOrUpdate";
+    path: "/fintekkers.services.transaction_service.Transaction/ValidateCreateOrUpdate";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_transaction_create_transaction_request_pb.CreateTransactionRequestProto>;
@@ -67,7 +67,7 @@ interface ITransactionService_IValidateCreateOrUpdate extends grpc.MethodDefinit
     responseDeserialize: grpc.deserialize<fintekkers_requests_util_errors_summary_pb.SummaryProto>;
 }
 interface ITransactionService_IValidateQueryRequest extends grpc.MethodDefinition<fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto> {
-    path: "/fintekkers.services.security_service.Transaction/ValidateQueryRequest";
+    path: "/fintekkers.services.transaction_service.Transaction/ValidateQueryRequest";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto>;
