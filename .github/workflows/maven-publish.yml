@@ -1,7 +1,9 @@
 name: Publish package to GitHub Packages
 on:
   push:
-    branches: [main]
+    tags:  #only trigger action when tagged with release number, i.e v0.0.1     
+      - 'v*'    
+  workflow_dispatch:
 defaults:
   run:
     shell: bash
@@ -23,9 +25,9 @@ jobs:
     - name: Show working directory contents
       run: ls -all
     - name: Output Run Number
-      run: echo Run number is ${{ github.run_number }}, which will be used for artefact versions
+      run: echo Run number is ${{ github.event.release.tag_name }}, which will be used for artefact versions
     - name: Execute Gradle build
       run: ./gradlew publish
       env:
         PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-        run_number: ${{github.run_number}}
+        run_number: ${{ github.event.release.tag_name }}
