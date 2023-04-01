@@ -20,7 +20,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-
+        working-directory: ./ledger-models-rust
       - run: cargo publish --token ${CRATES_TOKEN}
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
