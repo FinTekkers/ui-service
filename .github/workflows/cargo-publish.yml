@@ -22,6 +22,7 @@ jobs:
           override: true
       - run: cargo install cargo-edit
       - run: cargo set-version ${{ github.event.release.tag_name }}
+        working-directory: ./ledger-models-rust
       - run: cargo publish --token ${CRATES_TOKEN}
         working-directory: ./ledger-models-rust
         env:
