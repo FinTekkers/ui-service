@@ -2,7 +2,7 @@ build.incremental=false
 
 [package]
 name = "ledger-models"
-version = "0.1.19"
+version = "0.1.20"
 edition = "2021"
 authors = ["dado0583", "samiam376"]
 license = "Apache-2.0"
@@ -19,10 +19,10 @@ path= "gen.rs"
 path = "lib.rs"
 
 [dependencies]
-tonic = "0.8.2"
+tonic = "0.9.0"
 prost = "0.11.2"
 prost-types = "0.11.2"
-tonic-build = "0.8.2"
+tonic-build = "0.9.0"
 walkdir = "2"
 
 ##Used in all calculations. Equivalent of Java BigDecimal implementation
