@@ -20,6 +20,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - run: cargo install cargo-edit
+      - run: cargo set-version 0.${{github.run_number}}
       - run: cargo publish --token ${CRATES_TOKEN}
         working-directory: ./ledger-models-rust
         env:
