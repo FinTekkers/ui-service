@@ -8,9 +8,9 @@ name: Publish Rust crate to crates.io
 
 jobs:
   publish:
-  defaults:
-    run:
-      working-directory: ./ledger-models-rust
+    defaults:
+      run:
+        working-directory: ./ledger-models-rust
     name: Publish
     runs-on: ubuntu-latest
     steps:
