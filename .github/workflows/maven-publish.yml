@@ -4,10 +4,12 @@ on:
     tags:  #only trigger action when tagged with release number, i.e v0.0.1     
       - 'v*'    
   workflow_dispatch:
+  
 defaults:
   run:
     shell: bash
     working-directory: ledger-models-java
+
 jobs:
   publish-java-package:
     runs-on: ubuntu-latest 
@@ -20,7 +22,7 @@ jobs:
       with:
          java-version: '18'
          distribution: 'adopt'
-    - name: Get git tag
+    - name: Get git tag extension
       id: tag
       uses: dawidd6/action-get-tag@v1
     - name: Release details
