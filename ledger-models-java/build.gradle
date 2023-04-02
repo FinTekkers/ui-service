@@ -45,7 +45,7 @@ task run_number {
 }
 
 group = 'io.github.fintekkers'
-println(version)
+version = System.getenv("run_number")
 
 description = 'FinTekkers Ledger Models'
 java.sourceCompatibility = JavaVersion.VERSION_17
