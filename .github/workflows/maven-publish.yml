@@ -27,8 +27,10 @@ jobs:
       run: echo $pwd
     - name: Release details
       run: echo Release tag ${{ steps.tag.outputs.tag }}
-    - run: TAG=${{ steps.tag.outputs.tag }}
-    - run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
+    - run: export TAG=${{ steps.tag.outputs.tag }}
+    - run: echo $TAG
+    - run: export VERSION=${TAG#v}
+    # - run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
     - run: echo Version is $VERSION
     - name: Print Environment Variables
       run: env
