@@ -45,7 +45,6 @@ task run_number {
 }
 
 group = 'io.github.fintekkers'
-version = System.getenv("run_number").replace('v', '')
 println(version)
 
 description = 'FinTekkers Ledger Models'
