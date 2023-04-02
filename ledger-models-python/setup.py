@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 import os
 
 version = '0.0.0'
-if 'BUILD_VERSION' in os.environ:
 
+if 'BUILD_VERSION' in os.environ:
     print("******************************************")
     print("************OVERRIDING VERSION FROM ENVIRONMENT******************")
     print("******************************************")
