@@ -25,12 +25,12 @@ jobs:
       uses: dawidd6/action-get-tag@v1
     - name: Release details
       run: |
-      echo Release tag ${{ steps.tag.outputs.tag }}
-      TAG=${{ steps.tag.outputs.tag }}
-      echo tag is ${TAG}
-      VERSION=${TAG#v}
-      echo version is ${VERSION}
-      echo "release_version=${VERSION}" >> $GITHUB_ENV
+        echo Release tag ${{ steps.tag.outputs.tag }}
+        TAG=${{ steps.tag.outputs.tag }}
+        echo tag is ${TAG}
+        VERSION=${TAG#v}
+        echo version is ${VERSION}
+        echo "release_version=${VERSION}" >> $GITHUB_ENV
     - name: Print Environment Variables
       run: env
     - name: Execute Gradle build
