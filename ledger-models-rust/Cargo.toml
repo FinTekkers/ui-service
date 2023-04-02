@@ -2,7 +2,14 @@ build.incremental=false
 
 [package]
 name = "ledger-models"
-version = "0.0.0" #Will be overridden at build time
+# Should we rename this to fintekkers-ledger-models? Would make it 
+# more Google-able
+
+version = "0.0.0" 
+# Will be overridden at build time. See .github/workflows/cargo-publish.yml
+# In that workflow it dynamically overrides the cargo version in the toml
+# As that change isn't checked into Github the publish command needs the --allow-dirty
+# parameter. Feels like Rust is a little behind the times with the workflow tbh
 
 edition = "2021"
 authors = ["dado0583", "samiam376"]
