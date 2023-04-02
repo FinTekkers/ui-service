@@ -25,7 +25,7 @@ jobs:
       - run: cargo install cargo-edit
       - name: Release details
         run: echo Release tag ${{ steps.tag.outputs.tag }}
-      - run: TAG=${{ github.event.release.tag_name }}
+      - run: TAG=${{ steps.tag.outputs.tag }}
       - run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
       - run: echo Version is $VERSION
       - run: cargo set-version $VERSION
