@@ -24,7 +24,7 @@ jobs:
       - name: Release details
         run: |
           echo Release tag ${{ steps.tag.outputs.tag }}
-          TAG=v0.0.8
+          TAG=${{ steps.tag.outputs.tag }}
           echo tag is ${TAG}
           VERSION=${TAG#v}
           echo version is ${VERSION}
