@@ -25,9 +25,9 @@ jobs:
     - name: Show working directory contents
       run: ls -all
     - name: Release details
-      run: echo "Name: ${{ github.event.release.name }} Description: ${{ github.event.release.body }}"
+      run: echo ${{ github.event.release.name }} Description
     - name: Output Run Number
-      run: echo Run number is ${{ github.event.release.tag_name }}, which will be used for artefact versions
+      run: echo ${{ github }}
     - name: Print Environment Variables
       run: env
     - name: Execute Gradle build
