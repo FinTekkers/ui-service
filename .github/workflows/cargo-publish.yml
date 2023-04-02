@@ -25,10 +25,9 @@ jobs:
       - run: cargo install cargo-edit
       - name: Release details
         run: echo Release tag ${{ steps.tag.outputs.tag }}
-      - name: Remove prefix 'v' on version
-        run: TAG=${{ github.event.release.tag_name }}
-        run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
-        run: echo Version is $VERSION
+      - run: TAG=${{ github.event.release.tag_name }}
+      - run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
+      - run: echo Version is $VERSION
       - run: cargo set-version $VERSION
         working-directory: ./ledger-models-rust
       - run: cargo publish --token ${CRATES_TOKEN}
