@@ -20,6 +20,9 @@ jobs:
       with:
          java-version: '18'
          distribution: 'adopt'
+    - name: Get git tag
+      id: tag
+      uses: dawidd6/action-get-tag@v1
     - name: Echo working directory
       run: echo pwd
     - name: Show working directory contents
@@ -27,7 +30,7 @@ jobs:
     - name: Get Release Version
       run: echo "Release version is ${{ github.event.release.tag_name }}"
     - name: Release details
-      run: echo ${{ github.event.release.name }} Description
+      run: echo ${{ github.event.release.name }} Description. (${{ steps.tag.outputs.tag }})
     - name: Output Run Number
       run: echo ${{ github }}
     - name: Print Environment Variables
