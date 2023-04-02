@@ -24,15 +24,9 @@ jobs:
       id: tag
       uses: dawidd6/action-get-tag@v1
     - name: Echo working directory
-      run: echo pwd
-    - name: Show working directory contents
-      run: ls -all
-    - name: Get Release Version
-      run: echo "Release version is ${{ github.event.release.tag_name }}"
+      run: echo $pwd
     - name: Release details
-      run: echo ${{ github.event.release.name }} Description. ${{ steps.tag.outputs.tag }}
-    - name: Output Run Number
-      run: echo ${{ github }}
+      run: echo Release tag ${{ steps.tag.outputs.tag }}
     - name: Print Environment Variables
       run: env
     - name: Execute Gradle build
