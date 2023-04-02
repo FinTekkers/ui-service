@@ -45,7 +45,9 @@ task run_number {
 }
 
 group = 'io.github.fintekkers'
-version = '1.0.'+ System.getenv("run_number")
+version = System.getenv("run_number").replace('v', '')
+println(version)
+
 description = 'FinTekkers Ledger Models'
 java.sourceCompatibility = JavaVersion.VERSION_17
 javadoc.options.addStringOption('Xdoclint:none', '-quiet')
