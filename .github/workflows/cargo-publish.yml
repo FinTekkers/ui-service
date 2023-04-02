@@ -12,7 +12,7 @@ defaults:
     working-directory: ledger-models-rust
 
 jobs:
-  publish:
+  publish-to-crates:
     name: Publish
     runs-on: ubuntu-latest
     steps:
