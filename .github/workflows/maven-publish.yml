@@ -24,6 +24,8 @@ jobs:
       run: echo pwd
     - name: Show working directory contents
       run: ls -all
+    - name: Get Release Version
+      run: echo "Release version is ${{ github.event.release.tag_name }}"
     - name: Release details
       run: echo ${{ github.event.release.name }} Description
     - name: Output Run Number
