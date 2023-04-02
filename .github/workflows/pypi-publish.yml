@@ -35,9 +35,7 @@ jobs:
         run: |
           pwd
 
-          BUILD_VERSION=${{ env.release_version }}
-
-          python3 -m pip install --upgrade build && python3 -m build
+          BUILD_VERSION=${{ env.release_version }} python3 -m pip install --upgrade build && python3 -m build
           pip3 install twine
           
           twine upload -u __token__ -p "${{ secrets.PYPI_TOKEN }}" --repository pypi dist/*
