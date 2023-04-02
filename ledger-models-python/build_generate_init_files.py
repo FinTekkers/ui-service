@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-root = './generated-src'
+root = './src'
 paths = os.listdir(root)
 
 ignore_folders = [
@@ -29,7 +29,6 @@ def create_init_files(root:str):
             print("Ignoring folder as its in the ignore list: {}".format(path))
         # elif os.path.isdir(path):
         #     print("Folder already has an init file")
-
 
 
 create_init_files(root)
