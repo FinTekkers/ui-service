@@ -23,8 +23,8 @@ jobs:
       #   uses: dawidd6/action-get-tag@v1
       - name: Release details
         run: |
-          echo Release tag v0.0.7
-          TAG=v0.0.7
+          echo Release tag ${{ steps.tag.outputs.tag }}
+          TAG=v0.0.8
           echo tag is ${TAG}
           VERSION=${TAG#v}
           echo version is ${VERSION}
@@ -34,6 +34,9 @@ jobs:
       - name: Build & Publish
         run: |
           pwd
+
+          BUILD_VERSION=${{ env.release_version }}
+
           python3 -m pip install --upgrade build && python3 -m build
           pip3 install twine
           
