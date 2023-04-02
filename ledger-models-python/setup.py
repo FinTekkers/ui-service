@@ -1,8 +1,14 @@
 from setuptools import setup, find_packages
 
+import os
+
+version = '0.0.0'
+if 'BUILD_VERSION' in os.environ:
+    version = os.environ.get('BUILD_VERSION')
+
 setup(
     name = "fintekkers-ledger-models",
-    version='0.0.7',
+    version=version,
     license='MIT',
     author="David Doherty",
     author_email='davidjdoherty@gmail.com.com',
