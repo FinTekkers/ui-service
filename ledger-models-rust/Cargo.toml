@@ -2,7 +2,8 @@ build.incremental=false
 
 [package]
 name = "ledger-models"
-version = "0.1.20"
+version = "0.0.0" #Will be overridden at build time
+
 edition = "2021"
 authors = ["dado0583", "samiam376"]
 license = "Apache-2.0"
