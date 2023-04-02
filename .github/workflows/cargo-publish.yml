@@ -22,10 +22,20 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Get tag name
+        id: tag
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+        env:
+          GITHUB_REF: ${{ github.ref }}
+      - name: Remove 'v' prefix from tag
+        id: version
+        run: echo "::set-output name=version::${{ steps.tag.outputs.tag#v }}"
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
       - name: Release details
         run: echo Release tag ${{ steps.tag.outputs.tag }}
       - run: cargo install cargo-edit
-      - run: cargo set-version ${{ steps.tag.outputs.tag#v }}
+      - run: cargo set-version ${{ steps.version.outputs.version }}
         working-directory: ./ledger-models-rust
       - run: cargo publish --token ${CRATES_TOKEN}
         working-directory: ./ledger-models-rust
