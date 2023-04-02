@@ -18,11 +18,30 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - run: python3 -m pip install --upgrade build && python3 -m build
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
+      - name: Get git tag extension
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+      - name: Release details
+        run: |
+          echo Release tag ${{ steps.tag.outputs.tag }}
+          TAG=${{ steps.tag.outputs.tag }}
+          echo tag is ${TAG}
+          VERSION=${TAG#v}
+          echo version is ${VERSION}
+          echo "release_version=${VERSION}" >> $GITHUB_ENV
+      - name: Print Environment Variables
+        run: env
+      - name: Build & Publish
+        run: |
+          pwd
+          python3 -m pip install --upgrade build && python3 -m build
+          pip3 install twine
+          
+          twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} --repository testpypi dist/*
+      # - name: Publish package
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     password: ${{ secrets.PYPI_TOKEN }}
 
 # jobs:
 #   publish-java-package:
