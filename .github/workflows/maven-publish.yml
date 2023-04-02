@@ -37,5 +37,5 @@ jobs:
       run: ./gradlew publish
       env:
         PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-        run_number: ${{ steps.tag.outputs.tag }}
+        run_number: ${VERSION}
         
