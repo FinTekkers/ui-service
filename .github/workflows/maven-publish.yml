@@ -23,20 +23,19 @@ jobs:
     - name: Get git tag
       id: tag
       uses: dawidd6/action-get-tag@v1
-    - name: Echo working directory
-      run: echo $pwd
     - name: Release details
-      run: echo Release tag ${{ steps.tag.outputs.tag }}
-    - run: TAG=${{ steps.tag.outputs.tag }}
-    - run: echo ${TAG}
-    - run: VERSION=${TAG#v}
-    # - run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
-    - run: echo Version is $VERSION
+      run: |
+      echo Release tag ${{ steps.tag.outputs.tag }}
+      TAG=${{ steps.tag.outputs.tag }}
+      echo tag is ${TAG}
+      VERSION=${TAG#v}
+      echo version is ${VERSION}
+      echo "release_version=${VERSION}" >> $GITHUB_ENV
     - name: Print Environment Variables
       run: env
     - name: Execute Gradle build
       run: ./gradlew publish
       env:
         PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-        run_number: ${VERSION}
+        run_number: ${{ env.release_version }}
         
