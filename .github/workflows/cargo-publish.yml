@@ -13,24 +13,28 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
-      - name: Get git tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-      - run: cargo install cargo-edit
+      - name: Get git tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
       - name: Release details
-        run: echo Release tag ${{ steps.tag.outputs.tag }}
-      - run: TAG=${{ steps.tag.outputs.tag }}
-      - run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
-      - run: echo Version is $VERSION
-      - run: cargo set-version $VERSION
+        run: |
+          echo Release tag ${{ steps.tag.outputs.tag }}
+          TAG=${{ steps.tag.outputs.tag }}
+          echo tag is ${TAG}
+          VERSION=${TAG#v}
+          echo version is ${VERSION}
+          echo "release_version=${VERSION}" >> $GITHUB_ENV
         working-directory: ./ledger-models-rust
-      - run: cargo publish --token ${CRATES_TOKEN}
+      - run: |
+          cargo install cargo-edit
+          cargo set-version ${{ env.release_version }}
+          cargo publish --token ${CRATES_TOKEN}
         working-directory: ./ledger-models-rust
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
