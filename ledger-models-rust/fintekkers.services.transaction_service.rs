@@ -11,7 +11,7 @@ pub mod transaction_client {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
-            D: std::convert::TryInto<tonic::transport::Endpoint>,
+            D: TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
             let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
@@ -67,12 +67,28 @@ pub mod transaction_client {
             self.inner = self.inner.accept_compressed(encoding);
             self
         }
+        /// Limits the maximum size of a decoded message.
+        ///
+        /// Default: `4MB`
+        #[must_use]
+        pub fn max_decoding_message_size(mut self, limit: usize) -> Self {
+            self.inner = self.inner.max_decoding_message_size(limit);
+            self
+        }
+        /// Limits the maximum size of an encoded message.
+        ///
+        /// Default: `usize::MAX`
+        #[must_use]
+        pub fn max_encoding_message_size(mut self, limit: usize) -> Self {
+            self.inner = self.inner.max_encoding_message_size(limit);
+            self
+        }
         pub async fn create_or_update(
             &mut self,
             request: impl tonic::IntoRequest<
                 super::super::super::requests::transaction::CreateTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<
                 super::super::super::requests::transaction::CreateTransactionResponseProto,
             >,
@@ -91,14 +107,22 @@ pub mod transaction_client {
             let path = http::uri::PathAndQuery::from_static(
                 "/fintekkers.services.transaction_service.Transaction/CreateOrUpdate",
             );
-            self.inner.unary(request.into_request(), path, codec).await
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "fintekkers.services.transaction_service.Transaction",
+                        "CreateOrUpdate",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
         }
         pub async fn get_by_i_ds(
             &mut self,
             request: impl tonic::IntoRequest<
                 super::super::super::requests::transaction::QueryTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<
                 super::super::super::requests::transaction::QueryTransactionResponseProto,
             >,
@@ -117,14 +141,22 @@ pub mod transaction_client {
             let path = http::uri::PathAndQuery::from_static(
                 "/fintekkers.services.transaction_service.Transaction/GetByIDs",
             );
-            self.inner.unary(request.into_request(), path, codec).await
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "fintekkers.services.transaction_service.Transaction",
+                        "GetByIDs",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
         }
         pub async fn search(
             &mut self,
             request: impl tonic::IntoRequest<
                 super::super::super::requests::transaction::QueryTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<
                 tonic::codec::Streaming<
                     super::super::super::requests::transaction::QueryTransactionResponseProto,
@@ -145,14 +177,22 @@ pub mod transaction_client {
             let path = http::uri::PathAndQuery::from_static(
                 "/fintekkers.services.transaction_service.Transaction/Search",
             );
-            self.inner.server_streaming(request.into_request(), path, codec).await
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "fintekkers.services.transaction_service.Transaction",
+                        "Search",
+                    ),
+                );
+            self.inner.server_streaming(req, path, codec).await
         }
         pub async fn list_i_ds(
             &mut self,
             request: impl tonic::IntoRequest<
                 super::super::super::requests::transaction::QueryTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<
                 super::super::super::requests::transaction::QueryTransactionResponseProto,
             >,
@@ -171,14 +211,22 @@ pub mod transaction_client {
             let path = http::uri::PathAndQuery::from_static(
                 "/fintekkers.services.transaction_service.Transaction/ListIDs",
             );
-            self.inner.unary(request.into_request(), path, codec).await
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "fintekkers.services.transaction_service.Transaction",
+                        "ListIDs",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
         }
         pub async fn validate_create_or_update(
             &mut self,
             request: impl tonic::IntoRequest<
                 super::super::super::requests::transaction::CreateTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<super::super::super::requests::util::errors::SummaryProto>,
             tonic::Status,
         > {
@@ -195,14 +243,22 @@ pub mod transaction_client {
             let path = http::uri::PathAndQuery::from_static(
                 "/fintekkers.services.transaction_service.Transaction/ValidateCreateOrUpdate",
             );
-            self.inner.unary(request.into_request(), path, codec).await
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "fintekkers.services.transaction_service.Transaction",
+                        "ValidateCreateOrUpdate",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
         }
         pub async fn validate_query_request(
             &mut self,
             request: impl tonic::IntoRequest<
                 super::super::super::requests::transaction::QueryTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<super::super::super::requests::util::errors::SummaryProto>,
             tonic::Status,
         > {
@@ -219,7 +275,15 @@ pub mod transaction_client {
             let path = http::uri::PathAndQuery::from_static(
                 "/fintekkers.services.transaction_service.Transaction/ValidateQueryRequest",
             );
-            self.inner.unary(request.into_request(), path, codec).await
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "fintekkers.services.transaction_service.Transaction",
+                        "ValidateQueryRequest",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
         }
     }
 }
@@ -235,7 +299,7 @@ pub mod transaction_server {
             request: tonic::Request<
                 super::super::super::requests::transaction::CreateTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<
                 super::super::super::requests::transaction::CreateTransactionResponseProto,
             >,
@@ -246,7 +310,7 @@ pub mod transaction_server {
             request: tonic::Request<
                 super::super::super::requests::transaction::QueryTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<
                 super::super::super::requests::transaction::QueryTransactionResponseProto,
             >,
@@ -254,7 +318,7 @@ pub mod transaction_server {
         >;
         /// Server streaming response type for the Search method.
         type SearchStream: futures_core::Stream<
-                Item = Result<
+                Item = std::result::Result<
                     super::super::super::requests::transaction::QueryTransactionResponseProto,
                     tonic::Status,
                 >,
@@ -266,13 +330,13 @@ pub mod transaction_server {
             request: tonic::Request<
                 super::super::super::requests::transaction::QueryTransactionRequestProto,
             >,
-        ) -> Result<tonic::Response<Self::SearchStream>, tonic::Status>;
+        ) -> std::result::Result<tonic::Response<Self::SearchStream>, tonic::Status>;
         async fn list_i_ds(
             &self,
             request: tonic::Request<
                 super::super::super::requests::transaction::QueryTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<
                 super::super::super::requests::transaction::QueryTransactionResponseProto,
             >,
@@ -283,7 +347,7 @@ pub mod transaction_server {
             request: tonic::Request<
                 super::super::super::requests::transaction::CreateTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<super::super::super::requests::util::errors::SummaryProto>,
             tonic::Status,
         >;
@@ -292,7 +356,7 @@ pub mod transaction_server {
             request: tonic::Request<
                 super::super::super::requests::transaction::QueryTransactionRequestProto,
             >,
-        ) -> Result<
+        ) -> std::result::Result<
             tonic::Response<super::super::super::requests::util::errors::SummaryProto>,
             tonic::Status,
         >;
@@ -302,6 +366,8 @@ pub mod transaction_server {
         inner: _Inner<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
+        max_decoding_message_size: Option<usize>,
+        max_encoding_message_size: Option<usize>,
     }
     struct _Inner<T>(Arc<T>);
     impl<T: Transaction> TransactionServer<T> {
@@ -314,6 +380,8 @@ pub mod transaction_server {
                 inner,
                 accept_compression_encodings: Default::default(),
                 send_compression_encodings: Default::default(),
+                max_decoding_message_size: None,
+                max_encoding_message_size: None,
             }
         }
         pub fn with_interceptor<F>(
@@ -337,6 +405,22 @@ pub mod transaction_server {
             self.send_compression_encodings.enable(encoding);
             self
         }
+        /// Limits the maximum size of a decoded message.
+        ///
+        /// Default: `4MB`
+        #[must_use]
+        pub fn max_decoding_message_size(mut self, limit: usize) -> Self {
+            self.max_decoding_message_size = Some(limit);
+            self
+        }
+        /// Limits the maximum size of an encoded message.
+        ///
+        /// Default: `usize::MAX`
+        #[must_use]
+        pub fn max_encoding_message_size(mut self, limit: usize) -> Self {
+            self.max_encoding_message_size = Some(limit);
+            self
+        }
     }
     impl<T, B> tonic::codegen::Service<http::Request<B>> for TransactionServer<T>
     where
@@ -350,7 +434,7 @@ pub mod transaction_server {
         fn poll_ready(
             &mut self,
             _cx: &mut Context<'_>,
-        ) -> Poll<Result<(), Self::Error>> {
+        ) -> Poll<std::result::Result<(), Self::Error>> {
             Poll::Ready(Ok(()))
         }
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
@@ -375,7 +459,7 @@ pub mod transaction_server {
                                 super::super::super::requests::transaction::CreateTransactionRequestProto,
                             >,
                         ) -> Self::Future {
-                            let inner = self.0.clone();
+                            let inner = Arc::clone(&self.0);
                             let fut = async move {
                                 (*inner).create_or_update(request).await
                             };
@@ -384,6 +468,8 @@ pub mod transaction_server {
                     }
                     let accept_compression_encodings = self.accept_compression_encodings;
                     let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
@@ -393,6 +479,10 @@ pub mod transaction_server {
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
                             );
                         let res = grpc.unary(method, req).await;
                         Ok(res)
@@ -418,13 +508,15 @@ pub mod transaction_server {
                                 super::super::super::requests::transaction::QueryTransactionRequestProto,
                             >,
                         ) -> Self::Future {
-                            let inner = self.0.clone();
+                            let inner = Arc::clone(&self.0);
                             let fut = async move { (*inner).get_by_i_ds(request).await };
                             Box::pin(fut)
                         }
                     }
                     let accept_compression_encodings = self.accept_compression_encodings;
                     let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
@@ -434,6 +526,10 @@ pub mod transaction_server {
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
                             );
                         let res = grpc.unary(method, req).await;
                         Ok(res)
@@ -460,13 +556,15 @@ pub mod transaction_server {
                                 super::super::super::requests::transaction::QueryTransactionRequestProto,
                             >,
                         ) -> Self::Future {
-                            let inner = self.0.clone();
+                            let inner = Arc::clone(&self.0);
                             let fut = async move { (*inner).search(request).await };
                             Box::pin(fut)
                         }
                     }
                     let accept_compression_encodings = self.accept_compression_encodings;
                     let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
@@ -476,6 +574,10 @@ pub mod transaction_server {
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
                             );
                         let res = grpc.server_streaming(method, req).await;
                         Ok(res)
@@ -501,13 +603,15 @@ pub mod transaction_server {
                                 super::super::super::requests::transaction::QueryTransactionRequestProto,
                             >,
                         ) -> Self::Future {
-                            let inner = self.0.clone();
+                            let inner = Arc::clone(&self.0);
                             let fut = async move { (*inner).list_i_ds(request).await };
                             Box::pin(fut)
                         }
                     }
                     let accept_compression_encodings = self.accept_compression_encodings;
                     let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
@@ -517,6 +621,10 @@ pub mod transaction_server {
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
                             );
                         let res = grpc.unary(method, req).await;
                         Ok(res)
@@ -542,7 +650,7 @@ pub mod transaction_server {
                                 super::super::super::requests::transaction::CreateTransactionRequestProto,
                             >,
                         ) -> Self::Future {
-                            let inner = self.0.clone();
+                            let inner = Arc::clone(&self.0);
                             let fut = async move {
                                 (*inner).validate_create_or_update(request).await
                             };
@@ -551,6 +659,8 @@ pub mod transaction_server {
                     }
                     let accept_compression_encodings = self.accept_compression_encodings;
                     let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
@@ -560,6 +670,10 @@ pub mod transaction_server {
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
                             );
                         let res = grpc.unary(method, req).await;
                         Ok(res)
@@ -585,7 +699,7 @@ pub mod transaction_server {
                                 super::super::super::requests::transaction::QueryTransactionRequestProto,
                             >,
                         ) -> Self::Future {
-                            let inner = self.0.clone();
+                            let inner = Arc::clone(&self.0);
                             let fut = async move {
                                 (*inner).validate_query_request(request).await
                             };
@@ -594,6 +708,8 @@ pub mod transaction_server {
                     }
                     let accept_compression_encodings = self.accept_compression_encodings;
                     let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
@@ -603,6 +719,10 @@ pub mod transaction_server {
                             .apply_compression_config(
                                 accept_compression_encodings,
                                 send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
                             );
                         let res = grpc.unary(method, req).await;
                         Ok(res)
@@ -631,12 +751,14 @@ pub mod transaction_server {
                 inner,
                 accept_compression_encodings: self.accept_compression_encodings,
                 send_compression_encodings: self.send_compression_encodings,
+                max_decoding_message_size: self.max_decoding_message_size,
+                max_encoding_message_size: self.max_encoding_message_size,
             }
         }
     }
     impl<T: Transaction> Clone for _Inner<T> {
         fn clone(&self) -> Self {
-            Self(self.0.clone())
+            Self(Arc::clone(&self.0))
         }
     }
     impl<T: std::fmt::Debug> std::fmt::Debug for _Inner<T> {
