@@ -28,7 +28,5 @@ setup(
     package_dir={'': 'src'},
     url='https://github.com/fintekkers/ledger-models',
     keywords='example project',
-    install_requires=[
-      ],
-
+    install_requires=[],
 )
