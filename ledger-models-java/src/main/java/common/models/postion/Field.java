@@ -9,7 +9,6 @@ import common.models.security.identifier.Identifier;
 import common.models.strategy.Strategy;
 import common.models.transaction.TransactionType;
 import fintekkers.models.position.PositionStatusProto;
-import fintekkers.models.transaction.TransactionTypeProto;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -87,7 +86,7 @@ public enum Field {
             "<TODO> for modelling your own asset class hierarchy"), //FixedIncome, Equity, etc
     PRODUCT_CLASS(String.class, "The financial product, as modelled in the system. These are the " +
             "representations used to express financial instruments in code. "+ productExplanation()), //Bond, CashEquity, etc
-    PRODUCT_TYPE(String.class, "The financial product, as modelled by the financial world. Currently " +
+    PRODUCT_TYPE(ProductType.class, "The financial product, as modelled by the financial world. Currently " +
             "this is static. <TODO> for modelling your own product hierarchy. "+ productExplanation()),
 
     //To be implemented
