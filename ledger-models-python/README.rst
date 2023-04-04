@@ -60,5 +60,13 @@ do not do this, and not all versions of Python support implicit modules.
 *build_pip_package.sh* will build and install ledger_models_python to your local machine with version 0.0.0. Use this 
 for local testing.
 
-*py.typed* this is added to the distribution as an indicator that the pyi files exist and can be used to provide type hints
+*fintekkers/py.typed* this is added to the distribution as an indicator that the pyi files exist and can be used to provide type hints
+
+*MANIFEST.in* used by the sdist build to include files. (This was easier than using the setup.py)
+
+*requirements.txt* Dependent packages (not guaranteed to be up to date at the moment)
+
+*setup.py* The configuration to build. Run as `python setup.py sdist bdist_wheel`
+
+*setup.cfg* Might be worth getting rid of this?
 
