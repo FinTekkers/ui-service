@@ -1,5 +1,6 @@
 package common.models.security;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -10,8 +11,10 @@ class TenorTest {
     public void testDescriptionIsReversible() {
         LocalDate today = LocalDate.now();
         LocalDate moreThanOneYear = today.minusYears(1).minusMonths(1);
-        Tenor tenor = new Tenor(TenorType.TERM, Period.between(today, moreThanOneYear));
+        Period period = Period.between(moreThanOneYear, today);
 
-        System.out.println(tenor.getTenorDescription());
+        Tenor tenor = new Tenor(TenorType.TERM, period);
+
+        Assertions.assertEquals("1Y", tenor.getTenorDescription());
     }
 }

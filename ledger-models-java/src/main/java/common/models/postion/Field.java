@@ -86,7 +86,7 @@ public enum Field {
             "<TODO> for modelling your own asset class hierarchy"), //FixedIncome, Equity, etc
     PRODUCT_CLASS(String.class, "The financial product, as modelled in the system. These are the " +
             "representations used to express financial instruments in code. "+ productExplanation()), //Bond, CashEquity, etc
-    PRODUCT_TYPE(ProductType.class, "The financial product, as modelled by the financial world. Currently " +
+    PRODUCT_TYPE(String.class, "The financial product, as modelled by the financial world. Currently " +
             "this is static. <TODO> for modelling your own product hierarchy. "+ productExplanation()),
 
     //To be implemented
