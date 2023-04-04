@@ -1,11 +1,12 @@
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 
 from fintekkers.models.security.tenor_type_pb2 import TenorTypeProto
 
 class Tenor:
     UNKNOWN_TENOR = None
     type:TenorTypeProto = None
-    tenor:timedelta = None
+    tenor:relativedelta = None
     
     def __init__(self, type:TenorTypeProto, term:str=None):
         self.type = type
@@ -13,7 +14,7 @@ class Tenor:
             self.tenor = Tenor.from_tenor_description(term)
     
     @classmethod
-    def from_tenor_description(cls, tenor_description):
+    def from_tenor_description(cls, tenor_description) -> relativedelta:
         if not tenor_description:
             return None
         
@@ -22,14 +23,14 @@ class Tenor:
     def get_type(self) -> TenorTypeProto:
         return self.type
     
-    def get_tenor(self) -> timedelta:
+    def get_tenor(self) -> relativedelta:
         return self.tenor
     
     def get_tenor_description(self) -> str:
         return Tenor.period_to_string(self.tenor)
     
     @staticmethod
-    def period_to_string(period) -> timedelta:
+    def period_to_string(period:relativedelta) -> str:
         years = period.years
         months = period.months
         weeks = period.days // 7
@@ -48,7 +49,7 @@ class Tenor:
         return result.strip()
     
     @staticmethod
-    def parse_period(period_string):
+    def parse_period(period_string) -> relativedelta:
         years = 0
         months = 0
         weeks = 0
@@ -77,4 +78,5 @@ class Tenor:
                     raise ValueError("Invalid character in period string: {}".format(c))
                 number_string = ""
         
-        return timedelta(days=days + weeks * 7, weeks=0, months=months, years=years)
+        return relativedelta(days=days, weeks=weeks, months=months, years=years)
+
