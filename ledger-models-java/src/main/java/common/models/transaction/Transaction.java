@@ -223,7 +223,7 @@ public class Transaction extends RawDataModelObject implements ITransaction {
             case IS_CANCELLED -> isCancelled();
             //Security Fields
             case SECURITY -> getSecurity();
-            case PRODUCT_TYPE -> getSecurity().getProductType();
+            case PRODUCT_TYPE -> getSecurity().getProductType().name();
             case IDENTIFIER -> getSecurity().getSecurityId();
             case ASSET_CLASS -> getSecurity().getAssetClass();
             case PRODUCT_CLASS -> getSecurity().getField(PRODUCT_CLASS);
@@ -287,8 +287,6 @@ public class Transaction extends RawDataModelObject implements ITransaction {
     public Transaction getCashTransaction() {
         List<Transaction> cashTransactions =
                 getChildTransactions().stream().filter(t -> t.getSecurity().isCash()).collect(Collectors.toList());
-
-//        cashTransactions.stream().filter(t -> t.getParentTransaction().equals(this));
 
         if(cashTransactions.size() == 1)
             return cashTransactions.get(0);

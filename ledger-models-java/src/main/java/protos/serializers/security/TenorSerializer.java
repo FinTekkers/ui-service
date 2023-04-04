@@ -72,7 +72,7 @@ public class TenorSerializer implements IRawDataModelObjectSerializer<TenorProto
     public Tenor deserialize(TenorProto proto) {
         return new Tenor(
                 TenorType.valueOf(proto.getTenorType().name()),
-                null//proto.getTermValue()
+                proto.getTermValue()
         );
     }
 }

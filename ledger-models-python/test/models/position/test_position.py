@@ -21,14 +21,9 @@ class Testing(unittest.TestCase):
         trade_date = position.get_field(FieldProto.TRADE_DATE)
         transaction_type = position.get_field(FieldProto.TRANSACTION_TYPE)
         directed_quantity = position.get_measure(MeasureProto.DIRECTED_QUANTITY)
-
-    
-
-    def test_boolean(self):
-        a = True
-        b = True
-        self.assertEqual(a, b)
-
+        
+        #Will throw an error if they don't exist
+        
 if __name__ == '__main__':
     unittest.main()
 
