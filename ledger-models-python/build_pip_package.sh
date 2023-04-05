@@ -8,10 +8,9 @@ pip3 uninstall -y $PACKAGE
 rm -rf __pycache__
 rm -rf build
 rm -rf dist
-rm -rf generated-src/$PACKAGE.egg-info
 
-cd generated-src
+# cd generated-src
 
 python3 setup.py sdist bdist_wheel
 
-pip3 install ./dist/$PACKAGE-0.0.1-py3-none-any.whl --force-reinstall
+pip3 install ./dist/$PACKAGE-0.0.0-py3-none-any.whl --force-reinstall

@@ -9,7 +9,6 @@ import common.models.security.identifier.Identifier;
 import common.models.strategy.Strategy;
 import common.models.transaction.TransactionType;
 import fintekkers.models.position.PositionStatusProto;
-import fintekkers.models.transaction.TransactionTypeProto;
 
 import java.time.LocalDate;
 import java.util.UUID;

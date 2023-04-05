@@ -44,7 +44,7 @@ class ProtoSerializationUtil:
     @staticmethod
     def deserialize(obj):
         if isinstance(obj, UUIDProto):
-            return FintekkersUuid.from_bytes(bytes=obj.raw_uuid)
+            return FintekkersUuid.from_bytes(raw_uuid=obj.raw_uuid)
         if isinstance(obj, LocalDateProto):
             return date(year=obj.year, month=obj.month, day=obj.day)
         if isinstance(obj, LocalTimestampProto):
