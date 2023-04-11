@@ -6,6 +6,7 @@ from fintekkers.models.transaction.transaction_type_pb2 import TransactionTypePr
 from fintekkers.models.security.identifier.identifier_pb2 import IdentifierProto
 
 from fintekkers.wrappers.models.util.fintekkers_uuid import FintekkersUuid
+from fintekkers.models.util.decimal_value_pb2 import DecimalValueProto
 from fintekkers.wrappers.models.security import Identifier
 from fintekkers.wrappers.models.transaction import TransactionType
 
@@ -37,6 +38,8 @@ class ProtoSerializationUtil:
             return LocalTimestampProto(timestamp=timestamp, time_zone=time_zone)
         if isinstance(obj, Identifier) or isinstance(obj, TransactionType):
             return obj.proto
+        if isinstance(obj, float) or isinstance(obj, int):
+            return DecimalValueProto(arbitrary_precision_value=str(obj))
 
         return obj
         

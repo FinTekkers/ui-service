@@ -1,4 +1,10 @@
 #Package dependencies
-wheel
-protobuf
-pytz
+wheel #For packaging
+
+python-dateutil #For relative times, eg for calculating tenors from strings like '18M' 
+pytz #For zoned timestamps
+
+protobuf #The protobf libraries
+grpcio  #Will install grpc packages
+
+pytest #For testing
