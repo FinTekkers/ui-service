@@ -73,3 +73,5 @@ for local testing.
 *clean_pycache.sh* Removes all __pycache__ entries. Occasionally you'll hit some error where a file is cached and out of date. 
 
 *pyproject.toml* This was added so that running pytest without any parameters or PYTHONPATH arguments would work
+
+*pvenv.cfg* Configuration for venv
