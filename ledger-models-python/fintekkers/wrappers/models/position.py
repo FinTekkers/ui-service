@@ -8,6 +8,7 @@ from fintekkers.models.security.security_pb2 import SecurityProto
 from fintekkers.models.security.identifier.identifier_pb2 import IdentifierProto
 
 from fintekkers.models.util.local_date_pb2 import LocalDateProto
+from fintekkers.models.util.local_timestamp_pb2 import LocalTimestampProto
 from fintekkers.models.util.uuid_pb2 import UUIDProto
 
 from fintekkers.wrappers.models.util.serialization import ProtoSerializationUtil, ProtoEnum
@@ -16,6 +17,7 @@ from google.protobuf import wrappers_pb2 as wrappers
 from google.protobuf.any_pb2 import Any
 
 from decimal import Decimal
+from io import StringIO
 
 class Position():
     positionProto:PositionProto
@@ -32,16 +34,24 @@ class Position():
         raise ValueError("Could not find field in position")
         
 
-    def get_measure(self, measure_to_get:MeasureProto):
+    def get_measure(self, measure_to_get:MeasureProto) -> Decimal:
         tmp_measure:MeasureMapEntry
         for tmp_measure in self.positionProto.measures:
             if tmp_measure.measure == measure_to_get:
                 return ProtoSerializationUtil.deserialize(Position.unpack_measure(tmp_measure))
 
-
         raise ValueError("Could not find measure in position")
 
     def get_field_display(self, field_to_get:FieldProto):
+        obj = self.get_field(field_to_get=field_to_get)
+        if FieldProto.SECURITY == field_to_get:
+            security:SecurityProto = obj
+            return security.description
+        
+        if FieldProto.PORTFOLIO == field_to_get:
+            portfolio:PortfolioProto = obj
+            return portfolio.portfolio_name
+
         return self.get_field(field_to_get=field_to_get).__str__()
 
     def get_measures(self):
@@ -49,19 +59,30 @@ class Position():
 
     def get_fields(self):
         return self.positionProto.fields
+    
+    def __str__(self):
+        out:StringIO = StringIO()
+        
+        for field in self.get_fields():
+            out.write(FieldProto.Name(number=field.field))
+            out.write(',')
+            out.write(self.get_field_display(field.field))
+            out.write(';')
+
+        for measure in self.get_measures():
+            out.write(MeasureProto.Name(number=measure.measure))
+            out.write(',')
+            tmp:Decimal = self.get_measure(measure.measure)
+            out.write(str(tmp))
+            out.write(';')
+        
+        return out.getvalue()
 
     @staticmethod
     def wrap_string_to_any(my_string:str):
         my_any = Any()
         my_any.Pack(wrappers.StringValue(value=my_string))
         return my_any
-
-    # @staticmethod
-    # def unwrap_string_from_any(msg):
-    #     any:Any = Any()
-    #     any.Unpack(msg)
-    #     return any.value
-
 
     @staticmethod
     def pack_field(field_to_pack):
@@ -95,6 +116,8 @@ class Position():
     def unpack_field(field_to_unpack:FieldMapEntry):
         if field_to_unpack.field == FieldProto.PORTFOLIO_ID:
             return UUIDProto.FromString(field_to_unpack.field_value_packed.value)
+        if field_to_unpack.field == FieldProto.AS_OF:
+            return LocalTimestampProto.FromString(field_to_unpack.field_value_packed.value)        
         if field_to_unpack.field == FieldProto.TRADE_DATE or field_to_unpack.field == FieldProto.SETTLEMENT_DATE \
             or field_to_unpack.field == FieldProto.TAX_LOT_OPEN_DATE\
                 or field_to_unpack.field == FieldProto.TAX_LOT_CLOSE_DATE:

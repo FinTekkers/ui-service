@@ -29,4 +29,4 @@ $(find . -iname "*.proto")
 echo "generating python protos"
 #pip3 install grpcio
 #pip3 install grpcio-tools
-python3 -m grpc_tools.protoc -I=. --python_out=../ledger-models-python/generated-src --pyi_out=../ledger-models-python/generated-src --grpc_python_out=../ledger-models-python/generated-src $(find . -iname "*.proto")
+python3 -m grpc_tools.protoc -I=. --python_out=../ledger-models-python --pyi_out=../ledger-models-python --grpc_python_out=../ledger-models-python $(find . -iname "*.proto")

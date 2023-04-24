@@ -2,12 +2,11 @@
 from fintekkers.models.util.local_date_pb2 import LocalDateProto
 from fintekkers.models.util.local_timestamp_pb2 import LocalTimestampProto
 from fintekkers.models.util.uuid_pb2 import UUIDProto
-from fintekkers.models.transaction.transaction_type_pb2 import TransactionTypeProto
 from fintekkers.models.security.identifier.identifier_pb2 import IdentifierProto
 
 from fintekkers.wrappers.models.util.fintekkers_uuid import FintekkersUuid
 from fintekkers.models.util.decimal_value_pb2 import DecimalValueProto
-from fintekkers.wrappers.models.security import Identifier
+from fintekkers.wrappers.models.security_identifier import Identifier
 from fintekkers.wrappers.models.transaction import TransactionType
 
 from google.protobuf.timestamp_pb2 import Timestamp
@@ -54,6 +53,9 @@ class ProtoSerializationUtil:
             return datetime.fromtimestamp(obj.timestamp.seconds, timezone(obj.time_zone))
         if isinstance(obj, IdentifierProto):
             return Identifier(obj)
+        if isinstance(obj, DecimalValueProto):
+            obj:DecimalValueProto
+            return float(obj.arbitrary_precision_value)
         if hasattr(obj, 'enum_name') and getattr(obj, 'enum_name') == "TRANSACTION_TYPE":
             return TransactionType(obj.enum_value)
         

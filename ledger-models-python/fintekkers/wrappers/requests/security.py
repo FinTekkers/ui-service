@@ -1,5 +1,5 @@
 
-from datetime import date
+from datetime import date, datetime
 from uuid import uuid4
 from google.protobuf.any_pb2 import Any
 from google.protobuf.timestamp_pb2 import Timestamp
@@ -65,15 +65,18 @@ class CreateSecurityRequest():
             coupon_type = ZERO
             coupon_frequency = NO_COUPON
 
+        issue_date_proto = get_date_proto(issue_date)
+        dated_date_proto = get_date_proto(dated_date) if dated_date is not None else None
+        maturity_date_proto = get_date_proto(maturity_date)
 
         security_proto:SecurityProto = SecurityProto(
             as_of=LocalTimestampProto(time_zone="America/New_York", timestamp=Timestamp(seconds=1,nanos=0)),
             uuid=UUIDProto(raw_uuid=uuid4().bytes),
             issuer_name="US Government",
             identifier=id,
-            issue_date=get_date_proto(issue_date),
-            dated_date=get_date_proto(dated_date),
-            maturity_date=get_date_proto(maturity_date),
+            issue_date=issue_date_proto,
+            dated_date=dated_date_proto,
+            maturity_date=maturity_date_proto,
             security_type=security_type,
             quantity_type=ORIGINAL_FACE_VALUE, 
             settlement_currency=cash_security,
@@ -122,10 +125,14 @@ class QuerySecurityRequest():
 
             filters.append(entry)
         
+
+        as_of_proto:LocalTimestampProto = ProtoSerializationUtil.serialize(datetime.now())
+
         request:QuerySecurityRequestProto = QuerySecurityRequestProto(
             search_security_input=PositionFilterProto(
                 filters=filters
-            )
+            ),
+            as_of=as_of_proto
         )
 
         return QuerySecurityRequest(proto=request)

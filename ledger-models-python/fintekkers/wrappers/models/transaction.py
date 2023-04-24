@@ -11,7 +11,6 @@ from fintekkers.models.position.position_status_pb2 import PositionStatusProto
 from fintekkers.models.price.price_pb2 import PriceProto
 from fintekkers.models.security.security_pb2 import SecurityProto
 
-from fintekkers.wrappers.models.util.fintekkers_uuid import FintekkersUuid
 from fintekkers.models.util.local_date_pb2 import LocalDateProto
 from fintekkers.models.util.local_timestamp_pb2 import LocalTimestampProto
 from fintekkers.models.util.uuid_pb2 import UUIDProto
@@ -25,9 +24,10 @@ class Transaction():
         trade_date:date=date.today(), settlement_date:date=date.today(), \
         position_status:PositionStatusProto=PositionStatusProto.INTENDED, \
         transaction_type:TransactionTypeProto=TransactionTypeProto.BUY, \
-        price:float=-100.00, quantity=100):
+        price:float=-100.00, quantity=100, 
+        as_of:datetime=datetime.now()):
         
-        as_of_proto = LocalTimestampProto(timestamp=Timestamp(seconds=int(get_date_from_proto(trade_date).timestamp()), nanos=0), time_zone="America/New_York")
+        as_of_proto = LocalTimestampProto(timestamp=Timestamp(seconds=int(get_date_from_proto(as_of).timestamp()), nanos=0), time_zone="America/New_York")
 
         return Transaction(proto=TransactionProto(
             as_of=as_of_proto,

@@ -4,6 +4,7 @@ from typing import ClassVar as _ClassVar
 
 ADJUSTED_TENOR: FieldProto
 ASSET_CLASS: FieldProto
+AS_OF: FieldProto
 CASH_IMPACT_SECURITY: FieldProto
 DESCRIPTOR: _descriptor.FileDescriptor
 EFFECTIVE_DATE: FieldProto

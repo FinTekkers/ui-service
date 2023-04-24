@@ -6,6 +6,7 @@
 
 import * as jspb from "google-protobuf";
 import * as fintekkers_models_util_uuid_pb from "../../../fintekkers/models/util/uuid_pb";
+import * as fintekkers_models_util_local_timestamp_pb from "../../../fintekkers/models/util/local_timestamp_pb";
 import * as fintekkers_models_position_position_filter_pb from "../../../fintekkers/models/position/position_filter_pb";
 
 export class QueryTransactionRequestProto extends jspb.Message { 
@@ -23,6 +24,11 @@ export class QueryTransactionRequestProto extends jspb.Message {
     getSearchTransactionInput(): fintekkers_models_position_position_filter_pb.PositionFilterProto | undefined;
     setSearchTransactionInput(value?: fintekkers_models_position_position_filter_pb.PositionFilterProto): QueryTransactionRequestProto;
 
+    hasAsOf(): boolean;
+    clearAsOf(): void;
+    getAsOf(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+    setAsOf(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): QueryTransactionRequestProto;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): QueryTransactionRequestProto.AsObject;
     static toObject(includeInstance: boolean, msg: QueryTransactionRequestProto): QueryTransactionRequestProto.AsObject;
@@ -39,5 +45,6 @@ export namespace QueryTransactionRequestProto {
         version: string,
         uuidsList: Array<fintekkers_models_util_uuid_pb.UUIDProto.AsObject>,
         searchTransactionInput?: fintekkers_models_position_position_filter_pb.PositionFilterProto.AsObject,
+        asOf?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
     }
 }

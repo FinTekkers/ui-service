@@ -3,6 +3,7 @@ syntax = "proto3";
 package fintekkers.requests.security;
 
 import "fintekkers/models/util/uuid.proto";
+import "fintekkers/models/util/local_timestamp.proto";
 import "fintekkers/models/position/position_filter.proto";
 
 option java_multiple_files = true;
@@ -19,6 +20,7 @@ message QuerySecurityRequestProto {
 
   //A list of position filters that will filter securities that match.
   fintekkers.models.position.PositionFilterProto search_security_input = 22;
+  fintekkers.models.util.LocalTimestampProto as_of = 23;
 }
 
 

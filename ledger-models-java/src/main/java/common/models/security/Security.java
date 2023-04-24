@@ -68,26 +68,17 @@ public class Security extends RawDataModelObject implements Comparable, IFinanci
      * Plumbing for positions
      */
     public Object getField(Field field) {
-        switch(field) {
-            case ID:
-            case SECURITY_ID:
-                return getID();
-            case ASSET_CLASS:
-                return getAssetClass();
-            case PRODUCT_CLASS:
-                return getProductClass();
-            case PRODUCT_TYPE:
-                return getProductType();
-            case IDENTIFIER:
-                return getSecurityId();
-            case TENOR:
-            case ADJUSTED_TENOR:
-                return Tenor.UNKNOWN_TENOR;
-            case MATURITY_DATE:
-                return LocalDate.of(2399, 12, 31);
-            default:
-                throw new RuntimeException(String.format("Field not found %s", field));
-        }
+        return switch (field) {
+            case ID, SECURITY_ID -> getID();
+            case AS_OF -> getAsOf();
+            case ASSET_CLASS -> getAssetClass();
+            case PRODUCT_CLASS -> getProductClass();
+            case PRODUCT_TYPE -> getProductType();
+            case IDENTIFIER -> getSecurityId();
+            case TENOR, ADJUSTED_TENOR -> Tenor.UNKNOWN_TENOR;
+            case MATURITY_DATE -> LocalDate.of(2399, 12, 31);
+            default -> throw new RuntimeException(String.format("Field not found %s", field));
+        };
     }
 
     @Override

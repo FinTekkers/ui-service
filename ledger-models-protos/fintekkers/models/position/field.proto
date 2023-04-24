@@ -9,6 +9,7 @@ option java_outer_classname = "FieldProtos";
 enum FieldProto {
   UNKNOWN_FIELD = 0;
   ID=1; //(UUID.class)
+  AS_OF=2; //ZonedDateTime
 
   // Attribute fields. Likely to be fields that one would pivot on.
   EFFECTIVE_DATE = 10; //LocalDate.class

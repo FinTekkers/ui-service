@@ -1,26 +1,12 @@
-from fintekkers.models.security.identifier.identifier_pb2 import IdentifierProto
-from fintekkers.models.security.identifier.identifier_type_pb2 import IdentifierTypeProto
-
 from fintekkers.models.security.security_pb2 import SecurityProto
-from fintekkers.models.security.security_type_pb2 import SecurityTypeProto
-from fintekkers.models.security.security_quantity_type_pb2 import SecurityQuantityTypeProto
 
 from fintekkers.models.position.field_pb2 import FieldProto
 from fintekkers.models.position.measure_pb2 import MeasureProto
+from fintekkers.wrappers.models.util.serialization import ProtoSerializationUtil
 
-
-import uuid
+from fintekkers.wrappers.models.util.fintekkers_uuid import FintekkersUuid
+from uuid import UUID
 from datetime import datetime
-from enum import Enum
-from typing import Set
-
-class Identifier():
-    def __init__(self, identifier:IdentifierProto):
-        self.proto = identifier
-
-    def __str__(self):
-        identifier_type_name = IdentifierTypeProto.DESCRIPTOR.values_by_number[self.proto.identifier_type].name
-        return f"{identifier_type_name}:{self.proto.identifier_value}"
 
 class IFinancialModelObject:
     def get_field(field:FieldProto) -> object:
@@ -39,20 +25,25 @@ class IFinancialModelObject:
         pass
 
 class RawDataModelObject:
-    def __init__(self, id: uuid.UUID, as_of: datetime):
+    def __init__(self, id: UUID, as_of: datetime):
         self.id = id
         self.as_of = as_of
 
 class Security():
-    @staticmethod
-    def create_from():
-        pass
-        # SecurityProto(
-        #     object_class="Security"
-        # )
+    # @staticmethod
+    # def create_from():
+    #     pass
+    #     # SecurityProto(
+    #     #     object_class="Security"
+    #     # )
 
     def __init__(self, proto:SecurityProto):
         self.proto:SecurityProto = proto
+
+    def uuid(self) -> UUID:
+        uuid:FintekkersUuid = ProtoSerializationUtil.deserialize(self.proto.uuid)
+        return uuid.uuid
+        
 
 
 # class Security(RawDataModelObject, IFinancialModelObject):
