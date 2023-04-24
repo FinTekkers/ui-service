@@ -86,6 +86,19 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
+          case 186: {
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder subBuilder = null;
+            if (asOf_ != null) {
+              subBuilder = asOf_.toBuilder();
+            }
+            asOf_ = input.readMessage(fintekkers.models.util.LocalTimestamp.LocalTimestampProto.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(asOf_);
+              asOf_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -263,6 +276,32 @@ private static final long serialVersionUID = 0L;
     return getSearchPortfolioInput();
   }
 
+  public static final int AS_OF_FIELD_NUMBER = 23;
+  private fintekkers.models.util.LocalTimestamp.LocalTimestampProto asOf_;
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+   * @return Whether the asOf field is set.
+   */
+  @java.lang.Override
+  public boolean hasAsOf() {
+    return asOf_ != null;
+  }
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+   * @return The asOf.
+   */
+  @java.lang.Override
+  public fintekkers.models.util.LocalTimestamp.LocalTimestampProto getAsOf() {
+    return asOf_ == null ? fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : asOf_;
+  }
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+   */
+  @java.lang.Override
+  public fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder getAsOfOrBuilder() {
+    return getAsOf();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -289,6 +328,9 @@ private static final long serialVersionUID = 0L;
     if (searchPortfolioInput_ != null) {
       output.writeMessage(22, getSearchPortfolioInput());
     }
+    if (asOf_ != null) {
+      output.writeMessage(23, getAsOf());
+    }
     unknownFields.writeTo(output);
   }
 
@@ -311,6 +353,10 @@ private static final long serialVersionUID = 0L;
     if (searchPortfolioInput_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(22, getSearchPortfolioInput());
+    }
+    if (asOf_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(23, getAsOf());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -338,6 +384,11 @@ private static final long serialVersionUID = 0L;
       if (!getSearchPortfolioInput()
           .equals(other.getSearchPortfolioInput())) return false;
     }
+    if (hasAsOf() != other.hasAsOf()) return false;
+    if (hasAsOf()) {
+      if (!getAsOf()
+          .equals(other.getAsOf())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -360,6 +411,10 @@ private static final long serialVersionUID = 0L;
     if (hasSearchPortfolioInput()) {
       hash = (37 * hash) + SEARCH_PORTFOLIO_INPUT_FIELD_NUMBER;
       hash = (53 * hash) + getSearchPortfolioInput().hashCode();
+    }
+    if (hasAsOf()) {
+      hash = (37 * hash) + AS_OF_FIELD_NUMBER;
+      hash = (53 * hash) + getAsOf().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -511,6 +566,12 @@ private static final long serialVersionUID = 0L;
         searchPortfolioInput_ = null;
         searchPortfolioInputBuilder_ = null;
       }
+      if (asOfBuilder_ == null) {
+        asOf_ = null;
+      } else {
+        asOf_ = null;
+        asOfBuilder_ = null;
+      }
       return this;
     }
 
@@ -553,6 +614,11 @@ private static final long serialVersionUID = 0L;
         result.searchPortfolioInput_ = searchPortfolioInput_;
       } else {
         result.searchPortfolioInput_ = searchPortfolioInputBuilder_.build();
+      }
+      if (asOfBuilder_ == null) {
+        result.asOf_ = asOf_;
+      } else {
+        result.asOf_ = asOfBuilder_.build();
       }
       onBuilt();
       return result;
@@ -638,6 +704,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasSearchPortfolioInput()) {
         mergeSearchPortfolioInput(other.getSearchPortfolioInput());
+      }
+      if (other.hasAsOf()) {
+        mergeAsOf(other.getAsOf());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -1178,6 +1247,125 @@ private static final long serialVersionUID = 0L;
         searchPortfolioInput_ = null;
       }
       return searchPortfolioInputBuilder_;
+    }
+
+    private fintekkers.models.util.LocalTimestamp.LocalTimestampProto asOf_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder> asOfBuilder_;
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     * @return Whether the asOf field is set.
+     */
+    public boolean hasAsOf() {
+      return asOfBuilder_ != null || asOf_ != null;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     * @return The asOf.
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProto getAsOf() {
+      if (asOfBuilder_ == null) {
+        return asOf_ == null ? fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : asOf_;
+      } else {
+        return asOfBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     */
+    public Builder setAsOf(fintekkers.models.util.LocalTimestamp.LocalTimestampProto value) {
+      if (asOfBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        asOf_ = value;
+        onChanged();
+      } else {
+        asOfBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     */
+    public Builder setAsOf(
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder builderForValue) {
+      if (asOfBuilder_ == null) {
+        asOf_ = builderForValue.build();
+        onChanged();
+      } else {
+        asOfBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     */
+    public Builder mergeAsOf(fintekkers.models.util.LocalTimestamp.LocalTimestampProto value) {
+      if (asOfBuilder_ == null) {
+        if (asOf_ != null) {
+          asOf_ =
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.newBuilder(asOf_).mergeFrom(value).buildPartial();
+        } else {
+          asOf_ = value;
+        }
+        onChanged();
+      } else {
+        asOfBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     */
+    public Builder clearAsOf() {
+      if (asOfBuilder_ == null) {
+        asOf_ = null;
+        onChanged();
+      } else {
+        asOf_ = null;
+        asOfBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder getAsOfBuilder() {
+      
+      onChanged();
+      return getAsOfFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder getAsOfOrBuilder() {
+      if (asOfBuilder_ != null) {
+        return asOfBuilder_.getMessageOrBuilder();
+      } else {
+        return asOf_ == null ?
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : asOf_;
+      }
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto as_of = 23;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder> 
+        getAsOfFieldBuilder() {
+      if (asOfBuilder_ == null) {
+        asOfBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder>(
+                getAsOf(),
+                getParentForChildren(),
+                isClean());
+        asOf_ = null;
+      }
+      return asOfBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

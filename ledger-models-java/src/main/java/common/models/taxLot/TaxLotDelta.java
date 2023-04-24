@@ -84,6 +84,7 @@ public class TaxLotDelta extends RawDataModelObject implements IFinancialModelOb
     public Object getField(Field field) {
         return switch (field) {
             case ID -> getID();
+            case AS_OF -> getAsOf();
             case TAX_LOT_OPEN_DATE -> getOpenDate();
             case TAX_LOT_CLOSE_DATE -> getClosedDate();
             case PRICE -> getPrice();

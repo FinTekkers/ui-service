@@ -17,6 +17,8 @@ var global = (function() { return this || window || global || self || Function('
 
 var fintekkers_models_util_uuid_pb = require('../../../fintekkers/models/util/uuid_pb.js');
 goog.object.extend(proto, fintekkers_models_util_uuid_pb);
+var fintekkers_models_util_local_timestamp_pb = require('../../../fintekkers/models/util/local_timestamp_pb.js');
+goog.object.extend(proto, fintekkers_models_util_local_timestamp_pb);
 var fintekkers_models_position_position_filter_pb = require('../../../fintekkers/models/position/position_filter_pb.js');
 goog.object.extend(proto, fintekkers_models_position_position_filter_pb);
 goog.exportSymbol('proto.fintekkers.requests.transaction.QueryTransactionRequestProto', null, global);
@@ -84,7 +86,8 @@ proto.fintekkers.requests.transaction.QueryTransactionRequestProto.toObject = fu
     version: jspb.Message.getFieldWithDefault(msg, 2, ""),
     uuidsList: jspb.Message.toObjectList(msg.getUuidsList(),
     fintekkers_models_util_uuid_pb.UUIDProto.toObject, includeInstance),
-    searchTransactionInput: (f = msg.getSearchTransactionInput()) && fintekkers_models_position_position_filter_pb.PositionFilterProto.toObject(includeInstance, f)
+    searchTransactionInput: (f = msg.getSearchTransactionInput()) && fintekkers_models_position_position_filter_pb.PositionFilterProto.toObject(includeInstance, f),
+    asOf: (f = msg.getAsOf()) && fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -138,6 +141,11 @@ proto.fintekkers.requests.transaction.QueryTransactionRequestProto.deserializeBi
       var value = new fintekkers_models_position_position_filter_pb.PositionFilterProto;
       reader.readMessage(value,fintekkers_models_position_position_filter_pb.PositionFilterProto.deserializeBinaryFromReader);
       msg.setSearchTransactionInput(value);
+      break;
+    case 23:
+      var value = new fintekkers_models_util_local_timestamp_pb.LocalTimestampProto;
+      reader.readMessage(value,fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.deserializeBinaryFromReader);
+      msg.setAsOf(value);
       break;
     default:
       reader.skipField();
@@ -196,6 +204,14 @@ proto.fintekkers.requests.transaction.QueryTransactionRequestProto.serializeBina
       22,
       f,
       fintekkers_models_position_position_filter_pb.PositionFilterProto.serializeBinaryToWriter
+    );
+  }
+  f = message.getAsOf();
+  if (f != null) {
+    writer.writeMessage(
+      23,
+      f,
+      fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.serializeBinaryToWriter
     );
   }
 };
@@ -309,6 +325,43 @@ proto.fintekkers.requests.transaction.QueryTransactionRequestProto.prototype.cle
  */
 proto.fintekkers.requests.transaction.QueryTransactionRequestProto.prototype.hasSearchTransactionInput = function() {
   return jspb.Message.getField(this, 22) != null;
+};
+
+
+/**
+ * optional fintekkers.models.util.LocalTimestampProto as_of = 23;
+ * @return {?proto.fintekkers.models.util.LocalTimestampProto}
+ */
+proto.fintekkers.requests.transaction.QueryTransactionRequestProto.prototype.getAsOf = function() {
+  return /** @type{?proto.fintekkers.models.util.LocalTimestampProto} */ (
+    jspb.Message.getWrapperField(this, fintekkers_models_util_local_timestamp_pb.LocalTimestampProto, 23));
+};
+
+
+/**
+ * @param {?proto.fintekkers.models.util.LocalTimestampProto|undefined} value
+ * @return {!proto.fintekkers.requests.transaction.QueryTransactionRequestProto} returns this
+*/
+proto.fintekkers.requests.transaction.QueryTransactionRequestProto.prototype.setAsOf = function(value) {
+  return jspb.Message.setWrapperField(this, 23, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.fintekkers.requests.transaction.QueryTransactionRequestProto} returns this
+ */
+proto.fintekkers.requests.transaction.QueryTransactionRequestProto.prototype.clearAsOf = function() {
+  return this.setAsOf(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.fintekkers.requests.transaction.QueryTransactionRequestProto.prototype.hasAsOf = function() {
+  return jspb.Message.getField(this, 23) != null;
 };
 
 

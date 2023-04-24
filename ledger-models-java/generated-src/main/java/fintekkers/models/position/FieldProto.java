@@ -22,6 +22,14 @@ public enum FieldProto
   ID(1),
   /**
    * <pre>
+   *ZonedDateTime
+   * </pre>
+   *
+   * <code>AS_OF = 2;</code>
+   */
+  AS_OF(2),
+  /**
+   * <pre>
    * Attribute fields. Likely to be fields that one would pivot on.
    * </pre>
    *
@@ -211,6 +219,14 @@ public enum FieldProto
    * <code>ID = 1;</code>
    */
   public static final int ID_VALUE = 1;
+  /**
+   * <pre>
+   *ZonedDateTime
+   * </pre>
+   *
+   * <code>AS_OF = 2;</code>
+   */
+  public static final int AS_OF_VALUE = 2;
   /**
    * <pre>
    * Attribute fields. Likely to be fields that one would pivot on.
@@ -415,6 +431,7 @@ public enum FieldProto
     switch (value) {
       case 0: return UNKNOWN_FIELD;
       case 1: return ID;
+      case 2: return AS_OF;
       case 10: return EFFECTIVE_DATE;
       case 11: return STRATEGY;
       case 12: return SECURITY;

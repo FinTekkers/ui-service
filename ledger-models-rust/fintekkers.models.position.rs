@@ -89,6 +89,8 @@ pub enum FieldProto {
     UnknownField = 0,
     /// (UUID.class)
     Id = 1,
+    /// ZonedDateTime
+    AsOf = 2,
     /// Attribute fields. Likely to be fields that one would pivot on.
     ///
     /// LocalDate.class
@@ -153,6 +155,7 @@ impl FieldProto {
         match self {
             FieldProto::UnknownField => "UNKNOWN_FIELD",
             FieldProto::Id => "ID",
+            FieldProto::AsOf => "AS_OF",
             FieldProto::EffectiveDate => "EFFECTIVE_DATE",
             FieldProto::Strategy => "STRATEGY",
             FieldProto::Security => "SECURITY",
@@ -185,6 +188,7 @@ impl FieldProto {
         match value {
             "UNKNOWN_FIELD" => Some(Self::UnknownField),
             "ID" => Some(Self::Id),
+            "AS_OF" => Some(Self::AsOf),
             "EFFECTIVE_DATE" => Some(Self::EffectiveDate),
             "STRATEGY" => Some(Self::Strategy),
             "SECURITY" => Some(Self::Security),

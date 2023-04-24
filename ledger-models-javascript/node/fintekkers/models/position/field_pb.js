@@ -28,6 +28,7 @@ goog.exportSymbol('proto.fintekkers.models.position.FieldProto', null, global);
 proto.fintekkers.models.position.FieldProto = {
   UNKNOWN_FIELD: 0,
   ID: 1,
+  AS_OF: 2,
   EFFECTIVE_DATE: 10,
   STRATEGY: 11,
   SECURITY: 12,

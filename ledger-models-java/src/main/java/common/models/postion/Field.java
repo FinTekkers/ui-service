@@ -11,6 +11,7 @@ import common.models.transaction.TransactionType;
 import fintekkers.models.position.PositionStatusProto;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /***
@@ -27,6 +28,9 @@ public enum Field {
     ID(UUID.class, "A UUID representing the primary key of the record. This is a system field used " +
             "to ensure uniqueness of data, e.g. for circumstances such as when two bonds have the same security " +
             "identifier, but represent different instruments"),
+
+    AS_OF(ZonedDateTime.class, "A timestamp with timezone information which denotes the time at which " +
+            "business events originated."),
 
     // Attribute fields. Likely to be fields that one would pivot on.
     EFFECTIVE_DATE(LocalDate.class, "The date to be used to derive data that is time-sensitive. For " +

@@ -15,6 +15,6 @@ class TenorTest {
 
         Tenor tenor = new Tenor(TenorType.TERM, period);
 
-        Assertions.assertEquals("1Y", tenor.getTenorDescription());
+        Assertions.assertEquals("1Y1M", tenor.getTenorDescription());
     }
 }

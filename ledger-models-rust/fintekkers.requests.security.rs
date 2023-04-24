@@ -14,6 +14,8 @@ pub struct QuerySecurityRequestProto {
     pub search_security_input: ::core::option::Option<
         super::super::models::position::PositionFilterProto,
     >,
+    #[prost(message, optional, tag = "23")]
+    pub as_of: ::core::option::Option<super::super::models::util::LocalTimestampProto>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

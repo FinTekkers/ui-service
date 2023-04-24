@@ -23,6 +23,8 @@ var global = (function() {
 
 var fintekkers_models_util_uuid_pb = require('../../../fintekkers/models/util/uuid_pb.js');
 goog.object.extend(proto, fintekkers_models_util_uuid_pb);
+var fintekkers_models_util_local_timestamp_pb = require('../../../fintekkers/models/util/local_timestamp_pb.js');
+goog.object.extend(proto, fintekkers_models_util_local_timestamp_pb);
 var fintekkers_models_position_position_filter_pb = require('../../../fintekkers/models/position/position_filter_pb.js');
 goog.object.extend(proto, fintekkers_models_position_position_filter_pb);
 goog.exportSymbol('proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto', null, global);
@@ -90,7 +92,8 @@ proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.toObject = functi
     version: jspb.Message.getFieldWithDefault(msg, 2, ""),
     uuidsList: jspb.Message.toObjectList(msg.getUuidsList(),
     fintekkers_models_util_uuid_pb.UUIDProto.toObject, includeInstance),
-    searchPortfolioInput: (f = msg.getSearchPortfolioInput()) && fintekkers_models_position_position_filter_pb.PositionFilterProto.toObject(includeInstance, f)
+    searchPortfolioInput: (f = msg.getSearchPortfolioInput()) && fintekkers_models_position_position_filter_pb.PositionFilterProto.toObject(includeInstance, f),
+    asOf: (f = msg.getAsOf()) && fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -144,6 +147,11 @@ proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.deserializeBinary
       var value = new fintekkers_models_position_position_filter_pb.PositionFilterProto;
       reader.readMessage(value,fintekkers_models_position_position_filter_pb.PositionFilterProto.deserializeBinaryFromReader);
       msg.setSearchPortfolioInput(value);
+      break;
+    case 23:
+      var value = new fintekkers_models_util_local_timestamp_pb.LocalTimestampProto;
+      reader.readMessage(value,fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.deserializeBinaryFromReader);
+      msg.setAsOf(value);
       break;
     default:
       reader.skipField();
@@ -202,6 +210,14 @@ proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.serializeBinaryTo
       22,
       f,
       fintekkers_models_position_position_filter_pb.PositionFilterProto.serializeBinaryToWriter
+    );
+  }
+  f = message.getAsOf();
+  if (f != null) {
+    writer.writeMessage(
+      23,
+      f,
+      fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.serializeBinaryToWriter
     );
   }
 };
@@ -315,6 +331,43 @@ proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.prototype.clearSe
  */
 proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.prototype.hasSearchPortfolioInput = function() {
   return jspb.Message.getField(this, 22) != null;
+};
+
+
+/**
+ * optional fintekkers.models.util.LocalTimestampProto as_of = 23;
+ * @return {?proto.fintekkers.models.util.LocalTimestampProto}
+ */
+proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.prototype.getAsOf = function() {
+  return /** @type{?proto.fintekkers.models.util.LocalTimestampProto} */ (
+    jspb.Message.getWrapperField(this, fintekkers_models_util_local_timestamp_pb.LocalTimestampProto, 23));
+};
+
+
+/**
+ * @param {?proto.fintekkers.models.util.LocalTimestampProto|undefined} value
+ * @return {!proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto} returns this
+*/
+proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.prototype.setAsOf = function(value) {
+  return jspb.Message.setWrapperField(this, 23, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto} returns this
+ */
+proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.prototype.clearAsOf = function() {
+  return this.setAsOf(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.prototype.hasAsOf = function() {
+  return jspb.Message.getField(this, 23) != null;
 };
 
 

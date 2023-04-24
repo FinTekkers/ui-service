@@ -57,14 +57,12 @@ public class Portfolio extends RawDataModelObject implements Comparable, IFinanc
 
     @Override
     public Object getField(Field field) {
-        switch(field) {
-            case PORTFOLIO_ID:
-                return getID();
-            case PORTFOLIO_NAME:
-                return getPortfolioName();
-            default:
-                throw new RuntimeException(String.format("Field not found %s", field));
-        }
+        return switch (field) {
+            case ID, PORTFOLIO_ID -> getID();
+            case AS_OF -> getAsOf();
+            case PORTFOLIO_NAME -> getPortfolioName();
+            default -> throw new RuntimeException(String.format("Field not found %s", field));
+        };
     }
 
     @Override

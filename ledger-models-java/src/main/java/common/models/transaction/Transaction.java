@@ -1,6 +1,7 @@
 package common.models.transaction;
 
 import common.models.RawDataModelObject;
+import common.models.errors.transaction.TransactionProcessingException;
 import common.models.portfolio.Portfolio;
 import common.models.postion.Field;
 import common.models.postion.Measure;
@@ -63,13 +64,13 @@ public class Transaction extends RawDataModelObject implements ITransaction {
         super(id, asOf);
 
         if (quantity.doubleValue() <= 0) {
-            throw new RuntimeException("Quantity should be expressed in absolute numbers. Doesn't support " +
+            throw new TransactionProcessingException("Quantity should be expressed in absolute numbers. Doesn't support " +
                     "zero quantity transactions");
         }
 
         if(security instanceof BondSecurity &&
                 quantity.doubleValue() < ((BondSecurity)security).getFaceValue().doubleValue()) {
-            throw new RuntimeException("Quantity must be expressed in face value. The quantity provided " +
+            throw new TransactionProcessingException("Quantity must be expressed in face value. The quantity provided " +
                     "is below face value so you likely need to scale up the quantity. If this is a fraction " +
                     "of a bond unit, then that is not currently supported (should be a small chance)");
         }
@@ -215,6 +216,7 @@ public class Transaction extends RawDataModelObject implements ITransaction {
         return switch (field) {
             //Transaction Fields
             case ID -> getID();
+            case AS_OF -> getAsOf();
             case TRANSACTION_TYPE -> getTransactionType();
             case TRADE_DATE -> getTradeDate();
             case SETTLEMENT_DATE -> getSettlementDate();

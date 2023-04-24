@@ -8,11 +8,15 @@ from fintekkers.models.position.position_status_pb2 import PositionStatusProto
 from fintekkers.models.position.position_util_pb2 import FieldMapEntry
 from fintekkers.models.security.security_pb2 import SecurityProto
 from fintekkers.models.transaction.transaction_type_pb2 import TransactionTypeProto
+from fintekkers.models.util.local_timestamp_pb2 import LocalTimestampProto
 
 from fintekkers.requests.transaction.create_transaction_request_pb2 import CreateTransactionRequestProto
 from fintekkers.requests.transaction.query_transaction_request_pb2 import QueryTransactionRequestProto
 
 from fintekkers.wrappers.models.transaction import Transaction
+from fintekkers.wrappers.models.util.serialization import ProtoSerializationUtil
+
+from datetime import datetime
 
 class CreateTransactionRequest():
     @staticmethod
@@ -21,7 +25,7 @@ class CreateTransactionRequest():
         trade_date:date=date.today(), settlement_date:date=date.today(), \
         position_status:PositionStatusProto=PositionStatusProto.INTENDED, \
         transaction_type:TransactionTypeProto=TransactionTypeProto.BUY, \
-        price:float=-100.00, quantity=100, 
+        price:float=-100.00, quantity=100, as_of=datetime.now()
     ):
         '''
             Creates a request to create a transaction
@@ -39,7 +43,7 @@ class CreateTransactionRequest():
         '''
         transaction:Transaction = Transaction.create_from(security=security, portfolio=portfolio, trade_date=trade_date, \
                                 settlement_date=settlement_date, position_status=position_status, \
-                                    transaction_type=transaction_type, price=price, quantity=quantity)
+                                    transaction_type=transaction_type, price=price, quantity=quantity, as_of=as_of)
         
         proto:CreateTransactionRequestProto = CreateTransactionRequestProto(
             create_transaction_input=transaction.proto
@@ -78,13 +82,16 @@ class QueryTransactionRequest():
 
             filters.append(entry)
         
-        request:QueryTransactionRequestProto = QueryTransactionRequestProto(
+        as_of_proto:LocalTimestampProto = ProtoSerializationUtil.serialize(datetime.now())
+
+        query_request:QueryTransactionRequestProto = QueryTransactionRequestProto(
             search_transaction_input=PositionFilterProto(
                 filters=filters
-            )
+            ),
+            as_of=as_of_proto
         )
 
-        return request
+        return query_request
     
     def __init__(self, proto:QueryTransactionRequestProto):
         self.proto = proto
