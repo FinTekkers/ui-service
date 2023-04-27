@@ -10,7 +10,9 @@ from fintekkers.models.security.identifier.identifier_pb2 import IdentifierProto
 from fintekkers.models.util.local_date_pb2 import LocalDateProto
 from fintekkers.models.util.local_timestamp_pb2 import LocalTimestampProto
 from fintekkers.models.util.uuid_pb2 import UUIDProto
+from fintekkers.wrappers.models.portfolio import Portfolio
 
+from fintekkers.wrappers.models.security import Security
 from fintekkers.wrappers.models.util.serialization import ProtoSerializationUtil, ProtoEnum
 
 from google.protobuf import wrappers_pb2 as wrappers
@@ -27,32 +29,44 @@ class Position():
 
     def get_field(self, field_to_get:FieldProto):
         tmp_field:FieldMapEntry
+
+        # We'll iterate through the fields to make sure the requested field is in the proto.
+        # If it's not then we'll raise a value error.
         for tmp_field in self.positionProto.fields:
-            if tmp_field.field == field_to_get:
-                return ProtoSerializationUtil.deserialize(Position.unpack_field(tmp_field))
+            if tmp_field.field == field_to_get.field:
+                if FieldProto.PORTFOLIO == field_to_get.field:
+                    return Portfolio(Position.unpack_field(tmp_field))
+                if FieldProto.SECURITY == field_to_get.field:
+                    return Security(Position.unpack_field(tmp_field))
+                
+                unpacked_value = Position.unpack_field(tmp_field)
+
+                if isinstance(unpacked_value, ProtoEnum):
+                    descriptor = FieldProto.DESCRIPTOR.values_by_number[field_to_get.field]
+                    return ProtoEnum(descriptor, unpacked_value.enum_value)
+                
+                if isinstance(unpacked_value, str) or isinstance(unpacked_value, float) or isinstance(unpacked_value, int):
+                    return unpacked_value
+
+                return ProtoSerializationUtil.deserialize(unpacked_value)
 
         raise ValueError("Could not find field in position")
         
 
     def get_measure(self, measure_to_get:MeasureProto) -> Decimal:
         tmp_measure:MeasureMapEntry
+
+        # We'll iterate through the measures to make sure the requested measure is in the proto.
+        # If it's not then we'll raise a value error.
         for tmp_measure in self.positionProto.measures:
-            if tmp_measure.measure == measure_to_get:
+            if tmp_measure.measure == measure_to_get.measure:
                 return ProtoSerializationUtil.deserialize(Position.unpack_measure(tmp_measure))
 
         raise ValueError("Could not find measure in position")
 
     def get_field_display(self, field_to_get:FieldProto):
-        obj = self.get_field(field_to_get=field_to_get)
-        if FieldProto.SECURITY == field_to_get:
-            security:SecurityProto = obj
-            return security.description
-        
-        if FieldProto.PORTFOLIO == field_to_get:
-            portfolio:PortfolioProto = obj
-            return portfolio.portfolio_name
-
-        return self.get_field(field_to_get=field_to_get).__str__()
+        field_value = self.get_field(field_to_get=field_to_get)
+        return field_value.__str__()
 
     def get_measures(self):
         return self.positionProto.measures
@@ -124,23 +138,25 @@ class Position():
             return LocalDateProto.FromString(field_to_unpack.field_value_packed.value)
         if field_to_unpack.field == FieldProto.IDENTIFIER:
             return IdentifierProto.FromString(field_to_unpack.field_value_packed.value)
-        if field_to_unpack.field == FieldProto.TRANSACTION_TYPE:
-            name:str = FieldProto.DESCRIPTOR.values_by_number[field_to_unpack.field].name
-            return ProtoEnum(name, field_to_unpack.enum_value)
+        if field_to_unpack.field == FieldProto.TRANSACTION_TYPE or \
+                field_to_unpack.field == FieldProto.POSITION_STATUS:
+            descriptor:str = FieldProto.DESCRIPTOR.values_by_number[field_to_unpack.field]
+            return ProtoEnum(descriptor, field_to_unpack.enum_value)
         if field_to_unpack.field == FieldProto.PORTFOLIO_NAME or field_to_unpack.field == FieldProto.SECURITY_DESCRIPTION \
-            or field_to_unpack.field == FieldProto.PRODUCT_TYPE:
+            or field_to_unpack.field == FieldProto.PRODUCT_TYPE or field_to_unpack.field == FieldProto.ASSET_CLASS:
             return wrappers.StringValue.FromString(field_to_unpack.field_value_packed.value).value
         if field_to_unpack.field == FieldProto.PORTFOLIO:
             return PortfolioProto.FromString(field_to_unpack.field_value_packed.value)
         if field_to_unpack.field == FieldProto.SECURITY:
             return SecurityProto.FromString(field_to_unpack.field_value_packed.value)
 
-        raise ValueError(f"Field not found. Could not unpack {field_to_unpack.field}")
-
-    @staticmethod
-    def unpack_measure(measure_to_unpack:MeasureProto):
-        if measure_to_unpack.measure == MeasureProto.DIRECTED_QUANTITY:
-            return Decimal(measure_to_unpack.measure_decimal_value.arbitrary_precision_value)
         
-        raise ValueError(f"Field not found. Could not unpack {measure_to_unpack.field}")
+        raise ValueError(f"Field not found. Could not unpack {FieldProto.Name(field_to_unpack.field)}")
 
+    from fintekkers.models.util.decimal_value_pb2 import DecimalValueProto
+    @staticmethod
+    def unpack_measure(measure_to_unpack:MeasureProto) -> DecimalValueProto:
+        if measure_to_unpack.measure == MeasureProto.DIRECTED_QUANTITY:
+            return measure_to_unpack.measure_decimal_value
+        
+        raise ValueError(f"Field not found. Could not unpack {MeasureProto.Name(measure_to_unpack.measure)}")

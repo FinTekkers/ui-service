@@ -10,7 +10,7 @@ class Tenor:
     
     def __init__(self, type:TenorTypeProto, term:str=None):
         self.type = type
-        if term is not None:
+        if term != None:
             self.tenor = Tenor.from_tenor_description(term)
     
     @classmethod
