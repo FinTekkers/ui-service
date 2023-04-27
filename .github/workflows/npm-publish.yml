@@ -25,6 +25,10 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           # Defaults to the user or organization that owns the workflow file
           scope: '@octocat'
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ github.workspace }}
+        run: echo "$GITHUB_CONTEXT"
       - run: npm ci
       - run: npm publish
         env:
