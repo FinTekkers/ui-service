@@ -49,7 +49,7 @@ class CreateSecurityRequest():
         id = IdentifierProto(identifier_type=CUSIP, identifier_value=cusip)
 
         issue_date = original_issue_date \
-                if original_issue_date is not None else issue_date
+                if original_issue_date != None else issue_date
 
         security_type = BOND_SECURITY
         coupon_frequency = SEMIANNUALLY
@@ -66,7 +66,7 @@ class CreateSecurityRequest():
             coupon_frequency = NO_COUPON
 
         issue_date_proto = get_date_proto(issue_date)
-        dated_date_proto = get_date_proto(dated_date) if dated_date is not None else None
+        dated_date_proto = get_date_proto(dated_date) if dated_date != None else None
         maturity_date_proto = get_date_proto(maturity_date)
 
         security_proto:SecurityProto = SecurityProto(

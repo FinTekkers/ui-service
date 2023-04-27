@@ -1,39 +1,20 @@
-from fintekkers.models.security.security_pb2 import SecurityProto
+from fintekkers.models.portfolio.portfolio_pb2 import PortfolioProto
 
-from fintekkers.models.position.field_pb2 import FieldProto
-from fintekkers.models.position.measure_pb2 import MeasureProto
+class Portfolio():
+    # @staticmethod
+    # def create_from():
+    #     pass
+    #     # SecurityProto(
+    #     #     object_class="Security"
+    #     # )
 
-from uuid import UUID
-from datetime import datetime
+    def __init__(self, proto:PortfolioProto):
+        self.proto:PortfolioProto = proto
 
-class IFinancialModelObject:
-    def get_field(field:FieldProto) -> object:
-        pass
 
-    def get_measure(measure:MeasureProto) -> object:
-        pass
-
-    def get_fields() -> set[FieldProto]:
-        pass
-
-    def get_measures() -> set[MeasureProto]:
-        pass
-
-    def get_as_of() -> datetime:
-        pass
-
-class RawDataModelObject:
-    def __init__(self, id: UUID, as_of: datetime):
-        self.id = id
-        self.as_of = as_of
-
-class Security():
-    def __init__(self, proto:SecurityProto):
-        self.proto:SecurityProto = proto
-
-    def __str__(self) -> str:
-        return f"ID[{self.proto.uuid}], Portfolio[{self.proto.issuer_name}]"
-
+    def __str__(self):
+        return f"ID[{self.proto.uuid}], Portfolio[{self.proto.portfolio_name}]"
+    
     # def uuid(self) -> UUID:
     #     uuid:FintekkersUuid = ProtoSerializationUtil.deserialize(self.proto.uuid)
     #     return uuid.uuid
