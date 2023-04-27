@@ -29,10 +29,14 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ github.workspace }}
         run: echo "$GITHUB_CONTEXT"
-      - name: Dump GH token
-        env: 
-          VARIABLE: ${{ secrets.NPM_TOKEN }}
-        run: echo "$VARIABLE"
+      - name: Set env as secret
+        env:
+          MY_VAL:  ${{ secrets.NPM_TOKEN }}
+        run: |
+          import os
+          for q in (os.getenv("MY_VAL")):
+            print(q)
+        shell: python
       - run: npm ci
       - run: npm publish
         env:
