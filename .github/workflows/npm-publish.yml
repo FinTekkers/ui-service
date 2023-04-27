@@ -25,10 +25,6 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           # Defaults to the user or organization that owns the workflow file
           scope: '@octocat'
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ github.workspace }}
-        run: echo "$GITHUB_CONTEXT"
       - name: Get git tag extension
         id: tag
         uses: dawidd6/action-get-tag@v1
@@ -40,14 +36,14 @@ jobs:
           VERSION=${TAG#v}
           echo version is ${VERSION}
           echo "release_version=${VERSION}" >> $GITHUB_ENV
+      - name: Print Environment Variables
+        run: env
       - run: |
           echo "@username:registry=https://npm.pkg.github.com" >> .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
-      - run: npm ci
-      - run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          cat .nprmc
+          npm ci
+          echo ${{ env.release_version }} 
           npm version ${{ env.release_version }} 
           npm publish
-           
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+ 
