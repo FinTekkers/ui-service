@@ -29,6 +29,10 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ github.workspace }}
         run: echo "$GITHUB_CONTEXT"
+      - name: Dump GH token
+        env: 
+          VARIABLE: ${{ secrets.NPM_TOKEN }}
+        run: echo "$VARIABLE"
       - run: npm ci
       - run: npm publish
         env:
