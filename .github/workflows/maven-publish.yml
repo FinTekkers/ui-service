@@ -1,4 +1,4 @@
-name: Publish package to GitHub Packages
+name: Publish maven package to GitHub Packages
 on:
   push:
     tags:  #only trigger action when tagged with release number, i.e v0.0.1     
