@@ -29,19 +29,25 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ github.workspace }}
         run: echo "$GITHUB_CONTEXT"
-      - name: Set env as secret
-        env:
-          MY_VAL:  ${{ secrets.NPM_TOKEN }}
+      - name: Get git tag extension
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+      - name: Release details
         run: |
-          import os
-          for q in (os.getenv("MY_VAL")):
-            print(q)
-        shell: python
+          echo Release tag ${{ steps.tag.outputs.tag }}
+          TAG=${{ steps.tag.outputs.tag }}
+          echo tag is ${TAG}
+          VERSION=${TAG#v}
+          echo version is ${VERSION}
+          echo "release_version=${VERSION}" >> $GITHUB_ENV
       - run: |
           echo "@username:registry=https://npm.pkg.github.com" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
       - run: npm ci
-      - run: npm publish
+      - run: |
+          npm version ${{ env.release_version }} 
+          npm publish
+           
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
