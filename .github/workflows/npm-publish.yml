@@ -41,7 +41,6 @@ jobs:
       - run: |
           echo "@username:registry=https://npm.pkg.github.com" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-          cat .nprmc
           npm ci
           echo ${{ env.release_version }} 
           npm version ${{ env.release_version }} 
