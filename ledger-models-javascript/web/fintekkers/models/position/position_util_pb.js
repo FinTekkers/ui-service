@@ -214,7 +214,7 @@ proto.fintekkers.models.position.MeasureMapEntry.prototype.setMeasure = function
 
 
 /**
- * optional fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;
+ * optional fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;
  * @return {?proto.fintekkers.models.util.DecimalValueProto}
  */
 proto.fintekkers.models.position.MeasureMapEntry.prototype.getMeasureDecimalValue = function() {

@@ -119,10 +119,10 @@ private static final long serialVersionUID = 0L;
     return result == null ? fintekkers.models.position.MeasureProto.UNRECOGNIZED : result;
   }
 
-  public static final int MEASURE__DECIMAL_VALUE_FIELD_NUMBER = 2;
+  public static final int MEASURE_DECIMAL_VALUE_FIELD_NUMBER = 2;
   private fintekkers.models.util.DecimalValue.DecimalValueProto measureDecimalValue_;
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
    * @return Whether the measureDecimalValue field is set.
    */
   @java.lang.Override
@@ -130,7 +130,7 @@ private static final long serialVersionUID = 0L;
     return measureDecimalValue_ != null;
   }
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
    * @return The measureDecimalValue.
    */
   @java.lang.Override
@@ -138,7 +138,7 @@ private static final long serialVersionUID = 0L;
     return measureDecimalValue_ == null ? fintekkers.models.util.DecimalValue.DecimalValueProto.getDefaultInstance() : measureDecimalValue_;
   }
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
    */
   @java.lang.Override
   public fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureDecimalValueOrBuilder() {
@@ -217,7 +217,7 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + MEASURE_FIELD_NUMBER;
     hash = (53 * hash) + measure_;
     if (hasMeasureDecimalValue()) {
-      hash = (37 * hash) + MEASURE__DECIMAL_VALUE_FIELD_NUMBER;
+      hash = (37 * hash) + MEASURE_DECIMAL_VALUE_FIELD_NUMBER;
       hash = (53 * hash) + getMeasureDecimalValue().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
@@ -534,14 +534,14 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilderV3<
         fintekkers.models.util.DecimalValue.DecimalValueProto, fintekkers.models.util.DecimalValue.DecimalValueProto.Builder, fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder> measureDecimalValueBuilder_;
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      * @return Whether the measureDecimalValue field is set.
      */
     public boolean hasMeasureDecimalValue() {
       return measureDecimalValueBuilder_ != null || measureDecimalValue_ != null;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      * @return The measureDecimalValue.
      */
     public fintekkers.models.util.DecimalValue.DecimalValueProto getMeasureDecimalValue() {
@@ -552,7 +552,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      */
     public Builder setMeasureDecimalValue(fintekkers.models.util.DecimalValue.DecimalValueProto value) {
       if (measureDecimalValueBuilder_ == null) {
@@ -568,7 +568,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      */
     public Builder setMeasureDecimalValue(
         fintekkers.models.util.DecimalValue.DecimalValueProto.Builder builderForValue) {
@@ -582,7 +582,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      */
     public Builder mergeMeasureDecimalValue(fintekkers.models.util.DecimalValue.DecimalValueProto value) {
       if (measureDecimalValueBuilder_ == null) {
@@ -600,7 +600,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      */
     public Builder clearMeasureDecimalValue() {
       if (measureDecimalValueBuilder_ == null) {
@@ -614,7 +614,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      */
     public fintekkers.models.util.DecimalValue.DecimalValueProto.Builder getMeasureDecimalValueBuilder() {
       
@@ -622,7 +622,7 @@ private static final long serialVersionUID = 0L;
       return getMeasureDecimalValueFieldBuilder().getBuilder();
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      */
     public fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureDecimalValueOrBuilder() {
       if (measureDecimalValueBuilder_ != null) {
@@ -633,7 +633,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         fintekkers.models.util.DecimalValue.DecimalValueProto, fintekkers.models.util.DecimalValue.DecimalValueProto.Builder, fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder> 

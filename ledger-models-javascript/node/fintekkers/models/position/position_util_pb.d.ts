@@ -14,10 +14,10 @@ export class MeasureMapEntry extends jspb.Message {
     getMeasure(): fintekkers_models_position_measure_pb.MeasureProto;
     setMeasure(value: fintekkers_models_position_measure_pb.MeasureProto): MeasureMapEntry;
 
-    hasMeasure_decimalValue(): boolean;
-    clearMeasure_decimalValue(): void;
-    getMeasure_decimalValue(): fintekkers_models_util_decimal_value_pb.DecimalValueProto | undefined;
-    setMeasure_decimalValue(value?: fintekkers_models_util_decimal_value_pb.DecimalValueProto): MeasureMapEntry;
+    hasMeasureDecimalValue(): boolean;
+    clearMeasureDecimalValue(): void;
+    getMeasureDecimalValue(): fintekkers_models_util_decimal_value_pb.DecimalValueProto | undefined;
+    setMeasureDecimalValue(value?: fintekkers_models_util_decimal_value_pb.DecimalValueProto): MeasureMapEntry;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): MeasureMapEntry.AsObject;
@@ -32,7 +32,7 @@ export class MeasureMapEntry extends jspb.Message {
 export namespace MeasureMapEntry {
     export type AsObject = {
         measure: fintekkers_models_position_measure_pb.MeasureProto,
-        measure_decimalValue?: fintekkers_models_util_decimal_value_pb.DecimalValueProto.AsObject,
+        measureDecimalValue?: fintekkers_models_util_decimal_value_pb.DecimalValueProto.AsObject,
     }
 }
 

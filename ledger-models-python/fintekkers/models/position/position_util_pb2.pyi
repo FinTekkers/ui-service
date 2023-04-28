@@ -29,12 +29,12 @@ class FieldMapEntry(_message.Message):
     def __init__(self, field: _Optional[_Union[_field_pb2.FieldProto, str]] = ..., field_value_packed: _Optional[_Union[_any_pb2.Any, _Mapping]] = ..., enum_value: _Optional[int] = ..., operator: _Optional[_Union[PositionFilterOperator, str]] = ...) -> None: ...
 
 class MeasureMapEntry(_message.Message):
-    __slots__ = ["measure", "measure__decimal_value"]
+    __slots__ = ["measure", "measure_decimal_value"]
+    MEASURE_DECIMAL_VALUE_FIELD_NUMBER: _ClassVar[int]
     MEASURE_FIELD_NUMBER: _ClassVar[int]
-    MEASURE__DECIMAL_VALUE_FIELD_NUMBER: _ClassVar[int]
     measure: _measure_pb2.MeasureProto
-    measure__decimal_value: _decimal_value_pb2.DecimalValueProto
-    def __init__(self, measure: _Optional[_Union[_measure_pb2.MeasureProto, str]] = ..., measure__decimal_value: _Optional[_Union[_decimal_value_pb2.DecimalValueProto, _Mapping]] = ...) -> None: ...
+    measure_decimal_value: _decimal_value_pb2.DecimalValueProto
+    def __init__(self, measure: _Optional[_Union[_measure_pb2.MeasureProto, str]] = ..., measure_decimal_value: _Optional[_Union[_decimal_value_pb2.DecimalValueProto, _Mapping]] = ...) -> None: ...
 
 class PositionFilterOperator(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []

@@ -19,17 +19,17 @@ public interface MeasureMapEntryOrBuilder extends
   fintekkers.models.position.MeasureProto getMeasure();
 
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
    * @return Whether the measureDecimalValue field is set.
    */
   boolean hasMeasureDecimalValue();
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
    * @return The measureDecimalValue.
    */
   fintekkers.models.util.DecimalValue.DecimalValueProto getMeasureDecimalValue();
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * <code>.fintekkers.models.util.DecimalValueProto measure_decimal_value = 2;</code>
    */
   fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureDecimalValueOrBuilder();
 }
