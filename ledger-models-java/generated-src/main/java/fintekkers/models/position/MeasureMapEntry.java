@@ -16,7 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private MeasureMapEntry() {
-    field_ = 0;
+    measure_ = 0;
   }
 
   @java.lang.Override
@@ -52,18 +52,18 @@ private static final long serialVersionUID = 0L;
           case 8: {
             int rawValue = input.readEnum();
 
-            field_ = rawValue;
+            measure_ = rawValue;
             break;
           }
           case 18: {
             fintekkers.models.util.DecimalValue.DecimalValueProto.Builder subBuilder = null;
-            if (measureValue_ != null) {
-              subBuilder = measureValue_.toBuilder();
+            if (measureDecimalValue_ != null) {
+              subBuilder = measureDecimalValue_.toBuilder();
             }
-            measureValue_ = input.readMessage(fintekkers.models.util.DecimalValue.DecimalValueProto.parser(), extensionRegistry);
+            measureDecimalValue_ = input.readMessage(fintekkers.models.util.DecimalValue.DecimalValueProto.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom(measureValue_);
-              measureValue_ = subBuilder.buildPartial();
+              subBuilder.mergeFrom(measureDecimalValue_);
+              measureDecimalValue_ = subBuilder.buildPartial();
             }
 
             break;
@@ -100,49 +100,49 @@ private static final long serialVersionUID = 0L;
             fintekkers.models.position.MeasureMapEntry.class, fintekkers.models.position.MeasureMapEntry.Builder.class);
   }
 
-  public static final int FIELD_FIELD_NUMBER = 1;
-  private int field_;
+  public static final int MEASURE_FIELD_NUMBER = 1;
+  private int measure_;
   /**
-   * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
-   * @return The enum numeric value on the wire for field.
+   * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
+   * @return The enum numeric value on the wire for measure.
    */
-  @java.lang.Override public int getFieldValue() {
-    return field_;
+  @java.lang.Override public int getMeasureValue() {
+    return measure_;
   }
   /**
-   * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
-   * @return The field.
+   * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
+   * @return The measure.
    */
-  @java.lang.Override public fintekkers.models.position.MeasureProto getField() {
+  @java.lang.Override public fintekkers.models.position.MeasureProto getMeasure() {
     @SuppressWarnings("deprecation")
-    fintekkers.models.position.MeasureProto result = fintekkers.models.position.MeasureProto.valueOf(field_);
+    fintekkers.models.position.MeasureProto result = fintekkers.models.position.MeasureProto.valueOf(measure_);
     return result == null ? fintekkers.models.position.MeasureProto.UNRECOGNIZED : result;
   }
 
-  public static final int MEASURE_VALUE_FIELD_NUMBER = 2;
-  private fintekkers.models.util.DecimalValue.DecimalValueProto measureValue_;
+  public static final int MEASURE__DECIMAL_VALUE_FIELD_NUMBER = 2;
+  private fintekkers.models.util.DecimalValue.DecimalValueProto measureDecimalValue_;
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
-   * @return Whether the measureValue field is set.
+   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * @return Whether the measureDecimalValue field is set.
    */
   @java.lang.Override
-  public boolean hasMeasureValue() {
-    return measureValue_ != null;
+  public boolean hasMeasureDecimalValue() {
+    return measureDecimalValue_ != null;
   }
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
-   * @return The measureValue.
+   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * @return The measureDecimalValue.
    */
   @java.lang.Override
-  public fintekkers.models.util.DecimalValue.DecimalValueProto getMeasureValue() {
-    return measureValue_ == null ? fintekkers.models.util.DecimalValue.DecimalValueProto.getDefaultInstance() : measureValue_;
+  public fintekkers.models.util.DecimalValue.DecimalValueProto getMeasureDecimalValue() {
+    return measureDecimalValue_ == null ? fintekkers.models.util.DecimalValue.DecimalValueProto.getDefaultInstance() : measureDecimalValue_;
   }
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
    */
   @java.lang.Override
-  public fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureValueOrBuilder() {
-    return getMeasureValue();
+  public fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureDecimalValueOrBuilder() {
+    return getMeasureDecimalValue();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -159,11 +159,11 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (field_ != fintekkers.models.position.MeasureProto.UNKNOWN_MEASURE.getNumber()) {
-      output.writeEnum(1, field_);
+    if (measure_ != fintekkers.models.position.MeasureProto.UNKNOWN_MEASURE.getNumber()) {
+      output.writeEnum(1, measure_);
     }
-    if (measureValue_ != null) {
-      output.writeMessage(2, getMeasureValue());
+    if (measureDecimalValue_ != null) {
+      output.writeMessage(2, getMeasureDecimalValue());
     }
     unknownFields.writeTo(output);
   }
@@ -174,13 +174,13 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (field_ != fintekkers.models.position.MeasureProto.UNKNOWN_MEASURE.getNumber()) {
+    if (measure_ != fintekkers.models.position.MeasureProto.UNKNOWN_MEASURE.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
-        .computeEnumSize(1, field_);
+        .computeEnumSize(1, measure_);
     }
-    if (measureValue_ != null) {
+    if (measureDecimalValue_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getMeasureValue());
+        .computeMessageSize(2, getMeasureDecimalValue());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -197,11 +197,11 @@ private static final long serialVersionUID = 0L;
     }
     fintekkers.models.position.MeasureMapEntry other = (fintekkers.models.position.MeasureMapEntry) obj;
 
-    if (field_ != other.field_) return false;
-    if (hasMeasureValue() != other.hasMeasureValue()) return false;
-    if (hasMeasureValue()) {
-      if (!getMeasureValue()
-          .equals(other.getMeasureValue())) return false;
+    if (measure_ != other.measure_) return false;
+    if (hasMeasureDecimalValue() != other.hasMeasureDecimalValue()) return false;
+    if (hasMeasureDecimalValue()) {
+      if (!getMeasureDecimalValue()
+          .equals(other.getMeasureDecimalValue())) return false;
     }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
@@ -214,11 +214,11 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + FIELD_FIELD_NUMBER;
-    hash = (53 * hash) + field_;
-    if (hasMeasureValue()) {
-      hash = (37 * hash) + MEASURE_VALUE_FIELD_NUMBER;
-      hash = (53 * hash) + getMeasureValue().hashCode();
+    hash = (37 * hash) + MEASURE_FIELD_NUMBER;
+    hash = (53 * hash) + measure_;
+    if (hasMeasureDecimalValue()) {
+      hash = (37 * hash) + MEASURE__DECIMAL_VALUE_FIELD_NUMBER;
+      hash = (53 * hash) + getMeasureDecimalValue().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -353,13 +353,13 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      field_ = 0;
+      measure_ = 0;
 
-      if (measureValueBuilder_ == null) {
-        measureValue_ = null;
+      if (measureDecimalValueBuilder_ == null) {
+        measureDecimalValue_ = null;
       } else {
-        measureValue_ = null;
-        measureValueBuilder_ = null;
+        measureDecimalValue_ = null;
+        measureDecimalValueBuilder_ = null;
       }
       return this;
     }
@@ -387,11 +387,11 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public fintekkers.models.position.MeasureMapEntry buildPartial() {
       fintekkers.models.position.MeasureMapEntry result = new fintekkers.models.position.MeasureMapEntry(this);
-      result.field_ = field_;
-      if (measureValueBuilder_ == null) {
-        result.measureValue_ = measureValue_;
+      result.measure_ = measure_;
+      if (measureDecimalValueBuilder_ == null) {
+        result.measureDecimalValue_ = measureDecimalValue_;
       } else {
-        result.measureValue_ = measureValueBuilder_.build();
+        result.measureDecimalValue_ = measureDecimalValueBuilder_.build();
       }
       onBuilt();
       return result;
@@ -441,11 +441,11 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(fintekkers.models.position.MeasureMapEntry other) {
       if (other == fintekkers.models.position.MeasureMapEntry.getDefaultInstance()) return this;
-      if (other.field_ != 0) {
-        setFieldValue(other.getFieldValue());
+      if (other.measure_ != 0) {
+        setMeasureValue(other.getMeasureValue());
       }
-      if (other.hasMeasureValue()) {
-        mergeMeasureValue(other.getMeasureValue());
+      if (other.hasMeasureDecimalValue()) {
+        mergeMeasureDecimalValue(other.getMeasureDecimalValue());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -476,177 +476,177 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private int field_ = 0;
+    private int measure_ = 0;
     /**
-     * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
-     * @return The enum numeric value on the wire for field.
+     * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
+     * @return The enum numeric value on the wire for measure.
      */
-    @java.lang.Override public int getFieldValue() {
-      return field_;
+    @java.lang.Override public int getMeasureValue() {
+      return measure_;
     }
     /**
-     * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
-     * @param value The enum numeric value on the wire for field to set.
+     * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
+     * @param value The enum numeric value on the wire for measure to set.
      * @return This builder for chaining.
      */
-    public Builder setFieldValue(int value) {
+    public Builder setMeasureValue(int value) {
       
-      field_ = value;
+      measure_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
-     * @return The field.
+     * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
+     * @return The measure.
      */
     @java.lang.Override
-    public fintekkers.models.position.MeasureProto getField() {
+    public fintekkers.models.position.MeasureProto getMeasure() {
       @SuppressWarnings("deprecation")
-      fintekkers.models.position.MeasureProto result = fintekkers.models.position.MeasureProto.valueOf(field_);
+      fintekkers.models.position.MeasureProto result = fintekkers.models.position.MeasureProto.valueOf(measure_);
       return result == null ? fintekkers.models.position.MeasureProto.UNRECOGNIZED : result;
     }
     /**
-     * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
-     * @param value The field to set.
+     * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
+     * @param value The measure to set.
      * @return This builder for chaining.
      */
-    public Builder setField(fintekkers.models.position.MeasureProto value) {
+    public Builder setMeasure(fintekkers.models.position.MeasureProto value) {
       if (value == null) {
         throw new NullPointerException();
       }
       
-      field_ = value.getNumber();
+      measure_ = value.getNumber();
       onChanged();
       return this;
     }
     /**
-     * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
+     * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
      * @return This builder for chaining.
      */
-    public Builder clearField() {
+    public Builder clearMeasure() {
       
-      field_ = 0;
+      measure_ = 0;
       onChanged();
       return this;
     }
 
-    private fintekkers.models.util.DecimalValue.DecimalValueProto measureValue_;
+    private fintekkers.models.util.DecimalValue.DecimalValueProto measureDecimalValue_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        fintekkers.models.util.DecimalValue.DecimalValueProto, fintekkers.models.util.DecimalValue.DecimalValueProto.Builder, fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder> measureValueBuilder_;
+        fintekkers.models.util.DecimalValue.DecimalValueProto, fintekkers.models.util.DecimalValue.DecimalValueProto.Builder, fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder> measureDecimalValueBuilder_;
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
-     * @return Whether the measureValue field is set.
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * @return Whether the measureDecimalValue field is set.
      */
-    public boolean hasMeasureValue() {
-      return measureValueBuilder_ != null || measureValue_ != null;
+    public boolean hasMeasureDecimalValue() {
+      return measureDecimalValueBuilder_ != null || measureDecimalValue_ != null;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
-     * @return The measureValue.
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+     * @return The measureDecimalValue.
      */
-    public fintekkers.models.util.DecimalValue.DecimalValueProto getMeasureValue() {
-      if (measureValueBuilder_ == null) {
-        return measureValue_ == null ? fintekkers.models.util.DecimalValue.DecimalValueProto.getDefaultInstance() : measureValue_;
+    public fintekkers.models.util.DecimalValue.DecimalValueProto getMeasureDecimalValue() {
+      if (measureDecimalValueBuilder_ == null) {
+        return measureDecimalValue_ == null ? fintekkers.models.util.DecimalValue.DecimalValueProto.getDefaultInstance() : measureDecimalValue_;
       } else {
-        return measureValueBuilder_.getMessage();
+        return measureDecimalValueBuilder_.getMessage();
       }
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
      */
-    public Builder setMeasureValue(fintekkers.models.util.DecimalValue.DecimalValueProto value) {
-      if (measureValueBuilder_ == null) {
+    public Builder setMeasureDecimalValue(fintekkers.models.util.DecimalValue.DecimalValueProto value) {
+      if (measureDecimalValueBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        measureValue_ = value;
+        measureDecimalValue_ = value;
         onChanged();
       } else {
-        measureValueBuilder_.setMessage(value);
+        measureDecimalValueBuilder_.setMessage(value);
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
      */
-    public Builder setMeasureValue(
+    public Builder setMeasureDecimalValue(
         fintekkers.models.util.DecimalValue.DecimalValueProto.Builder builderForValue) {
-      if (measureValueBuilder_ == null) {
-        measureValue_ = builderForValue.build();
+      if (measureDecimalValueBuilder_ == null) {
+        measureDecimalValue_ = builderForValue.build();
         onChanged();
       } else {
-        measureValueBuilder_.setMessage(builderForValue.build());
+        measureDecimalValueBuilder_.setMessage(builderForValue.build());
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
      */
-    public Builder mergeMeasureValue(fintekkers.models.util.DecimalValue.DecimalValueProto value) {
-      if (measureValueBuilder_ == null) {
-        if (measureValue_ != null) {
-          measureValue_ =
-            fintekkers.models.util.DecimalValue.DecimalValueProto.newBuilder(measureValue_).mergeFrom(value).buildPartial();
+    public Builder mergeMeasureDecimalValue(fintekkers.models.util.DecimalValue.DecimalValueProto value) {
+      if (measureDecimalValueBuilder_ == null) {
+        if (measureDecimalValue_ != null) {
+          measureDecimalValue_ =
+            fintekkers.models.util.DecimalValue.DecimalValueProto.newBuilder(measureDecimalValue_).mergeFrom(value).buildPartial();
         } else {
-          measureValue_ = value;
+          measureDecimalValue_ = value;
         }
         onChanged();
       } else {
-        measureValueBuilder_.mergeFrom(value);
+        measureDecimalValueBuilder_.mergeFrom(value);
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
      */
-    public Builder clearMeasureValue() {
-      if (measureValueBuilder_ == null) {
-        measureValue_ = null;
+    public Builder clearMeasureDecimalValue() {
+      if (measureDecimalValueBuilder_ == null) {
+        measureDecimalValue_ = null;
         onChanged();
       } else {
-        measureValue_ = null;
-        measureValueBuilder_ = null;
+        measureDecimalValue_ = null;
+        measureDecimalValueBuilder_ = null;
       }
 
       return this;
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
      */
-    public fintekkers.models.util.DecimalValue.DecimalValueProto.Builder getMeasureValueBuilder() {
+    public fintekkers.models.util.DecimalValue.DecimalValueProto.Builder getMeasureDecimalValueBuilder() {
       
       onChanged();
-      return getMeasureValueFieldBuilder().getBuilder();
+      return getMeasureDecimalValueFieldBuilder().getBuilder();
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
      */
-    public fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureValueOrBuilder() {
-      if (measureValueBuilder_ != null) {
-        return measureValueBuilder_.getMessageOrBuilder();
+    public fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureDecimalValueOrBuilder() {
+      if (measureDecimalValueBuilder_ != null) {
+        return measureDecimalValueBuilder_.getMessageOrBuilder();
       } else {
-        return measureValue_ == null ?
-            fintekkers.models.util.DecimalValue.DecimalValueProto.getDefaultInstance() : measureValue_;
+        return measureDecimalValue_ == null ?
+            fintekkers.models.util.DecimalValue.DecimalValueProto.getDefaultInstance() : measureDecimalValue_;
       }
     }
     /**
-     * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+     * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         fintekkers.models.util.DecimalValue.DecimalValueProto, fintekkers.models.util.DecimalValue.DecimalValueProto.Builder, fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder> 
-        getMeasureValueFieldBuilder() {
-      if (measureValueBuilder_ == null) {
-        measureValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+        getMeasureDecimalValueFieldBuilder() {
+      if (measureDecimalValueBuilder_ == null) {
+        measureDecimalValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
             fintekkers.models.util.DecimalValue.DecimalValueProto, fintekkers.models.util.DecimalValue.DecimalValueProto.Builder, fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder>(
-                getMeasureValue(),
+                getMeasureDecimalValue(),
                 getParentForChildren(),
                 isClean());
-        measureValue_ = null;
+        measureDecimalValue_ = null;
       }
-      return measureValueBuilder_;
+      return measureDecimalValueBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

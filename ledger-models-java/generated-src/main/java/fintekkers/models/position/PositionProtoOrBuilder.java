@@ -54,27 +54,27 @@ public interface PositionProtoOrBuilder extends
   fintekkers.models.position.PositionTypeProto getPositionType();
 
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
-  java.util.List<fintekkers.models.position.MeasureMapFieldEntry> 
+  java.util.List<fintekkers.models.position.MeasureMapEntry> 
       getMeasuresList();
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
-  fintekkers.models.position.MeasureMapFieldEntry getMeasures(int index);
+  fintekkers.models.position.MeasureMapEntry getMeasures(int index);
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
   int getMeasuresCount();
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
-  java.util.List<? extends fintekkers.models.position.MeasureMapFieldEntryOrBuilder> 
+  java.util.List<? extends fintekkers.models.position.MeasureMapEntryOrBuilder> 
       getMeasuresOrBuilderList();
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
-  fintekkers.models.position.MeasureMapFieldEntryOrBuilder getMeasuresOrBuilder(
+  fintekkers.models.position.MeasureMapEntryOrBuilder getMeasuresOrBuilder(
       int index);
 
   /**

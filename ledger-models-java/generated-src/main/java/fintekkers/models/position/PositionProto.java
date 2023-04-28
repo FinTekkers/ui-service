@@ -81,11 +81,11 @@ private static final long serialVersionUID = 0L;
           }
           case 162: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              measures_ = new java.util.ArrayList<fintekkers.models.position.MeasureMapFieldEntry>();
+              measures_ = new java.util.ArrayList<fintekkers.models.position.MeasureMapEntry>();
               mutable_bitField0_ |= 0x00000001;
             }
             measures_.add(
-                input.readMessage(fintekkers.models.position.MeasureMapFieldEntry.parser(), extensionRegistry));
+                input.readMessage(fintekkers.models.position.MeasureMapEntry.parser(), extensionRegistry));
             break;
           }
           case 170: {
@@ -250,41 +250,41 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int MEASURES_FIELD_NUMBER = 20;
-  private java.util.List<fintekkers.models.position.MeasureMapFieldEntry> measures_;
+  private java.util.List<fintekkers.models.position.MeasureMapEntry> measures_;
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
   @java.lang.Override
-  public java.util.List<fintekkers.models.position.MeasureMapFieldEntry> getMeasuresList() {
+  public java.util.List<fintekkers.models.position.MeasureMapEntry> getMeasuresList() {
     return measures_;
   }
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends fintekkers.models.position.MeasureMapFieldEntryOrBuilder> 
+  public java.util.List<? extends fintekkers.models.position.MeasureMapEntryOrBuilder> 
       getMeasuresOrBuilderList() {
     return measures_;
   }
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
   @java.lang.Override
   public int getMeasuresCount() {
     return measures_.size();
   }
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
   @java.lang.Override
-  public fintekkers.models.position.MeasureMapFieldEntry getMeasures(int index) {
+  public fintekkers.models.position.MeasureMapEntry getMeasures(int index) {
     return measures_.get(index);
   }
   /**
-   * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+   * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
    */
   @java.lang.Override
-  public fintekkers.models.position.MeasureMapFieldEntryOrBuilder getMeasuresOrBuilder(
+  public fintekkers.models.position.MeasureMapEntryOrBuilder getMeasuresOrBuilder(
       int index) {
     return measures_.get(index);
   }
@@ -1052,22 +1052,22 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.util.List<fintekkers.models.position.MeasureMapFieldEntry> measures_ =
+    private java.util.List<fintekkers.models.position.MeasureMapEntry> measures_ =
       java.util.Collections.emptyList();
     private void ensureMeasuresIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        measures_ = new java.util.ArrayList<fintekkers.models.position.MeasureMapFieldEntry>(measures_);
+        measures_ = new java.util.ArrayList<fintekkers.models.position.MeasureMapEntry>(measures_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        fintekkers.models.position.MeasureMapFieldEntry, fintekkers.models.position.MeasureMapFieldEntry.Builder, fintekkers.models.position.MeasureMapFieldEntryOrBuilder> measuresBuilder_;
+        fintekkers.models.position.MeasureMapEntry, fintekkers.models.position.MeasureMapEntry.Builder, fintekkers.models.position.MeasureMapEntryOrBuilder> measuresBuilder_;
 
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public java.util.List<fintekkers.models.position.MeasureMapFieldEntry> getMeasuresList() {
+    public java.util.List<fintekkers.models.position.MeasureMapEntry> getMeasuresList() {
       if (measuresBuilder_ == null) {
         return java.util.Collections.unmodifiableList(measures_);
       } else {
@@ -1075,7 +1075,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public int getMeasuresCount() {
       if (measuresBuilder_ == null) {
@@ -1085,9 +1085,9 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public fintekkers.models.position.MeasureMapFieldEntry getMeasures(int index) {
+    public fintekkers.models.position.MeasureMapEntry getMeasures(int index) {
       if (measuresBuilder_ == null) {
         return measures_.get(index);
       } else {
@@ -1095,10 +1095,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public Builder setMeasures(
-        int index, fintekkers.models.position.MeasureMapFieldEntry value) {
+        int index, fintekkers.models.position.MeasureMapEntry value) {
       if (measuresBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1112,10 +1112,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public Builder setMeasures(
-        int index, fintekkers.models.position.MeasureMapFieldEntry.Builder builderForValue) {
+        int index, fintekkers.models.position.MeasureMapEntry.Builder builderForValue) {
       if (measuresBuilder_ == null) {
         ensureMeasuresIsMutable();
         measures_.set(index, builderForValue.build());
@@ -1126,9 +1126,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public Builder addMeasures(fintekkers.models.position.MeasureMapFieldEntry value) {
+    public Builder addMeasures(fintekkers.models.position.MeasureMapEntry value) {
       if (measuresBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1142,10 +1142,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public Builder addMeasures(
-        int index, fintekkers.models.position.MeasureMapFieldEntry value) {
+        int index, fintekkers.models.position.MeasureMapEntry value) {
       if (measuresBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1159,10 +1159,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public Builder addMeasures(
-        fintekkers.models.position.MeasureMapFieldEntry.Builder builderForValue) {
+        fintekkers.models.position.MeasureMapEntry.Builder builderForValue) {
       if (measuresBuilder_ == null) {
         ensureMeasuresIsMutable();
         measures_.add(builderForValue.build());
@@ -1173,10 +1173,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public Builder addMeasures(
-        int index, fintekkers.models.position.MeasureMapFieldEntry.Builder builderForValue) {
+        int index, fintekkers.models.position.MeasureMapEntry.Builder builderForValue) {
       if (measuresBuilder_ == null) {
         ensureMeasuresIsMutable();
         measures_.add(index, builderForValue.build());
@@ -1187,10 +1187,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public Builder addAllMeasures(
-        java.lang.Iterable<? extends fintekkers.models.position.MeasureMapFieldEntry> values) {
+        java.lang.Iterable<? extends fintekkers.models.position.MeasureMapEntry> values) {
       if (measuresBuilder_ == null) {
         ensureMeasuresIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -1202,7 +1202,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public Builder clearMeasures() {
       if (measuresBuilder_ == null) {
@@ -1215,7 +1215,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
     public Builder removeMeasures(int index) {
       if (measuresBuilder_ == null) {
@@ -1228,16 +1228,16 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public fintekkers.models.position.MeasureMapFieldEntry.Builder getMeasuresBuilder(
+    public fintekkers.models.position.MeasureMapEntry.Builder getMeasuresBuilder(
         int index) {
       return getMeasuresFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public fintekkers.models.position.MeasureMapFieldEntryOrBuilder getMeasuresOrBuilder(
+    public fintekkers.models.position.MeasureMapEntryOrBuilder getMeasuresOrBuilder(
         int index) {
       if (measuresBuilder_ == null) {
         return measures_.get(index);  } else {
@@ -1245,9 +1245,9 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public java.util.List<? extends fintekkers.models.position.MeasureMapFieldEntryOrBuilder> 
+    public java.util.List<? extends fintekkers.models.position.MeasureMapEntryOrBuilder> 
          getMeasuresOrBuilderList() {
       if (measuresBuilder_ != null) {
         return measuresBuilder_.getMessageOrBuilderList();
@@ -1256,33 +1256,33 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public fintekkers.models.position.MeasureMapFieldEntry.Builder addMeasuresBuilder() {
+    public fintekkers.models.position.MeasureMapEntry.Builder addMeasuresBuilder() {
       return getMeasuresFieldBuilder().addBuilder(
-          fintekkers.models.position.MeasureMapFieldEntry.getDefaultInstance());
+          fintekkers.models.position.MeasureMapEntry.getDefaultInstance());
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public fintekkers.models.position.MeasureMapFieldEntry.Builder addMeasuresBuilder(
+    public fintekkers.models.position.MeasureMapEntry.Builder addMeasuresBuilder(
         int index) {
       return getMeasuresFieldBuilder().addBuilder(
-          index, fintekkers.models.position.MeasureMapFieldEntry.getDefaultInstance());
+          index, fintekkers.models.position.MeasureMapEntry.getDefaultInstance());
     }
     /**
-     * <code>repeated .fintekkers.models.position.MeasureMapFieldEntry measures = 20;</code>
+     * <code>repeated .fintekkers.models.position.MeasureMapEntry measures = 20;</code>
      */
-    public java.util.List<fintekkers.models.position.MeasureMapFieldEntry.Builder> 
+    public java.util.List<fintekkers.models.position.MeasureMapEntry.Builder> 
          getMeasuresBuilderList() {
       return getMeasuresFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        fintekkers.models.position.MeasureMapFieldEntry, fintekkers.models.position.MeasureMapFieldEntry.Builder, fintekkers.models.position.MeasureMapFieldEntryOrBuilder> 
+        fintekkers.models.position.MeasureMapEntry, fintekkers.models.position.MeasureMapEntry.Builder, fintekkers.models.position.MeasureMapEntryOrBuilder> 
         getMeasuresFieldBuilder() {
       if (measuresBuilder_ == null) {
         measuresBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            fintekkers.models.position.MeasureMapFieldEntry, fintekkers.models.position.MeasureMapFieldEntry.Builder, fintekkers.models.position.MeasureMapFieldEntryOrBuilder>(
+            fintekkers.models.position.MeasureMapEntry, fintekkers.models.position.MeasureMapEntry.Builder, fintekkers.models.position.MeasureMapEntryOrBuilder>(
                 measures_,
                 ((bitField0_ & 0x00000001) != 0),
                 getParentForChildren(),

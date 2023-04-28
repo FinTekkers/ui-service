@@ -101,8 +101,8 @@ proto.fintekkers.models.position.MeasureMapEntry.prototype.toObject = function(o
  */
 proto.fintekkers.models.position.MeasureMapEntry.toObject = function(includeInstance, msg) {
   var f, obj = {
-    field: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    measureValue: (f = msg.getMeasureValue()) && fintekkers_models_util_decimal_value_pb.DecimalValueProto.toObject(includeInstance, f)
+    measure: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    measureDecimalValue: (f = msg.getMeasureDecimalValue()) && fintekkers_models_util_decimal_value_pb.DecimalValueProto.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -141,12 +141,12 @@ proto.fintekkers.models.position.MeasureMapEntry.deserializeBinaryFromReader = f
     switch (field) {
     case 1:
       var value = /** @type {!proto.fintekkers.models.position.MeasureProto} */ (reader.readEnum());
-      msg.setField(value);
+      msg.setMeasure(value);
       break;
     case 2:
       var value = new fintekkers_models_util_decimal_value_pb.DecimalValueProto;
       reader.readMessage(value,fintekkers_models_util_decimal_value_pb.DecimalValueProto.deserializeBinaryFromReader);
-      msg.setMeasureValue(value);
+      msg.setMeasureDecimalValue(value);
       break;
     default:
       reader.skipField();
@@ -177,14 +177,14 @@ proto.fintekkers.models.position.MeasureMapEntry.prototype.serializeBinary = fun
  */
 proto.fintekkers.models.position.MeasureMapEntry.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getField();
+  f = message.getMeasure();
   if (f !== 0.0) {
     writer.writeEnum(
       1,
       f
     );
   }
-  f = message.getMeasureValue();
+  f = message.getMeasureDecimalValue();
   if (f != null) {
     writer.writeMessage(
       2,
@@ -196,10 +196,10 @@ proto.fintekkers.models.position.MeasureMapEntry.serializeBinaryToWriter = funct
 
 
 /**
- * optional MeasureProto field = 1;
+ * optional MeasureProto measure = 1;
  * @return {!proto.fintekkers.models.position.MeasureProto}
  */
-proto.fintekkers.models.position.MeasureMapEntry.prototype.getField = function() {
+proto.fintekkers.models.position.MeasureMapEntry.prototype.getMeasure = function() {
   return /** @type {!proto.fintekkers.models.position.MeasureProto} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
@@ -208,16 +208,16 @@ proto.fintekkers.models.position.MeasureMapEntry.prototype.getField = function()
  * @param {!proto.fintekkers.models.position.MeasureProto} value
  * @return {!proto.fintekkers.models.position.MeasureMapEntry} returns this
  */
-proto.fintekkers.models.position.MeasureMapEntry.prototype.setField = function(value) {
+proto.fintekkers.models.position.MeasureMapEntry.prototype.setMeasure = function(value) {
   return jspb.Message.setProto3EnumField(this, 1, value);
 };
 
 
 /**
- * optional fintekkers.models.util.DecimalValueProto measure_value = 2;
+ * optional fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;
  * @return {?proto.fintekkers.models.util.DecimalValueProto}
  */
-proto.fintekkers.models.position.MeasureMapEntry.prototype.getMeasureValue = function() {
+proto.fintekkers.models.position.MeasureMapEntry.prototype.getMeasureDecimalValue = function() {
   return /** @type{?proto.fintekkers.models.util.DecimalValueProto} */ (
     jspb.Message.getWrapperField(this, fintekkers_models_util_decimal_value_pb.DecimalValueProto, 2));
 };
@@ -227,7 +227,7 @@ proto.fintekkers.models.position.MeasureMapEntry.prototype.getMeasureValue = fun
  * @param {?proto.fintekkers.models.util.DecimalValueProto|undefined} value
  * @return {!proto.fintekkers.models.position.MeasureMapEntry} returns this
 */
-proto.fintekkers.models.position.MeasureMapEntry.prototype.setMeasureValue = function(value) {
+proto.fintekkers.models.position.MeasureMapEntry.prototype.setMeasureDecimalValue = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
@@ -236,8 +236,8 @@ proto.fintekkers.models.position.MeasureMapEntry.prototype.setMeasureValue = fun
  * Clears the message field making it undefined.
  * @return {!proto.fintekkers.models.position.MeasureMapEntry} returns this
  */
-proto.fintekkers.models.position.MeasureMapEntry.prototype.clearMeasureValue = function() {
-  return this.setMeasureValue(undefined);
+proto.fintekkers.models.position.MeasureMapEntry.prototype.clearMeasureDecimalValue = function() {
+  return this.setMeasureDecimalValue(undefined);
 };
 
 
@@ -245,7 +245,7 @@ proto.fintekkers.models.position.MeasureMapEntry.prototype.clearMeasureValue = f
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.fintekkers.models.position.MeasureMapEntry.prototype.hasMeasureValue = function() {
+proto.fintekkers.models.position.MeasureMapEntry.prototype.hasMeasureDecimalValue = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
