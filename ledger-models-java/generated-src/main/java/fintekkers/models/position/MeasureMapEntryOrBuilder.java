@@ -8,28 +8,28 @@ public interface MeasureMapEntryOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
-   * @return The enum numeric value on the wire for field.
+   * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
+   * @return The enum numeric value on the wire for measure.
    */
-  int getFieldValue();
+  int getMeasureValue();
   /**
-   * <code>.fintekkers.models.position.MeasureProto field = 1;</code>
-   * @return The field.
+   * <code>.fintekkers.models.position.MeasureProto measure = 1;</code>
+   * @return The measure.
    */
-  fintekkers.models.position.MeasureProto getField();
+  fintekkers.models.position.MeasureProto getMeasure();
 
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
-   * @return Whether the measureValue field is set.
+   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * @return Whether the measureDecimalValue field is set.
    */
-  boolean hasMeasureValue();
+  boolean hasMeasureDecimalValue();
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
-   * @return The measureValue.
+   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
+   * @return The measureDecimalValue.
    */
-  fintekkers.models.util.DecimalValue.DecimalValueProto getMeasureValue();
+  fintekkers.models.util.DecimalValue.DecimalValueProto getMeasureDecimalValue();
   /**
-   * <code>.fintekkers.models.util.DecimalValueProto measure_value = 2;</code>
+   * <code>.fintekkers.models.util.DecimalValueProto measure__decimal_value = 2;</code>
    */
-  fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureValueOrBuilder();
+  fintekkers.models.util.DecimalValue.DecimalValueProtoOrBuilder getMeasureDecimalValueOrBuilder();
 }

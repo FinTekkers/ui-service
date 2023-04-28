@@ -68,10 +68,10 @@ class Position():
         field_value = self.get_field(field_to_get=field_to_get)
         return field_value.__str__()
 
-    def get_measures(self):
+    def get_measures(self) -> list[MeasureMapEntry]:
         return self.positionProto.measures
 
-    def get_fields(self):
+    def get_fields(self) -> list[FieldMapEntry]:
         return self.positionProto.fields
     
     def __str__(self):

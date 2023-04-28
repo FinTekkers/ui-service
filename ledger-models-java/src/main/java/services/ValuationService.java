@@ -1,7 +1,7 @@
 package services;
 
 import com.google.protobuf.Timestamp;
-import fintekkers.models.position.MeasureMapFieldEntry;
+import fintekkers.models.position.MeasureMapEntry;
 import fintekkers.models.position.MeasureProto;
 import fintekkers.models.position.PositionProto;
 import fintekkers.models.price.PriceProto;
@@ -74,7 +74,7 @@ public class ValuationService {
 
         PriceProto price = PriceProto.newBuilder().setSecurity(equitySecurity).setAsOf(asOf).setPrice(priceDecimal).build();
 
-        PositionProto.Builder position = PositionProto.newBuilder().addMeasures(MeasureMapFieldEntry.newBuilder()
+        PositionProto.Builder position = PositionProto.newBuilder().addMeasures(MeasureMapEntry.newBuilder()
                 .setMeasure(MeasureProto.DIRECTED_QUANTITY)
                 .setMeasureDecimalValue(ProtoSerializationUtil.serializeBigDecimal(BigDecimal.valueOf(-100)))
                 .build());
@@ -88,7 +88,7 @@ public class ValuationService {
 
 
         ValuationResponseProto responseProto = getInstance().runValuation(requestProto);
-        BigDecimal result = ProtoSerializationUtil.deserializeBigDecimal(responseProto.getMeasureResults(0).getMeasureValue());
+        BigDecimal result = ProtoSerializationUtil.deserializeBigDecimal(responseProto.getMeasureResults(0).getMeasureDecimalValue());
         System.out.println(responseProto);
 
         System.out.println("*************************************************************************************");
