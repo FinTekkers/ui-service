@@ -222,9 +222,9 @@ impl FieldProto {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MeasureMapEntry {
     #[prost(enumeration = "MeasureProto", tag = "1")]
-    pub field: i32,
+    pub measure: i32,
     #[prost(message, optional, tag = "2")]
-    pub measure_value: ::core::option::Option<super::util::DecimalValueProto>,
+    pub measure_decimal_value: ::core::option::Option<super::util::DecimalValueProto>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -293,14 +293,6 @@ impl PositionFilterOperator {
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct MeasureMapFieldEntry {
-    #[prost(enumeration = "MeasureProto", tag = "1")]
-    pub measure: i32,
-    #[prost(message, optional, tag = "2")]
-    pub measure_decimal_value: ::core::option::Option<super::util::DecimalValueProto>,
-}
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PositionProto {
     #[prost(string, tag = "1")]
     pub object_class: ::prost::alloc::string::String,
@@ -311,7 +303,7 @@ pub struct PositionProto {
     #[prost(enumeration = "PositionTypeProto", tag = "11")]
     pub position_type: i32,
     #[prost(message, repeated, tag = "20")]
-    pub measures: ::prost::alloc::vec::Vec<MeasureMapFieldEntry>,
+    pub measures: ::prost::alloc::vec::Vec<MeasureMapEntry>,
     #[prost(message, repeated, tag = "21")]
     pub fields: ::prost::alloc::vec::Vec<FieldMapEntry>,
 }
