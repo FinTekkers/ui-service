@@ -53,7 +53,7 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
             .setPositionView(PositionViewProto.valueOf(position.getPositionView().name()));
 
         position.getMeasures().forEach(measure -> {
-            MeasureMapFieldEntry entry = MeasureMapFieldEntry.newBuilder()
+            MeasureMapEntry entry = MeasureMapEntry.newBuilder()
                 .setMeasure(MeasureProto.valueOf(measure.name()))
                 .setMeasureDecimalValue(ProtoSerializationUtil.serializeBigDecimal(
                     position.getMeasure(measure)
@@ -70,7 +70,6 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
         });
 
         return builder.build();
-
     }
 
     
@@ -115,7 +114,7 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
             position.setFieldValue(field, fieldValue);
         });
 
-        List<MeasureMapFieldEntry> measuresList = proto.getMeasuresList();
+        List<MeasureMapEntry> measuresList = proto.getMeasuresList();
 
         measuresList.forEach(measureProto -> {
             Measure measure = Measure.valueOf(measureProto.getMeasure().name());
@@ -158,9 +157,9 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
     }
 
     public static void serializeMeasures(JsonArray array, PositionProto proto) {
-        List<MeasureMapFieldEntry> measuresList = proto.getMeasuresList();
+        List<MeasureMapEntry> measuresList = proto.getMeasuresList();
 
-        for(MeasureMapFieldEntry measure : measuresList) {
+        for(MeasureMapEntry measure : measuresList) {
             try {
                 serializeMeasure(array, measure);
             } catch (JsonSyntaxException | UnsupportedOperationException e) {
@@ -169,7 +168,7 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
         }
     }
 
-    public static void serializeMeasure(JsonArray array, MeasureMapFieldEntry measure) {
+    public static void serializeMeasure(JsonArray array, MeasureMapEntry measure) {
         JsonObject map = new JsonObject();
         String rawFieldName = measure.getMeasure().name();
         map.add(FIELD_NAME, new JsonPrimitive(rawFieldName));
@@ -181,7 +180,7 @@ public class PositionSerializer implements IRawDataModelObjectSerializer<Positio
         array.add(map);
     }
 
-    public static void serializeMeasure(MeasureMapFieldEntry measure, JsonObject map) {
+    public static void serializeMeasure(MeasureMapEntry measure, JsonObject map) {
         MeasureProto measureType = measure.getMeasure();
         BigDecimal value = ProtoSerializationUtil.deserializeBigDecimal(measure.getMeasureDecimalValue());
 

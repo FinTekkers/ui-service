@@ -11,13 +11,13 @@ import * as fintekkers_models_position_measure_pb from "../../../fintekkers/mode
 import * as fintekkers_models_util_decimal_value_pb from "../../../fintekkers/models/util/decimal_value_pb";
 
 export class MeasureMapEntry extends jspb.Message { 
-    getField(): fintekkers_models_position_measure_pb.MeasureProto;
-    setField(value: fintekkers_models_position_measure_pb.MeasureProto): MeasureMapEntry;
+    getMeasure(): fintekkers_models_position_measure_pb.MeasureProto;
+    setMeasure(value: fintekkers_models_position_measure_pb.MeasureProto): MeasureMapEntry;
 
-    hasMeasureValue(): boolean;
-    clearMeasureValue(): void;
-    getMeasureValue(): fintekkers_models_util_decimal_value_pb.DecimalValueProto | undefined;
-    setMeasureValue(value?: fintekkers_models_util_decimal_value_pb.DecimalValueProto): MeasureMapEntry;
+    hasMeasureDecimalValue(): boolean;
+    clearMeasureDecimalValue(): void;
+    getMeasureDecimalValue(): fintekkers_models_util_decimal_value_pb.DecimalValueProto | undefined;
+    setMeasureDecimalValue(value?: fintekkers_models_util_decimal_value_pb.DecimalValueProto): MeasureMapEntry;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): MeasureMapEntry.AsObject;
@@ -31,8 +31,8 @@ export class MeasureMapEntry extends jspb.Message {
 
 export namespace MeasureMapEntry {
     export type AsObject = {
-        field: fintekkers_models_position_measure_pb.MeasureProto,
-        measureValue?: fintekkers_models_util_decimal_value_pb.DecimalValueProto.AsObject,
+        measure: fintekkers_models_position_measure_pb.MeasureProto,
+        measureDecimalValue?: fintekkers_models_util_decimal_value_pb.DecimalValueProto.AsObject,
     }
 }
 
