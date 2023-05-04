@@ -27,7 +27,7 @@ class Position():
     def __init__(self, positionProto:PositionProto) -> None:
         self.positionProto = positionProto
 
-    def get_field(self, field_to_get:FieldProto):
+    def get_field(self, field_to_get:FieldMapEntry):
         tmp_field:FieldMapEntry
 
         # We'll iterate through the fields to make sure the requested field is in the proto.
@@ -53,7 +53,7 @@ class Position():
         raise ValueError("Could not find field in position")
         
 
-    def get_measure(self, measure_to_get:MeasureProto) -> Decimal:
+    def get_measure(self, measure_to_get:MeasureMapEntry) -> Decimal:
         tmp_measure:MeasureMapEntry
 
         # We'll iterate through the measures to make sure the requested measure is in the proto.
