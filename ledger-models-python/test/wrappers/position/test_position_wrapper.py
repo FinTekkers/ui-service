@@ -1,5 +1,6 @@
 
 from fintekkers.models.position.position_pb2 import PositionProto
+from fintekkers.models.position.position_util_pb2 import FieldMapEntry
 from fintekkers.wrappers.models.position import Position
 
 def test_transaction_position():
@@ -31,6 +32,8 @@ def test_tax_lot_position():
     assert len(position.get_fields()) > 3
 
     for field in position.get_fields():
+        field:FieldMapEntry
+        
         obj = position.get_field(field)
 
         assert obj != None

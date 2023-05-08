@@ -17,10 +17,10 @@ class Testing(unittest.TestCase):
         positionProto:PositionProto = PositionProto.FromString(b'\n\x08Position\x12\x050.0.1P\x01X\x01\xa2\x01\x16\x08\x01\x12\x12R\x10-115992994900.00\xaa\x01H\x08\x1e"D\n9type.googleapis.com/fintekkers.models.util.LocalDateProto\x12\x07\x08\xdc\x0f\x10\x06\x18\x14\xaa\x01\x04\x08 (\x04\xaa\x01N\x08\x0f"J\n4type.googleapis.com/fintekkers.models.util.UUIDProto\x12\x12\n\x10\x9f\xd1\x03\xecb[B\r\xb6\xfd.+\xa1S\x17\xbf')
         position:Position = Position(positionProto=positionProto)
 
-        portfolio_id = position.get_field(FieldProto.PORTFOLIO_ID)
-        trade_date = position.get_field(FieldProto.TRADE_DATE)
-        transaction_type = position.get_field(FieldProto.TRANSACTION_TYPE)
-        directed_quantity = position.get_measure(MeasureProto.DIRECTED_QUANTITY)
+        portfolio_id = position.get_field_value(FieldProto.PORTFOLIO_ID)
+        trade_date = position.get_field_value(FieldProto.TRADE_DATE)
+        transaction_type = position.get_field_value(FieldProto.TRANSACTION_TYPE)
+        directed_quantity = position.get_measure_value(MeasureProto.DIRECTED_QUANTITY)
         
         #Will throw an error if they don't exist
         

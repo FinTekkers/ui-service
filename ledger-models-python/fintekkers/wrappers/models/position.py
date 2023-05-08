@@ -27,7 +27,19 @@ class Position():
     def __init__(self, positionProto:PositionProto) -> None:
         self.positionProto = positionProto
 
+    def get_field_value(self, field:FieldProto) -> object:
+        '''
+            Returns the field value which could be any type, e.g. for Field.SECURITY a Security 
+            will be returned, but for Field.PORTFOLIO_ID a UUID would be returned.
+        '''
+        return self.get_field(field_to_get=FieldMapEntry(field=field))
+
     def get_field(self, field_to_get:FieldMapEntry):
+        '''
+            Returns the field value for the provided FieldMapEntry
+
+            TODO: Why do we need this? The MeasureMapEntry should have the value inside it already?
+        '''
         tmp_field:FieldMapEntry
 
         # We'll iterate through the fields to make sure the requested field is in the proto.
@@ -52,8 +64,18 @@ class Position():
 
         raise ValueError("Could not find field in position")
         
+    def get_measure_value(self, measure:MeasureProto) -> Decimal:
+        '''
+            Returns the decimal value for the measure
+        '''
+        return self.get_measure(measure_to_get=MeasureMapEntry(measure=measure))
 
     def get_measure(self, measure_to_get:MeasureMapEntry) -> Decimal:
+        '''
+            Returns the decimal for the given MeasureMapEntry
+
+            TODO: Why do we need this? The MeasureMapEntry should have the value inside it already?
+        '''
         tmp_measure:MeasureMapEntry
 
         # We'll iterate through the measures to make sure the requested measure is in the proto.
@@ -64,7 +86,7 @@ class Position():
 
         raise ValueError("Could not find measure in position")
 
-    def get_field_display(self, field_to_get:FieldProto):
+    def get_field_display(self, field_to_get:FieldMapEntry):
         field_value = self.get_field(field_to_get=field_to_get)
         return field_value.__str__()
 
