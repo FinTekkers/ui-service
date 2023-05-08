@@ -25,5 +25,5 @@ def test_security_wrapper():
         assert "UUID" in str(security.get_field(FieldProto.SECURITY_ID).__class__)
         assert "Identifier" in str(security.get_field(FieldProto.IDENTIFIER).__class__)
 
-        assert str(security) == ""
+        assert str(security) == "ID[CUSIP:912796Y29], Security[US Government]"
       
