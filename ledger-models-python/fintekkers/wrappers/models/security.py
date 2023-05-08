@@ -37,7 +37,7 @@ class Security():
         self.proto:SecurityProto = proto
 
     def __str__(self) -> str:
-        return f"ID[{self.proto.uuid}], Portfolio[{self.proto.issuer_name}]"
+        return f"ID[{str(self.get_id())}], {self.get_security_id()}[{self.proto.issuer_name}]"
 
     def get_fields(self) -> list[FieldProto]:
         return [
@@ -81,12 +81,12 @@ class Security():
     def get_product_type(self) -> object:
         raise ValueError("Not implemented yet. See Java implementation for reference")
     
-    def get_security_id(self) -> object:
+    def get_security_id(self) -> Identifier:
         id:IdentifierProto = self.proto.identifier
         return Identifier(id)
 
     def __str__(self):
-        return f'ID[{str(self.get_id())}], {type(self).__name__}[{self.issuer}]'
+        return f'ID[{str(self.get_security_id())}], {type(self).__name__}[{self.proto.issuer_name}]'
 
     def __eq__(self, other):
         if isinstance(other, Security):
