@@ -1,10 +1,15 @@
+from fintekkers.models.security.identifier.identifier_pb2 import IdentifierProto
 from fintekkers.models.security.security_pb2 import SecurityProto
 
-from fintekkers.models.position.field_pb2 import FieldProto
+from fintekkers.models.position.field_pb2 import *
 from fintekkers.models.position.measure_pb2 import MeasureProto
 
 from uuid import UUID
 from datetime import datetime
+from fintekkers.wrappers.models.security_identifier import Identifier
+
+from fintekkers.wrappers.models.util.fintekkers_uuid import FintekkersUuid
+from fintekkers.wrappers.models.util.serialization import ProtoSerializationUtil
 
 class IFinancialModelObject:
     def get_field(field:FieldProto) -> object:
@@ -34,10 +39,51 @@ class Security():
     def __str__(self) -> str:
         return f"ID[{self.proto.uuid}], Portfolio[{self.proto.issuer_name}]"
 
-    # def uuid(self) -> UUID:
-    #     uuid:FintekkersUuid = ProtoSerializationUtil.deserialize(self.proto.uuid)
-    #     return uuid.uuid
+    def get_fields(self) -> list[FieldProto]:
+        return [
+            ID, SECURITY_ID, AS_OF, ASSET_CLASS, IDENTIFIER
+        ]
+
+    def get_field(self, field:FieldProto) -> object:
+        if field in (ID, SECURITY_ID):
+            return self.get_id()
+        elif field == AS_OF:
+            return self.get_as_of()
+        elif field == ASSET_CLASS:
+            return self.get_asset_class()
+        elif field == PRODUCT_CLASS:
+            return self.get_product_class()
+        elif field == PRODUCT_TYPE:
+            return self.get_product_type()
+        elif field == IDENTIFIER:
+            return self.get_security_id()
+        elif field in (TENOR, ADJUSTED_TENOR):
+            raise ValueError("Not implemented yet")
+        elif field == MATURITY_DATE:
+            raise ValueError("Not implemented yet")
+        else:
+            raise ValueError(f"Field not mapped in Security wrapper: {field}")
+
+    def get_id(self) -> UUID:
+        uuid:FintekkersUuid = ProtoSerializationUtil.deserialize(self.proto.uuid)
+        return uuid.uuid
+    
+    def get_as_of(self) -> datetime:
+        as_of:datetime = ProtoSerializationUtil.deserialize(self.proto.as_of)
+        return as_of
         
+    def get_asset_class(self) -> str:
+        return self.proto.asset_class
+    
+    def get_product_class(self) -> str:
+        raise ValueError("Not implemented yet. See Java implementation for reference")
+    
+    def get_product_type(self) -> object:
+        raise ValueError("Not implemented yet. See Java implementation for reference")
+    
+    def get_security_id(self) -> object:
+        id:IdentifierProto = self.proto.identifier
+        return Identifier(id)
 
 
 # class Security(RawDataModelObject, IFinancialModelObject):
