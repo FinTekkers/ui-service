@@ -85,6 +85,23 @@ class Security():
         id:IdentifierProto = self.proto.identifier
         return Identifier(id)
 
+    def __str__(self):
+        return f'ID[{str(self.get_id())}], {type(self).__name__}[{self.issuer}]'
+
+    def __eq__(self, other):
+        if isinstance(other, Security):
+            return self.get_id() == other.get_id()
+        else:
+            return False
+
+    def __lt__(self, other):
+        if isinstance(other, Security):
+            return self.get_id() < other.get_id()
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self.get_id())
 
 # class Security(RawDataModelObject, IFinancialModelObject):
 #     def __init__(self, id: uuid.UUID, issuer: str, as_of: str, settlement_currency):
@@ -151,23 +168,6 @@ class Security():
 #     def set_description(self, description):
 #         self.description = description
 
-#     def __str__(self):
-#         return f'ID[{self.get_id().hex}], {type(self).__name__}[{self.issuer}]'
-
-#     def __eq__(self, other):
-#         if isinstance(other, Security):
-#             return self.get_id() == other.get_id()
-#         else:
-#             return False
-
-#     def __lt__(self, other):
-#         if isinstance(other, Security):
-#             return self.get_id() < other.get_id()
-#         else:
-#             return False
-
-#     def __hash__(self):
-#         return hash(self.get_id())
 
 
 # class CashSecurity(Security):
