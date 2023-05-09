@@ -33,7 +33,6 @@ class CreateSecurityRequest():
         spread:float=0.0,
         face_value:float=0.0,
         issue_date:date=date.today(),
-        original_issue_date:date=date.today(),
         dated_date:date=date.today(),
         maturity_date:date=date.today(),
     ):
@@ -47,9 +46,6 @@ class CreateSecurityRequest():
                         request (CreateSecurityRequest): A request wrapper, with the fields attached
         '''
         id = IdentifierProto(identifier_type=CUSIP, identifier_value=cusip)
-
-        issue_date = original_issue_date \
-                if original_issue_date != None else issue_date
 
         security_type = BOND_SECURITY
         coupon_frequency = SEMIANNUALLY
