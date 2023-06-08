@@ -10,6 +10,7 @@ DESCRIPTOR: _descriptor.FileDescriptor
 EFFECTIVE_DATE: FieldProto
 ID: FieldProto
 IDENTIFIER: FieldProto
+ISSUE_DATE: FieldProto
 IS_CANCELLED: FieldProto
 MATURITY_DATE: FieldProto
 PORTFOLIO: FieldProto
