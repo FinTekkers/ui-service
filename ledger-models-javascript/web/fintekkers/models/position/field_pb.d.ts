@@ -17,6 +17,7 @@ export enum FieldProto {
   SECURITY_ID = 53,
   IDENTIFIER = 54,
   TENOR = 55,
+  ISSUE_DATE = 58,
   MATURITY_DATE = 56,
   ADJUSTED_TENOR = 57,
   PORTFOLIO = 14,

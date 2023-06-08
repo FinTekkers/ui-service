@@ -105,6 +105,10 @@ public enum FieldProto
    */
   TENOR(55),
   /**
+   * <code>ISSUE_DATE = 58;</code>
+   */
+  ISSUE_DATE(58),
+  /**
    * <code>MATURITY_DATE = 56;</code>
    */
   MATURITY_DATE(56),
@@ -304,6 +308,10 @@ public enum FieldProto
    */
   public static final int TENOR_VALUE = 55;
   /**
+   * <code>ISSUE_DATE = 58;</code>
+   */
+  public static final int ISSUE_DATE_VALUE = 58;
+  /**
    * <code>MATURITY_DATE = 56;</code>
    */
   public static final int MATURITY_DATE_VALUE = 56;
@@ -443,6 +451,7 @@ public enum FieldProto
       case 53: return SECURITY_ID;
       case 54: return IDENTIFIER;
       case 55: return TENOR;
+      case 58: return ISSUE_DATE;
       case 56: return MATURITY_DATE;
       case 57: return ADJUSTED_TENOR;
       case 14: return PORTFOLIO;

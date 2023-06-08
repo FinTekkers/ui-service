@@ -156,7 +156,10 @@ class Position():
             return UUIDProto.FromString(field_to_unpack.field_value_packed.value)
         if field_to_unpack.field == FieldProto.AS_OF:
             return LocalTimestampProto.FromString(field_to_unpack.field_value_packed.value)        
-        if field_to_unpack.field == FieldProto.TRADE_DATE or field_to_unpack.field == FieldProto.SETTLEMENT_DATE \
+        if field_to_unpack.field == FieldProto.TRADE_DATE \
+            or field_to_unpack.field == FieldProto.MATURITY_DATE \
+            or field_to_unpack.field == FieldProto.ISSUE_DATE \
+            or field_to_unpack.field == FieldProto.SETTLEMENT_DATE \
             or field_to_unpack.field == FieldProto.TAX_LOT_OPEN_DATE\
                 or field_to_unpack.field == FieldProto.TAX_LOT_CLOSE_DATE:
             return LocalDateProto.FromString(field_to_unpack.field_value_packed.value)
