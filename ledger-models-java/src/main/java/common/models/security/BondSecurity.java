@@ -1,6 +1,7 @@
 package common.models.security;
 
 import common.models.JSONFieldNames;
+import common.models.postion.Field;
 import fintekkers.models.security.SecurityTypeProto;
 
 import java.math.BigDecimal;
@@ -167,5 +168,17 @@ public class BondSecurity extends Security {
         } else {
             return ProductType.NOTE;
         }
+    }
+
+    /***
+     * Plumbing for positions
+     */
+    public Object getField(Field field) {
+        return switch (field) {
+            case TENOR, ADJUSTED_TENOR -> Tenor.UNKNOWN_TENOR;
+            case MATURITY_DATE -> getMaturityDate();
+            case ISSUE_DATE -> getIssueDate();
+            default -> super.getField(field);
+        };
     }
 }

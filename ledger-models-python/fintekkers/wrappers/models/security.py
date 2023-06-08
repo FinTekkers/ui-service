@@ -84,6 +84,12 @@ class Security():
     def get_security_id(self) -> Identifier:
         id:IdentifierProto = self.proto.identifier
         return Identifier(id)
+    
+    def get_issue_date(self) -> datetime:
+        return ProtoSerializationUtil.deserialize(self.proto.issue_date)
+
+    def get_maturity_date(self) -> datetime:
+        return ProtoSerializationUtil.deserialize(self.proto.maturity_date)
 
     def __str__(self):
         return f'ID[{str(self.get_security_id())}], {type(self).__name__}[{self.proto.issuer_name}]'

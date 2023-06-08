@@ -21,8 +21,13 @@ def get_date(input_date:str) -> datetime:
     if input_date is None:
         return None
 
-    date = datetime.strptime(input_date, '%Y-%m-%d')
-    return date
+    try:
+        return datetime.strptime(input_date, '%Y-%m-%d')
+    except:
+        try:
+            return datetime.strptime(input_date, '%m/%d/%y')
+        except:
+            return datetime.strptime(input_date, '%m/%d/%Y')
 
 def get_date_as_dict(input_date:str) -> dict:
     date = get_date(input_date)
