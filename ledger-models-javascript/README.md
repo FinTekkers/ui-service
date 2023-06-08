@@ -1,4 +1,4 @@
-# Getting Started - Buildilng
+# Getting Started - Building
 
 In order to build the protos in Javascript, you must download the web extension. For Mac this is:
 
