@@ -114,6 +114,7 @@ pub enum FieldProto {
     Identifier = 54,
     /// 1M
     Tenor = 55,
+    IssueDate = 58,
     MaturityDate = 56,
     AdjustedTenor = 57,
     /// Portfolio fields
@@ -167,6 +168,7 @@ impl FieldProto {
             FieldProto::SecurityId => "SECURITY_ID",
             FieldProto::Identifier => "IDENTIFIER",
             FieldProto::Tenor => "TENOR",
+            FieldProto::IssueDate => "ISSUE_DATE",
             FieldProto::MaturityDate => "MATURITY_DATE",
             FieldProto::AdjustedTenor => "ADJUSTED_TENOR",
             FieldProto::Portfolio => "PORTFOLIO",
@@ -200,6 +202,7 @@ impl FieldProto {
             "SECURITY_ID" => Some(Self::SecurityId),
             "IDENTIFIER" => Some(Self::Identifier),
             "TENOR" => Some(Self::Tenor),
+            "ISSUE_DATE" => Some(Self::IssueDate),
             "MATURITY_DATE" => Some(Self::MaturityDate),
             "ADJUSTED_TENOR" => Some(Self::AdjustedTenor),
             "PORTFOLIO" => Some(Self::Portfolio),

@@ -25,6 +25,8 @@ enum FieldProto {
   SECURITY_ID = 53;
   IDENTIFIER = 54;
   TENOR = 55; // 1M
+
+  ISSUE_DATE=58;
   MATURITY_DATE = 56;
   ADJUSTED_TENOR = 57;
 

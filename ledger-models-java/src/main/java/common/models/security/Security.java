@@ -20,8 +20,6 @@ public class Security extends RawDataModelObject implements Comparable, IFinanci
     private final CashSecurity settlementCurrency;
     protected Identifier identifier;
 
-    private String productType;
-
     private String description;
 
     public Security(UUID id, String issuer, ZonedDateTime asOf, CashSecurity settlementCurrency) {
@@ -76,7 +74,7 @@ public class Security extends RawDataModelObject implements Comparable, IFinanci
             case PRODUCT_TYPE -> getProductType();
             case IDENTIFIER -> getSecurityId();
             case TENOR, ADJUSTED_TENOR -> Tenor.UNKNOWN_TENOR;
-            case MATURITY_DATE -> LocalDate.of(2399, 12, 31);
+            case MATURITY_DATE -> LocalDate.of(2999, 12, 31);
             default -> throw new RuntimeException(String.format("Field not found %s", field));
         };
     }
@@ -113,10 +111,6 @@ public class Security extends RawDataModelObject implements Comparable, IFinanci
      */
     public ProductType getProductType() {
         return ProductType.UNCLASSIFIED;
-    }
-
-    public void setProductType(String productType) {
-        this.productType = productType;
     }
 
     public Set<Field> getFields() {
