@@ -1,17 +1,21 @@
-you must download the web extension 
+# Getting Started - Buildilng
+
+In order to build the protos in Javascript, you must download the web extension. For Mac this is:
 
 brew install protobuf@3
 brew link --overwrite protobuf@3
 
 brew install protoc-gen-grpc-web
 
+see more at https://github.com/grpc/grpc-web. Once install the Javascript portion of the compile.sh script at the root of this project should work.
 
-see more at https://github.com/grpc/grpc-web
+TODO: Are there env variables required?
 
-to publish you must make a .npmrc file that containst the following 
+# Publishing
+
+Please see the .github/workflows/npm-publish.yml for the workflow file that deploys the package to a private GitHub repository manager.
+
+The workflow file creates a .npmrc file within the build step and injects the publish token into it. Currently this is coming from dado0583's account (need to migrate to org secrets). The ephemeral .npmrc file will look like this:
 
 @USERNAME:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=TOKEN
-
-
-if using web grpc from the browser a proxy like Envoy or a server that that supports web grpc must be used
