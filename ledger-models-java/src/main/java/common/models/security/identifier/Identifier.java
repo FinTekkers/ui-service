@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-public class Identifier implements Serializable, IRawDataModelObject {
+public class Identifier implements Serializable, IRawDataModelObject, Comparable {
     private final IdentifierType identifierType;
     private final String identifier;
 
@@ -61,5 +61,20 @@ public class Identifier implements Serializable, IRawDataModelObject {
     @Override
     public String toString() {
         return identifierType + ":"+ identifier;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if(o == null)
+            return -1;
+
+        if(o instanceof  Identifier) {
+            Identifier other = (Identifier) o;
+
+            if(getIdentifierType() == other.getIdentifierType() && getIdentifier().equals(other.getIdentifier()))
+                return 0;
+        }
+
+        return -1;
     }
 }

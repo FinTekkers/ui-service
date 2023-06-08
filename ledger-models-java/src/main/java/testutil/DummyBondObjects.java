@@ -1,10 +1,7 @@
 package testutil;
 
 import common.models.price.BondPrice;
-import common.models.security.BondSecurity;
-import common.models.security.CashSecurity;
-import common.models.security.CouponFrequency;
-import common.models.security.CouponType;
+import common.models.security.*;
 import common.models.security.identifier.Identifier;
 import common.models.security.identifier.IdentifierType;
 import common.models.strategy.Strategy;

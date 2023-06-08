@@ -267,13 +267,42 @@ public class Transaction extends RawDataModelObject implements ITransaction {
 
     @Override
     public boolean isMatch(PositionFilter filter) {
-        for(Field field : filter.getFilters().keySet()) {
-            Object o = filter.getFilters().get(field).getValue();
-            if(!o.equals(getField(field)))
-                return false;
+        boolean isMatch = true;
+
+        for(Map.Entry<Field, PositionFilter.PositionComparator> entry : filter.getFilters().entrySet()) {
+            Field field = entry.getKey();
+            PositionFilter.PositionComparator comparator = entry.getValue();
+
+            Object comparatorValue = comparator.getValue();
+            PositionFilter.Operator operator = comparator.getOperator();
+
+            int compareResult = ((Comparable)getField(field)).compareTo(comparatorValue);
+
+            if(operator.equals(PositionFilter.Operator.EQUALS))
+                isMatch = isMatch && compareResult == 0;
+            else if(operator.equals(PositionFilter.Operator.LESS_THAN_OR_EQUALS))
+                isMatch = isMatch && compareResult <= 0;
+            else if(operator.equals(PositionFilter.Operator.LESS_THAN))
+                isMatch = isMatch && compareResult < 0;
+            else if(operator.equals(PositionFilter.Operator.MORE_THAN_OR_EQUALS))
+                isMatch = isMatch && compareResult >= 0;
+            else if(operator.equals(PositionFilter.Operator.MORE_THAN))
+                isMatch = isMatch && compareResult > 0;
+            else if(operator.equals(PositionFilter.Operator.NOT_EQUALS))
+                isMatch = isMatch && compareResult != 0;
+            else {
+                throw new RuntimeException(String.format("Operator not supported in filters: %s", operator.name()));
+            }
         }
 
-        return true;
+        return isMatch;
+//        for(Field field : filter.getFilters().keySet()) {
+//            Object o = filter.getFilters().get(field).getValue();
+//            if(!o.equals(getField(field)))
+//                return false;
+//        }
+//
+//        return true;
     }
 
     public void setParentTransaction(Transaction parentTransaction) {
@@ -507,7 +536,8 @@ public class Transaction extends RawDataModelObject implements ITransaction {
                 bondSecurity.getMaturityDate().plusDays(2),
                 transaction.getQuantity(), transaction.getSecurity(),
                 transactionType, transaction.getStrategyAllocation(),
-                bondSecurity.getMaturityDate().atStartOfDay(ZonedDateTime.now().getZone()),
+                transaction.getAsOf(),
+//                bondSecurity.getMaturityDate().atStartOfDay(ZonedDateTime.now().getZone()),
                 transaction, transaction.getTradeName(), transaction.getPositionStatus()
         );
 
