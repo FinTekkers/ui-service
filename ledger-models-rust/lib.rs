@@ -6,6 +6,7 @@ pub mod fintekkers {
     }
 
     pub mod wrappers;
+
     pub mod models {
         pub mod portfolio {
             include!("fintekkers.models.portfolio.rs");
@@ -16,7 +17,6 @@ pub mod fintekkers {
         }
         pub mod price {
             include!("fintekkers.models.price.rs");
-            
         }
         pub mod security {
             include!("fintekkers.models.security.rs");  
@@ -46,6 +46,7 @@ pub mod fintekkers {
             include!("fintekkers.requests.position.rs");
         }
         pub mod price {
+            include!("fintekkers.requests.price.rs");
             
         }
         pub mod security {
@@ -82,6 +83,9 @@ pub mod fintekkers {
         }
         pub mod position_service {
             include!("fintekkers.services.position_service.rs");
+        }
+        pub mod price_service {
+            include!("fintekkers.services.price_service.rs");
         }
         pub mod security_service {
             include!("fintekkers.services.security_service.rs");
