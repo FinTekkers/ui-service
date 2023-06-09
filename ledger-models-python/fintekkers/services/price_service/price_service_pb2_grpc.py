@@ -9,7 +9,7 @@ from fintekkers.requests.price import query_price_response_pb2 as fintekkers_dot
 from fintekkers.requests.util.errors import summary_pb2 as fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2
 
 
-class SecurityStub(object):
+class PriceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -19,38 +19,38 @@ class SecurityStub(object):
             channel: A grpc.Channel.
         """
         self.CreateOrUpdate = channel.unary_unary(
-                '/fintekkers.services.price_service.Security/CreateOrUpdate',
+                '/fintekkers.services.price_service.Price/CreateOrUpdate',
                 request_serializer=fintekkers_dot_requests_dot_price_dot_create__price__request__pb2.CreatePriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_price_dot_create__price__response__pb2.CreatePriceResponseProto.FromString,
                 )
         self.GetByIDs = channel.unary_unary(
-                '/fintekkers.services.price_service.Security/GetByIDs',
+                '/fintekkers.services.price_service.Price/GetByIDs',
                 request_serializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
                 )
         self.Search = channel.unary_stream(
-                '/fintekkers.services.price_service.Security/Search',
+                '/fintekkers.services.price_service.Price/Search',
                 request_serializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
                 )
         self.ListIDs = channel.unary_unary(
-                '/fintekkers.services.price_service.Security/ListIDs',
+                '/fintekkers.services.price_service.Price/ListIDs',
                 request_serializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
                 )
         self.ValidateCreateOrUpdate = channel.unary_unary(
-                '/fintekkers.services.price_service.Security/ValidateCreateOrUpdate',
+                '/fintekkers.services.price_service.Price/ValidateCreateOrUpdate',
                 request_serializer=fintekkers_dot_requests_dot_price_dot_create__price__request__pb2.CreatePriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
                 )
         self.ValidateQueryRequest = channel.unary_unary(
-                '/fintekkers.services.price_service.Security/ValidateQueryRequest',
+                '/fintekkers.services.price_service.Price/ValidateQueryRequest',
                 request_serializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
                 )
 
 
-class SecurityServicer(object):
+class PriceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def CreateOrUpdate(self, request, context):
@@ -90,7 +90,7 @@ class SecurityServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_SecurityServicer_to_server(servicer, server):
+def add_PriceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'CreateOrUpdate': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateOrUpdate,
@@ -124,12 +124,12 @@ def add_SecurityServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'fintekkers.services.price_service.Security', rpc_method_handlers)
+            'fintekkers.services.price_service.Price', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Security(object):
+class Price(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -143,7 +143,7 @@ class Security(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Security/CreateOrUpdate',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/CreateOrUpdate',
             fintekkers_dot_requests_dot_price_dot_create__price__request__pb2.CreatePriceRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_price_dot_create__price__response__pb2.CreatePriceResponseProto.FromString,
             options, channel_credentials,
@@ -160,7 +160,7 @@ class Security(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Security/GetByIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/GetByIDs',
             fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
             options, channel_credentials,
@@ -177,7 +177,7 @@ class Security(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/fintekkers.services.price_service.Security/Search',
+        return grpc.experimental.unary_stream(request, target, '/fintekkers.services.price_service.Price/Search',
             fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
             options, channel_credentials,
@@ -194,7 +194,7 @@ class Security(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Security/ListIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/ListIDs',
             fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
             options, channel_credentials,
@@ -211,7 +211,7 @@ class Security(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Security/ValidateCreateOrUpdate',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/ValidateCreateOrUpdate',
             fintekkers_dot_requests_dot_price_dot_create__price__request__pb2.CreatePriceRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
             options, channel_credentials,
@@ -228,7 +228,7 @@ class Security(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Security/ValidateQueryRequest',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/ValidateQueryRequest',
             fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_util_dot_errors_dot_summary__pb2.SummaryProto.FromString,
             options, channel_credentials,

@@ -1,13 +1,13 @@
 /// Generated client implementations.
-pub mod security_client {
+pub mod price_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
-    pub struct SecurityClient<T> {
+    pub struct PriceClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl SecurityClient<tonic::transport::Channel> {
+    impl PriceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -18,7 +18,7 @@ pub mod security_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> SecurityClient<T>
+    impl<T> PriceClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
@@ -36,7 +36,7 @@ pub mod security_client {
         pub fn with_interceptor<F>(
             inner: T,
             interceptor: F,
-        ) -> SecurityClient<InterceptedService<T, F>>
+        ) -> PriceClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
@@ -50,7 +50,7 @@ pub mod security_client {
                 http::Request<tonic::body::BoxBody>,
             >>::Error: Into<StdError> + Send + Sync,
         {
-            SecurityClient::new(InterceptedService::new(inner, interceptor))
+            PriceClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -105,13 +105,13 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/fintekkers.services.price_service.Security/CreateOrUpdate",
+                "/fintekkers.services.price_service.Price/CreateOrUpdate",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new(
-                        "fintekkers.services.price_service.Security",
+                        "fintekkers.services.price_service.Price",
                         "CreateOrUpdate",
                     ),
                 );
@@ -139,13 +139,13 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/fintekkers.services.price_service.Security/GetByIDs",
+                "/fintekkers.services.price_service.Price/GetByIDs",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new(
-                        "fintekkers.services.price_service.Security",
+                        "fintekkers.services.price_service.Price",
                         "GetByIDs",
                     ),
                 );
@@ -175,15 +175,12 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/fintekkers.services.price_service.Security/Search",
+                "/fintekkers.services.price_service.Price/Search",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
-                    GrpcMethod::new(
-                        "fintekkers.services.price_service.Security",
-                        "Search",
-                    ),
+                    GrpcMethod::new("fintekkers.services.price_service.Price", "Search"),
                 );
             self.inner.server_streaming(req, path, codec).await
         }
@@ -209,15 +206,12 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/fintekkers.services.price_service.Security/ListIDs",
+                "/fintekkers.services.price_service.Price/ListIDs",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
-                    GrpcMethod::new(
-                        "fintekkers.services.price_service.Security",
-                        "ListIDs",
-                    ),
+                    GrpcMethod::new("fintekkers.services.price_service.Price", "ListIDs"),
                 );
             self.inner.unary(req, path, codec).await
         }
@@ -241,13 +235,13 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/fintekkers.services.price_service.Security/ValidateCreateOrUpdate",
+                "/fintekkers.services.price_service.Price/ValidateCreateOrUpdate",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new(
-                        "fintekkers.services.price_service.Security",
+                        "fintekkers.services.price_service.Price",
                         "ValidateCreateOrUpdate",
                     ),
                 );
@@ -273,13 +267,13 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/fintekkers.services.price_service.Security/ValidateQueryRequest",
+                "/fintekkers.services.price_service.Price/ValidateQueryRequest",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new(
-                        "fintekkers.services.price_service.Security",
+                        "fintekkers.services.price_service.Price",
                         "ValidateQueryRequest",
                     ),
                 );
@@ -288,12 +282,12 @@ pub mod security_client {
     }
 }
 /// Generated server implementations.
-pub mod security_server {
+pub mod price_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    /// Generated trait containing gRPC methods that should be implemented for use with SecurityServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with PriceServer.
     #[async_trait]
-    pub trait Security: Send + Sync + 'static {
+    pub trait Price: Send + Sync + 'static {
         async fn create_or_update(
             &self,
             request: tonic::Request<
@@ -362,7 +356,7 @@ pub mod security_server {
         >;
     }
     #[derive(Debug)]
-    pub struct SecurityServer<T: Security> {
+    pub struct PriceServer<T: Price> {
         inner: _Inner<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
@@ -370,7 +364,7 @@ pub mod security_server {
         max_encoding_message_size: Option<usize>,
     }
     struct _Inner<T>(Arc<T>);
-    impl<T: Security> SecurityServer<T> {
+    impl<T: Price> PriceServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
@@ -422,9 +416,9 @@ pub mod security_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for SecurityServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for PriceServer<T>
     where
-        T: Security,
+        T: Price,
         B: Body + Send + 'static,
         B::Error: Into<StdError> + Send + 'static,
     {
@@ -440,11 +434,11 @@ pub mod security_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/fintekkers.services.price_service.Security/CreateOrUpdate" => {
+                "/fintekkers.services.price_service.Price/CreateOrUpdate" => {
                     #[allow(non_camel_case_types)]
-                    struct CreateOrUpdateSvc<T: Security>(pub Arc<T>);
+                    struct CreateOrUpdateSvc<T: Price>(pub Arc<T>);
                     impl<
-                        T: Security,
+                        T: Price,
                     > tonic::server::UnaryService<
                         super::super::super::requests::price::CreatePriceRequestProto,
                     > for CreateOrUpdateSvc<T> {
@@ -489,11 +483,11 @@ pub mod security_server {
                     };
                     Box::pin(fut)
                 }
-                "/fintekkers.services.price_service.Security/GetByIDs" => {
+                "/fintekkers.services.price_service.Price/GetByIDs" => {
                     #[allow(non_camel_case_types)]
-                    struct GetByIDsSvc<T: Security>(pub Arc<T>);
+                    struct GetByIDsSvc<T: Price>(pub Arc<T>);
                     impl<
-                        T: Security,
+                        T: Price,
                     > tonic::server::UnaryService<
                         super::super::super::requests::price::QueryPriceRequestProto,
                     > for GetByIDsSvc<T> {
@@ -536,11 +530,11 @@ pub mod security_server {
                     };
                     Box::pin(fut)
                 }
-                "/fintekkers.services.price_service.Security/Search" => {
+                "/fintekkers.services.price_service.Price/Search" => {
                     #[allow(non_camel_case_types)]
-                    struct SearchSvc<T: Security>(pub Arc<T>);
+                    struct SearchSvc<T: Price>(pub Arc<T>);
                     impl<
-                        T: Security,
+                        T: Price,
                     > tonic::server::ServerStreamingService<
                         super::super::super::requests::price::QueryPriceRequestProto,
                     > for SearchSvc<T> {
@@ -584,11 +578,11 @@ pub mod security_server {
                     };
                     Box::pin(fut)
                 }
-                "/fintekkers.services.price_service.Security/ListIDs" => {
+                "/fintekkers.services.price_service.Price/ListIDs" => {
                     #[allow(non_camel_case_types)]
-                    struct ListIDsSvc<T: Security>(pub Arc<T>);
+                    struct ListIDsSvc<T: Price>(pub Arc<T>);
                     impl<
-                        T: Security,
+                        T: Price,
                     > tonic::server::UnaryService<
                         super::super::super::requests::price::QueryPriceRequestProto,
                     > for ListIDsSvc<T> {
@@ -631,11 +625,11 @@ pub mod security_server {
                     };
                     Box::pin(fut)
                 }
-                "/fintekkers.services.price_service.Security/ValidateCreateOrUpdate" => {
+                "/fintekkers.services.price_service.Price/ValidateCreateOrUpdate" => {
                     #[allow(non_camel_case_types)]
-                    struct ValidateCreateOrUpdateSvc<T: Security>(pub Arc<T>);
+                    struct ValidateCreateOrUpdateSvc<T: Price>(pub Arc<T>);
                     impl<
-                        T: Security,
+                        T: Price,
                     > tonic::server::UnaryService<
                         super::super::super::requests::price::CreatePriceRequestProto,
                     > for ValidateCreateOrUpdateSvc<T> {
@@ -680,11 +674,11 @@ pub mod security_server {
                     };
                     Box::pin(fut)
                 }
-                "/fintekkers.services.price_service.Security/ValidateQueryRequest" => {
+                "/fintekkers.services.price_service.Price/ValidateQueryRequest" => {
                     #[allow(non_camel_case_types)]
-                    struct ValidateQueryRequestSvc<T: Security>(pub Arc<T>);
+                    struct ValidateQueryRequestSvc<T: Price>(pub Arc<T>);
                     impl<
-                        T: Security,
+                        T: Price,
                     > tonic::server::UnaryService<
                         super::super::super::requests::price::QueryPriceRequestProto,
                     > for ValidateQueryRequestSvc<T> {
@@ -744,7 +738,7 @@ pub mod security_server {
             }
         }
     }
-    impl<T: Security> Clone for SecurityServer<T> {
+    impl<T: Price> Clone for PriceServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -756,7 +750,7 @@ pub mod security_server {
             }
         }
     }
-    impl<T: Security> Clone for _Inner<T> {
+    impl<T: Price> Clone for _Inner<T> {
         fn clone(&self) -> Self {
             Self(Arc::clone(&self.0))
         }
@@ -766,7 +760,7 @@ pub mod security_server {
             write!(f, "{:?}", self.0)
         }
     }
-    impl<T: Security> tonic::server::NamedService for SecurityServer<T> {
-        const NAME: &'static str = "fintekkers.services.price_service.Security";
+    impl<T: Price> tonic::server::NamedService for PriceServer<T> {
+        const NAME: &'static str = "fintekkers.services.price_service.Price";
     }
 }

@@ -64,9 +64,9 @@ function deserialize_fintekkers_requests_util_errors_SummaryProto(buffer_arg) {
 }
 
 
-var SecurityService = exports.SecurityService = {
+var PriceService = exports.PriceService = {
   createOrUpdate: {
-    path: '/fintekkers.services.price_service.Security/CreateOrUpdate',
+    path: '/fintekkers.services.price_service.Price/CreateOrUpdate',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto,
@@ -77,7 +77,7 @@ var SecurityService = exports.SecurityService = {
     responseDeserialize: deserialize_fintekkers_requests_price_CreatePriceResponseProto,
   },
   getByIDs: {
-    path: '/fintekkers.services.price_service.Security/GetByIDs',
+    path: '/fintekkers.services.price_service.Price/GetByIDs',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
@@ -88,7 +88,7 @@ var SecurityService = exports.SecurityService = {
     responseDeserialize: deserialize_fintekkers_requests_price_QueryPriceResponseProto,
   },
   search: {
-    path: '/fintekkers.services.price_service.Security/Search',
+    path: '/fintekkers.services.price_service.Price/Search',
     requestStream: false,
     responseStream: true,
     requestType: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
@@ -99,7 +99,7 @@ var SecurityService = exports.SecurityService = {
     responseDeserialize: deserialize_fintekkers_requests_price_QueryPriceResponseProto,
   },
   listIDs: {
-    path: '/fintekkers.services.price_service.Security/ListIDs',
+    path: '/fintekkers.services.price_service.Price/ListIDs',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
@@ -110,7 +110,7 @@ var SecurityService = exports.SecurityService = {
     responseDeserialize: deserialize_fintekkers_requests_price_QueryPriceResponseProto,
   },
   validateCreateOrUpdate: {
-    path: '/fintekkers.services.price_service.Security/ValidateCreateOrUpdate',
+    path: '/fintekkers.services.price_service.Price/ValidateCreateOrUpdate',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto,
@@ -121,7 +121,7 @@ var SecurityService = exports.SecurityService = {
     responseDeserialize: deserialize_fintekkers_requests_util_errors_SummaryProto,
   },
   validateQueryRequest: {
-    path: '/fintekkers.services.price_service.Security/ValidateQueryRequest',
+    path: '/fintekkers.services.price_service.Price/ValidateQueryRequest',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
@@ -133,4 +133,4 @@ var SecurityService = exports.SecurityService = {
   },
 };
 
-exports.SecurityClient = grpc.makeGenericClientConstructor(SecurityService);
+exports.PriceClient = grpc.makeGenericClientConstructor(PriceService);

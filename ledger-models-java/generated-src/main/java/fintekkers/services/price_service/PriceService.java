@@ -15,11 +15,11 @@ public final class PriceService {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   /**
-   * Protobuf service {@code fintekkers.services.price_service.Security}
+   * Protobuf service {@code fintekkers.services.price_service.Price}
    */
-  public static abstract class Security
+  public static abstract class Price
       implements com.google.protobuf.Service {
-    protected Security() {}
+    protected Price() {}
 
     public interface Interface {
       /**
@@ -74,7 +74,7 @@ public final class PriceService {
 
     public static com.google.protobuf.Service newReflectiveService(
         final Interface impl) {
-      return new Security() {
+      return new Price() {
         @java.lang.Override
         public  void createOrUpdate(
             com.google.protobuf.RpcController controller,
@@ -379,7 +379,7 @@ public final class PriceService {
       return new Stub(channel);
     }
 
-    public static final class Stub extends fintekkers.services.price_service.PriceService.Security implements Interface {
+    public static final class Stub extends fintekkers.services.price_service.PriceService.Price implements Interface {
       private Stub(com.google.protobuf.RpcChannel channel) {
         this.channel = channel;
       }
@@ -598,7 +598,7 @@ public final class PriceService {
 
     }
 
-    // @@protoc_insertion_point(class_scope:fintekkers.services.price_service.Security)
+    // @@protoc_insertion_point(class_scope:fintekkers.services.price_service.Price)
   }
 
 
@@ -618,26 +618,26 @@ public final class PriceService {
       "intekkers/requests/price/create_price_re" +
       "quest.proto\0325fintekkers/requests/price/c" +
       "reate_price_response.proto\032-fintekkers/r" +
-      "equests/util/errors/summary.proto2\324\005\n\010Se" +
-      "curity\022y\n\016CreateOrUpdate\0222.fintekkers.re" +
-      "quests.price.CreatePriceRequestProto\0323.f" +
-      "intekkers.requests.price.CreatePriceResp" +
-      "onseProto\022q\n\010GetByIDs\0221.fintekkers.reque" +
-      "sts.price.QueryPriceRequestProto\0322.finte" +
-      "kkers.requests.price.QueryPriceResponseP" +
-      "roto\022q\n\006Search\0221.fintekkers.requests.pri" +
-      "ce.QueryPriceRequestProto\0322.fintekkers.r" +
-      "equests.price.QueryPriceResponseProto0\001\022" +
-      "p\n\007ListIDs\0221.fintekkers.requests.price.Q" +
-      "ueryPriceRequestProto\0322.fintekkers.reque" +
-      "sts.price.QueryPriceResponseProto\022{\n\026Val" +
-      "idateCreateOrUpdate\0222.fintekkers.request" +
-      "s.price.CreatePriceRequestProto\032-.fintek" +
-      "kers.requests.util.errors.SummaryProto\022x" +
-      "\n\024ValidateQueryRequest\0221.fintekkers.requ" +
-      "ests.price.QueryPriceRequestProto\032-.fint" +
-      "ekkers.requests.util.errors.SummaryProto" +
-      "B\006\210\001\001\220\001\001b\006proto3"
+      "equests/util/errors/summary.proto2\321\005\n\005Pr" +
+      "ice\022y\n\016CreateOrUpdate\0222.fintekkers.reque" +
+      "sts.price.CreatePriceRequestProto\0323.fint" +
+      "ekkers.requests.price.CreatePriceRespons" +
+      "eProto\022q\n\010GetByIDs\0221.fintekkers.requests" +
+      ".price.QueryPriceRequestProto\0322.fintekke" +
+      "rs.requests.price.QueryPriceResponseProt" +
+      "o\022q\n\006Search\0221.fintekkers.requests.price." +
+      "QueryPriceRequestProto\0322.fintekkers.requ" +
+      "ests.price.QueryPriceResponseProto0\001\022p\n\007" +
+      "ListIDs\0221.fintekkers.requests.price.Quer" +
+      "yPriceRequestProto\0322.fintekkers.requests" +
+      ".price.QueryPriceResponseProto\022{\n\026Valida" +
+      "teCreateOrUpdate\0222.fintekkers.requests.p" +
+      "rice.CreatePriceRequestProto\032-.fintekker" +
+      "s.requests.util.errors.SummaryProto\022x\n\024V" +
+      "alidateQueryRequest\0221.fintekkers.request" +
+      "s.price.QueryPriceRequestProto\032-.fintekk" +
+      "ers.requests.util.errors.SummaryProtoB\006\210" +
+      "\001\001\220\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
