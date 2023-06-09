@@ -12,17 +12,17 @@ import * as fintekkers_requests_price_create_price_request_pb from "../../../fin
 import * as fintekkers_requests_price_create_price_response_pb from "../../../fintekkers/requests/price/create_price_response_pb";
 import * as fintekkers_requests_util_errors_summary_pb from "../../../fintekkers/requests/util/errors/summary_pb";
 
-interface ISecurityService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
-    createOrUpdate: ISecurityService_ICreateOrUpdate;
-    getByIDs: ISecurityService_IGetByIDs;
-    search: ISecurityService_ISearch;
-    listIDs: ISecurityService_IListIDs;
-    validateCreateOrUpdate: ISecurityService_IValidateCreateOrUpdate;
-    validateQueryRequest: ISecurityService_IValidateQueryRequest;
+interface IPriceService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
+    createOrUpdate: IPriceService_ICreateOrUpdate;
+    getByIDs: IPriceService_IGetByIDs;
+    search: IPriceService_ISearch;
+    listIDs: IPriceService_IListIDs;
+    validateCreateOrUpdate: IPriceService_IValidateCreateOrUpdate;
+    validateQueryRequest: IPriceService_IValidateQueryRequest;
 }
 
-interface ISecurityService_ICreateOrUpdate extends grpc.MethodDefinition<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto> {
-    path: "/fintekkers.services.price_service.Security/CreateOrUpdate";
+interface IPriceService_ICreateOrUpdate extends grpc.MethodDefinition<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto> {
+    path: "/fintekkers.services.price_service.Price/CreateOrUpdate";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto>;
@@ -30,8 +30,8 @@ interface ISecurityService_ICreateOrUpdate extends grpc.MethodDefinition<fintekk
     responseSerialize: grpc.serialize<fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto>;
 }
-interface ISecurityService_IGetByIDs extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
-    path: "/fintekkers.services.price_service.Security/GetByIDs";
+interface IPriceService_IGetByIDs extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
+    path: "/fintekkers.services.price_service.Price/GetByIDs";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto>;
@@ -39,8 +39,8 @@ interface ISecurityService_IGetByIDs extends grpc.MethodDefinition<fintekkers_re
     responseSerialize: grpc.serialize<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
 }
-interface ISecurityService_ISearch extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
-    path: "/fintekkers.services.price_service.Security/Search";
+interface IPriceService_ISearch extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
+    path: "/fintekkers.services.price_service.Price/Search";
     requestStream: false;
     responseStream: true;
     requestSerialize: grpc.serialize<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto>;
@@ -48,8 +48,8 @@ interface ISecurityService_ISearch extends grpc.MethodDefinition<fintekkers_requ
     responseSerialize: grpc.serialize<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
 }
-interface ISecurityService_IListIDs extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
-    path: "/fintekkers.services.price_service.Security/ListIDs";
+interface IPriceService_IListIDs extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
+    path: "/fintekkers.services.price_service.Price/ListIDs";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto>;
@@ -57,8 +57,8 @@ interface ISecurityService_IListIDs extends grpc.MethodDefinition<fintekkers_req
     responseSerialize: grpc.serialize<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
 }
-interface ISecurityService_IValidateCreateOrUpdate extends grpc.MethodDefinition<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto> {
-    path: "/fintekkers.services.price_service.Security/ValidateCreateOrUpdate";
+interface IPriceService_IValidateCreateOrUpdate extends grpc.MethodDefinition<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto> {
+    path: "/fintekkers.services.price_service.Price/ValidateCreateOrUpdate";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto>;
@@ -66,8 +66,8 @@ interface ISecurityService_IValidateCreateOrUpdate extends grpc.MethodDefinition
     responseSerialize: grpc.serialize<fintekkers_requests_util_errors_summary_pb.SummaryProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_util_errors_summary_pb.SummaryProto>;
 }
-interface ISecurityService_IValidateQueryRequest extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto> {
-    path: "/fintekkers.services.price_service.Security/ValidateQueryRequest";
+interface IPriceService_IValidateQueryRequest extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto> {
+    path: "/fintekkers.services.price_service.Price/ValidateQueryRequest";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto>;
@@ -76,9 +76,9 @@ interface ISecurityService_IValidateQueryRequest extends grpc.MethodDefinition<f
     responseDeserialize: grpc.deserialize<fintekkers_requests_util_errors_summary_pb.SummaryProto>;
 }
 
-export const SecurityService: ISecurityService;
+export const PriceService: IPriceService;
 
-export interface ISecurityServer extends grpc.UntypedServiceImplementation {
+export interface IPriceServer extends grpc.UntypedServiceImplementation {
     createOrUpdate: grpc.handleUnaryCall<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto>;
     getByIDs: grpc.handleUnaryCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     search: grpc.handleServerStreamingCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
@@ -87,7 +87,7 @@ export interface ISecurityServer extends grpc.UntypedServiceImplementation {
     validateQueryRequest: grpc.handleUnaryCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto>;
 }
 
-export interface ISecurityClient {
+export interface IPriceClient {
     createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
     createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
     createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
@@ -107,7 +107,7 @@ export interface ISecurityClient {
     validateQueryRequest(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
 }
 
-export class SecurityClient extends grpc.Client implements ISecurityClient {
+export class PriceClient extends grpc.Client implements IPriceClient {
     constructor(address: string, credentials: grpc.ChannelCredentials, options?: Partial<grpc.ClientOptions>);
     public createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
     public createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;

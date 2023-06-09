@@ -7,7 +7,7 @@ import * as fintekkers_requests_price_query_price_response_pb from '../../../fin
 import * as fintekkers_requests_util_errors_summary_pb from '../../../fintekkers/requests/util/errors/summary_pb';
 
 
-export class SecurityClient {
+export class PriceClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
@@ -54,7 +54,7 @@ export class SecurityClient {
 
 }
 
-export class SecurityPromiseClient {
+export class PricePromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });

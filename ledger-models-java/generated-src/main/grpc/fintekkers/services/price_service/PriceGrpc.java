@@ -8,11 +8,11 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
     value = "by gRPC proto compiler (version 1.51.0)",
     comments = "Source: fintekkers/services/price-service/price_service.proto")
 @io.grpc.stub.annotations.GrpcGenerated
-public final class SecurityGrpc {
+public final class PriceGrpc {
 
-  private SecurityGrpc() {}
+  private PriceGrpc() {}
 
-  public static final String SERVICE_NAME = "fintekkers.services.price_service.Security";
+  public static final String SERVICE_NAME = "fintekkers.services.price_service.Price";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.price.CreatePriceRequestProto,
@@ -26,10 +26,10 @@ public final class SecurityGrpc {
   public static io.grpc.MethodDescriptor<fintekkers.requests.price.CreatePriceRequestProto,
       fintekkers.requests.price.CreatePriceResponseProto> getCreateOrUpdateMethod() {
     io.grpc.MethodDescriptor<fintekkers.requests.price.CreatePriceRequestProto, fintekkers.requests.price.CreatePriceResponseProto> getCreateOrUpdateMethod;
-    if ((getCreateOrUpdateMethod = SecurityGrpc.getCreateOrUpdateMethod) == null) {
-      synchronized (SecurityGrpc.class) {
-        if ((getCreateOrUpdateMethod = SecurityGrpc.getCreateOrUpdateMethod) == null) {
-          SecurityGrpc.getCreateOrUpdateMethod = getCreateOrUpdateMethod =
+    if ((getCreateOrUpdateMethod = PriceGrpc.getCreateOrUpdateMethod) == null) {
+      synchronized (PriceGrpc.class) {
+        if ((getCreateOrUpdateMethod = PriceGrpc.getCreateOrUpdateMethod) == null) {
+          PriceGrpc.getCreateOrUpdateMethod = getCreateOrUpdateMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.price.CreatePriceRequestProto, fintekkers.requests.price.CreatePriceResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "CreateOrUpdate"))
@@ -38,7 +38,7 @@ public final class SecurityGrpc {
                   fintekkers.requests.price.CreatePriceRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.price.CreatePriceResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("CreateOrUpdate"))
+              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("CreateOrUpdate"))
               .build();
         }
       }
@@ -57,10 +57,10 @@ public final class SecurityGrpc {
   public static io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
       fintekkers.requests.price.QueryPriceResponseProto> getGetByIDsMethod() {
     io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto> getGetByIDsMethod;
-    if ((getGetByIDsMethod = SecurityGrpc.getGetByIDsMethod) == null) {
-      synchronized (SecurityGrpc.class) {
-        if ((getGetByIDsMethod = SecurityGrpc.getGetByIDsMethod) == null) {
-          SecurityGrpc.getGetByIDsMethod = getGetByIDsMethod =
+    if ((getGetByIDsMethod = PriceGrpc.getGetByIDsMethod) == null) {
+      synchronized (PriceGrpc.class) {
+        if ((getGetByIDsMethod = PriceGrpc.getGetByIDsMethod) == null) {
+          PriceGrpc.getGetByIDsMethod = getGetByIDsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIDs"))
@@ -69,7 +69,7 @@ public final class SecurityGrpc {
                   fintekkers.requests.price.QueryPriceRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.price.QueryPriceResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("GetByIDs"))
+              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("GetByIDs"))
               .build();
         }
       }
@@ -88,10 +88,10 @@ public final class SecurityGrpc {
   public static io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
       fintekkers.requests.price.QueryPriceResponseProto> getSearchMethod() {
     io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto> getSearchMethod;
-    if ((getSearchMethod = SecurityGrpc.getSearchMethod) == null) {
-      synchronized (SecurityGrpc.class) {
-        if ((getSearchMethod = SecurityGrpc.getSearchMethod) == null) {
-          SecurityGrpc.getSearchMethod = getSearchMethod =
+    if ((getSearchMethod = PriceGrpc.getSearchMethod) == null) {
+      synchronized (PriceGrpc.class) {
+        if ((getSearchMethod = PriceGrpc.getSearchMethod) == null) {
+          PriceGrpc.getSearchMethod = getSearchMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Search"))
@@ -100,7 +100,7 @@ public final class SecurityGrpc {
                   fintekkers.requests.price.QueryPriceRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.price.QueryPriceResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("Search"))
+              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("Search"))
               .build();
         }
       }
@@ -119,10 +119,10 @@ public final class SecurityGrpc {
   public static io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
       fintekkers.requests.price.QueryPriceResponseProto> getListIDsMethod() {
     io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto> getListIDsMethod;
-    if ((getListIDsMethod = SecurityGrpc.getListIDsMethod) == null) {
-      synchronized (SecurityGrpc.class) {
-        if ((getListIDsMethod = SecurityGrpc.getListIDsMethod) == null) {
-          SecurityGrpc.getListIDsMethod = getListIDsMethod =
+    if ((getListIDsMethod = PriceGrpc.getListIDsMethod) == null) {
+      synchronized (PriceGrpc.class) {
+        if ((getListIDsMethod = PriceGrpc.getListIDsMethod) == null) {
+          PriceGrpc.getListIDsMethod = getListIDsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIDs"))
@@ -131,7 +131,7 @@ public final class SecurityGrpc {
                   fintekkers.requests.price.QueryPriceRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.price.QueryPriceResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ListIDs"))
+              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("ListIDs"))
               .build();
         }
       }
@@ -150,10 +150,10 @@ public final class SecurityGrpc {
   public static io.grpc.MethodDescriptor<fintekkers.requests.price.CreatePriceRequestProto,
       fintekkers.requests.util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod() {
     io.grpc.MethodDescriptor<fintekkers.requests.price.CreatePriceRequestProto, fintekkers.requests.util.errors.Summary.SummaryProto> getValidateCreateOrUpdateMethod;
-    if ((getValidateCreateOrUpdateMethod = SecurityGrpc.getValidateCreateOrUpdateMethod) == null) {
-      synchronized (SecurityGrpc.class) {
-        if ((getValidateCreateOrUpdateMethod = SecurityGrpc.getValidateCreateOrUpdateMethod) == null) {
-          SecurityGrpc.getValidateCreateOrUpdateMethod = getValidateCreateOrUpdateMethod =
+    if ((getValidateCreateOrUpdateMethod = PriceGrpc.getValidateCreateOrUpdateMethod) == null) {
+      synchronized (PriceGrpc.class) {
+        if ((getValidateCreateOrUpdateMethod = PriceGrpc.getValidateCreateOrUpdateMethod) == null) {
+          PriceGrpc.getValidateCreateOrUpdateMethod = getValidateCreateOrUpdateMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.price.CreatePriceRequestProto, fintekkers.requests.util.errors.Summary.SummaryProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ValidateCreateOrUpdate"))
@@ -162,7 +162,7 @@ public final class SecurityGrpc {
                   fintekkers.requests.price.CreatePriceRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.util.errors.Summary.SummaryProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ValidateCreateOrUpdate"))
+              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("ValidateCreateOrUpdate"))
               .build();
         }
       }
@@ -181,10 +181,10 @@ public final class SecurityGrpc {
   public static io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
       fintekkers.requests.util.errors.Summary.SummaryProto> getValidateQueryRequestMethod() {
     io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.util.errors.Summary.SummaryProto> getValidateQueryRequestMethod;
-    if ((getValidateQueryRequestMethod = SecurityGrpc.getValidateQueryRequestMethod) == null) {
-      synchronized (SecurityGrpc.class) {
-        if ((getValidateQueryRequestMethod = SecurityGrpc.getValidateQueryRequestMethod) == null) {
-          SecurityGrpc.getValidateQueryRequestMethod = getValidateQueryRequestMethod =
+    if ((getValidateQueryRequestMethod = PriceGrpc.getValidateQueryRequestMethod) == null) {
+      synchronized (PriceGrpc.class) {
+        if ((getValidateQueryRequestMethod = PriceGrpc.getValidateQueryRequestMethod) == null) {
+          PriceGrpc.getValidateQueryRequestMethod = getValidateQueryRequestMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.util.errors.Summary.SummaryProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ValidateQueryRequest"))
@@ -193,7 +193,7 @@ public final class SecurityGrpc {
                   fintekkers.requests.price.QueryPriceRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.util.errors.Summary.SummaryProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ValidateQueryRequest"))
+              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("ValidateQueryRequest"))
               .build();
         }
       }
@@ -204,50 +204,50 @@ public final class SecurityGrpc {
   /**
    * Creates a new async stub that supports all call types for the service
    */
-  public static SecurityStub newStub(io.grpc.Channel channel) {
-    io.grpc.stub.AbstractStub.StubFactory<SecurityStub> factory =
-      new io.grpc.stub.AbstractStub.StubFactory<SecurityStub>() {
+  public static PriceStub newStub(io.grpc.Channel channel) {
+    io.grpc.stub.AbstractStub.StubFactory<PriceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<PriceStub>() {
         @java.lang.Override
-        public SecurityStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-          return new SecurityStub(channel, callOptions);
+        public PriceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new PriceStub(channel, callOptions);
         }
       };
-    return SecurityStub.newStub(factory, channel);
+    return PriceStub.newStub(factory, channel);
   }
 
   /**
    * Creates a new blocking-style stub that supports unary and streaming output calls on the service
    */
-  public static SecurityBlockingStub newBlockingStub(
+  public static PriceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    io.grpc.stub.AbstractStub.StubFactory<SecurityBlockingStub> factory =
-      new io.grpc.stub.AbstractStub.StubFactory<SecurityBlockingStub>() {
+    io.grpc.stub.AbstractStub.StubFactory<PriceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<PriceBlockingStub>() {
         @java.lang.Override
-        public SecurityBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-          return new SecurityBlockingStub(channel, callOptions);
+        public PriceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new PriceBlockingStub(channel, callOptions);
         }
       };
-    return SecurityBlockingStub.newStub(factory, channel);
+    return PriceBlockingStub.newStub(factory, channel);
   }
 
   /**
    * Creates a new ListenableFuture-style stub that supports unary calls on the service
    */
-  public static SecurityFutureStub newFutureStub(
+  public static PriceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    io.grpc.stub.AbstractStub.StubFactory<SecurityFutureStub> factory =
-      new io.grpc.stub.AbstractStub.StubFactory<SecurityFutureStub>() {
+    io.grpc.stub.AbstractStub.StubFactory<PriceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<PriceFutureStub>() {
         @java.lang.Override
-        public SecurityFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-          return new SecurityFutureStub(channel, callOptions);
+        public PriceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new PriceFutureStub(channel, callOptions);
         }
       };
-    return SecurityFutureStub.newStub(factory, channel);
+    return PriceFutureStub.newStub(factory, channel);
   }
 
   /**
    */
-  public static abstract class SecurityImplBase implements io.grpc.BindableService {
+  public static abstract class PriceImplBase implements io.grpc.BindableService {
 
     /**
      */
@@ -341,16 +341,16 @@ public final class SecurityGrpc {
 
   /**
    */
-  public static final class SecurityStub extends io.grpc.stub.AbstractAsyncStub<SecurityStub> {
-    private SecurityStub(
+  public static final class PriceStub extends io.grpc.stub.AbstractAsyncStub<PriceStub> {
+    private PriceStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected SecurityStub build(
+    protected PriceStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-      return new SecurityStub(channel, callOptions);
+      return new PriceStub(channel, callOptions);
     }
 
     /**
@@ -404,16 +404,16 @@ public final class SecurityGrpc {
 
   /**
    */
-  public static final class SecurityBlockingStub extends io.grpc.stub.AbstractBlockingStub<SecurityBlockingStub> {
-    private SecurityBlockingStub(
+  public static final class PriceBlockingStub extends io.grpc.stub.AbstractBlockingStub<PriceBlockingStub> {
+    private PriceBlockingStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected SecurityBlockingStub build(
+    protected PriceBlockingStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-      return new SecurityBlockingStub(channel, callOptions);
+      return new PriceBlockingStub(channel, callOptions);
     }
 
     /**
@@ -462,16 +462,16 @@ public final class SecurityGrpc {
 
   /**
    */
-  public static final class SecurityFutureStub extends io.grpc.stub.AbstractFutureStub<SecurityFutureStub> {
-    private SecurityFutureStub(
+  public static final class PriceFutureStub extends io.grpc.stub.AbstractFutureStub<PriceFutureStub> {
+    private PriceFutureStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected SecurityFutureStub build(
+    protected PriceFutureStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-      return new SecurityFutureStub(channel, callOptions);
+      return new PriceFutureStub(channel, callOptions);
     }
 
     /**
@@ -527,10 +527,10 @@ public final class SecurityGrpc {
       io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-    private final SecurityImplBase serviceImpl;
+    private final PriceImplBase serviceImpl;
     private final int methodId;
 
-    MethodHandlers(SecurityImplBase serviceImpl, int methodId) {
+    MethodHandlers(PriceImplBase serviceImpl, int methodId) {
       this.serviceImpl = serviceImpl;
       this.methodId = methodId;
     }
@@ -579,9 +579,9 @@ public final class SecurityGrpc {
     }
   }
 
-  private static abstract class SecurityBaseDescriptorSupplier
+  private static abstract class PriceBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
-    SecurityBaseDescriptorSupplier() {}
+    PriceBaseDescriptorSupplier() {}
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
@@ -590,21 +590,21 @@ public final class SecurityGrpc {
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
-      return getFileDescriptor().findServiceByName("Security");
+      return getFileDescriptor().findServiceByName("Price");
     }
   }
 
-  private static final class SecurityFileDescriptorSupplier
-      extends SecurityBaseDescriptorSupplier {
-    SecurityFileDescriptorSupplier() {}
+  private static final class PriceFileDescriptorSupplier
+      extends PriceBaseDescriptorSupplier {
+    PriceFileDescriptorSupplier() {}
   }
 
-  private static final class SecurityMethodDescriptorSupplier
-      extends SecurityBaseDescriptorSupplier
+  private static final class PriceMethodDescriptorSupplier
+      extends PriceBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
     private final String methodName;
 
-    SecurityMethodDescriptorSupplier(String methodName) {
+    PriceMethodDescriptorSupplier(String methodName) {
       this.methodName = methodName;
     }
 
@@ -619,11 +619,11 @@ public final class SecurityGrpc {
   public static io.grpc.ServiceDescriptor getServiceDescriptor() {
     io.grpc.ServiceDescriptor result = serviceDescriptor;
     if (result == null) {
-      synchronized (SecurityGrpc.class) {
+      synchronized (PriceGrpc.class) {
         result = serviceDescriptor;
         if (result == null) {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
-              .setSchemaDescriptor(new SecurityFileDescriptorSupplier())
+              .setSchemaDescriptor(new PriceFileDescriptorSupplier())
               .addMethod(getCreateOrUpdateMethod())
               .addMethod(getGetByIDsMethod())
               .addMethod(getSearchMethod())

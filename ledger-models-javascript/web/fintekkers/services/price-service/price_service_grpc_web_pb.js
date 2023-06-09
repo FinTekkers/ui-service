@@ -42,7 +42,7 @@ proto.fintekkers.services.price_service = require('./price_service_pb.js');
  * @struct
  * @final
  */
-proto.fintekkers.services.price_service.SecurityClient =
+proto.fintekkers.services.price_service.PriceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -68,7 +68,7 @@ proto.fintekkers.services.price_service.SecurityClient =
  * @struct
  * @final
  */
-proto.fintekkers.services.price_service.SecurityPromiseClient =
+proto.fintekkers.services.price_service.PricePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -92,8 +92,8 @@ proto.fintekkers.services.price_service.SecurityPromiseClient =
  *   !proto.fintekkers.requests.price.CreatePriceRequestProto,
  *   !proto.fintekkers.requests.price.CreatePriceResponseProto>}
  */
-const methodDescriptor_Security_CreateOrUpdate = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.price_service.Security/CreateOrUpdate',
+const methodDescriptor_Price_CreateOrUpdate = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.price_service.Price/CreateOrUpdate',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto,
   fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto,
@@ -118,13 +118,13 @@ const methodDescriptor_Security_CreateOrUpdate = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.price.CreatePriceResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.SecurityClient.prototype.createOrUpdate =
+proto.fintekkers.services.price_service.PriceClient.prototype.createOrUpdate =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/CreateOrUpdate',
+      '/fintekkers.services.price_service.Price/CreateOrUpdate',
       request,
       metadata || {},
-      methodDescriptor_Security_CreateOrUpdate,
+      methodDescriptor_Price_CreateOrUpdate,
       callback);
 };
 
@@ -137,13 +137,13 @@ proto.fintekkers.services.price_service.SecurityClient.prototype.createOrUpdate 
  * @return {!Promise<!proto.fintekkers.requests.price.CreatePriceResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.createOrUpdate =
+proto.fintekkers.services.price_service.PricePromiseClient.prototype.createOrUpdate =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/CreateOrUpdate',
+      '/fintekkers.services.price_service.Price/CreateOrUpdate',
       request,
       metadata || {},
-      methodDescriptor_Security_CreateOrUpdate);
+      methodDescriptor_Price_CreateOrUpdate);
 };
 
 
@@ -153,8 +153,8 @@ proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.createOr
  *   !proto.fintekkers.requests.price.QueryPriceRequestProto,
  *   !proto.fintekkers.requests.price.QueryPriceResponseProto>}
  */
-const methodDescriptor_Security_GetByIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.price_service.Security/GetByIDs',
+const methodDescriptor_Price_GetByIDs = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.price_service.Price/GetByIDs',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
   fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto,
@@ -179,13 +179,13 @@ const methodDescriptor_Security_GetByIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.price.QueryPriceResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.SecurityClient.prototype.getByIDs =
+proto.fintekkers.services.price_service.PriceClient.prototype.getByIDs =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/GetByIDs',
+      '/fintekkers.services.price_service.Price/GetByIDs',
       request,
       metadata || {},
-      methodDescriptor_Security_GetByIDs,
+      methodDescriptor_Price_GetByIDs,
       callback);
 };
 
@@ -198,13 +198,13 @@ proto.fintekkers.services.price_service.SecurityClient.prototype.getByIDs =
  * @return {!Promise<!proto.fintekkers.requests.price.QueryPriceResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.getByIDs =
+proto.fintekkers.services.price_service.PricePromiseClient.prototype.getByIDs =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/GetByIDs',
+      '/fintekkers.services.price_service.Price/GetByIDs',
       request,
       metadata || {},
-      methodDescriptor_Security_GetByIDs);
+      methodDescriptor_Price_GetByIDs);
 };
 
 
@@ -214,8 +214,8 @@ proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.getByIDs
  *   !proto.fintekkers.requests.price.QueryPriceRequestProto,
  *   !proto.fintekkers.requests.price.QueryPriceResponseProto>}
  */
-const methodDescriptor_Security_Search = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.price_service.Security/Search',
+const methodDescriptor_Price_Search = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.price_service.Price/Search',
   grpc.web.MethodType.SERVER_STREAMING,
   fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
   fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto,
@@ -237,13 +237,13 @@ const methodDescriptor_Security_Search = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.price.QueryPriceResponseProto>}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.SecurityClient.prototype.search =
+proto.fintekkers.services.price_service.PriceClient.prototype.search =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/fintekkers.services.price_service.Security/Search',
+      '/fintekkers.services.price_service.Price/Search',
       request,
       metadata || {},
-      methodDescriptor_Security_Search);
+      methodDescriptor_Price_Search);
 };
 
 
@@ -254,13 +254,13 @@ proto.fintekkers.services.price_service.SecurityClient.prototype.search =
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.price.QueryPriceResponseProto>}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.search =
+proto.fintekkers.services.price_service.PricePromiseClient.prototype.search =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/fintekkers.services.price_service.Security/Search',
+      '/fintekkers.services.price_service.Price/Search',
       request,
       metadata || {},
-      methodDescriptor_Security_Search);
+      methodDescriptor_Price_Search);
 };
 
 
@@ -270,8 +270,8 @@ proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.search =
  *   !proto.fintekkers.requests.price.QueryPriceRequestProto,
  *   !proto.fintekkers.requests.price.QueryPriceResponseProto>}
  */
-const methodDescriptor_Security_ListIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.price_service.Security/ListIDs',
+const methodDescriptor_Price_ListIDs = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.price_service.Price/ListIDs',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
   fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto,
@@ -296,13 +296,13 @@ const methodDescriptor_Security_ListIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.price.QueryPriceResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.SecurityClient.prototype.listIDs =
+proto.fintekkers.services.price_service.PriceClient.prototype.listIDs =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/ListIDs',
+      '/fintekkers.services.price_service.Price/ListIDs',
       request,
       metadata || {},
-      methodDescriptor_Security_ListIDs,
+      methodDescriptor_Price_ListIDs,
       callback);
 };
 
@@ -315,13 +315,13 @@ proto.fintekkers.services.price_service.SecurityClient.prototype.listIDs =
  * @return {!Promise<!proto.fintekkers.requests.price.QueryPriceResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.listIDs =
+proto.fintekkers.services.price_service.PricePromiseClient.prototype.listIDs =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/ListIDs',
+      '/fintekkers.services.price_service.Price/ListIDs',
       request,
       metadata || {},
-      methodDescriptor_Security_ListIDs);
+      methodDescriptor_Price_ListIDs);
 };
 
 
@@ -331,8 +331,8 @@ proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.listIDs 
  *   !proto.fintekkers.requests.price.CreatePriceRequestProto,
  *   !proto.fintekkers.requests.util.errors.SummaryProto>}
  */
-const methodDescriptor_Security_ValidateCreateOrUpdate = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.price_service.Security/ValidateCreateOrUpdate',
+const methodDescriptor_Price_ValidateCreateOrUpdate = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.price_service.Price/ValidateCreateOrUpdate',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto,
   fintekkers_requests_util_errors_summary_pb.SummaryProto,
@@ -357,13 +357,13 @@ const methodDescriptor_Security_ValidateCreateOrUpdate = new grpc.web.MethodDesc
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.util.errors.SummaryProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.SecurityClient.prototype.validateCreateOrUpdate =
+proto.fintekkers.services.price_service.PriceClient.prototype.validateCreateOrUpdate =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/ValidateCreateOrUpdate',
+      '/fintekkers.services.price_service.Price/ValidateCreateOrUpdate',
       request,
       metadata || {},
-      methodDescriptor_Security_ValidateCreateOrUpdate,
+      methodDescriptor_Price_ValidateCreateOrUpdate,
       callback);
 };
 
@@ -376,13 +376,13 @@ proto.fintekkers.services.price_service.SecurityClient.prototype.validateCreateO
  * @return {!Promise<!proto.fintekkers.requests.util.errors.SummaryProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.validateCreateOrUpdate =
+proto.fintekkers.services.price_service.PricePromiseClient.prototype.validateCreateOrUpdate =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/ValidateCreateOrUpdate',
+      '/fintekkers.services.price_service.Price/ValidateCreateOrUpdate',
       request,
       metadata || {},
-      methodDescriptor_Security_ValidateCreateOrUpdate);
+      methodDescriptor_Price_ValidateCreateOrUpdate);
 };
 
 
@@ -392,8 +392,8 @@ proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.validate
  *   !proto.fintekkers.requests.price.QueryPriceRequestProto,
  *   !proto.fintekkers.requests.util.errors.SummaryProto>}
  */
-const methodDescriptor_Security_ValidateQueryRequest = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.price_service.Security/ValidateQueryRequest',
+const methodDescriptor_Price_ValidateQueryRequest = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.price_service.Price/ValidateQueryRequest',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
   fintekkers_requests_util_errors_summary_pb.SummaryProto,
@@ -418,13 +418,13 @@ const methodDescriptor_Security_ValidateQueryRequest = new grpc.web.MethodDescri
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.util.errors.SummaryProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.SecurityClient.prototype.validateQueryRequest =
+proto.fintekkers.services.price_service.PriceClient.prototype.validateQueryRequest =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/ValidateQueryRequest',
+      '/fintekkers.services.price_service.Price/ValidateQueryRequest',
       request,
       metadata || {},
-      methodDescriptor_Security_ValidateQueryRequest,
+      methodDescriptor_Price_ValidateQueryRequest,
       callback);
 };
 
@@ -437,13 +437,13 @@ proto.fintekkers.services.price_service.SecurityClient.prototype.validateQueryRe
  * @return {!Promise<!proto.fintekkers.requests.util.errors.SummaryProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.price_service.SecurityPromiseClient.prototype.validateQueryRequest =
+proto.fintekkers.services.price_service.PricePromiseClient.prototype.validateQueryRequest =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.price_service.Security/ValidateQueryRequest',
+      '/fintekkers.services.price_service.Price/ValidateQueryRequest',
       request,
       metadata || {},
-      methodDescriptor_Security_ValidateQueryRequest);
+      methodDescriptor_Price_ValidateQueryRequest);
 };
 
 
