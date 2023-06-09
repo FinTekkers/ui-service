@@ -21,3 +21,8 @@ Contains packages for different groups of models, with the Java code:
 * Position
 
 All of the above are RawDataModelObjects meaning they are bi-temporal in nature. 
+
+
+# Publishing
+
+The Java package is published after a release version is created via the workflow file: .github/workflows/maven-publish.yml. The gradle publish of the build publishes the package and relies on the NPM_TOKEN secret being injected leveraging GitHub secrets.
