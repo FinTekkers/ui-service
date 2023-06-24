@@ -15,8 +15,8 @@ message QuerySecurityRequestProto {
   string object_class = 1;
   string version = 2;
 
-  //The list of UUIDs to return
-  repeated fintekkers.models.util.UUIDProto uuids = 21;
+  //The list of UUIds to return
+  repeated fintekkers.models.util.UUIDProto uuIds = 21;
 
   //A list of position filters that will filter securities that match.
   fintekkers.models.position.PositionFilterProto search_security_input = 22;
