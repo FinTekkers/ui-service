@@ -14,7 +14,7 @@ message QueryPortfolioRequestProto {
   string object_class = 1;
   string version = 2;
 
-  repeated fintekkers.models.util.UUIDProto uuids = 21;
+  repeated fintekkers.models.util.UUIDProto uuIds = 21;
 
   fintekkers.models.position.PositionFilterProto search_portfolio_input = 22;
   fintekkers.models.util.LocalTimestampProto as_of = 23;
