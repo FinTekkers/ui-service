@@ -14,9 +14,9 @@ option py_generic_services = true;
 service Transaction {
     rpc CreateOrUpdate  (fintekkers.requests.transaction.CreateTransactionRequestProto) returns  (fintekkers.requests.transaction.CreateTransactionResponseProto);
 
-    rpc GetByIDs  (fintekkers.requests.transaction.QueryTransactionRequestProto) returns  (fintekkers.requests.transaction.QueryTransactionResponseProto);
+    rpc GetByIds  (fintekkers.requests.transaction.QueryTransactionRequestProto) returns  (fintekkers.requests.transaction.QueryTransactionResponseProto);
     rpc Search  (fintekkers.requests.transaction.QueryTransactionRequestProto) returns  (stream fintekkers.requests.transaction.QueryTransactionResponseProto);
-    rpc ListIDs  (fintekkers.requests.transaction.QueryTransactionRequestProto) returns  (fintekkers.requests.transaction.QueryTransactionResponseProto);
+    rpc ListIds  (fintekkers.requests.transaction.QueryTransactionRequestProto) returns  (fintekkers.requests.transaction.QueryTransactionResponseProto);
 
     rpc ValidateCreateOrUpdate  (fintekkers.requests.transaction.CreateTransactionRequestProto) returns (fintekkers.requests.util.errors.SummaryProto);
     rpc ValidateQueryRequest  (fintekkers.requests.transaction.QueryTransactionRequestProto) returns (fintekkers.requests.util.errors.SummaryProto);
