@@ -9,7 +9,31 @@ use crate::fintekkers::wrappers::models::utils::datetime::LocalTimestampWrapper;
 use crate::fintekkers::wrappers::models::utils::errors::Error;
 use crate::fintekkers::wrappers::models::utils::uuid_wrapper::UUIDWrapper;
 
-struct SecurityProtoBuilder {
+pub struct SecurityWrapper {
+    pub proto: SecurityProto,
+}
+
+impl SecurityWrapper {
+    pub fn new(proto: SecurityProto) -> Self {
+        SecurityWrapper {
+            proto
+        }
+    }
+
+    pub fn uuid_wrapper(&self) -> UUIDWrapper {
+        UUIDWrapper::new(self.proto.uuid.as_ref().unwrap().clone())
+    }
+
+}
+
+impl PartialEq for SecurityWrapper {
+    fn eq(&self, other: &Self) -> bool {
+        self.proto.uuid.as_ref() == other.proto.uuid.as_ref()
+    }
+}
+impl Eq for SecurityWrapper {}
+
+pub(crate) struct SecurityProtoBuilder {
     as_of: LocalTimestampWrapper,
     object_class: String,
     version: String,
@@ -22,7 +46,7 @@ struct SecurityProtoBuilder {
 }
 
 impl SecurityProtoBuilder {
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             as_of: LocalTimestampWrapper::now(),
             //This is currently hardcoded, this will change in future versions
@@ -68,7 +92,7 @@ impl SecurityProtoBuilder {
         self
     }
 
-    fn asset_class(mut self, asset_class: String) -> Self {
+    pub(crate) fn asset_class(mut self, asset_class: String) -> Self {
         self.asset_class = asset_class;
         self
     }
@@ -78,12 +102,12 @@ impl SecurityProtoBuilder {
         self
     }
 
-    fn settlement_currency(mut self, settlement_currency: String) -> Self {
+    pub(crate) fn settlement_currency(mut self, settlement_currency: String) -> Self {
         self.settlement_currency = settlement_currency;
         self
     }
 
-    fn build(self) -> Result<SecurityProto, Error> {
+    pub(crate) fn build(self) -> Result<SecurityProto, Error> {
         Ok(SecurityProto {
             as_of: Some(self.as_of.into()), // When other PR merged can do a into
             object_class: self.object_class,
