@@ -117,7 +117,7 @@ pub mod security_client {
                 );
             self.inner.unary(req, path, codec).await
         }
-        pub async fn get_by_i_ds(
+        pub async fn get_by_ids(
             &mut self,
             request: impl tonic::IntoRequest<
                 super::super::super::requests::security::QuerySecurityRequestProto,
@@ -139,14 +139,14 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/fintekkers.services.security_service.Security/GetByIDs",
+                "/fintekkers.services.security_service.Security/GetByIds",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new(
                         "fintekkers.services.security_service.Security",
-                        "GetByIDs",
+                        "GetByIds",
                     ),
                 );
             self.inner.unary(req, path, codec).await
@@ -187,7 +187,7 @@ pub mod security_client {
                 );
             self.inner.server_streaming(req, path, codec).await
         }
-        pub async fn list_i_ds(
+        pub async fn list_ids(
             &mut self,
             request: impl tonic::IntoRequest<
                 super::super::super::requests::security::QuerySecurityRequestProto,
@@ -209,14 +209,14 @@ pub mod security_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/fintekkers.services.security_service.Security/ListIDs",
+                "/fintekkers.services.security_service.Security/ListIds",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new(
                         "fintekkers.services.security_service.Security",
-                        "ListIDs",
+                        "ListIds",
                     ),
                 );
             self.inner.unary(req, path, codec).await
@@ -305,7 +305,7 @@ pub mod security_server {
             >,
             tonic::Status,
         >;
-        async fn get_by_i_ds(
+        async fn get_by_ids(
             &self,
             request: tonic::Request<
                 super::super::super::requests::security::QuerySecurityRequestProto,
@@ -331,7 +331,7 @@ pub mod security_server {
                 super::super::super::requests::security::QuerySecurityRequestProto,
             >,
         ) -> std::result::Result<tonic::Response<Self::SearchStream>, tonic::Status>;
-        async fn list_i_ds(
+        async fn list_ids(
             &self,
             request: tonic::Request<
                 super::super::super::requests::security::QuerySecurityRequestProto,
@@ -489,14 +489,14 @@ pub mod security_server {
                     };
                     Box::pin(fut)
                 }
-                "/fintekkers.services.security_service.Security/GetByIDs" => {
+                "/fintekkers.services.security_service.Security/GetByIds" => {
                     #[allow(non_camel_case_types)]
-                    struct GetByIDsSvc<T: Security>(pub Arc<T>);
+                    struct GetByIdsSvc<T: Security>(pub Arc<T>);
                     impl<
                         T: Security,
                     > tonic::server::UnaryService<
                         super::super::super::requests::security::QuerySecurityRequestProto,
-                    > for GetByIDsSvc<T> {
+                    > for GetByIdsSvc<T> {
                         type Response = super::super::super::requests::security::QuerySecurityResponseProto;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
@@ -509,7 +509,7 @@ pub mod security_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).get_by_i_ds(request).await };
+                            let fut = async move { (*inner).get_by_ids(request).await };
                             Box::pin(fut)
                         }
                     }
@@ -520,7 +520,7 @@ pub mod security_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = GetByIDsSvc(inner);
+                        let method = GetByIdsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -584,14 +584,14 @@ pub mod security_server {
                     };
                     Box::pin(fut)
                 }
-                "/fintekkers.services.security_service.Security/ListIDs" => {
+                "/fintekkers.services.security_service.Security/ListIds" => {
                     #[allow(non_camel_case_types)]
-                    struct ListIDsSvc<T: Security>(pub Arc<T>);
+                    struct ListIdsSvc<T: Security>(pub Arc<T>);
                     impl<
                         T: Security,
                     > tonic::server::UnaryService<
                         super::super::super::requests::security::QuerySecurityRequestProto,
-                    > for ListIDsSvc<T> {
+                    > for ListIdsSvc<T> {
                         type Response = super::super::super::requests::security::QuerySecurityResponseProto;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
@@ -604,7 +604,7 @@ pub mod security_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).list_i_ds(request).await };
+                            let fut = async move { (*inner).list_ids(request).await };
                             Box::pin(fut)
                         }
                     }
@@ -615,7 +615,7 @@ pub mod security_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = ListIDsSvc(inner);
+                        let method = ListIdsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

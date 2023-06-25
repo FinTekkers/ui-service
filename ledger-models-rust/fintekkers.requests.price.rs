@@ -18,7 +18,7 @@ pub struct QueryPriceRequestProto {
     #[prost(string, tag = "2")]
     pub version: ::prost::alloc::string::String,
     #[prost(message, repeated, tag = "21")]
-    pub uuids: ::prost::alloc::vec::Vec<super::super::models::util::UuidProto>,
+    pub uu_ids: ::prost::alloc::vec::Vec<super::super::models::util::UuidProto>,
     #[prost(message, optional, tag = "22")]
     pub search_price_input: ::core::option::Option<
         super::super::models::position::PositionFilterProto,

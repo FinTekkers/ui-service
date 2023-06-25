@@ -19,13 +19,13 @@ pub mod fintekkers {
             include!("fintekkers.models.price.rs");
         }
         pub mod security {
-            include!("fintekkers.models.security.rs");  
+            include!("fintekkers.models.security.rs");
         }
         pub mod strategy {
             include!("fintekkers.models.strategy.rs");
-            
+
         }
-        pub mod transaction { 
+        pub mod transaction {
             include!("fintekkers.models.transaction.rs");
 
         }
@@ -47,22 +47,22 @@ pub mod fintekkers {
         }
         pub mod price {
             include!("fintekkers.requests.price.rs");
-            
+
         }
         pub mod security {
             include!("fintekkers.requests.security.rs");
         }
         pub mod strategy {
-            
+
         }
-        pub mod transaction { 
+        pub mod transaction {
             include!("fintekkers.requests.transaction.rs");
 
         }
         pub mod util {
             pub mod lock {
                 include!("fintekkers.requests.util.lock.rs");
-                
+
             }
             pub mod errors {
                 include!("fintekkers.requests.util.errors.rs");
@@ -116,7 +116,7 @@ mod tests {
             timestamp: now_wrapped_timestap
         };
 
-        let portfolio = fintekkers::models::portfolio::PortfolioProto { 
+        let portfolio = fintekkers::models::portfolio::PortfolioProto {
             as_of:  Some(as_of_timestamp),
             object_class: String::from("Portfolio"),
             version: String::from("0.0.1"),
