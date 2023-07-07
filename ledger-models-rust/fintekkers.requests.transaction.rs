@@ -5,9 +5,9 @@ pub struct QueryTransactionRequestProto {
     pub object_class: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub version: ::prost::alloc::string::String,
-    /// The list of UUIDs to return
+    /// The list of UUIds to return
     #[prost(message, repeated, tag = "21")]
-    pub uuids: ::prost::alloc::vec::Vec<super::super::models::util::UuidProto>,
+    pub uu_ids: ::prost::alloc::vec::Vec<super::super::models::util::UuidProto>,
     /// A list of position filters that will filter securities that match.
     #[prost(message, optional, tag = "22")]
     pub search_transaction_input: ::core::option::Option<

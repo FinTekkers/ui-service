@@ -22,6 +22,10 @@ impl UUIDWrapper {
             },
         }
     }
+
+    pub fn as_uuid(&self) -> Uuid {
+        Uuid::try_from(self).unwrap()
+    }
 }
 
 

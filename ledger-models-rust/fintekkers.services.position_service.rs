@@ -83,7 +83,7 @@ pub mod position_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        ///    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+        ///    rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
         pub async fn search(
             &mut self,
             request: impl tonic::IntoRequest<
@@ -171,7 +171,7 @@ pub mod position_server {
             >
             + Send
             + 'static;
-        ///    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+        ///    rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
         async fn search(
             &self,
             request: tonic::Request<

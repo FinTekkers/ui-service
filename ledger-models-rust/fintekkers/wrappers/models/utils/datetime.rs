@@ -117,14 +117,6 @@ fn create_timestamp_from_datetime(now: DateTime<Utc>) -> Timestamp {
     let nanos = now.timestamp_subsec_nanos() as i32;
     Timestamp { seconds, nanos }
 }
-
-// fn create_timestamp() -> Timestamp {
-//     let now = Utc::now();
-//     let seconds = now.timestamp();
-//     let nanos = now.timestamp_subsec_nanos() as i32;
-//     Timestamp { seconds, nanos }
-// }
-
 #[cfg(test)]
 mod test {
     use super::*;

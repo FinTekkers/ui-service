@@ -39,6 +39,15 @@ impl From<&Decimal> for DecimalWrapper {
     }
 }
 
+impl From<Decimal> for DecimalWrapper {
+    fn from(value: Decimal) -> Self {
+        DecimalWrapper {
+            proto: DecimalValueProto {
+                arbitrary_precision_value: value.to_string(),
+            },
+        }
+    }
+}
 
 impl TryFrom<DecimalWrapper> for Decimal {
     type Error = Error;
