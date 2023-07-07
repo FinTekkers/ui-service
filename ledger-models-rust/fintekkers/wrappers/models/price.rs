@@ -1,15 +1,23 @@
 use std::hash::{Hash, Hasher};
-use uuid::Uuid;
-use crate::fintekkers::models::price::{PriceProto};
-use crate::fintekkers::models::security::{SecurityProto};
-use crate::fintekkers::models::util::{DecimalValueProto};
-use crate::fintekkers::wrappers::models::security::SecurityWrapper;
+use rust_decimal::Decimal;
 
+use crate::fintekkers::models::price::PriceProto;
+use crate::fintekkers::models::security::SecurityProto;
+use crate::fintekkers::models::util::DecimalValueProto;
+
+use crate::fintekkers::wrappers::models::security::{SecurityProtoBuilder, SecurityWrapper};
 use crate::fintekkers::wrappers::models::utils::datetime::LocalTimestampWrapper;
 use crate::fintekkers::wrappers::models::utils::decimal::DecimalWrapper;
 use crate::fintekkers::wrappers::models::utils::errors::Error;
 use crate::fintekkers::wrappers::models::utils::uuid_wrapper::UUIDWrapper;
 
+//Imports below are for RawDataModelObject related macro. IDE might not complain if you remove
+//them but will fail at compile time
+use prost::Message;
+use crate::fintekkers::wrappers::models::raw_datamodel_object::RawDataModelObject;
+use crate::raw_data_model_object_trait;
+
+#[derive(Clone, Default, Debug)]
 pub struct PriceWrapper {
     pub proto: PriceProto,
 }
@@ -57,6 +65,32 @@ impl PriceWrapper {
     }
 }
 
+// impl RawDataModelObject for PriceWrapper {
+//     fn get_id(&self) -> UUIDWrapper {
+//         UUIDWrapper::new(self.proto.uuid.as_ref().unwrap().clone())
+//     }
+//
+//     fn get_valid_from(&self) -> LocalTimestampWrapper{
+//         LocalTimestampWrapper::now()
+//     }
+//
+//     fn get_valid_to(&self) -> Option<LocalTimestampWrapper> {
+//         Some(LocalTimestampWrapper::now())
+//     }
+//
+//     fn get_as_of(&self) -> LocalTimestampWrapper {
+//         LocalTimestampWrapper::new(self.proto.as_of.as_ref().unwrap().clone())
+//     }
+//
+//     fn encode<B>(&self) -> Vec<u8> {
+//         let mut buf = Vec::new();
+//         &self.proto.encode(&mut buf).unwrap();
+//         buf
+//     }
+// }
+
+raw_data_model_object_trait!(PriceWrapper);
+
 impl From<PriceWrapper> for PriceProto {
     fn from(wrapper:PriceWrapper) -> PriceProto {
         wrapper.proto
@@ -66,8 +100,6 @@ impl From<PriceWrapper> for PriceProto {
 impl Hash for PriceWrapper {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.proto.uuid.as_ref().unwrap().raw_uuid.hash(state);
-        // self.id.hash(state);
-        // self.phone.hash(state);
     }
 }
 
@@ -78,7 +110,7 @@ impl PartialEq for PriceWrapper {
 }
 impl Eq for PriceWrapper {}
 
-struct PriceProtoBuilder {
+pub struct PriceProtoBuilder {
     as_of: LocalTimestampWrapper,
     object_class: String,
     version: String,
@@ -89,7 +121,7 @@ struct PriceProtoBuilder {
 }
 
 impl PriceProtoBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             as_of: LocalTimestampWrapper::now(),
             //This is currently hardcoded, this will change in future versions
@@ -103,42 +135,42 @@ impl PriceProtoBuilder {
         }
     }
 
-    fn as_of(mut self, as_of: LocalTimestampWrapper) -> Self {
+    pub fn as_of(mut self, as_of: LocalTimestampWrapper) -> Self {
         self.as_of = as_of.into();
         self
     }
 
-    fn object_class(mut self, object_class: String) -> Self {
+    pub fn object_class(mut self, object_class: String) -> Self {
         self.object_class = object_class;
         self
     }
 
-    fn version(mut self, version: String) -> Self {
+    pub fn version(mut self, version: String) -> Self {
         self.version = version;
         self
     }
 
-    fn is_link(mut self, is_link: bool) -> Self {
+    pub fn is_link(mut self, is_link: bool) -> Self {
         self.is_link = is_link;
         self
     }
 
-    fn uuid(mut self, uuid: UUIDWrapper) -> Self {
+    pub fn uuid(mut self, uuid: UUIDWrapper) -> Self {
         self.uuid = uuid;
         self
     }
 
-    fn security(mut self, security: SecurityProto) -> Self {
+    pub fn security(mut self, security: SecurityProto) -> Self {
         self.security = security.into();
         self
     }
 
-    fn price(mut self, price: DecimalWrapper) -> Self {
+    pub fn price(mut self, price: DecimalWrapper) -> Self {
         self.price = price.into();
         self
     }
 
-    fn build(self) -> Result<PriceProto, Error> {
+    pub fn build(self) -> Result<PriceProto, Error> {
         Ok(PriceProto {
             as_of: Some(self.as_of.into()), // When other PR merged can do a into
             object_class: self.object_class,
@@ -153,31 +185,39 @@ impl PriceProtoBuilder {
             ),
         })
     }
-}
 
-#[cfg(test)]
-mod test {
-    use rust_decimal_macros::dec;
-    use crate::fintekkers::wrappers::models::security::SecurityProtoBuilder;
-    use super::*;
-
-    #[test]
-    fn test_proto_to_date() {
-        let number = dec!(-1.23);
-
+    pub fn dummy_price_wrapper(&self, price_decimal: Decimal) -> PriceWrapper {
         let security_proto = SecurityProtoBuilder::new()
             .settlement_currency("CAD".to_string())
             .asset_class("Asset Class".to_string())
             .build().unwrap();//.expect("Could not build security");
 
-        let result = PriceProtoBuilder::new()
-            .price(DecimalWrapper::from(&number))
+        let price_proto = PriceProtoBuilder::new()
+            .price(DecimalWrapper::from(price_decimal))
             .security(
                 security_proto
             )
             .build().unwrap();//.expect("Could not build security");
 
-        let price = result.price.unwrap();
+        PriceWrapper{ proto: price_proto }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rust_decimal_macros::dec;
+
+    use super::PriceProtoBuilder;
+
+    #[test]
+    fn test_proto_to_date() {
+        let number = dec!(-1.23);
+
+        let price_proto = PriceProtoBuilder::new()
+            .dummy_price_wrapper(number)
+            .proto;
+
+        let price = price_proto.price.unwrap();
         let price_str = price.arbitrary_precision_value;
 
         assert_eq!(price_str, number.to_string());

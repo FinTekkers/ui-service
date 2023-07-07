@@ -132,7 +132,7 @@ public class Security extends RawDataModelObject implements Comparable, IFinanci
     }
 
     @Override
-    public int compareTo( Object obj) {
+    public int compareTo(Object obj) {
         if(obj instanceof Security) {
             return getID().compareTo(((Security)obj).getID());
         }
