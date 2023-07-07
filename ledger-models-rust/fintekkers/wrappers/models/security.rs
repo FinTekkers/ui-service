@@ -1,15 +1,41 @@
-use chrono::DateTime;
-use chrono_tz::Tz;
-use prost_types::Timestamp;
-use uuid::Uuid;
-
 use crate::fintekkers::models::security::{SecurityProto, SecurityTypeProto};
-use crate::fintekkers::models::util::UuidProto;
 use crate::fintekkers::wrappers::models::utils::datetime::LocalTimestampWrapper;
 use crate::fintekkers::wrappers::models::utils::errors::Error;
 use crate::fintekkers::wrappers::models::utils::uuid_wrapper::UUIDWrapper;
 
-struct SecurityProtoBuilder {
+//Imports below are for RawDataModelObject related macro. IDE might not complain if you remove
+//them but will fail at compile time
+use prost::Message;
+use crate::fintekkers::wrappers::models::raw_datamodel_object::RawDataModelObject;
+use crate::raw_data_model_object_trait;
+
+pub struct SecurityWrapper {
+    pub proto: SecurityProto,
+}
+
+impl SecurityWrapper {
+    pub fn new(proto: SecurityProto) -> Self {
+        SecurityWrapper {
+            proto
+        }
+    }
+
+    pub fn uuid_wrapper(&self) -> UUIDWrapper {
+        UUIDWrapper::new(self.proto.uuid.as_ref().unwrap().clone())
+    }
+
+}
+
+raw_data_model_object_trait!(SecurityWrapper);
+
+impl PartialEq for SecurityWrapper {
+    fn eq(&self, other: &Self) -> bool {
+        self.proto.uuid.as_ref() == other.proto.uuid.as_ref()
+    }
+}
+impl Eq for SecurityWrapper {}
+
+pub struct SecurityProtoBuilder {
     as_of: LocalTimestampWrapper,
     object_class: String,
     version: String,
@@ -22,7 +48,7 @@ struct SecurityProtoBuilder {
 }
 
 impl SecurityProtoBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             as_of: LocalTimestampWrapper::now(),
             //This is currently hardcoded, this will change in future versions
@@ -38,52 +64,52 @@ impl SecurityProtoBuilder {
         }
     }
 
-    fn as_of(mut self, as_of: LocalTimestampWrapper) -> Self {
+    pub fn as_of(mut self, as_of: LocalTimestampWrapper) -> Self {
         self.as_of = as_of.into();
         self
     }
 
-    fn object_class(mut self, object_class: String) -> Self {
+    pub fn object_class(mut self, object_class: String) -> Self {
         self.object_class = object_class;
         self
     }
 
-    fn version(mut self, version: String) -> Self {
+    pub fn version(mut self, version: String) -> Self {
         self.version = version;
         self
     }
 
-    fn is_link(mut self, is_link: bool) -> Self {
+    pub fn is_link(mut self, is_link: bool) -> Self {
         self.is_link = is_link;
         self
     }
 
-    fn uuid(mut self, uuid: UUIDWrapper) -> Self {
+    pub fn uuid(mut self, uuid: UUIDWrapper) -> Self {
         self.uuid = uuid;
         self
     }
 
-    fn security_type(mut self, security_type: SecurityTypeProto) -> Self {
+    pub fn security_type(mut self, security_type: SecurityTypeProto) -> Self {
         self.security_type = security_type;
         self
     }
 
-    fn asset_class(mut self, asset_class: String) -> Self {
+    pub fn asset_class(mut self, asset_class: String) -> Self {
         self.asset_class = asset_class;
         self
     }
 
-    fn issuer_name(mut self, issuer_name: String) -> Self {
+    pub fn issuer_name(mut self, issuer_name: String) -> Self {
         self.issuer_name = issuer_name;
         self
     }
 
-    fn settlement_currency(mut self, settlement_currency: String) -> Self {
+    pub fn settlement_currency(mut self, settlement_currency: String) -> Self {
         self.settlement_currency = settlement_currency;
         self
     }
 
-    fn build(self) -> Result<SecurityProto, Error> {
+    pub fn build(self) -> Result<SecurityProto, Error> {
         Ok(SecurityProto {
             as_of: Some(self.as_of.into()), // When other PR merged can do a into
             object_class: self.object_class,
