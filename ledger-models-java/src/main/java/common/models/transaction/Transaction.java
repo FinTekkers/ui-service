@@ -296,13 +296,6 @@ public class Transaction extends RawDataModelObject implements ITransaction {
         }
 
         return isMatch;
-//        for(Field field : filter.getFilters().keySet()) {
-//            Object o = filter.getFilters().get(field).getValue();
-//            if(!o.equals(getField(field)))
-//                return false;
-//        }
-//
-//        return true;
     }
 
     public void setParentTransaction(Transaction parentTransaction) {
