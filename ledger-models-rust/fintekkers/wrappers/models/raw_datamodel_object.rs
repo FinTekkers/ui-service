@@ -7,7 +7,7 @@ pub trait RawDataModelObject {
     fn get_valid_from(&self) -> LocalTimestampWrapper;
     fn get_valid_to(&self) -> Option<LocalTimestampWrapper>;
     fn get_as_of(&self) -> LocalTimestampWrapper;
-    fn encode<T>(&self) -> Vec<u8>;
+    fn encode(&self) -> Vec<u8>;
 }
 
 #[macro_export] macro_rules! raw_data_model_object_trait {
@@ -29,9 +29,9 @@ pub trait RawDataModelObject {
                 LocalTimestampWrapper::new(self.proto.as_of.as_ref().unwrap().clone())
             }
 
-            fn encode<B>(&self) -> Vec<u8> {
+            fn encode(&self) -> Vec<u8> {
                 let mut buf = Vec::new();
-                &self.proto.encode(&mut buf).unwrap();
+                let _ = &self.proto.encode(&mut buf).unwrap();
                 buf
             }
         }

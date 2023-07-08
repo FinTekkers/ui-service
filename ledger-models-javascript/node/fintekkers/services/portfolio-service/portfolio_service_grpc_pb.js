@@ -76,8 +76,8 @@ var PortfolioService = exports.PortfolioService = {
     responseSerialize: serialize_fintekkers_requests_portfolio_CreatePortfolioResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_portfolio_CreatePortfolioResponseProto,
   },
-  getByIDs: {
-    path: '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
+  getByIds: {
+    path: '/fintekkers.services.portfolio_service.Portfolio/GetByIds',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
@@ -98,8 +98,8 @@ var PortfolioService = exports.PortfolioService = {
     responseSerialize: serialize_fintekkers_requests_portfolio_QueryPortfolioResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_portfolio_QueryPortfolioResponseProto,
   },
-  listIDs: {
-    path: '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
+  listIds: {
+    path: '/fintekkers.services.portfolio_service.Portfolio/ListIds',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,

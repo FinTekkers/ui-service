@@ -23,8 +23,8 @@ class SecurityStub(object):
                 request_serializer=fintekkers_dot_requests_dot_security_dot_create__security__request__pb2.CreateSecurityRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_security_dot_create__security__response__pb2.CreateSecurityResponseProto.FromString,
                 )
-        self.GetByIDs = channel.unary_unary(
-                '/fintekkers.services.security_service.Security/GetByIDs',
+        self.GetByIds = channel.unary_unary(
+                '/fintekkers.services.security_service.Security/GetByIds',
                 request_serializer=fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_security_dot_query__security__response__pb2.QuerySecurityResponseProto.FromString,
                 )
@@ -33,8 +33,8 @@ class SecurityStub(object):
                 request_serializer=fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_security_dot_query__security__response__pb2.QuerySecurityResponseProto.FromString,
                 )
-        self.ListIDs = channel.unary_unary(
-                '/fintekkers.services.security_service.Security/ListIDs',
+        self.ListIds = channel.unary_unary(
+                '/fintekkers.services.security_service.Security/ListIds',
                 request_serializer=fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_security_dot_query__security__response__pb2.QuerySecurityResponseProto.FromString,
                 )
@@ -59,7 +59,7 @@ class SecurityServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetByIDs(self, request, context):
+    def GetByIds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -71,7 +71,7 @@ class SecurityServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListIDs(self, request, context):
+    def ListIds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -97,8 +97,8 @@ def add_SecurityServicer_to_server(servicer, server):
                     request_deserializer=fintekkers_dot_requests_dot_security_dot_create__security__request__pb2.CreateSecurityRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_security_dot_create__security__response__pb2.CreateSecurityResponseProto.SerializeToString,
             ),
-            'GetByIDs': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetByIDs,
+            'GetByIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetByIds,
                     request_deserializer=fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_security_dot_query__security__response__pb2.QuerySecurityResponseProto.SerializeToString,
             ),
@@ -107,8 +107,8 @@ def add_SecurityServicer_to_server(servicer, server):
                     request_deserializer=fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_security_dot_query__security__response__pb2.QuerySecurityResponseProto.SerializeToString,
             ),
-            'ListIDs': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListIDs,
+            'ListIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListIds,
                     request_deserializer=fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_security_dot_query__security__response__pb2.QuerySecurityResponseProto.SerializeToString,
             ),
@@ -150,7 +150,7 @@ class Security(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetByIDs(request,
+    def GetByIds(request,
             target,
             options=(),
             channel_credentials=None,
@@ -160,7 +160,7 @@ class Security(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Security/GetByIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Security/GetByIds',
             fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_security_dot_query__security__response__pb2.QuerySecurityResponseProto.FromString,
             options, channel_credentials,
@@ -184,7 +184,7 @@ class Security(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ListIDs(request,
+    def ListIds(request,
             target,
             options=(),
             channel_credentials=None,
@@ -194,7 +194,7 @@ class Security(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Security/ListIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.security_service.Security/ListIds',
             fintekkers_dot_requests_dot_security_dot_query__security__request__pb2.QuerySecurityRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_security_dot_query__security__response__pb2.QuerySecurityResponseProto.FromString,
             options, channel_credentials,

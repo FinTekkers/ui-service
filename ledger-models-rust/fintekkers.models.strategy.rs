@@ -12,6 +12,10 @@ pub struct StrategyProto {
     pub as_of: ::core::option::Option<super::util::LocalTimestampProto>,
     #[prost(bool, tag = "7")]
     pub is_link: bool,
+    #[prost(message, optional, tag = "8")]
+    pub valid_from: ::core::option::Option<super::util::LocalTimestampProto>,
+    #[prost(message, optional, tag = "9")]
+    pub valid_to: ::core::option::Option<super::util::LocalTimestampProto>,
     /// Transaction details
     #[prost(string, tag = "10")]
     pub strategy_name: ::prost::alloc::string::String,

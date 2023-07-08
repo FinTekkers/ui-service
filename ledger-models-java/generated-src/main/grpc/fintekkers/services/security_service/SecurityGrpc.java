@@ -47,34 +47,34 @@ public final class SecurityGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto,
-      fintekkers.requests.security.QuerySecurityResponseProto> getGetByIDsMethod;
+      fintekkers.requests.security.QuerySecurityResponseProto> getGetByIdsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "GetByIDs",
+      fullMethodName = SERVICE_NAME + '/' + "GetByIds",
       requestType = fintekkers.requests.security.QuerySecurityRequestProto.class,
       responseType = fintekkers.requests.security.QuerySecurityResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto,
-      fintekkers.requests.security.QuerySecurityResponseProto> getGetByIDsMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto, fintekkers.requests.security.QuerySecurityResponseProto> getGetByIDsMethod;
-    if ((getGetByIDsMethod = SecurityGrpc.getGetByIDsMethod) == null) {
+      fintekkers.requests.security.QuerySecurityResponseProto> getGetByIdsMethod() {
+    io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto, fintekkers.requests.security.QuerySecurityResponseProto> getGetByIdsMethod;
+    if ((getGetByIdsMethod = SecurityGrpc.getGetByIdsMethod) == null) {
       synchronized (SecurityGrpc.class) {
-        if ((getGetByIDsMethod = SecurityGrpc.getGetByIDsMethod) == null) {
-          SecurityGrpc.getGetByIDsMethod = getGetByIDsMethod =
+        if ((getGetByIdsMethod = SecurityGrpc.getGetByIdsMethod) == null) {
+          SecurityGrpc.getGetByIdsMethod = getGetByIdsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.security.QuerySecurityRequestProto, fintekkers.requests.security.QuerySecurityResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIDs"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIds"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.security.QuerySecurityResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("GetByIDs"))
+              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("GetByIds"))
               .build();
         }
       }
     }
-    return getGetByIDsMethod;
+    return getGetByIdsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto,
@@ -109,34 +109,34 @@ public final class SecurityGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto,
-      fintekkers.requests.security.QuerySecurityResponseProto> getListIDsMethod;
+      fintekkers.requests.security.QuerySecurityResponseProto> getListIdsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "ListIDs",
+      fullMethodName = SERVICE_NAME + '/' + "ListIds",
       requestType = fintekkers.requests.security.QuerySecurityRequestProto.class,
       responseType = fintekkers.requests.security.QuerySecurityResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto,
-      fintekkers.requests.security.QuerySecurityResponseProto> getListIDsMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto, fintekkers.requests.security.QuerySecurityResponseProto> getListIDsMethod;
-    if ((getListIDsMethod = SecurityGrpc.getListIDsMethod) == null) {
+      fintekkers.requests.security.QuerySecurityResponseProto> getListIdsMethod() {
+    io.grpc.MethodDescriptor<fintekkers.requests.security.QuerySecurityRequestProto, fintekkers.requests.security.QuerySecurityResponseProto> getListIdsMethod;
+    if ((getListIdsMethod = SecurityGrpc.getListIdsMethod) == null) {
       synchronized (SecurityGrpc.class) {
-        if ((getListIDsMethod = SecurityGrpc.getListIDsMethod) == null) {
-          SecurityGrpc.getListIDsMethod = getListIDsMethod =
+        if ((getListIdsMethod = SecurityGrpc.getListIdsMethod) == null) {
+          SecurityGrpc.getListIdsMethod = getListIdsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.security.QuerySecurityRequestProto, fintekkers.requests.security.QuerySecurityResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIDs"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIds"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.security.QuerySecurityRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.security.QuerySecurityResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ListIDs"))
+              .setSchemaDescriptor(new SecurityMethodDescriptorSupplier("ListIds"))
               .build();
         }
       }
     }
-    return getListIDsMethod;
+    return getListIdsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.security.CreateSecurityRequestProto,
@@ -258,9 +258,9 @@ public final class SecurityGrpc {
 
     /**
      */
-    public void getByIDs(fintekkers.requests.security.QuerySecurityRequestProto request,
+    public void getByIds(fintekkers.requests.security.QuerySecurityRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.security.QuerySecurityResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIDsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIdsMethod(), responseObserver);
     }
 
     /**
@@ -272,9 +272,9 @@ public final class SecurityGrpc {
 
     /**
      */
-    public void listIDs(fintekkers.requests.security.QuerySecurityRequestProto request,
+    public void listIds(fintekkers.requests.security.QuerySecurityRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.security.QuerySecurityResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIDsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIdsMethod(), responseObserver);
     }
 
     /**
@@ -301,7 +301,7 @@ public final class SecurityGrpc {
                 fintekkers.requests.security.CreateSecurityResponseProto>(
                   this, METHODID_CREATE_OR_UPDATE)))
           .addMethod(
-            getGetByIDsMethod(),
+            getGetByIdsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 fintekkers.requests.security.QuerySecurityRequestProto,
@@ -315,7 +315,7 @@ public final class SecurityGrpc {
                 fintekkers.requests.security.QuerySecurityResponseProto>(
                   this, METHODID_SEARCH)))
           .addMethod(
-            getListIDsMethod(),
+            getListIdsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 fintekkers.requests.security.QuerySecurityRequestProto,
@@ -363,10 +363,10 @@ public final class SecurityGrpc {
 
     /**
      */
-    public void getByIDs(fintekkers.requests.security.QuerySecurityRequestProto request,
+    public void getByIds(fintekkers.requests.security.QuerySecurityRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.security.QuerySecurityResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getGetByIdsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -379,10 +379,10 @@ public final class SecurityGrpc {
 
     /**
      */
-    public void listIDs(fintekkers.requests.security.QuerySecurityRequestProto request,
+    public void listIds(fintekkers.requests.security.QuerySecurityRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.security.QuerySecurityResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getListIDsMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getListIdsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -425,9 +425,9 @@ public final class SecurityGrpc {
 
     /**
      */
-    public fintekkers.requests.security.QuerySecurityResponseProto getByIDs(fintekkers.requests.security.QuerySecurityRequestProto request) {
+    public fintekkers.requests.security.QuerySecurityResponseProto getByIds(fintekkers.requests.security.QuerySecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getGetByIDsMethod(), getCallOptions(), request);
+          getChannel(), getGetByIdsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -440,9 +440,9 @@ public final class SecurityGrpc {
 
     /**
      */
-    public fintekkers.requests.security.QuerySecurityResponseProto listIDs(fintekkers.requests.security.QuerySecurityRequestProto request) {
+    public fintekkers.requests.security.QuerySecurityResponseProto listIds(fintekkers.requests.security.QuerySecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getListIDsMethod(), getCallOptions(), request);
+          getChannel(), getListIdsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -484,18 +484,18 @@ public final class SecurityGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.security.QuerySecurityResponseProto> getByIDs(
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.security.QuerySecurityResponseProto> getByIds(
         fintekkers.requests.security.QuerySecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request);
+          getChannel().newCall(getGetByIdsMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.security.QuerySecurityResponseProto> listIDs(
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.security.QuerySecurityResponseProto> listIds(
         fintekkers.requests.security.QuerySecurityRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getListIDsMethod(), getCallOptions()), request);
+          getChannel().newCall(getListIdsMethod(), getCallOptions()), request);
     }
 
     /**
@@ -544,7 +544,7 @@ public final class SecurityGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.security.CreateSecurityResponseProto>) responseObserver);
           break;
         case METHODID_GET_BY_IDS:
-          serviceImpl.getByIDs((fintekkers.requests.security.QuerySecurityRequestProto) request,
+          serviceImpl.getByIds((fintekkers.requests.security.QuerySecurityRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.security.QuerySecurityResponseProto>) responseObserver);
           break;
         case METHODID_SEARCH:
@@ -552,7 +552,7 @@ public final class SecurityGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.security.QuerySecurityResponseProto>) responseObserver);
           break;
         case METHODID_LIST_IDS:
-          serviceImpl.listIDs((fintekkers.requests.security.QuerySecurityRequestProto) request,
+          serviceImpl.listIds((fintekkers.requests.security.QuerySecurityRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.security.QuerySecurityResponseProto>) responseObserver);
           break;
         case METHODID_VALIDATE_CREATE_OR_UPDATE:
@@ -625,9 +625,9 @@ public final class SecurityGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new SecurityFileDescriptorSupplier())
               .addMethod(getCreateOrUpdateMethod())
-              .addMethod(getGetByIDsMethod())
+              .addMethod(getGetByIdsMethod())
               .addMethod(getSearchMethod())
-              .addMethod(getListIDsMethod())
+              .addMethod(getListIdsMethod())
               .addMethod(getValidateCreateOrUpdateMethod())
               .addMethod(getValidateQueryRequestMethod())
               .build();

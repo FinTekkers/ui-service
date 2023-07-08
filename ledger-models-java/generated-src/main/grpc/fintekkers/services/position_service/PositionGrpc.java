@@ -127,7 +127,7 @@ public final class PositionGrpc {
 
     /**
      * <pre>
-     *    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+     *    rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
      * </pre>
      */
     public void search(fintekkers.requests.position.QueryPositionRequestProto request,
@@ -181,7 +181,7 @@ public final class PositionGrpc {
 
     /**
      * <pre>
-     *    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+     *    rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
      * </pre>
      */
     public void search(fintekkers.requests.position.QueryPositionRequestProto request,
@@ -218,7 +218,7 @@ public final class PositionGrpc {
 
     /**
      * <pre>
-     *    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+     *    rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
      * </pre>
      */
     public java.util.Iterator<fintekkers.requests.position.QueryPositionResponseProto> search(

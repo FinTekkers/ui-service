@@ -32,27 +32,27 @@ public interface QueryPriceRequestProtoOrBuilder extends
       getVersionBytes();
 
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
   java.util.List<fintekkers.models.util.Uuid.UUIDProto> 
-      getUuidsList();
+      getUuIdsList();
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
-  fintekkers.models.util.Uuid.UUIDProto getUuids(int index);
+  fintekkers.models.util.Uuid.UUIDProto getUuIds(int index);
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
-  int getUuidsCount();
+  int getUuIdsCount();
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
   java.util.List<? extends fintekkers.models.util.Uuid.UUIDProtoOrBuilder> 
-      getUuidsOrBuilderList();
+      getUuIdsOrBuilderList();
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
-  fintekkers.models.util.Uuid.UUIDProtoOrBuilder getUuidsOrBuilder(
+  fintekkers.models.util.Uuid.UUIDProtoOrBuilder getUuIdsOrBuilder(
       int index);
 
   /**

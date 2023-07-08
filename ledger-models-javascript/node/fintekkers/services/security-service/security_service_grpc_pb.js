@@ -76,8 +76,8 @@ var SecurityService = exports.SecurityService = {
     responseSerialize: serialize_fintekkers_requests_security_CreateSecurityResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_security_CreateSecurityResponseProto,
   },
-  getByIDs: {
-    path: '/fintekkers.services.security_service.Security/GetByIDs',
+  getByIds: {
+    path: '/fintekkers.services.security_service.Security/GetByIds',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
@@ -98,8 +98,8 @@ var SecurityService = exports.SecurityService = {
     responseSerialize: serialize_fintekkers_requests_security_QuerySecurityResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_security_QuerySecurityResponseProto,
   },
-  listIDs: {
-    path: '/fintekkers.services.security_service.Security/ListIDs',
+  listIds: {
+    path: '/fintekkers.services.security_service.Security/ListIds',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,

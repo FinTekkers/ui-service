@@ -24,7 +24,7 @@ public final class PositionService {
     public interface Interface {
       /**
        * <pre>
-       *    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+       *    rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
        * </pre>
        *
        * <code>rpc Search(.fintekkers.requests.position.QueryPositionRequestProto) returns (stream .fintekkers.requests.position.QueryPositionResponseProto);</code>
@@ -139,7 +139,7 @@ public final class PositionService {
 
     /**
      * <pre>
-     *    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+     *    rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
      * </pre>
      *
      * <code>rpc Search(.fintekkers.requests.position.QueryPositionRequestProto) returns (stream .fintekkers.requests.position.QueryPositionResponseProto);</code>

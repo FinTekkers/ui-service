@@ -24,6 +24,16 @@ export class StrategyProto extends jspb.Message {
   getIsLink(): boolean;
   setIsLink(value: boolean): StrategyProto;
 
+  getValidFrom(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+  setValidFrom(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): StrategyProto;
+  hasValidFrom(): boolean;
+  clearValidFrom(): StrategyProto;
+
+  getValidTo(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+  setValidTo(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): StrategyProto;
+  hasValidTo(): boolean;
+  clearValidTo(): StrategyProto;
+
   getStrategyName(): string;
   setStrategyName(value: string): StrategyProto;
 
@@ -47,6 +57,8 @@ export namespace StrategyProto {
     uuid?: fintekkers_models_util_uuid_pb.UUIDProto.AsObject,
     asOf?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
     isLink: boolean,
+    validFrom?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
+    validTo?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
     strategyName: string,
     parent?: StrategyProto.AsObject,
   }

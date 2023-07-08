@@ -31,9 +31,9 @@ public final class PortfolioService {
           com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.CreatePortfolioResponseProto> done);
 
       /**
-       * <code>rpc GetByIDs(.fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (.fintekkers.requests.portfolio.QueryPortfolioResponseProto);</code>
+       * <code>rpc GetByIds(.fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (.fintekkers.requests.portfolio.QueryPortfolioResponseProto);</code>
        */
-      public abstract void getByIDs(
+      public abstract void getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done);
@@ -47,9 +47,9 @@ public final class PortfolioService {
           com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done);
 
       /**
-       * <code>rpc ListIDs(.fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (.fintekkers.requests.portfolio.QueryPortfolioResponseProto);</code>
+       * <code>rpc ListIds(.fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (.fintekkers.requests.portfolio.QueryPortfolioResponseProto);</code>
        */
-      public abstract void listIDs(
+      public abstract void listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done);
@@ -84,11 +84,11 @@ public final class PortfolioService {
         }
 
         @java.lang.Override
-        public  void getByIDs(
+        public  void getByIds(
             com.google.protobuf.RpcController controller,
             fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done) {
-          impl.getByIDs(controller, request, done);
+          impl.getByIds(controller, request, done);
         }
 
         @java.lang.Override
@@ -100,11 +100,11 @@ public final class PortfolioService {
         }
 
         @java.lang.Override
-        public  void listIDs(
+        public  void listIds(
             com.google.protobuf.RpcController controller,
             fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done) {
-          impl.listIDs(controller, request, done);
+          impl.listIds(controller, request, done);
         }
 
         @java.lang.Override
@@ -148,11 +148,11 @@ public final class PortfolioService {
             case 0:
               return impl.createOrUpdate(controller, (fintekkers.requests.portfolio.CreatePortfolioRequestProto)request);
             case 1:
-              return impl.getByIDs(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request);
+              return impl.getByIds(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request);
             case 2:
               return impl.search(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request);
             case 3:
-              return impl.listIDs(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request);
+              return impl.listIds(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request);
             case 4:
               return impl.validateCreateOrUpdate(controller, (fintekkers.requests.portfolio.CreatePortfolioRequestProto)request);
             case 5:
@@ -226,9 +226,9 @@ public final class PortfolioService {
         com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.CreatePortfolioResponseProto> done);
 
     /**
-     * <code>rpc GetByIDs(.fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (.fintekkers.requests.portfolio.QueryPortfolioResponseProto);</code>
+     * <code>rpc GetByIds(.fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (.fintekkers.requests.portfolio.QueryPortfolioResponseProto);</code>
      */
-    public abstract void getByIDs(
+    public abstract void getByIds(
         com.google.protobuf.RpcController controller,
         fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done);
@@ -242,9 +242,9 @@ public final class PortfolioService {
         com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done);
 
     /**
-     * <code>rpc ListIDs(.fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (.fintekkers.requests.portfolio.QueryPortfolioResponseProto);</code>
+     * <code>rpc ListIds(.fintekkers.requests.portfolio.QueryPortfolioRequestProto) returns (.fintekkers.requests.portfolio.QueryPortfolioResponseProto);</code>
      */
-    public abstract void listIDs(
+    public abstract void listIds(
         com.google.protobuf.RpcController controller,
         fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done);
@@ -293,7 +293,7 @@ public final class PortfolioService {
               done));
           return;
         case 1:
-          this.getByIDs(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request,
+          this.getByIds(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.portfolio.QueryPortfolioResponseProto>specializeCallback(
               done));
           return;
@@ -303,7 +303,7 @@ public final class PortfolioService {
               done));
           return;
         case 3:
-          this.listIDs(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request,
+          this.listIds(controller, (fintekkers.requests.portfolio.QueryPortfolioRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.portfolio.QueryPortfolioResponseProto>specializeCallback(
               done));
           return;
@@ -405,7 +405,7 @@ public final class PortfolioService {
             fintekkers.requests.portfolio.CreatePortfolioResponseProto.getDefaultInstance()));
       }
 
-      public  void getByIDs(
+      public  void getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done) {
@@ -435,7 +435,7 @@ public final class PortfolioService {
             fintekkers.requests.portfolio.QueryPortfolioResponseProto.getDefaultInstance()));
       }
 
-      public  void listIDs(
+      public  void listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.portfolio.QueryPortfolioResponseProto> done) {
@@ -492,7 +492,7 @@ public final class PortfolioService {
           fintekkers.requests.portfolio.CreatePortfolioRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public fintekkers.requests.portfolio.QueryPortfolioResponseProto getByIDs(
+      public fintekkers.requests.portfolio.QueryPortfolioResponseProto getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -502,7 +502,7 @@ public final class PortfolioService {
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public fintekkers.requests.portfolio.QueryPortfolioResponseProto listIDs(
+      public fintekkers.requests.portfolio.QueryPortfolioResponseProto listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -537,7 +537,7 @@ public final class PortfolioService {
       }
 
 
-      public fintekkers.requests.portfolio.QueryPortfolioResponseProto getByIDs(
+      public fintekkers.requests.portfolio.QueryPortfolioResponseProto getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request)
           throws com.google.protobuf.ServiceException {
@@ -561,7 +561,7 @@ public final class PortfolioService {
       }
 
 
-      public fintekkers.requests.portfolio.QueryPortfolioResponseProto listIDs(
+      public fintekkers.requests.portfolio.QueryPortfolioResponseProto listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.portfolio.QueryPortfolioRequestProto request)
           throws com.google.protobuf.ServiceException {
@@ -624,13 +624,13 @@ public final class PortfolioService {
       "ers.requests.portfolio.CreatePortfolioRe" +
       "questProto\032;.fintekkers.requests.portfol" +
       "io.CreatePortfolioResponseProto\022\201\001\n\010GetB" +
-      "yIDs\0229.fintekkers.requests.portfolio.Que" +
+      "yIds\0229.fintekkers.requests.portfolio.Que" +
       "ryPortfolioRequestProto\032:.fintekkers.req" +
       "uests.portfolio.QueryPortfolioResponsePr" +
       "oto\022\201\001\n\006Search\0229.fintekkers.requests.por" +
       "tfolio.QueryPortfolioRequestProto\032:.fint" +
       "ekkers.requests.portfolio.QueryPortfolio" +
-      "ResponseProto0\001\022\200\001\n\007ListIDs\0229.fintekkers" +
+      "ResponseProto0\001\022\200\001\n\007ListIds\0229.fintekkers" +
       ".requests.portfolio.QueryPortfolioReques" +
       "tProto\032:.fintekkers.requests.portfolio.Q" +
       "ueryPortfolioResponseProto\022\203\001\n\026ValidateC" +
