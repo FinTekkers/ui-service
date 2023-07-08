@@ -18,7 +18,7 @@ private static final long serialVersionUID = 0L;
   private QueryPortfolioRequestProto() {
     objectClass_ = "";
     version_ = "";
-    uuids_ = java.util.Collections.emptyList();
+    uuIds_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -66,10 +66,10 @@ private static final long serialVersionUID = 0L;
           }
           case 170: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              uuids_ = new java.util.ArrayList<fintekkers.models.util.Uuid.UUIDProto>();
+              uuIds_ = new java.util.ArrayList<fintekkers.models.util.Uuid.UUIDProto>();
               mutable_bitField0_ |= 0x00000001;
             }
-            uuids_.add(
+            uuIds_.add(
                 input.readMessage(fintekkers.models.util.Uuid.UUIDProto.parser(), extensionRegistry));
             break;
           }
@@ -115,7 +115,7 @@ private static final long serialVersionUID = 0L;
           e).setUnfinishedMessage(this);
     } finally {
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        uuids_ = java.util.Collections.unmodifiableList(uuids_);
+        uuIds_ = java.util.Collections.unmodifiableList(uuIds_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -211,43 +211,43 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int UUIDS_FIELD_NUMBER = 21;
-  private java.util.List<fintekkers.models.util.Uuid.UUIDProto> uuids_;
+  private java.util.List<fintekkers.models.util.Uuid.UUIDProto> uuIds_;
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
   @java.lang.Override
-  public java.util.List<fintekkers.models.util.Uuid.UUIDProto> getUuidsList() {
-    return uuids_;
+  public java.util.List<fintekkers.models.util.Uuid.UUIDProto> getUuIdsList() {
+    return uuIds_;
   }
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
   @java.lang.Override
   public java.util.List<? extends fintekkers.models.util.Uuid.UUIDProtoOrBuilder> 
-      getUuidsOrBuilderList() {
-    return uuids_;
+      getUuIdsOrBuilderList() {
+    return uuIds_;
   }
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
   @java.lang.Override
-  public int getUuidsCount() {
-    return uuids_.size();
+  public int getUuIdsCount() {
+    return uuIds_.size();
   }
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
   @java.lang.Override
-  public fintekkers.models.util.Uuid.UUIDProto getUuids(int index) {
-    return uuids_.get(index);
+  public fintekkers.models.util.Uuid.UUIDProto getUuIds(int index) {
+    return uuIds_.get(index);
   }
   /**
-   * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+   * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
    */
   @java.lang.Override
-  public fintekkers.models.util.Uuid.UUIDProtoOrBuilder getUuidsOrBuilder(
+  public fintekkers.models.util.Uuid.UUIDProtoOrBuilder getUuIdsOrBuilder(
       int index) {
-    return uuids_.get(index);
+    return uuIds_.get(index);
   }
 
   public static final int SEARCH_PORTFOLIO_INPUT_FIELD_NUMBER = 22;
@@ -322,8 +322,8 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
     }
-    for (int i = 0; i < uuids_.size(); i++) {
-      output.writeMessage(21, uuids_.get(i));
+    for (int i = 0; i < uuIds_.size(); i++) {
+      output.writeMessage(21, uuIds_.get(i));
     }
     if (searchPortfolioInput_ != null) {
       output.writeMessage(22, getSearchPortfolioInput());
@@ -346,9 +346,9 @@ private static final long serialVersionUID = 0L;
     if (!getVersionBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
     }
-    for (int i = 0; i < uuids_.size(); i++) {
+    for (int i = 0; i < uuIds_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(21, uuids_.get(i));
+        .computeMessageSize(21, uuIds_.get(i));
     }
     if (searchPortfolioInput_ != null) {
       size += com.google.protobuf.CodedOutputStream
@@ -377,8 +377,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getObjectClass())) return false;
     if (!getVersion()
         .equals(other.getVersion())) return false;
-    if (!getUuidsList()
-        .equals(other.getUuidsList())) return false;
+    if (!getUuIdsList()
+        .equals(other.getUuIdsList())) return false;
     if (hasSearchPortfolioInput() != other.hasSearchPortfolioInput()) return false;
     if (hasSearchPortfolioInput()) {
       if (!getSearchPortfolioInput()
@@ -404,9 +404,9 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getObjectClass().hashCode();
     hash = (37 * hash) + VERSION_FIELD_NUMBER;
     hash = (53 * hash) + getVersion().hashCode();
-    if (getUuidsCount() > 0) {
+    if (getUuIdsCount() > 0) {
       hash = (37 * hash) + UUIDS_FIELD_NUMBER;
-      hash = (53 * hash) + getUuidsList().hashCode();
+      hash = (53 * hash) + getUuIdsList().hashCode();
     }
     if (hasSearchPortfolioInput()) {
       hash = (37 * hash) + SEARCH_PORTFOLIO_INPUT_FIELD_NUMBER;
@@ -544,7 +544,7 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
-        getUuidsFieldBuilder();
+        getUuIdsFieldBuilder();
       }
     }
     @java.lang.Override
@@ -554,11 +554,11 @@ private static final long serialVersionUID = 0L;
 
       version_ = "";
 
-      if (uuidsBuilder_ == null) {
-        uuids_ = java.util.Collections.emptyList();
+      if (uuIdsBuilder_ == null) {
+        uuIds_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
       } else {
-        uuidsBuilder_.clear();
+        uuIdsBuilder_.clear();
       }
       if (searchPortfolioInputBuilder_ == null) {
         searchPortfolioInput_ = null;
@@ -601,14 +601,14 @@ private static final long serialVersionUID = 0L;
       int from_bitField0_ = bitField0_;
       result.objectClass_ = objectClass_;
       result.version_ = version_;
-      if (uuidsBuilder_ == null) {
+      if (uuIdsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
-          uuids_ = java.util.Collections.unmodifiableList(uuids_);
+          uuIds_ = java.util.Collections.unmodifiableList(uuIds_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.uuids_ = uuids_;
+        result.uuIds_ = uuIds_;
       } else {
-        result.uuids_ = uuidsBuilder_.build();
+        result.uuIds_ = uuIdsBuilder_.build();
       }
       if (searchPortfolioInputBuilder_ == null) {
         result.searchPortfolioInput_ = searchPortfolioInput_;
@@ -676,29 +676,29 @@ private static final long serialVersionUID = 0L;
         version_ = other.version_;
         onChanged();
       }
-      if (uuidsBuilder_ == null) {
-        if (!other.uuids_.isEmpty()) {
-          if (uuids_.isEmpty()) {
-            uuids_ = other.uuids_;
+      if (uuIdsBuilder_ == null) {
+        if (!other.uuIds_.isEmpty()) {
+          if (uuIds_.isEmpty()) {
+            uuIds_ = other.uuIds_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureUuidsIsMutable();
-            uuids_.addAll(other.uuids_);
+            ensureUuIdsIsMutable();
+            uuIds_.addAll(other.uuIds_);
           }
           onChanged();
         }
       } else {
-        if (!other.uuids_.isEmpty()) {
-          if (uuidsBuilder_.isEmpty()) {
-            uuidsBuilder_.dispose();
-            uuidsBuilder_ = null;
-            uuids_ = other.uuids_;
+        if (!other.uuIds_.isEmpty()) {
+          if (uuIdsBuilder_.isEmpty()) {
+            uuIdsBuilder_.dispose();
+            uuIdsBuilder_ = null;
+            uuIds_ = other.uuIds_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            uuidsBuilder_ = 
+            uuIdsBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getUuidsFieldBuilder() : null;
+                 getUuIdsFieldBuilder() : null;
           } else {
-            uuidsBuilder_.addAllMessages(other.uuids_);
+            uuIdsBuilder_.addAllMessages(other.uuIds_);
           }
         }
       }
@@ -890,244 +890,244 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.util.List<fintekkers.models.util.Uuid.UUIDProto> uuids_ =
+    private java.util.List<fintekkers.models.util.Uuid.UUIDProto> uuIds_ =
       java.util.Collections.emptyList();
-    private void ensureUuidsIsMutable() {
+    private void ensureUuIdsIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        uuids_ = new java.util.ArrayList<fintekkers.models.util.Uuid.UUIDProto>(uuids_);
+        uuIds_ = new java.util.ArrayList<fintekkers.models.util.Uuid.UUIDProto>(uuIds_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        fintekkers.models.util.Uuid.UUIDProto, fintekkers.models.util.Uuid.UUIDProto.Builder, fintekkers.models.util.Uuid.UUIDProtoOrBuilder> uuidsBuilder_;
+        fintekkers.models.util.Uuid.UUIDProto, fintekkers.models.util.Uuid.UUIDProto.Builder, fintekkers.models.util.Uuid.UUIDProtoOrBuilder> uuIdsBuilder_;
 
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public java.util.List<fintekkers.models.util.Uuid.UUIDProto> getUuidsList() {
-      if (uuidsBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(uuids_);
+    public java.util.List<fintekkers.models.util.Uuid.UUIDProto> getUuIdsList() {
+      if (uuIdsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(uuIds_);
       } else {
-        return uuidsBuilder_.getMessageList();
+        return uuIdsBuilder_.getMessageList();
       }
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public int getUuidsCount() {
-      if (uuidsBuilder_ == null) {
-        return uuids_.size();
+    public int getUuIdsCount() {
+      if (uuIdsBuilder_ == null) {
+        return uuIds_.size();
       } else {
-        return uuidsBuilder_.getCount();
+        return uuIdsBuilder_.getCount();
       }
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public fintekkers.models.util.Uuid.UUIDProto getUuids(int index) {
-      if (uuidsBuilder_ == null) {
-        return uuids_.get(index);
+    public fintekkers.models.util.Uuid.UUIDProto getUuIds(int index) {
+      if (uuIdsBuilder_ == null) {
+        return uuIds_.get(index);
       } else {
-        return uuidsBuilder_.getMessage(index);
+        return uuIdsBuilder_.getMessage(index);
       }
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder setUuids(
+    public Builder setUuIds(
         int index, fintekkers.models.util.Uuid.UUIDProto value) {
-      if (uuidsBuilder_ == null) {
+      if (uuIdsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureUuidsIsMutable();
-        uuids_.set(index, value);
+        ensureUuIdsIsMutable();
+        uuIds_.set(index, value);
         onChanged();
       } else {
-        uuidsBuilder_.setMessage(index, value);
+        uuIdsBuilder_.setMessage(index, value);
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder setUuids(
+    public Builder setUuIds(
         int index, fintekkers.models.util.Uuid.UUIDProto.Builder builderForValue) {
-      if (uuidsBuilder_ == null) {
-        ensureUuidsIsMutable();
-        uuids_.set(index, builderForValue.build());
+      if (uuIdsBuilder_ == null) {
+        ensureUuIdsIsMutable();
+        uuIds_.set(index, builderForValue.build());
         onChanged();
       } else {
-        uuidsBuilder_.setMessage(index, builderForValue.build());
+        uuIdsBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder addUuids(fintekkers.models.util.Uuid.UUIDProto value) {
-      if (uuidsBuilder_ == null) {
+    public Builder addUuIds(fintekkers.models.util.Uuid.UUIDProto value) {
+      if (uuIdsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureUuidsIsMutable();
-        uuids_.add(value);
+        ensureUuIdsIsMutable();
+        uuIds_.add(value);
         onChanged();
       } else {
-        uuidsBuilder_.addMessage(value);
+        uuIdsBuilder_.addMessage(value);
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder addUuids(
+    public Builder addUuIds(
         int index, fintekkers.models.util.Uuid.UUIDProto value) {
-      if (uuidsBuilder_ == null) {
+      if (uuIdsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureUuidsIsMutable();
-        uuids_.add(index, value);
+        ensureUuIdsIsMutable();
+        uuIds_.add(index, value);
         onChanged();
       } else {
-        uuidsBuilder_.addMessage(index, value);
+        uuIdsBuilder_.addMessage(index, value);
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder addUuids(
+    public Builder addUuIds(
         fintekkers.models.util.Uuid.UUIDProto.Builder builderForValue) {
-      if (uuidsBuilder_ == null) {
-        ensureUuidsIsMutable();
-        uuids_.add(builderForValue.build());
+      if (uuIdsBuilder_ == null) {
+        ensureUuIdsIsMutable();
+        uuIds_.add(builderForValue.build());
         onChanged();
       } else {
-        uuidsBuilder_.addMessage(builderForValue.build());
+        uuIdsBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder addUuids(
+    public Builder addUuIds(
         int index, fintekkers.models.util.Uuid.UUIDProto.Builder builderForValue) {
-      if (uuidsBuilder_ == null) {
-        ensureUuidsIsMutable();
-        uuids_.add(index, builderForValue.build());
+      if (uuIdsBuilder_ == null) {
+        ensureUuIdsIsMutable();
+        uuIds_.add(index, builderForValue.build());
         onChanged();
       } else {
-        uuidsBuilder_.addMessage(index, builderForValue.build());
+        uuIdsBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder addAllUuids(
+    public Builder addAllUuIds(
         java.lang.Iterable<? extends fintekkers.models.util.Uuid.UUIDProto> values) {
-      if (uuidsBuilder_ == null) {
-        ensureUuidsIsMutable();
+      if (uuIdsBuilder_ == null) {
+        ensureUuIdsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, uuids_);
+            values, uuIds_);
         onChanged();
       } else {
-        uuidsBuilder_.addAllMessages(values);
+        uuIdsBuilder_.addAllMessages(values);
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder clearUuids() {
-      if (uuidsBuilder_ == null) {
-        uuids_ = java.util.Collections.emptyList();
+    public Builder clearUuIds() {
+      if (uuIdsBuilder_ == null) {
+        uuIds_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
       } else {
-        uuidsBuilder_.clear();
+        uuIdsBuilder_.clear();
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public Builder removeUuids(int index) {
-      if (uuidsBuilder_ == null) {
-        ensureUuidsIsMutable();
-        uuids_.remove(index);
+    public Builder removeUuIds(int index) {
+      if (uuIdsBuilder_ == null) {
+        ensureUuIdsIsMutable();
+        uuIds_.remove(index);
         onChanged();
       } else {
-        uuidsBuilder_.remove(index);
+        uuIdsBuilder_.remove(index);
       }
       return this;
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public fintekkers.models.util.Uuid.UUIDProto.Builder getUuidsBuilder(
+    public fintekkers.models.util.Uuid.UUIDProto.Builder getUuIdsBuilder(
         int index) {
-      return getUuidsFieldBuilder().getBuilder(index);
+      return getUuIdsFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public fintekkers.models.util.Uuid.UUIDProtoOrBuilder getUuidsOrBuilder(
+    public fintekkers.models.util.Uuid.UUIDProtoOrBuilder getUuIdsOrBuilder(
         int index) {
-      if (uuidsBuilder_ == null) {
-        return uuids_.get(index);  } else {
-        return uuidsBuilder_.getMessageOrBuilder(index);
+      if (uuIdsBuilder_ == null) {
+        return uuIds_.get(index);  } else {
+        return uuIdsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
     public java.util.List<? extends fintekkers.models.util.Uuid.UUIDProtoOrBuilder> 
-         getUuidsOrBuilderList() {
-      if (uuidsBuilder_ != null) {
-        return uuidsBuilder_.getMessageOrBuilderList();
+         getUuIdsOrBuilderList() {
+      if (uuIdsBuilder_ != null) {
+        return uuIdsBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(uuids_);
+        return java.util.Collections.unmodifiableList(uuIds_);
       }
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public fintekkers.models.util.Uuid.UUIDProto.Builder addUuidsBuilder() {
-      return getUuidsFieldBuilder().addBuilder(
+    public fintekkers.models.util.Uuid.UUIDProto.Builder addUuIdsBuilder() {
+      return getUuIdsFieldBuilder().addBuilder(
           fintekkers.models.util.Uuid.UUIDProto.getDefaultInstance());
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
-    public fintekkers.models.util.Uuid.UUIDProto.Builder addUuidsBuilder(
+    public fintekkers.models.util.Uuid.UUIDProto.Builder addUuIdsBuilder(
         int index) {
-      return getUuidsFieldBuilder().addBuilder(
+      return getUuIdsFieldBuilder().addBuilder(
           index, fintekkers.models.util.Uuid.UUIDProto.getDefaultInstance());
     }
     /**
-     * <code>repeated .fintekkers.models.util.UUIDProto uuids = 21;</code>
+     * <code>repeated .fintekkers.models.util.UUIDProto uuIds = 21;</code>
      */
     public java.util.List<fintekkers.models.util.Uuid.UUIDProto.Builder> 
-         getUuidsBuilderList() {
-      return getUuidsFieldBuilder().getBuilderList();
+         getUuIdsBuilderList() {
+      return getUuIdsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
         fintekkers.models.util.Uuid.UUIDProto, fintekkers.models.util.Uuid.UUIDProto.Builder, fintekkers.models.util.Uuid.UUIDProtoOrBuilder> 
-        getUuidsFieldBuilder() {
-      if (uuidsBuilder_ == null) {
-        uuidsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+        getUuIdsFieldBuilder() {
+      if (uuIdsBuilder_ == null) {
+        uuIdsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             fintekkers.models.util.Uuid.UUIDProto, fintekkers.models.util.Uuid.UUIDProto.Builder, fintekkers.models.util.Uuid.UUIDProtoOrBuilder>(
-                uuids_,
+                uuIds_,
                 ((bitField0_ & 0x00000001) != 0),
                 getParentForChildren(),
                 isClean());
-        uuids_ = null;
+        uuIds_ = null;
       }
-      return uuidsBuilder_;
+      return uuIdsBuilder_;
     }
 
     private fintekkers.models.position.PositionFilterProto searchPortfolioInput_;

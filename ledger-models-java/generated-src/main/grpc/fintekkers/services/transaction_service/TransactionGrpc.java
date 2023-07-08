@@ -47,34 +47,34 @@ public final class TransactionGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto,
-      fintekkers.requests.transaction.QueryTransactionResponseProto> getGetByIDsMethod;
+      fintekkers.requests.transaction.QueryTransactionResponseProto> getGetByIdsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "GetByIDs",
+      fullMethodName = SERVICE_NAME + '/' + "GetByIds",
       requestType = fintekkers.requests.transaction.QueryTransactionRequestProto.class,
       responseType = fintekkers.requests.transaction.QueryTransactionResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto,
-      fintekkers.requests.transaction.QueryTransactionResponseProto> getGetByIDsMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto, fintekkers.requests.transaction.QueryTransactionResponseProto> getGetByIDsMethod;
-    if ((getGetByIDsMethod = TransactionGrpc.getGetByIDsMethod) == null) {
+      fintekkers.requests.transaction.QueryTransactionResponseProto> getGetByIdsMethod() {
+    io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto, fintekkers.requests.transaction.QueryTransactionResponseProto> getGetByIdsMethod;
+    if ((getGetByIdsMethod = TransactionGrpc.getGetByIdsMethod) == null) {
       synchronized (TransactionGrpc.class) {
-        if ((getGetByIDsMethod = TransactionGrpc.getGetByIDsMethod) == null) {
-          TransactionGrpc.getGetByIDsMethod = getGetByIDsMethod =
+        if ((getGetByIdsMethod = TransactionGrpc.getGetByIdsMethod) == null) {
+          TransactionGrpc.getGetByIdsMethod = getGetByIdsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.transaction.QueryTransactionRequestProto, fintekkers.requests.transaction.QueryTransactionResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIDs"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIds"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.transaction.QueryTransactionRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.transaction.QueryTransactionResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new TransactionMethodDescriptorSupplier("GetByIDs"))
+              .setSchemaDescriptor(new TransactionMethodDescriptorSupplier("GetByIds"))
               .build();
         }
       }
     }
-    return getGetByIDsMethod;
+    return getGetByIdsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto,
@@ -109,34 +109,34 @@ public final class TransactionGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto,
-      fintekkers.requests.transaction.QueryTransactionResponseProto> getListIDsMethod;
+      fintekkers.requests.transaction.QueryTransactionResponseProto> getListIdsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "ListIDs",
+      fullMethodName = SERVICE_NAME + '/' + "ListIds",
       requestType = fintekkers.requests.transaction.QueryTransactionRequestProto.class,
       responseType = fintekkers.requests.transaction.QueryTransactionResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto,
-      fintekkers.requests.transaction.QueryTransactionResponseProto> getListIDsMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto, fintekkers.requests.transaction.QueryTransactionResponseProto> getListIDsMethod;
-    if ((getListIDsMethod = TransactionGrpc.getListIDsMethod) == null) {
+      fintekkers.requests.transaction.QueryTransactionResponseProto> getListIdsMethod() {
+    io.grpc.MethodDescriptor<fintekkers.requests.transaction.QueryTransactionRequestProto, fintekkers.requests.transaction.QueryTransactionResponseProto> getListIdsMethod;
+    if ((getListIdsMethod = TransactionGrpc.getListIdsMethod) == null) {
       synchronized (TransactionGrpc.class) {
-        if ((getListIDsMethod = TransactionGrpc.getListIDsMethod) == null) {
-          TransactionGrpc.getListIDsMethod = getListIDsMethod =
+        if ((getListIdsMethod = TransactionGrpc.getListIdsMethod) == null) {
+          TransactionGrpc.getListIdsMethod = getListIdsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.transaction.QueryTransactionRequestProto, fintekkers.requests.transaction.QueryTransactionResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIDs"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIds"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.transaction.QueryTransactionRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.transaction.QueryTransactionResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new TransactionMethodDescriptorSupplier("ListIDs"))
+              .setSchemaDescriptor(new TransactionMethodDescriptorSupplier("ListIds"))
               .build();
         }
       }
     }
-    return getListIDsMethod;
+    return getListIdsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.transaction.CreateTransactionRequestProto,
@@ -258,9 +258,9 @@ public final class TransactionGrpc {
 
     /**
      */
-    public void getByIDs(fintekkers.requests.transaction.QueryTransactionRequestProto request,
+    public void getByIds(fintekkers.requests.transaction.QueryTransactionRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.transaction.QueryTransactionResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIDsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIdsMethod(), responseObserver);
     }
 
     /**
@@ -272,9 +272,9 @@ public final class TransactionGrpc {
 
     /**
      */
-    public void listIDs(fintekkers.requests.transaction.QueryTransactionRequestProto request,
+    public void listIds(fintekkers.requests.transaction.QueryTransactionRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.transaction.QueryTransactionResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIDsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIdsMethod(), responseObserver);
     }
 
     /**
@@ -301,7 +301,7 @@ public final class TransactionGrpc {
                 fintekkers.requests.transaction.CreateTransactionResponseProto>(
                   this, METHODID_CREATE_OR_UPDATE)))
           .addMethod(
-            getGetByIDsMethod(),
+            getGetByIdsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 fintekkers.requests.transaction.QueryTransactionRequestProto,
@@ -315,7 +315,7 @@ public final class TransactionGrpc {
                 fintekkers.requests.transaction.QueryTransactionResponseProto>(
                   this, METHODID_SEARCH)))
           .addMethod(
-            getListIDsMethod(),
+            getListIdsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 fintekkers.requests.transaction.QueryTransactionRequestProto,
@@ -363,10 +363,10 @@ public final class TransactionGrpc {
 
     /**
      */
-    public void getByIDs(fintekkers.requests.transaction.QueryTransactionRequestProto request,
+    public void getByIds(fintekkers.requests.transaction.QueryTransactionRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.transaction.QueryTransactionResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getGetByIdsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -379,10 +379,10 @@ public final class TransactionGrpc {
 
     /**
      */
-    public void listIDs(fintekkers.requests.transaction.QueryTransactionRequestProto request,
+    public void listIds(fintekkers.requests.transaction.QueryTransactionRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.transaction.QueryTransactionResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getListIDsMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getListIdsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -425,9 +425,9 @@ public final class TransactionGrpc {
 
     /**
      */
-    public fintekkers.requests.transaction.QueryTransactionResponseProto getByIDs(fintekkers.requests.transaction.QueryTransactionRequestProto request) {
+    public fintekkers.requests.transaction.QueryTransactionResponseProto getByIds(fintekkers.requests.transaction.QueryTransactionRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getGetByIDsMethod(), getCallOptions(), request);
+          getChannel(), getGetByIdsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -440,9 +440,9 @@ public final class TransactionGrpc {
 
     /**
      */
-    public fintekkers.requests.transaction.QueryTransactionResponseProto listIDs(fintekkers.requests.transaction.QueryTransactionRequestProto request) {
+    public fintekkers.requests.transaction.QueryTransactionResponseProto listIds(fintekkers.requests.transaction.QueryTransactionRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getListIDsMethod(), getCallOptions(), request);
+          getChannel(), getListIdsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -484,18 +484,18 @@ public final class TransactionGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.transaction.QueryTransactionResponseProto> getByIDs(
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.transaction.QueryTransactionResponseProto> getByIds(
         fintekkers.requests.transaction.QueryTransactionRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request);
+          getChannel().newCall(getGetByIdsMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.transaction.QueryTransactionResponseProto> listIDs(
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.transaction.QueryTransactionResponseProto> listIds(
         fintekkers.requests.transaction.QueryTransactionRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getListIDsMethod(), getCallOptions()), request);
+          getChannel().newCall(getListIdsMethod(), getCallOptions()), request);
     }
 
     /**
@@ -544,7 +544,7 @@ public final class TransactionGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.transaction.CreateTransactionResponseProto>) responseObserver);
           break;
         case METHODID_GET_BY_IDS:
-          serviceImpl.getByIDs((fintekkers.requests.transaction.QueryTransactionRequestProto) request,
+          serviceImpl.getByIds((fintekkers.requests.transaction.QueryTransactionRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.transaction.QueryTransactionResponseProto>) responseObserver);
           break;
         case METHODID_SEARCH:
@@ -552,7 +552,7 @@ public final class TransactionGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.transaction.QueryTransactionResponseProto>) responseObserver);
           break;
         case METHODID_LIST_IDS:
-          serviceImpl.listIDs((fintekkers.requests.transaction.QueryTransactionRequestProto) request,
+          serviceImpl.listIds((fintekkers.requests.transaction.QueryTransactionRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.transaction.QueryTransactionResponseProto>) responseObserver);
           break;
         case METHODID_VALIDATE_CREATE_OR_UPDATE:
@@ -625,9 +625,9 @@ public final class TransactionGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new TransactionFileDescriptorSupplier())
               .addMethod(getCreateOrUpdateMethod())
-              .addMethod(getGetByIDsMethod())
+              .addMethod(getGetByIdsMethod())
               .addMethod(getSearchMethod())
-              .addMethod(getListIDsMethod())
+              .addMethod(getListIdsMethod())
               .addMethod(getValidateCreateOrUpdateMethod())
               .addMethod(getValidateQueryRequestMethod())
               .build();

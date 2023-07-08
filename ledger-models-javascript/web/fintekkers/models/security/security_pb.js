@@ -92,6 +92,8 @@ proto.fintekkers.models.security.SecurityProto.toObject = function(includeInstan
     uuid: (f = msg.getUuid()) && fintekkers_models_util_uuid_pb.UUIDProto.toObject(includeInstance, f),
     asOf: (f = msg.getAsOf()) && fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.toObject(includeInstance, f),
     isLink: jspb.Message.getBooleanFieldWithDefault(msg, 7, false),
+    validFrom: (f = msg.getValidFrom()) && fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.toObject(includeInstance, f),
+    validTo: (f = msg.getValidTo()) && fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.toObject(includeInstance, f),
     securityType: jspb.Message.getFieldWithDefault(msg, 10, 0),
     assetClass: jspb.Message.getFieldWithDefault(msg, 11, ""),
     issuerName: jspb.Message.getFieldWithDefault(msg, 12, ""),
@@ -164,6 +166,16 @@ proto.fintekkers.models.security.SecurityProto.deserializeBinaryFromReader = fun
     case 7:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setIsLink(value);
+      break;
+    case 8:
+      var value = new fintekkers_models_util_local_timestamp_pb.LocalTimestampProto;
+      reader.readMessage(value,fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.deserializeBinaryFromReader);
+      msg.setValidFrom(value);
+      break;
+    case 9:
+      var value = new fintekkers_models_util_local_timestamp_pb.LocalTimestampProto;
+      reader.readMessage(value,fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.deserializeBinaryFromReader);
+      msg.setValidTo(value);
       break;
     case 10:
       var value = /** @type {!proto.fintekkers.models.security.SecurityTypeProto} */ (reader.readEnum());
@@ -296,6 +308,22 @@ proto.fintekkers.models.security.SecurityProto.serializeBinaryToWriter = functio
     writer.writeBool(
       7,
       f
+    );
+  }
+  f = message.getValidFrom();
+  if (f != null) {
+    writer.writeMessage(
+      8,
+      f,
+      fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.serializeBinaryToWriter
+    );
+  }
+  f = message.getValidTo();
+  if (f != null) {
+    writer.writeMessage(
+      9,
+      f,
+      fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.serializeBinaryToWriter
     );
   }
   f = message.getSecurityType();
@@ -538,6 +566,80 @@ proto.fintekkers.models.security.SecurityProto.prototype.getIsLink = function() 
  */
 proto.fintekkers.models.security.SecurityProto.prototype.setIsLink = function(value) {
   return jspb.Message.setProto3BooleanField(this, 7, value);
+};
+
+
+/**
+ * optional fintekkers.models.util.LocalTimestampProto valid_from = 8;
+ * @return {?proto.fintekkers.models.util.LocalTimestampProto}
+ */
+proto.fintekkers.models.security.SecurityProto.prototype.getValidFrom = function() {
+  return /** @type{?proto.fintekkers.models.util.LocalTimestampProto} */ (
+    jspb.Message.getWrapperField(this, fintekkers_models_util_local_timestamp_pb.LocalTimestampProto, 8));
+};
+
+
+/**
+ * @param {?proto.fintekkers.models.util.LocalTimestampProto|undefined} value
+ * @return {!proto.fintekkers.models.security.SecurityProto} returns this
+*/
+proto.fintekkers.models.security.SecurityProto.prototype.setValidFrom = function(value) {
+  return jspb.Message.setWrapperField(this, 8, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.fintekkers.models.security.SecurityProto} returns this
+ */
+proto.fintekkers.models.security.SecurityProto.prototype.clearValidFrom = function() {
+  return this.setValidFrom(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.fintekkers.models.security.SecurityProto.prototype.hasValidFrom = function() {
+  return jspb.Message.getField(this, 8) != null;
+};
+
+
+/**
+ * optional fintekkers.models.util.LocalTimestampProto valid_to = 9;
+ * @return {?proto.fintekkers.models.util.LocalTimestampProto}
+ */
+proto.fintekkers.models.security.SecurityProto.prototype.getValidTo = function() {
+  return /** @type{?proto.fintekkers.models.util.LocalTimestampProto} */ (
+    jspb.Message.getWrapperField(this, fintekkers_models_util_local_timestamp_pb.LocalTimestampProto, 9));
+};
+
+
+/**
+ * @param {?proto.fintekkers.models.util.LocalTimestampProto|undefined} value
+ * @return {!proto.fintekkers.models.security.SecurityProto} returns this
+*/
+proto.fintekkers.models.security.SecurityProto.prototype.setValidTo = function(value) {
+  return jspb.Message.setWrapperField(this, 9, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.fintekkers.models.security.SecurityProto} returns this
+ */
+proto.fintekkers.models.security.SecurityProto.prototype.clearValidTo = function() {
+  return this.setValidTo(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.fintekkers.models.security.SecurityProto.prototype.hasValidTo = function() {
+  return jspb.Message.getField(this, 9) != null;
 };
 
 

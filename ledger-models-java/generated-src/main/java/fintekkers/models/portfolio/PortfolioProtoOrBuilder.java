@@ -88,6 +88,36 @@ public interface PortfolioProtoOrBuilder extends
   boolean getIsLink();
 
   /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+   * @return Whether the validFrom field is set.
+   */
+  boolean hasValidFrom();
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+   * @return The validFrom.
+   */
+  fintekkers.models.util.LocalTimestamp.LocalTimestampProto getValidFrom();
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+   */
+  fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder getValidFromOrBuilder();
+
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+   * @return Whether the validTo field is set.
+   */
+  boolean hasValidTo();
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+   * @return The validTo.
+   */
+  fintekkers.models.util.LocalTimestamp.LocalTimestampProto getValidTo();
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+   */
+  fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder getValidToOrBuilder();
+
+  /**
    * <code>string portfolio_name = 10;</code>
    * @return The portfolioName.
    */

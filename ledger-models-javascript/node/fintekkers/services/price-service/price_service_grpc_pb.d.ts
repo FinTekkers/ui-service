@@ -14,9 +14,9 @@ import * as fintekkers_requests_util_errors_summary_pb from "../../../fintekkers
 
 interface IPriceService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     createOrUpdate: IPriceService_ICreateOrUpdate;
-    getByIDs: IPriceService_IGetByIDs;
+    getByIds: IPriceService_IGetByIds;
     search: IPriceService_ISearch;
-    listIDs: IPriceService_IListIDs;
+    listIds: IPriceService_IListIds;
     validateCreateOrUpdate: IPriceService_IValidateCreateOrUpdate;
     validateQueryRequest: IPriceService_IValidateQueryRequest;
 }
@@ -30,8 +30,8 @@ interface IPriceService_ICreateOrUpdate extends grpc.MethodDefinition<fintekkers
     responseSerialize: grpc.serialize<fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto>;
 }
-interface IPriceService_IGetByIDs extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
-    path: "/fintekkers.services.price_service.Price/GetByIDs";
+interface IPriceService_IGetByIds extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
+    path: "/fintekkers.services.price_service.Price/GetByIds";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto>;
@@ -48,8 +48,8 @@ interface IPriceService_ISearch extends grpc.MethodDefinition<fintekkers_request
     responseSerialize: grpc.serialize<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
 }
-interface IPriceService_IListIDs extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
-    path: "/fintekkers.services.price_service.Price/ListIDs";
+interface IPriceService_IListIds extends grpc.MethodDefinition<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto> {
+    path: "/fintekkers.services.price_service.Price/ListIds";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto>;
@@ -80,9 +80,9 @@ export const PriceService: IPriceService;
 
 export interface IPriceServer extends grpc.UntypedServiceImplementation {
     createOrUpdate: grpc.handleUnaryCall<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto>;
-    getByIDs: grpc.handleUnaryCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
+    getByIds: grpc.handleUnaryCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     search: grpc.handleServerStreamingCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
-    listIDs: grpc.handleUnaryCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
+    listIds: grpc.handleUnaryCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     validateCreateOrUpdate: grpc.handleUnaryCall<fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto>;
     validateQueryRequest: grpc.handleUnaryCall<fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto>;
 }
@@ -91,14 +91,14 @@ export interface IPriceClient {
     createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
     createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
     createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
-    getByIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
-    getByIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
-    getByIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    getByIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    getByIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    getByIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
     search(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     search(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
-    listIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
-    listIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
-    listIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    listIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    listIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    listIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
     validateCreateOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
     validateCreateOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
     validateCreateOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
@@ -112,14 +112,14 @@ export class PriceClient extends grpc.Client implements IPriceClient {
     public createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
     public createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
     public createOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void): grpc.ClientUnaryCall;
-    public getByIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
-    public getByIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
-    public getByIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    public getByIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    public getByIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    public getByIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
     public search(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
     public search(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
-    public listIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
-    public listIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
-    public listIDs(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    public listIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    public listIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
+    public listIds(request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto) => void): grpc.ClientUnaryCall;
     public validateCreateOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
     public validateCreateOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
     public validateCreateOrUpdate(request: fintekkers_requests_price_create_price_request_pb.CreatePriceRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;

@@ -19,7 +19,7 @@ export class PortfolioClient {
                response: fintekkers_requests_portfolio_create_portfolio_response_pb.CreatePortfolioResponseProto) => void
   ): grpcWeb.ClientReadableStream<fintekkers_requests_portfolio_create_portfolio_response_pb.CreatePortfolioResponseProto>;
 
-  getByIDs(
+  getByIds(
     request: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
@@ -31,7 +31,7 @@ export class PortfolioClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto>;
 
-  listIDs(
+  listIds(
     request: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
@@ -64,7 +64,7 @@ export class PortfolioPromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_portfolio_create_portfolio_response_pb.CreatePortfolioResponseProto>;
 
-  getByIDs(
+  getByIds(
     request: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto>;
@@ -74,7 +74,7 @@ export class PortfolioPromiseClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto>;
 
-  listIDs(
+  listIds(
     request: fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto>;

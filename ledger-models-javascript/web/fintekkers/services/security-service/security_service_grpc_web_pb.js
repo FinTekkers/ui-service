@@ -153,8 +153,8 @@ proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.creat
  *   !proto.fintekkers.requests.security.QuerySecurityRequestProto,
  *   !proto.fintekkers.requests.security.QuerySecurityResponseProto>}
  */
-const methodDescriptor_Security_GetByIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Security/GetByIDs',
+const methodDescriptor_Security_GetByIds = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.security_service.Security/GetByIds',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
   fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto,
@@ -179,13 +179,13 @@ const methodDescriptor_Security_GetByIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.security.QuerySecurityResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.SecurityClient.prototype.getByIDs =
+proto.fintekkers.services.security_service.SecurityClient.prototype.getByIds =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Security/GetByIDs',
+      '/fintekkers.services.security_service.Security/GetByIds',
       request,
       metadata || {},
-      methodDescriptor_Security_GetByIDs,
+      methodDescriptor_Security_GetByIds,
       callback);
 };
 
@@ -198,13 +198,13 @@ proto.fintekkers.services.security_service.SecurityClient.prototype.getByIDs =
  * @return {!Promise<!proto.fintekkers.requests.security.QuerySecurityResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.getByIDs =
+proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.getByIds =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Security/GetByIDs',
+      '/fintekkers.services.security_service.Security/GetByIds',
       request,
       metadata || {},
-      methodDescriptor_Security_GetByIDs);
+      methodDescriptor_Security_GetByIds);
 };
 
 
@@ -270,8 +270,8 @@ proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.searc
  *   !proto.fintekkers.requests.security.QuerySecurityRequestProto,
  *   !proto.fintekkers.requests.security.QuerySecurityResponseProto>}
  */
-const methodDescriptor_Security_ListIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.security_service.Security/ListIDs',
+const methodDescriptor_Security_ListIds = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.security_service.Security/ListIds',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
   fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto,
@@ -296,13 +296,13 @@ const methodDescriptor_Security_ListIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.security.QuerySecurityResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.security_service.SecurityClient.prototype.listIDs =
+proto.fintekkers.services.security_service.SecurityClient.prototype.listIds =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.security_service.Security/ListIDs',
+      '/fintekkers.services.security_service.Security/ListIds',
       request,
       metadata || {},
-      methodDescriptor_Security_ListIDs,
+      methodDescriptor_Security_ListIds,
       callback);
 };
 
@@ -315,13 +315,13 @@ proto.fintekkers.services.security_service.SecurityClient.prototype.listIDs =
  * @return {!Promise<!proto.fintekkers.requests.security.QuerySecurityResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.listIDs =
+proto.fintekkers.services.security_service.SecurityPromiseClient.prototype.listIds =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.security_service.Security/ListIDs',
+      '/fintekkers.services.security_service.Security/ListIds',
       request,
       metadata || {},
-      methodDescriptor_Security_ListIDs);
+      methodDescriptor_Security_ListIds);
 };
 
 

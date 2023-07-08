@@ -27,6 +27,9 @@ message TransactionProto {
   util.LocalTimestampProto as_of = 6;
   bool is_link = 7;
 
+  util.LocalTimestampProto valid_from = 8;
+  util.LocalTimestampProto valid_to = 9;
+
   //Transaction details
   fintekkers.models.portfolio.PortfolioProto portfolio = 10;
   fintekkers.models.security.SecurityProto security = 11;

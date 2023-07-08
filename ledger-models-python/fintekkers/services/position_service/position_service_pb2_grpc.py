@@ -32,8 +32,8 @@ class PositionServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Search(self, request, context):
-        """rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
-        rpc ListIDs (transaction.QueryTransactionRequestProto) returns (transaction.QueryTransactionResponseProto);
+        """rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+        rpc ListIds (transaction.QueryTransactionRequestProto) returns (transaction.QueryTransactionResponseProto);
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')

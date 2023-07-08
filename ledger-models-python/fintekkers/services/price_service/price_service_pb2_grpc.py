@@ -23,8 +23,8 @@ class PriceStub(object):
                 request_serializer=fintekkers_dot_requests_dot_price_dot_create__price__request__pb2.CreatePriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_price_dot_create__price__response__pb2.CreatePriceResponseProto.FromString,
                 )
-        self.GetByIDs = channel.unary_unary(
-                '/fintekkers.services.price_service.Price/GetByIDs',
+        self.GetByIds = channel.unary_unary(
+                '/fintekkers.services.price_service.Price/GetByIds',
                 request_serializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
                 )
@@ -33,8 +33,8 @@ class PriceStub(object):
                 request_serializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
                 )
-        self.ListIDs = channel.unary_unary(
-                '/fintekkers.services.price_service.Price/ListIDs',
+        self.ListIds = channel.unary_unary(
+                '/fintekkers.services.price_service.Price/ListIds',
                 request_serializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
                 )
@@ -59,7 +59,7 @@ class PriceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetByIDs(self, request, context):
+    def GetByIds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -71,7 +71,7 @@ class PriceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListIDs(self, request, context):
+    def ListIds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -97,8 +97,8 @@ def add_PriceServicer_to_server(servicer, server):
                     request_deserializer=fintekkers_dot_requests_dot_price_dot_create__price__request__pb2.CreatePriceRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_price_dot_create__price__response__pb2.CreatePriceResponseProto.SerializeToString,
             ),
-            'GetByIDs': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetByIDs,
+            'GetByIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetByIds,
                     request_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.SerializeToString,
             ),
@@ -107,8 +107,8 @@ def add_PriceServicer_to_server(servicer, server):
                     request_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.SerializeToString,
             ),
-            'ListIDs': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListIDs,
+            'ListIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListIds,
                     request_deserializer=fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.SerializeToString,
             ),
@@ -150,7 +150,7 @@ class Price(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetByIDs(request,
+    def GetByIds(request,
             target,
             options=(),
             channel_credentials=None,
@@ -160,7 +160,7 @@ class Price(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/GetByIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/GetByIds',
             fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
             options, channel_credentials,
@@ -184,7 +184,7 @@ class Price(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ListIDs(request,
+    def ListIds(request,
             target,
             options=(),
             channel_credentials=None,
@@ -194,7 +194,7 @@ class Price(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/ListIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.price_service.Price/ListIds',
             fintekkers_dot_requests_dot_price_dot_query__price__request__pb2.QueryPriceRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_price_dot_query__price__response__pb2.QueryPriceResponseProto.FromString,
             options, channel_credentials,

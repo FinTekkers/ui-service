@@ -26,6 +26,16 @@ export class PriceProto extends jspb.Message {
   getIsLink(): boolean;
   setIsLink(value: boolean): PriceProto;
 
+  getValidFrom(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+  setValidFrom(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): PriceProto;
+  hasValidFrom(): boolean;
+  clearValidFrom(): PriceProto;
+
+  getValidTo(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+  setValidTo(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): PriceProto;
+  hasValidTo(): boolean;
+  clearValidTo(): PriceProto;
+
   getPrice(): fintekkers_models_util_decimal_value_pb.DecimalValueProto | undefined;
   setPrice(value?: fintekkers_models_util_decimal_value_pb.DecimalValueProto): PriceProto;
   hasPrice(): boolean;
@@ -51,6 +61,8 @@ export namespace PriceProto {
     uuid?: fintekkers_models_util_uuid_pb.UUIDProto.AsObject,
     asOf?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
     isLink: boolean,
+    validFrom?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
+    validTo?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
     price?: fintekkers_models_util_decimal_value_pb.DecimalValueProto.AsObject,
     security?: fintekkers_models_security_security_pb.SecurityProto.AsObject,
   }

@@ -23,8 +23,8 @@ class TransactionStub(object):
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_create__transaction__request__pb2.CreateTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_transaction_dot_create__transaction__response__pb2.CreateTransactionResponseProto.FromString,
                 )
-        self.GetByIDs = channel.unary_unary(
-                '/fintekkers.services.transaction_service.Transaction/GetByIDs',
+        self.GetByIds = channel.unary_unary(
+                '/fintekkers.services.transaction_service.Transaction/GetByIds',
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
                 )
@@ -33,8 +33,8 @@ class TransactionStub(object):
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
                 )
-        self.ListIDs = channel.unary_unary(
-                '/fintekkers.services.transaction_service.Transaction/ListIDs',
+        self.ListIds = channel.unary_unary(
+                '/fintekkers.services.transaction_service.Transaction/ListIds',
                 request_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
                 )
@@ -59,7 +59,7 @@ class TransactionServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetByIDs(self, request, context):
+    def GetByIds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -71,7 +71,7 @@ class TransactionServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListIDs(self, request, context):
+    def ListIds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -97,8 +97,8 @@ def add_TransactionServicer_to_server(servicer, server):
                     request_deserializer=fintekkers_dot_requests_dot_transaction_dot_create__transaction__request__pb2.CreateTransactionRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_transaction_dot_create__transaction__response__pb2.CreateTransactionResponseProto.SerializeToString,
             ),
-            'GetByIDs': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetByIDs,
+            'GetByIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetByIds,
                     request_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.SerializeToString,
             ),
@@ -107,8 +107,8 @@ def add_TransactionServicer_to_server(servicer, server):
                     request_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.SerializeToString,
             ),
-            'ListIDs': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListIDs,
+            'ListIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListIds,
                     request_deserializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.SerializeToString,
             ),
@@ -150,7 +150,7 @@ class Transaction(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetByIDs(request,
+    def GetByIds(request,
             target,
             options=(),
             channel_credentials=None,
@@ -160,7 +160,7 @@ class Transaction(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/GetByIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/GetByIds',
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
             options, channel_credentials,
@@ -184,7 +184,7 @@ class Transaction(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ListIDs(request,
+    def ListIds(request,
             target,
             options=(),
             channel_credentials=None,
@@ -194,7 +194,7 @@ class Transaction(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/ListIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.transaction_service.Transaction/ListIds',
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__request__pb2.QueryTransactionRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_transaction_dot_query__transaction__response__pb2.QueryTransactionResponseProto.FromString,
             options, channel_credentials,

@@ -41,7 +41,7 @@ function deserialize_fintekkers_requests_util_errors_SummaryProto(buffer_arg) {
 
 
 var PositionService = exports.PositionService = {
-  //    rpc GetByIDs (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
+  //    rpc GetByIds (position.QueryPositionRequestProto) returns (position.QueryPositionResponseProto);
 search: {
     path: '/fintekkers.services.position_service.Position/Search',
     requestStream: false,
@@ -53,7 +53,7 @@ search: {
     responseSerialize: serialize_fintekkers_requests_position_QueryPositionResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_position_QueryPositionResponseProto,
   },
-  //    rpc ListIDs (transaction.QueryTransactionRequestProto) returns (transaction.QueryTransactionResponseProto);
+  //    rpc ListIds (transaction.QueryTransactionRequestProto) returns (transaction.QueryTransactionResponseProto);
 //    rpc ValidateCreateOrUpdate (transaction.CreateTransactionRequestProto) returns (util.errors.SummaryProto);
 validateQueryRequest: {
     path: '/fintekkers.services.position_service.Position/ValidateQueryRequest',
