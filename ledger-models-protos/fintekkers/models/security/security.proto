@@ -25,6 +25,10 @@ message SecurityProto {
   fintekkers.models.util.UUIDProto uuid = 5;
   fintekkers.models.util.LocalTimestampProto as_of = 6;
   bool is_link = 7;
+
+  util.LocalTimestampProto valid_from = 8;
+  util.LocalTimestampProto valid_to = 9;
+
   SecurityTypeProto security_type = 10;
 
   //Biz fields

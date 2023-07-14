@@ -153,8 +153,8 @@ proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype
  *   !proto.fintekkers.requests.transaction.QueryTransactionRequestProto,
  *   !proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  */
-const methodDescriptor_Transaction_GetByIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.transaction_service.Transaction/GetByIDs',
+const methodDescriptor_Transaction_GetByIds = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.transaction_service.Transaction/GetByIds',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
   fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto,
@@ -179,13 +179,13 @@ const methodDescriptor_Transaction_GetByIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.transaction_service.TransactionClient.prototype.getByIDs =
+proto.fintekkers.services.transaction_service.TransactionClient.prototype.getByIds =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.transaction_service.Transaction/GetByIDs',
+      '/fintekkers.services.transaction_service.Transaction/GetByIds',
       request,
       metadata || {},
-      methodDescriptor_Transaction_GetByIDs,
+      methodDescriptor_Transaction_GetByIds,
       callback);
 };
 
@@ -198,13 +198,13 @@ proto.fintekkers.services.transaction_service.TransactionClient.prototype.getByI
  * @return {!Promise<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.getByIDs =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.getByIds =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.transaction_service.Transaction/GetByIDs',
+      '/fintekkers.services.transaction_service.Transaction/GetByIds',
       request,
       metadata || {},
-      methodDescriptor_Transaction_GetByIDs);
+      methodDescriptor_Transaction_GetByIds);
 };
 
 
@@ -270,8 +270,8 @@ proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype
  *   !proto.fintekkers.requests.transaction.QueryTransactionRequestProto,
  *   !proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  */
-const methodDescriptor_Transaction_ListIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.transaction_service.Transaction/ListIDs',
+const methodDescriptor_Transaction_ListIds = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.transaction_service.Transaction/ListIds',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
   fintekkers_requests_transaction_query_transaction_response_pb.QueryTransactionResponseProto,
@@ -296,13 +296,13 @@ const methodDescriptor_Transaction_ListIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.transaction_service.TransactionClient.prototype.listIDs =
+proto.fintekkers.services.transaction_service.TransactionClient.prototype.listIds =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.transaction_service.Transaction/ListIDs',
+      '/fintekkers.services.transaction_service.Transaction/ListIds',
       request,
       metadata || {},
-      methodDescriptor_Transaction_ListIDs,
+      methodDescriptor_Transaction_ListIds,
       callback);
 };
 
@@ -315,13 +315,13 @@ proto.fintekkers.services.transaction_service.TransactionClient.prototype.listID
  * @return {!Promise<!proto.fintekkers.requests.transaction.QueryTransactionResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.listIDs =
+proto.fintekkers.services.transaction_service.TransactionPromiseClient.prototype.listIds =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.transaction_service.Transaction/ListIDs',
+      '/fintekkers.services.transaction_service.Transaction/ListIds',
       request,
       metadata || {},
-      methodDescriptor_Transaction_ListIDs);
+      methodDescriptor_Transaction_ListIds);
 };
 
 

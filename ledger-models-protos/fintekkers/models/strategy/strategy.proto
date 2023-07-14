@@ -18,6 +18,9 @@ message StrategyProto {
   fintekkers.models.util.LocalTimestampProto as_of = 6;
   bool is_link = 7;
 
+  util.LocalTimestampProto valid_from = 8;
+  util.LocalTimestampProto valid_to = 9;
+
   //Transaction details
   string strategy_name = 10;
   fintekkers.models.strategy.StrategyProto parent = 11;

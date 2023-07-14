@@ -14,9 +14,9 @@ import * as fintekkers_requests_util_errors_summary_pb from "../../../fintekkers
 
 interface ISecurityService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     createOrUpdate: ISecurityService_ICreateOrUpdate;
-    getByIDs: ISecurityService_IGetByIDs;
+    getByIds: ISecurityService_IGetByIds;
     search: ISecurityService_ISearch;
-    listIDs: ISecurityService_IListIDs;
+    listIds: ISecurityService_IListIds;
     validateCreateOrUpdate: ISecurityService_IValidateCreateOrUpdate;
     validateQueryRequest: ISecurityService_IValidateQueryRequest;
 }
@@ -30,8 +30,8 @@ interface ISecurityService_ICreateOrUpdate extends grpc.MethodDefinition<fintekk
     responseSerialize: grpc.serialize<fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto>;
 }
-interface ISecurityService_IGetByIDs extends grpc.MethodDefinition<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto> {
-    path: "/fintekkers.services.security_service.Security/GetByIDs";
+interface ISecurityService_IGetByIds extends grpc.MethodDefinition<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto> {
+    path: "/fintekkers.services.security_service.Security/GetByIds";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto>;
@@ -48,8 +48,8 @@ interface ISecurityService_ISearch extends grpc.MethodDefinition<fintekkers_requ
     responseSerialize: grpc.serialize<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
     responseDeserialize: grpc.deserialize<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
 }
-interface ISecurityService_IListIDs extends grpc.MethodDefinition<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto> {
-    path: "/fintekkers.services.security_service.Security/ListIDs";
+interface ISecurityService_IListIds extends grpc.MethodDefinition<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto> {
+    path: "/fintekkers.services.security_service.Security/ListIds";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto>;
@@ -80,9 +80,9 @@ export const SecurityService: ISecurityService;
 
 export interface ISecurityServer extends grpc.UntypedServiceImplementation {
     createOrUpdate: grpc.handleUnaryCall<fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto>;
-    getByIDs: grpc.handleUnaryCall<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
+    getByIds: grpc.handleUnaryCall<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
     search: grpc.handleServerStreamingCall<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
-    listIDs: grpc.handleUnaryCall<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
+    listIds: grpc.handleUnaryCall<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
     validateCreateOrUpdate: grpc.handleUnaryCall<fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto>;
     validateQueryRequest: grpc.handleUnaryCall<fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, fintekkers_requests_util_errors_summary_pb.SummaryProto>;
 }
@@ -91,14 +91,14 @@ export interface ISecurityClient {
     createOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto) => void): grpc.ClientUnaryCall;
     createOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto) => void): grpc.ClientUnaryCall;
     createOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto) => void): grpc.ClientUnaryCall;
-    getByIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
-    getByIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
-    getByIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    getByIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    getByIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    getByIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
     search(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
     search(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
-    listIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
-    listIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
-    listIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    listIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    listIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    listIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
     validateCreateOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
     validateCreateOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
     validateCreateOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
@@ -112,14 +112,14 @@ export class SecurityClient extends grpc.Client implements ISecurityClient {
     public createOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto) => void): grpc.ClientUnaryCall;
     public createOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto) => void): grpc.ClientUnaryCall;
     public createOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto) => void): grpc.ClientUnaryCall;
-    public getByIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
-    public getByIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
-    public getByIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    public getByIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    public getByIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    public getByIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
     public search(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
     public search(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
-    public listIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
-    public listIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
-    public listIDs(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    public listIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    public listIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
+    public listIds(request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto) => void): grpc.ClientUnaryCall;
     public validateCreateOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
     public validateCreateOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;
     public validateCreateOrUpdate(request: fintekkers_requests_security_create_security_request_pb.CreateSecurityRequestProto, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: fintekkers_requests_util_errors_summary_pb.SummaryProto) => void): grpc.ClientUnaryCall;

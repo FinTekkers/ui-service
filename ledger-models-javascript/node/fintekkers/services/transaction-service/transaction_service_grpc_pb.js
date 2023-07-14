@@ -76,8 +76,8 @@ var TransactionService = exports.TransactionService = {
     responseSerialize: serialize_fintekkers_requests_transaction_CreateTransactionResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_transaction_CreateTransactionResponseProto,
   },
-  getByIDs: {
-    path: '/fintekkers.services.transaction_service.Transaction/GetByIDs',
+  getByIds: {
+    path: '/fintekkers.services.transaction_service.Transaction/GetByIds',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,
@@ -98,8 +98,8 @@ var TransactionService = exports.TransactionService = {
     responseSerialize: serialize_fintekkers_requests_transaction_QueryTransactionResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_transaction_QueryTransactionResponseProto,
   },
-  listIDs: {
-    path: '/fintekkers.services.transaction_service.Transaction/ListIDs',
+  listIds: {
+    path: '/fintekkers.services.transaction_service.Transaction/ListIds',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_transaction_query_transaction_request_pb.QueryTransactionRequestProto,

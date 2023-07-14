@@ -153,8 +153,8 @@ proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.cre
  *   !proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto,
  *   !proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  */
-const methodDescriptor_Portfolio_GetByIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
+const methodDescriptor_Portfolio_GetByIds = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.portfolio_service.Portfolio/GetByIds',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
   fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto,
@@ -179,13 +179,13 @@ const methodDescriptor_Portfolio_GetByIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.getByIDs =
+proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.getByIds =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
+      '/fintekkers.services.portfolio_service.Portfolio/GetByIds',
       request,
       metadata || {},
-      methodDescriptor_Portfolio_GetByIDs,
+      methodDescriptor_Portfolio_GetByIds,
       callback);
 };
 
@@ -198,13 +198,13 @@ proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.getByIDs =
  * @return {!Promise<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.getByIDs =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.getByIds =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
+      '/fintekkers.services.portfolio_service.Portfolio/GetByIds',
       request,
       metadata || {},
-      methodDescriptor_Portfolio_GetByIDs);
+      methodDescriptor_Portfolio_GetByIds);
 };
 
 
@@ -270,8 +270,8 @@ proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.sea
  *   !proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto,
  *   !proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  */
-const methodDescriptor_Portfolio_ListIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
+const methodDescriptor_Portfolio_ListIds = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.portfolio_service.Portfolio/ListIds',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_portfolio_query_portfolio_request_pb.QueryPortfolioRequestProto,
   fintekkers_requests_portfolio_query_portfolio_response_pb.QueryPortfolioResponseProto,
@@ -296,13 +296,13 @@ const methodDescriptor_Portfolio_ListIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.listIDs =
+proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.listIds =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
+      '/fintekkers.services.portfolio_service.Portfolio/ListIds',
       request,
       metadata || {},
-      methodDescriptor_Portfolio_ListIDs,
+      methodDescriptor_Portfolio_ListIds,
       callback);
 };
 
@@ -315,13 +315,13 @@ proto.fintekkers.services.portfolio_service.PortfolioClient.prototype.listIDs =
  * @return {!Promise<!proto.fintekkers.requests.portfolio.QueryPortfolioResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.listIDs =
+proto.fintekkers.services.portfolio_service.PortfolioPromiseClient.prototype.listIds =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
+      '/fintekkers.services.portfolio_service.Portfolio/ListIds',
       request,
       metadata || {},
-      methodDescriptor_Portfolio_ListIDs);
+      methodDescriptor_Portfolio_ListIds);
 };
 
 

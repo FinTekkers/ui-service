@@ -32,6 +32,16 @@ export class SecurityProto extends jspb.Message {
     setAsOf(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): SecurityProto;
     getIsLink(): boolean;
     setIsLink(value: boolean): SecurityProto;
+
+    hasValidFrom(): boolean;
+    clearValidFrom(): void;
+    getValidFrom(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+    setValidFrom(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): SecurityProto;
+
+    hasValidTo(): boolean;
+    clearValidTo(): void;
+    getValidTo(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+    setValidTo(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): SecurityProto;
     getSecurityType(): fintekkers_models_security_security_type_pb.SecurityTypeProto;
     setSecurityType(value: fintekkers_models_security_security_type_pb.SecurityTypeProto): SecurityProto;
     getAssetClass(): string;
@@ -101,6 +111,8 @@ export namespace SecurityProto {
         uuid?: fintekkers_models_util_uuid_pb.UUIDProto.AsObject,
         asOf?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
         isLink: boolean,
+        validFrom?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
+        validTo?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
         securityType: fintekkers_models_security_security_type_pb.SecurityTypeProto,
         assetClass: string,
         issuerName: string,

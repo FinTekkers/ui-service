@@ -17,7 +17,7 @@ from fintekkers.models.util import uuid_pb2 as fintekkers_dot_models_dot_util_do
 from fintekkers.models.security import security_pb2 as fintekkers_dot_models_dot_security_dot_security__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#fintekkers/models/price/price.proto\x12\x17\x66intekkers.models.price\x1a*fintekkers/models/util/decimal_value.proto\x1a,fintekkers/models/util/local_timestamp.proto\x1a!fintekkers/models/util/uuid.proto\x1a)fintekkers/models/security/security.proto\"\xa8\x02\n\nPriceProto\x12\x14\n\x0cobject_class\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12/\n\x04uuid\x18\x05 \x01(\x0b\x32!.fintekkers.models.util.UUIDProto\x12:\n\x05\x61s_of\x18\x06 \x01(\x0b\x32+.fintekkers.models.util.LocalTimestampProto\x12\x0f\n\x07is_link\x18\x07 \x01(\x08\x12\x38\n\x05price\x18\n \x01(\x0b\x32).fintekkers.models.util.DecimalValueProto\x12;\n\x08security\x18\x0b \x01(\x0b\x32).fintekkers.models.security.SecurityProtoB\x0f\x42\x0bPriceProtosP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#fintekkers/models/price/price.proto\x12\x17\x66intekkers.models.price\x1a*fintekkers/models/util/decimal_value.proto\x1a,fintekkers/models/util/local_timestamp.proto\x1a!fintekkers/models/util/uuid.proto\x1a)fintekkers/models/security/security.proto\"\xa8\x03\n\nPriceProto\x12\x14\n\x0cobject_class\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12/\n\x04uuid\x18\x05 \x01(\x0b\x32!.fintekkers.models.util.UUIDProto\x12:\n\x05\x61s_of\x18\x06 \x01(\x0b\x32+.fintekkers.models.util.LocalTimestampProto\x12\x0f\n\x07is_link\x18\x07 \x01(\x08\x12?\n\nvalid_from\x18\x08 \x01(\x0b\x32+.fintekkers.models.util.LocalTimestampProto\x12=\n\x08valid_to\x18\t \x01(\x0b\x32+.fintekkers.models.util.LocalTimestampProto\x12\x38\n\x05price\x18\n \x01(\x0b\x32).fintekkers.models.util.DecimalValueProto\x12;\n\x08security\x18\x0b \x01(\x0b\x32).fintekkers.models.security.SecurityProtoB\x0f\x42\x0bPriceProtosP\x01\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'fintekkers.models.price.price_pb2', globals())
@@ -26,5 +26,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'B\013PriceProtosP\001'
   _PRICEPROTO._serialized_start=233
-  _PRICEPROTO._serialized_end=529
+  _PRICEPROTO._serialized_end=657
 # @@protoc_insertion_point(module_scope)

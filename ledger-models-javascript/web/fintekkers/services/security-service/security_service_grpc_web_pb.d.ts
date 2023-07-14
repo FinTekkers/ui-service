@@ -19,7 +19,7 @@ export class SecurityClient {
                response: fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto) => void
   ): grpcWeb.ClientReadableStream<fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto>;
 
-  getByIDs(
+  getByIds(
     request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
@@ -31,7 +31,7 @@ export class SecurityClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
 
-  listIDs(
+  listIds(
     request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
@@ -64,7 +64,7 @@ export class SecurityPromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_security_create_security_response_pb.CreateSecurityResponseProto>;
 
-  getByIDs(
+  getByIds(
     request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
@@ -74,7 +74,7 @@ export class SecurityPromiseClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;
 
-  listIDs(
+  listIds(
     request: fintekkers_requests_security_query_security_request_pb.QuerySecurityRequestProto,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_security_query_security_response_pb.QuerySecurityResponseProto>;

@@ -47,34 +47,34 @@ public final class PriceGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
-      fintekkers.requests.price.QueryPriceResponseProto> getGetByIDsMethod;
+      fintekkers.requests.price.QueryPriceResponseProto> getGetByIdsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "GetByIDs",
+      fullMethodName = SERVICE_NAME + '/' + "GetByIds",
       requestType = fintekkers.requests.price.QueryPriceRequestProto.class,
       responseType = fintekkers.requests.price.QueryPriceResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
-      fintekkers.requests.price.QueryPriceResponseProto> getGetByIDsMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto> getGetByIDsMethod;
-    if ((getGetByIDsMethod = PriceGrpc.getGetByIDsMethod) == null) {
+      fintekkers.requests.price.QueryPriceResponseProto> getGetByIdsMethod() {
+    io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto> getGetByIdsMethod;
+    if ((getGetByIdsMethod = PriceGrpc.getGetByIdsMethod) == null) {
       synchronized (PriceGrpc.class) {
-        if ((getGetByIDsMethod = PriceGrpc.getGetByIDsMethod) == null) {
-          PriceGrpc.getGetByIDsMethod = getGetByIDsMethod =
+        if ((getGetByIdsMethod = PriceGrpc.getGetByIdsMethod) == null) {
+          PriceGrpc.getGetByIdsMethod = getGetByIdsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIDs"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIds"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.price.QueryPriceRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.price.QueryPriceResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("GetByIDs"))
+              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("GetByIds"))
               .build();
         }
       }
     }
-    return getGetByIDsMethod;
+    return getGetByIdsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
@@ -109,34 +109,34 @@ public final class PriceGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
-      fintekkers.requests.price.QueryPriceResponseProto> getListIDsMethod;
+      fintekkers.requests.price.QueryPriceResponseProto> getListIdsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "ListIDs",
+      fullMethodName = SERVICE_NAME + '/' + "ListIds",
       requestType = fintekkers.requests.price.QueryPriceRequestProto.class,
       responseType = fintekkers.requests.price.QueryPriceResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto,
-      fintekkers.requests.price.QueryPriceResponseProto> getListIDsMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto> getListIDsMethod;
-    if ((getListIDsMethod = PriceGrpc.getListIDsMethod) == null) {
+      fintekkers.requests.price.QueryPriceResponseProto> getListIdsMethod() {
+    io.grpc.MethodDescriptor<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto> getListIdsMethod;
+    if ((getListIdsMethod = PriceGrpc.getListIdsMethod) == null) {
       synchronized (PriceGrpc.class) {
-        if ((getListIDsMethod = PriceGrpc.getListIDsMethod) == null) {
-          PriceGrpc.getListIDsMethod = getListIDsMethod =
+        if ((getListIdsMethod = PriceGrpc.getListIdsMethod) == null) {
+          PriceGrpc.getListIdsMethod = getListIdsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.price.QueryPriceRequestProto, fintekkers.requests.price.QueryPriceResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIDs"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIds"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.price.QueryPriceRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.price.QueryPriceResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("ListIDs"))
+              .setSchemaDescriptor(new PriceMethodDescriptorSupplier("ListIds"))
               .build();
         }
       }
     }
-    return getListIDsMethod;
+    return getListIdsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.price.CreatePriceRequestProto,
@@ -258,9 +258,9 @@ public final class PriceGrpc {
 
     /**
      */
-    public void getByIDs(fintekkers.requests.price.QueryPriceRequestProto request,
+    public void getByIds(fintekkers.requests.price.QueryPriceRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.price.QueryPriceResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIDsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIdsMethod(), responseObserver);
     }
 
     /**
@@ -272,9 +272,9 @@ public final class PriceGrpc {
 
     /**
      */
-    public void listIDs(fintekkers.requests.price.QueryPriceRequestProto request,
+    public void listIds(fintekkers.requests.price.QueryPriceRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.price.QueryPriceResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIDsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIdsMethod(), responseObserver);
     }
 
     /**
@@ -301,7 +301,7 @@ public final class PriceGrpc {
                 fintekkers.requests.price.CreatePriceResponseProto>(
                   this, METHODID_CREATE_OR_UPDATE)))
           .addMethod(
-            getGetByIDsMethod(),
+            getGetByIdsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 fintekkers.requests.price.QueryPriceRequestProto,
@@ -315,7 +315,7 @@ public final class PriceGrpc {
                 fintekkers.requests.price.QueryPriceResponseProto>(
                   this, METHODID_SEARCH)))
           .addMethod(
-            getListIDsMethod(),
+            getListIdsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 fintekkers.requests.price.QueryPriceRequestProto,
@@ -363,10 +363,10 @@ public final class PriceGrpc {
 
     /**
      */
-    public void getByIDs(fintekkers.requests.price.QueryPriceRequestProto request,
+    public void getByIds(fintekkers.requests.price.QueryPriceRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.price.QueryPriceResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getGetByIdsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -379,10 +379,10 @@ public final class PriceGrpc {
 
     /**
      */
-    public void listIDs(fintekkers.requests.price.QueryPriceRequestProto request,
+    public void listIds(fintekkers.requests.price.QueryPriceRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.price.QueryPriceResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getListIDsMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getListIdsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -425,9 +425,9 @@ public final class PriceGrpc {
 
     /**
      */
-    public fintekkers.requests.price.QueryPriceResponseProto getByIDs(fintekkers.requests.price.QueryPriceRequestProto request) {
+    public fintekkers.requests.price.QueryPriceResponseProto getByIds(fintekkers.requests.price.QueryPriceRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getGetByIDsMethod(), getCallOptions(), request);
+          getChannel(), getGetByIdsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -440,9 +440,9 @@ public final class PriceGrpc {
 
     /**
      */
-    public fintekkers.requests.price.QueryPriceResponseProto listIDs(fintekkers.requests.price.QueryPriceRequestProto request) {
+    public fintekkers.requests.price.QueryPriceResponseProto listIds(fintekkers.requests.price.QueryPriceRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getListIDsMethod(), getCallOptions(), request);
+          getChannel(), getListIdsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -484,18 +484,18 @@ public final class PriceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.price.QueryPriceResponseProto> getByIDs(
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.price.QueryPriceResponseProto> getByIds(
         fintekkers.requests.price.QueryPriceRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request);
+          getChannel().newCall(getGetByIdsMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.price.QueryPriceResponseProto> listIDs(
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.price.QueryPriceResponseProto> listIds(
         fintekkers.requests.price.QueryPriceRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getListIDsMethod(), getCallOptions()), request);
+          getChannel().newCall(getListIdsMethod(), getCallOptions()), request);
     }
 
     /**
@@ -544,7 +544,7 @@ public final class PriceGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.price.CreatePriceResponseProto>) responseObserver);
           break;
         case METHODID_GET_BY_IDS:
-          serviceImpl.getByIDs((fintekkers.requests.price.QueryPriceRequestProto) request,
+          serviceImpl.getByIds((fintekkers.requests.price.QueryPriceRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.price.QueryPriceResponseProto>) responseObserver);
           break;
         case METHODID_SEARCH:
@@ -552,7 +552,7 @@ public final class PriceGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.price.QueryPriceResponseProto>) responseObserver);
           break;
         case METHODID_LIST_IDS:
-          serviceImpl.listIDs((fintekkers.requests.price.QueryPriceRequestProto) request,
+          serviceImpl.listIds((fintekkers.requests.price.QueryPriceRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.price.QueryPriceResponseProto>) responseObserver);
           break;
         case METHODID_VALIDATE_CREATE_OR_UPDATE:
@@ -625,9 +625,9 @@ public final class PriceGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new PriceFileDescriptorSupplier())
               .addMethod(getCreateOrUpdateMethod())
-              .addMethod(getGetByIDsMethod())
+              .addMethod(getGetByIdsMethod())
               .addMethod(getSearchMethod())
-              .addMethod(getListIDsMethod())
+              .addMethod(getListIdsMethod())
               .addMethod(getValidateCreateOrUpdateMethod())
               .addMethod(getValidateQueryRequestMethod())
               .build();

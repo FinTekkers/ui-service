@@ -260,7 +260,7 @@ proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.prototype.setVers
 
 
 /**
- * repeated fintekkers.models.util.UUIDProto uuids = 21;
+ * repeated fintekkers.models.util.UUIDProto uuIds = 21;
  * @return {!Array<!proto.fintekkers.models.util.UUIDProto>}
  */
 proto.fintekkers.requests.portfolio.QueryPortfolioRequestProto.prototype.getUuidsList = function() {
