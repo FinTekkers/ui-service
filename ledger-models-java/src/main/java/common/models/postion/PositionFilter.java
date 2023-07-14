@@ -2,8 +2,11 @@ package common.models.postion;
 
 import common.models.IFinancialModelObject;
 import common.models.portfolio.Portfolio;
+import common.models.security.CashSecurity;
 import common.models.security.Security;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +44,18 @@ public class PositionFilter {
 
         this.filters.put(field, new PositionComparator(operator, value));
     }
+
+    public void addPositionDateFilter(Position.PositionType positionType, LocalDate date) {
+        switch (positionType) {
+            case TRANSACTION:
+                addFilter(Field.TRADE_DATE, PositionFilter.Operator.LESS_THAN, date);
+                break;
+            case TAX_LOT:
+                addFilter(Field.TAX_LOT_OPEN_DATE, PositionFilter.Operator.LESS_THAN, date);
+                break;
+        }
+    }
+
     public HashMap<Field, PositionComparator> getFilters() {
         return this.filters;
     }
