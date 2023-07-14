@@ -23,8 +23,8 @@ class PortfolioStub(object):
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__request__pb2.CreatePortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__response__pb2.CreatePortfolioResponseProto.FromString,
                 )
-        self.GetByIDs = channel.unary_unary(
-                '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
+        self.GetByIds = channel.unary_unary(
+                '/fintekkers.services.portfolio_service.Portfolio/GetByIds',
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
                 )
@@ -33,8 +33,8 @@ class PortfolioStub(object):
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
                 )
-        self.ListIDs = channel.unary_unary(
-                '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
+        self.ListIds = channel.unary_unary(
+                '/fintekkers.services.portfolio_service.Portfolio/ListIds',
                 request_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
                 response_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
                 )
@@ -59,7 +59,7 @@ class PortfolioServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetByIDs(self, request, context):
+    def GetByIds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -71,7 +71,7 @@ class PortfolioServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListIDs(self, request, context):
+    def ListIds(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -97,8 +97,8 @@ def add_PortfolioServicer_to_server(servicer, server):
                     request_deserializer=fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__request__pb2.CreatePortfolioRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_portfolio_dot_create__portfolio__response__pb2.CreatePortfolioResponseProto.SerializeToString,
             ),
-            'GetByIDs': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetByIDs,
+            'GetByIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetByIds,
                     request_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.SerializeToString,
             ),
@@ -107,8 +107,8 @@ def add_PortfolioServicer_to_server(servicer, server):
                     request_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.SerializeToString,
             ),
-            'ListIDs': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListIDs,
+            'ListIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListIds,
                     request_deserializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.FromString,
                     response_serializer=fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.SerializeToString,
             ),
@@ -150,7 +150,7 @@ class Portfolio(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetByIDs(request,
+    def GetByIds(request,
             target,
             options=(),
             channel_credentials=None,
@@ -160,7 +160,7 @@ class Portfolio(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/GetByIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/GetByIds',
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
             options, channel_credentials,
@@ -184,7 +184,7 @@ class Portfolio(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ListIDs(request,
+    def ListIds(request,
             target,
             options=(),
             channel_credentials=None,
@@ -194,7 +194,7 @@ class Portfolio(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/ListIDs',
+        return grpc.experimental.unary_unary(request, target, '/fintekkers.services.portfolio_service.Portfolio/ListIds',
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__request__pb2.QueryPortfolioRequestProto.SerializeToString,
             fintekkers_dot_requests_dot_portfolio_dot_query__portfolio__response__pb2.QueryPortfolioResponseProto.FromString,
             options, channel_credentials,

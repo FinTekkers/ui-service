@@ -153,8 +153,8 @@ proto.fintekkers.services.price_service.PricePromiseClient.prototype.createOrUpd
  *   !proto.fintekkers.requests.price.QueryPriceRequestProto,
  *   !proto.fintekkers.requests.price.QueryPriceResponseProto>}
  */
-const methodDescriptor_Price_GetByIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.price_service.Price/GetByIDs',
+const methodDescriptor_Price_GetByIds = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.price_service.Price/GetByIds',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
   fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto,
@@ -179,13 +179,13 @@ const methodDescriptor_Price_GetByIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.price.QueryPriceResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.PriceClient.prototype.getByIDs =
+proto.fintekkers.services.price_service.PriceClient.prototype.getByIds =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.price_service.Price/GetByIDs',
+      '/fintekkers.services.price_service.Price/GetByIds',
       request,
       metadata || {},
-      methodDescriptor_Price_GetByIDs,
+      methodDescriptor_Price_GetByIds,
       callback);
 };
 
@@ -198,13 +198,13 @@ proto.fintekkers.services.price_service.PriceClient.prototype.getByIDs =
  * @return {!Promise<!proto.fintekkers.requests.price.QueryPriceResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.price_service.PricePromiseClient.prototype.getByIDs =
+proto.fintekkers.services.price_service.PricePromiseClient.prototype.getByIds =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.price_service.Price/GetByIDs',
+      '/fintekkers.services.price_service.Price/GetByIds',
       request,
       metadata || {},
-      methodDescriptor_Price_GetByIDs);
+      methodDescriptor_Price_GetByIds);
 };
 
 
@@ -270,8 +270,8 @@ proto.fintekkers.services.price_service.PricePromiseClient.prototype.search =
  *   !proto.fintekkers.requests.price.QueryPriceRequestProto,
  *   !proto.fintekkers.requests.price.QueryPriceResponseProto>}
  */
-const methodDescriptor_Price_ListIDs = new grpc.web.MethodDescriptor(
-  '/fintekkers.services.price_service.Price/ListIDs',
+const methodDescriptor_Price_ListIds = new grpc.web.MethodDescriptor(
+  '/fintekkers.services.price_service.Price/ListIds',
   grpc.web.MethodType.UNARY,
   fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
   fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto,
@@ -296,13 +296,13 @@ const methodDescriptor_Price_ListIDs = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.fintekkers.requests.price.QueryPriceResponseProto>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.fintekkers.services.price_service.PriceClient.prototype.listIDs =
+proto.fintekkers.services.price_service.PriceClient.prototype.listIds =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/fintekkers.services.price_service.Price/ListIDs',
+      '/fintekkers.services.price_service.Price/ListIds',
       request,
       metadata || {},
-      methodDescriptor_Price_ListIDs,
+      methodDescriptor_Price_ListIds,
       callback);
 };
 
@@ -315,13 +315,13 @@ proto.fintekkers.services.price_service.PriceClient.prototype.listIDs =
  * @return {!Promise<!proto.fintekkers.requests.price.QueryPriceResponseProto>}
  *     Promise that resolves to the response
  */
-proto.fintekkers.services.price_service.PricePromiseClient.prototype.listIDs =
+proto.fintekkers.services.price_service.PricePromiseClient.prototype.listIds =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/fintekkers.services.price_service.Price/ListIDs',
+      '/fintekkers.services.price_service.Price/ListIds',
       request,
       metadata || {},
-      methodDescriptor_Price_ListIDs);
+      methodDescriptor_Price_ListIds);
 };
 
 

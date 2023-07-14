@@ -254,7 +254,7 @@ proto.fintekkers.requests.price.QueryPriceRequestProto.prototype.setVersion = fu
 
 
 /**
- * repeated fintekkers.models.util.UUIDProto uuids = 21;
+ * repeated fintekkers.models.util.UUIDProto uuIds = 21;
  * @return {!Array<!proto.fintekkers.models.util.UUIDProto>}
  */
 proto.fintekkers.requests.price.QueryPriceRequestProto.prototype.getUuidsList = function() {

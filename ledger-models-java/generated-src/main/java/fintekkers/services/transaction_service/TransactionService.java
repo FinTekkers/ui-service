@@ -31,9 +31,9 @@ public final class TransactionService {
           com.google.protobuf.RpcCallback<fintekkers.requests.transaction.CreateTransactionResponseProto> done);
 
       /**
-       * <code>rpc GetByIDs(.fintekkers.requests.transaction.QueryTransactionRequestProto) returns (.fintekkers.requests.transaction.QueryTransactionResponseProto);</code>
+       * <code>rpc GetByIds(.fintekkers.requests.transaction.QueryTransactionRequestProto) returns (.fintekkers.requests.transaction.QueryTransactionResponseProto);</code>
        */
-      public abstract void getByIDs(
+      public abstract void getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.transaction.QueryTransactionRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done);
@@ -47,9 +47,9 @@ public final class TransactionService {
           com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done);
 
       /**
-       * <code>rpc ListIDs(.fintekkers.requests.transaction.QueryTransactionRequestProto) returns (.fintekkers.requests.transaction.QueryTransactionResponseProto);</code>
+       * <code>rpc ListIds(.fintekkers.requests.transaction.QueryTransactionRequestProto) returns (.fintekkers.requests.transaction.QueryTransactionResponseProto);</code>
        */
-      public abstract void listIDs(
+      public abstract void listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.transaction.QueryTransactionRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done);
@@ -84,11 +84,11 @@ public final class TransactionService {
         }
 
         @java.lang.Override
-        public  void getByIDs(
+        public  void getByIds(
             com.google.protobuf.RpcController controller,
             fintekkers.requests.transaction.QueryTransactionRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done) {
-          impl.getByIDs(controller, request, done);
+          impl.getByIds(controller, request, done);
         }
 
         @java.lang.Override
@@ -100,11 +100,11 @@ public final class TransactionService {
         }
 
         @java.lang.Override
-        public  void listIDs(
+        public  void listIds(
             com.google.protobuf.RpcController controller,
             fintekkers.requests.transaction.QueryTransactionRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done) {
-          impl.listIDs(controller, request, done);
+          impl.listIds(controller, request, done);
         }
 
         @java.lang.Override
@@ -148,11 +148,11 @@ public final class TransactionService {
             case 0:
               return impl.createOrUpdate(controller, (fintekkers.requests.transaction.CreateTransactionRequestProto)request);
             case 1:
-              return impl.getByIDs(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request);
+              return impl.getByIds(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request);
             case 2:
               return impl.search(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request);
             case 3:
-              return impl.listIDs(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request);
+              return impl.listIds(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request);
             case 4:
               return impl.validateCreateOrUpdate(controller, (fintekkers.requests.transaction.CreateTransactionRequestProto)request);
             case 5:
@@ -226,9 +226,9 @@ public final class TransactionService {
         com.google.protobuf.RpcCallback<fintekkers.requests.transaction.CreateTransactionResponseProto> done);
 
     /**
-     * <code>rpc GetByIDs(.fintekkers.requests.transaction.QueryTransactionRequestProto) returns (.fintekkers.requests.transaction.QueryTransactionResponseProto);</code>
+     * <code>rpc GetByIds(.fintekkers.requests.transaction.QueryTransactionRequestProto) returns (.fintekkers.requests.transaction.QueryTransactionResponseProto);</code>
      */
-    public abstract void getByIDs(
+    public abstract void getByIds(
         com.google.protobuf.RpcController controller,
         fintekkers.requests.transaction.QueryTransactionRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done);
@@ -242,9 +242,9 @@ public final class TransactionService {
         com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done);
 
     /**
-     * <code>rpc ListIDs(.fintekkers.requests.transaction.QueryTransactionRequestProto) returns (.fintekkers.requests.transaction.QueryTransactionResponseProto);</code>
+     * <code>rpc ListIds(.fintekkers.requests.transaction.QueryTransactionRequestProto) returns (.fintekkers.requests.transaction.QueryTransactionResponseProto);</code>
      */
-    public abstract void listIDs(
+    public abstract void listIds(
         com.google.protobuf.RpcController controller,
         fintekkers.requests.transaction.QueryTransactionRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done);
@@ -293,7 +293,7 @@ public final class TransactionService {
               done));
           return;
         case 1:
-          this.getByIDs(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request,
+          this.getByIds(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.transaction.QueryTransactionResponseProto>specializeCallback(
               done));
           return;
@@ -303,7 +303,7 @@ public final class TransactionService {
               done));
           return;
         case 3:
-          this.listIDs(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request,
+          this.listIds(controller, (fintekkers.requests.transaction.QueryTransactionRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.transaction.QueryTransactionResponseProto>specializeCallback(
               done));
           return;
@@ -405,7 +405,7 @@ public final class TransactionService {
             fintekkers.requests.transaction.CreateTransactionResponseProto.getDefaultInstance()));
       }
 
-      public  void getByIDs(
+      public  void getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.transaction.QueryTransactionRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done) {
@@ -435,7 +435,7 @@ public final class TransactionService {
             fintekkers.requests.transaction.QueryTransactionResponseProto.getDefaultInstance()));
       }
 
-      public  void listIDs(
+      public  void listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.transaction.QueryTransactionRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.transaction.QueryTransactionResponseProto> done) {
@@ -492,7 +492,7 @@ public final class TransactionService {
           fintekkers.requests.transaction.CreateTransactionRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public fintekkers.requests.transaction.QueryTransactionResponseProto getByIDs(
+      public fintekkers.requests.transaction.QueryTransactionResponseProto getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.transaction.QueryTransactionRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -502,7 +502,7 @@ public final class TransactionService {
           fintekkers.requests.transaction.QueryTransactionRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public fintekkers.requests.transaction.QueryTransactionResponseProto listIDs(
+      public fintekkers.requests.transaction.QueryTransactionResponseProto listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.transaction.QueryTransactionRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -537,7 +537,7 @@ public final class TransactionService {
       }
 
 
-      public fintekkers.requests.transaction.QueryTransactionResponseProto getByIDs(
+      public fintekkers.requests.transaction.QueryTransactionResponseProto getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.transaction.QueryTransactionRequestProto request)
           throws com.google.protobuf.ServiceException {
@@ -561,7 +561,7 @@ public final class TransactionService {
       }
 
 
-      public fintekkers.requests.transaction.QueryTransactionResponseProto listIDs(
+      public fintekkers.requests.transaction.QueryTransactionResponseProto listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.transaction.QueryTransactionRequestProto request)
           throws com.google.protobuf.ServiceException {
@@ -624,14 +624,14 @@ public final class TransactionService {
       "CreateOrUpdate\022>.fintekkers.requests.tra" +
       "nsaction.CreateTransactionRequestProto\032?" +
       ".fintekkers.requests.transaction.CreateT" +
-      "ransactionResponseProto\022\211\001\n\010GetByIDs\022=.f" +
+      "ransactionResponseProto\022\211\001\n\010GetByIds\022=.f" +
       "intekkers.requests.transaction.QueryTran" +
       "sactionRequestProto\032>.fintekkers.request" +
       "s.transaction.QueryTransactionResponsePr" +
       "oto\022\211\001\n\006Search\022=.fintekkers.requests.tra" +
       "nsaction.QueryTransactionRequestProto\032>." +
       "fintekkers.requests.transaction.QueryTra" +
-      "nsactionResponseProto0\001\022\210\001\n\007ListIDs\022=.fi" +
+      "nsactionResponseProto0\001\022\210\001\n\007ListIds\022=.fi" +
       "ntekkers.requests.transaction.QueryTrans" +
       "actionRequestProto\032>.fintekkers.requests" +
       ".transaction.QueryTransactionResponsePro" +

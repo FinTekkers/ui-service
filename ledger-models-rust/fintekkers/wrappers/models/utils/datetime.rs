@@ -9,7 +9,7 @@ use prost_types::Timestamp;
 use crate::fintekkers::models::util::LocalTimestampProto;
 
 pub struct LocalTimestampWrapper {
-    proto: LocalTimestampProto
+    pub proto: LocalTimestampProto
 }
 
 impl AsRef<LocalTimestampProto> for LocalTimestampWrapper {

@@ -14,7 +14,7 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class SecurityProto(_message.Message):
-    __slots__ = ["as_of", "asset_class", "cash_id", "coupon_frequency", "coupon_rate", "coupon_type", "dated_date", "description", "face_value", "identifier", "is_link", "issue_date", "issuer_name", "maturity_date", "object_class", "quantity_type", "security_type", "settlement_currency", "uuid", "version"]
+    __slots__ = ["as_of", "asset_class", "cash_id", "coupon_frequency", "coupon_rate", "coupon_type", "dated_date", "description", "face_value", "identifier", "is_link", "issue_date", "issuer_name", "maturity_date", "object_class", "quantity_type", "security_type", "settlement_currency", "uuid", "valid_from", "valid_to", "version"]
     ASSET_CLASS_FIELD_NUMBER: _ClassVar[int]
     AS_OF_FIELD_NUMBER: _ClassVar[int]
     CASH_ID_FIELD_NUMBER: _ClassVar[int]
@@ -34,6 +34,8 @@ class SecurityProto(_message.Message):
     SECURITY_TYPE_FIELD_NUMBER: _ClassVar[int]
     SETTLEMENT_CURRENCY_FIELD_NUMBER: _ClassVar[int]
     UUID_FIELD_NUMBER: _ClassVar[int]
+    VALID_FROM_FIELD_NUMBER: _ClassVar[int]
+    VALID_TO_FIELD_NUMBER: _ClassVar[int]
     VERSION_FIELD_NUMBER: _ClassVar[int]
     as_of: _local_timestamp_pb2.LocalTimestampProto
     asset_class: str
@@ -54,5 +56,7 @@ class SecurityProto(_message.Message):
     security_type: _security_type_pb2.SecurityTypeProto
     settlement_currency: SecurityProto
     uuid: _uuid_pb2.UUIDProto
+    valid_from: _local_timestamp_pb2.LocalTimestampProto
+    valid_to: _local_timestamp_pb2.LocalTimestampProto
     version: str
-    def __init__(self, object_class: _Optional[str] = ..., version: _Optional[str] = ..., uuid: _Optional[_Union[_uuid_pb2.UUIDProto, _Mapping]] = ..., as_of: _Optional[_Union[_local_timestamp_pb2.LocalTimestampProto, _Mapping]] = ..., is_link: bool = ..., security_type: _Optional[_Union[_security_type_pb2.SecurityTypeProto, str]] = ..., asset_class: _Optional[str] = ..., issuer_name: _Optional[str] = ..., settlement_currency: _Optional[_Union[SecurityProto, _Mapping]] = ..., quantity_type: _Optional[_Union[_security_quantity_type_pb2.SecurityQuantityTypeProto, str]] = ..., identifier: _Optional[_Union[_identifier_pb2.IdentifierProto, _Mapping]] = ..., description: _Optional[str] = ..., cash_id: _Optional[str] = ..., coupon_rate: _Optional[_Union[_decimal_value_pb2.DecimalValueProto, _Mapping]] = ..., coupon_type: _Optional[_Union[_coupon_type_pb2.CouponTypeProto, str]] = ..., coupon_frequency: _Optional[_Union[_coupon_frequency_pb2.CouponFrequencyProto, str]] = ..., dated_date: _Optional[_Union[_local_date_pb2.LocalDateProto, _Mapping]] = ..., face_value: _Optional[_Union[_decimal_value_pb2.DecimalValueProto, _Mapping]] = ..., issue_date: _Optional[_Union[_local_date_pb2.LocalDateProto, _Mapping]] = ..., maturity_date: _Optional[_Union[_local_date_pb2.LocalDateProto, _Mapping]] = ...) -> None: ...
+    def __init__(self, object_class: _Optional[str] = ..., version: _Optional[str] = ..., uuid: _Optional[_Union[_uuid_pb2.UUIDProto, _Mapping]] = ..., as_of: _Optional[_Union[_local_timestamp_pb2.LocalTimestampProto, _Mapping]] = ..., is_link: bool = ..., valid_from: _Optional[_Union[_local_timestamp_pb2.LocalTimestampProto, _Mapping]] = ..., valid_to: _Optional[_Union[_local_timestamp_pb2.LocalTimestampProto, _Mapping]] = ..., security_type: _Optional[_Union[_security_type_pb2.SecurityTypeProto, str]] = ..., asset_class: _Optional[str] = ..., issuer_name: _Optional[str] = ..., settlement_currency: _Optional[_Union[SecurityProto, _Mapping]] = ..., quantity_type: _Optional[_Union[_security_quantity_type_pb2.SecurityQuantityTypeProto, str]] = ..., identifier: _Optional[_Union[_identifier_pb2.IdentifierProto, _Mapping]] = ..., description: _Optional[str] = ..., cash_id: _Optional[str] = ..., coupon_rate: _Optional[_Union[_decimal_value_pb2.DecimalValueProto, _Mapping]] = ..., coupon_type: _Optional[_Union[_coupon_type_pb2.CouponTypeProto, str]] = ..., coupon_frequency: _Optional[_Union[_coupon_frequency_pb2.CouponFrequencyProto, str]] = ..., dated_date: _Optional[_Union[_local_date_pb2.LocalDateProto, _Mapping]] = ..., face_value: _Optional[_Union[_decimal_value_pb2.DecimalValueProto, _Mapping]] = ..., issue_date: _Optional[_Union[_local_date_pb2.LocalDateProto, _Mapping]] = ..., maturity_date: _Optional[_Union[_local_date_pb2.LocalDateProto, _Mapping]] = ...) -> None: ...

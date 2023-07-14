@@ -34,6 +34,16 @@ export class TransactionProto extends jspb.Message {
     getIsLink(): boolean;
     setIsLink(value: boolean): TransactionProto;
 
+    hasValidFrom(): boolean;
+    clearValidFrom(): void;
+    getValidFrom(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+    setValidFrom(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): TransactionProto;
+
+    hasValidTo(): boolean;
+    clearValidTo(): void;
+    getValidTo(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+    setValidTo(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): TransactionProto;
+
     hasPortfolio(): boolean;
     clearPortfolio(): void;
     getPortfolio(): fintekkers_models_portfolio_portfolio_pb.PortfolioProto | undefined;
@@ -98,6 +108,8 @@ export namespace TransactionProto {
         uuid?: fintekkers_models_util_uuid_pb.UUIDProto.AsObject,
         asOf?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
         isLink: boolean,
+        validFrom?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
+        validTo?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
         portfolio?: fintekkers_models_portfolio_portfolio_pb.PortfolioProto.AsObject,
         security?: fintekkers_models_security_security_pb.SecurityProto.AsObject,
         transactionType: fintekkers_models_transaction_transaction_type_pb.TransactionTypeProto,

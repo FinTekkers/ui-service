@@ -31,9 +31,9 @@ public final class SecurityService {
           com.google.protobuf.RpcCallback<fintekkers.requests.security.CreateSecurityResponseProto> done);
 
       /**
-       * <code>rpc GetByIDs(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.security.QuerySecurityResponseProto);</code>
+       * <code>rpc GetByIds(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.security.QuerySecurityResponseProto);</code>
        */
-      public abstract void getByIDs(
+      public abstract void getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.security.QuerySecurityRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done);
@@ -47,9 +47,9 @@ public final class SecurityService {
           com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done);
 
       /**
-       * <code>rpc ListIDs(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.security.QuerySecurityResponseProto);</code>
+       * <code>rpc ListIds(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.security.QuerySecurityResponseProto);</code>
        */
-      public abstract void listIDs(
+      public abstract void listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.security.QuerySecurityRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done);
@@ -84,11 +84,11 @@ public final class SecurityService {
         }
 
         @java.lang.Override
-        public  void getByIDs(
+        public  void getByIds(
             com.google.protobuf.RpcController controller,
             fintekkers.requests.security.QuerySecurityRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done) {
-          impl.getByIDs(controller, request, done);
+          impl.getByIds(controller, request, done);
         }
 
         @java.lang.Override
@@ -100,11 +100,11 @@ public final class SecurityService {
         }
 
         @java.lang.Override
-        public  void listIDs(
+        public  void listIds(
             com.google.protobuf.RpcController controller,
             fintekkers.requests.security.QuerySecurityRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done) {
-          impl.listIDs(controller, request, done);
+          impl.listIds(controller, request, done);
         }
 
         @java.lang.Override
@@ -148,11 +148,11 @@ public final class SecurityService {
             case 0:
               return impl.createOrUpdate(controller, (fintekkers.requests.security.CreateSecurityRequestProto)request);
             case 1:
-              return impl.getByIDs(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request);
+              return impl.getByIds(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request);
             case 2:
               return impl.search(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request);
             case 3:
-              return impl.listIDs(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request);
+              return impl.listIds(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request);
             case 4:
               return impl.validateCreateOrUpdate(controller, (fintekkers.requests.security.CreateSecurityRequestProto)request);
             case 5:
@@ -226,9 +226,9 @@ public final class SecurityService {
         com.google.protobuf.RpcCallback<fintekkers.requests.security.CreateSecurityResponseProto> done);
 
     /**
-     * <code>rpc GetByIDs(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.security.QuerySecurityResponseProto);</code>
+     * <code>rpc GetByIds(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.security.QuerySecurityResponseProto);</code>
      */
-    public abstract void getByIDs(
+    public abstract void getByIds(
         com.google.protobuf.RpcController controller,
         fintekkers.requests.security.QuerySecurityRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done);
@@ -242,9 +242,9 @@ public final class SecurityService {
         com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done);
 
     /**
-     * <code>rpc ListIDs(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.security.QuerySecurityResponseProto);</code>
+     * <code>rpc ListIds(.fintekkers.requests.security.QuerySecurityRequestProto) returns (.fintekkers.requests.security.QuerySecurityResponseProto);</code>
      */
-    public abstract void listIDs(
+    public abstract void listIds(
         com.google.protobuf.RpcController controller,
         fintekkers.requests.security.QuerySecurityRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done);
@@ -293,7 +293,7 @@ public final class SecurityService {
               done));
           return;
         case 1:
-          this.getByIDs(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request,
+          this.getByIds(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.security.QuerySecurityResponseProto>specializeCallback(
               done));
           return;
@@ -303,7 +303,7 @@ public final class SecurityService {
               done));
           return;
         case 3:
-          this.listIDs(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request,
+          this.listIds(controller, (fintekkers.requests.security.QuerySecurityRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.security.QuerySecurityResponseProto>specializeCallback(
               done));
           return;
@@ -405,7 +405,7 @@ public final class SecurityService {
             fintekkers.requests.security.CreateSecurityResponseProto.getDefaultInstance()));
       }
 
-      public  void getByIDs(
+      public  void getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.security.QuerySecurityRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done) {
@@ -435,7 +435,7 @@ public final class SecurityService {
             fintekkers.requests.security.QuerySecurityResponseProto.getDefaultInstance()));
       }
 
-      public  void listIDs(
+      public  void listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.security.QuerySecurityRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.security.QuerySecurityResponseProto> done) {
@@ -492,7 +492,7 @@ public final class SecurityService {
           fintekkers.requests.security.CreateSecurityRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public fintekkers.requests.security.QuerySecurityResponseProto getByIDs(
+      public fintekkers.requests.security.QuerySecurityResponseProto getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.security.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -502,7 +502,7 @@ public final class SecurityService {
           fintekkers.requests.security.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public fintekkers.requests.security.QuerySecurityResponseProto listIDs(
+      public fintekkers.requests.security.QuerySecurityResponseProto listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.security.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -537,7 +537,7 @@ public final class SecurityService {
       }
 
 
-      public fintekkers.requests.security.QuerySecurityResponseProto getByIDs(
+      public fintekkers.requests.security.QuerySecurityResponseProto getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.security.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException {
@@ -561,7 +561,7 @@ public final class SecurityService {
       }
 
 
-      public fintekkers.requests.security.QuerySecurityResponseProto listIDs(
+      public fintekkers.requests.security.QuerySecurityResponseProto listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.security.QuerySecurityRequestProto request)
           throws com.google.protobuf.ServiceException {
@@ -623,13 +623,13 @@ public final class SecurityService {
       "\205\001\n\016CreateOrUpdate\0228.fintekkers.requests" +
       ".security.CreateSecurityRequestProto\0329.f" +
       "intekkers.requests.security.CreateSecuri" +
-      "tyResponseProto\022}\n\010GetByIDs\0227.fintekkers" +
+      "tyResponseProto\022}\n\010GetByIds\0227.fintekkers" +
       ".requests.security.QuerySecurityRequestP" +
       "roto\0328.fintekkers.requests.security.Quer" +
       "ySecurityResponseProto\022}\n\006Search\0227.finte" +
       "kkers.requests.security.QuerySecurityReq" +
       "uestProto\0328.fintekkers.requests.security" +
-      ".QuerySecurityResponseProto0\001\022|\n\007ListIDs" +
+      ".QuerySecurityResponseProto0\001\022|\n\007ListIds" +
       "\0227.fintekkers.requests.security.QuerySec" +
       "urityRequestProto\0328.fintekkers.requests." +
       "security.QuerySecurityResponseProto\022\201\001\n\026" +

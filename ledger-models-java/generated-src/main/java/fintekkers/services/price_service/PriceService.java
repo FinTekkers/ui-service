@@ -31,9 +31,9 @@ public final class PriceService {
           com.google.protobuf.RpcCallback<fintekkers.requests.price.CreatePriceResponseProto> done);
 
       /**
-       * <code>rpc GetByIDs(.fintekkers.requests.price.QueryPriceRequestProto) returns (.fintekkers.requests.price.QueryPriceResponseProto);</code>
+       * <code>rpc GetByIds(.fintekkers.requests.price.QueryPriceRequestProto) returns (.fintekkers.requests.price.QueryPriceResponseProto);</code>
        */
-      public abstract void getByIDs(
+      public abstract void getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.price.QueryPriceRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done);
@@ -47,9 +47,9 @@ public final class PriceService {
           com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done);
 
       /**
-       * <code>rpc ListIDs(.fintekkers.requests.price.QueryPriceRequestProto) returns (.fintekkers.requests.price.QueryPriceResponseProto);</code>
+       * <code>rpc ListIds(.fintekkers.requests.price.QueryPriceRequestProto) returns (.fintekkers.requests.price.QueryPriceResponseProto);</code>
        */
-      public abstract void listIDs(
+      public abstract void listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.price.QueryPriceRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done);
@@ -84,11 +84,11 @@ public final class PriceService {
         }
 
         @java.lang.Override
-        public  void getByIDs(
+        public  void getByIds(
             com.google.protobuf.RpcController controller,
             fintekkers.requests.price.QueryPriceRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done) {
-          impl.getByIDs(controller, request, done);
+          impl.getByIds(controller, request, done);
         }
 
         @java.lang.Override
@@ -100,11 +100,11 @@ public final class PriceService {
         }
 
         @java.lang.Override
-        public  void listIDs(
+        public  void listIds(
             com.google.protobuf.RpcController controller,
             fintekkers.requests.price.QueryPriceRequestProto request,
             com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done) {
-          impl.listIDs(controller, request, done);
+          impl.listIds(controller, request, done);
         }
 
         @java.lang.Override
@@ -148,11 +148,11 @@ public final class PriceService {
             case 0:
               return impl.createOrUpdate(controller, (fintekkers.requests.price.CreatePriceRequestProto)request);
             case 1:
-              return impl.getByIDs(controller, (fintekkers.requests.price.QueryPriceRequestProto)request);
+              return impl.getByIds(controller, (fintekkers.requests.price.QueryPriceRequestProto)request);
             case 2:
               return impl.search(controller, (fintekkers.requests.price.QueryPriceRequestProto)request);
             case 3:
-              return impl.listIDs(controller, (fintekkers.requests.price.QueryPriceRequestProto)request);
+              return impl.listIds(controller, (fintekkers.requests.price.QueryPriceRequestProto)request);
             case 4:
               return impl.validateCreateOrUpdate(controller, (fintekkers.requests.price.CreatePriceRequestProto)request);
             case 5:
@@ -226,9 +226,9 @@ public final class PriceService {
         com.google.protobuf.RpcCallback<fintekkers.requests.price.CreatePriceResponseProto> done);
 
     /**
-     * <code>rpc GetByIDs(.fintekkers.requests.price.QueryPriceRequestProto) returns (.fintekkers.requests.price.QueryPriceResponseProto);</code>
+     * <code>rpc GetByIds(.fintekkers.requests.price.QueryPriceRequestProto) returns (.fintekkers.requests.price.QueryPriceResponseProto);</code>
      */
-    public abstract void getByIDs(
+    public abstract void getByIds(
         com.google.protobuf.RpcController controller,
         fintekkers.requests.price.QueryPriceRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done);
@@ -242,9 +242,9 @@ public final class PriceService {
         com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done);
 
     /**
-     * <code>rpc ListIDs(.fintekkers.requests.price.QueryPriceRequestProto) returns (.fintekkers.requests.price.QueryPriceResponseProto);</code>
+     * <code>rpc ListIds(.fintekkers.requests.price.QueryPriceRequestProto) returns (.fintekkers.requests.price.QueryPriceResponseProto);</code>
      */
-    public abstract void listIDs(
+    public abstract void listIds(
         com.google.protobuf.RpcController controller,
         fintekkers.requests.price.QueryPriceRequestProto request,
         com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done);
@@ -293,7 +293,7 @@ public final class PriceService {
               done));
           return;
         case 1:
-          this.getByIDs(controller, (fintekkers.requests.price.QueryPriceRequestProto)request,
+          this.getByIds(controller, (fintekkers.requests.price.QueryPriceRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.price.QueryPriceResponseProto>specializeCallback(
               done));
           return;
@@ -303,7 +303,7 @@ public final class PriceService {
               done));
           return;
         case 3:
-          this.listIDs(controller, (fintekkers.requests.price.QueryPriceRequestProto)request,
+          this.listIds(controller, (fintekkers.requests.price.QueryPriceRequestProto)request,
             com.google.protobuf.RpcUtil.<fintekkers.requests.price.QueryPriceResponseProto>specializeCallback(
               done));
           return;
@@ -405,7 +405,7 @@ public final class PriceService {
             fintekkers.requests.price.CreatePriceResponseProto.getDefaultInstance()));
       }
 
-      public  void getByIDs(
+      public  void getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.price.QueryPriceRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done) {
@@ -435,7 +435,7 @@ public final class PriceService {
             fintekkers.requests.price.QueryPriceResponseProto.getDefaultInstance()));
       }
 
-      public  void listIDs(
+      public  void listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.price.QueryPriceRequestProto request,
           com.google.protobuf.RpcCallback<fintekkers.requests.price.QueryPriceResponseProto> done) {
@@ -492,7 +492,7 @@ public final class PriceService {
           fintekkers.requests.price.CreatePriceRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public fintekkers.requests.price.QueryPriceResponseProto getByIDs(
+      public fintekkers.requests.price.QueryPriceResponseProto getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.price.QueryPriceRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -502,7 +502,7 @@ public final class PriceService {
           fintekkers.requests.price.QueryPriceRequestProto request)
           throws com.google.protobuf.ServiceException;
 
-      public fintekkers.requests.price.QueryPriceResponseProto listIDs(
+      public fintekkers.requests.price.QueryPriceResponseProto listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.price.QueryPriceRequestProto request)
           throws com.google.protobuf.ServiceException;
@@ -537,7 +537,7 @@ public final class PriceService {
       }
 
 
-      public fintekkers.requests.price.QueryPriceResponseProto getByIDs(
+      public fintekkers.requests.price.QueryPriceResponseProto getByIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.price.QueryPriceRequestProto request)
           throws com.google.protobuf.ServiceException {
@@ -561,7 +561,7 @@ public final class PriceService {
       }
 
 
-      public fintekkers.requests.price.QueryPriceResponseProto listIDs(
+      public fintekkers.requests.price.QueryPriceResponseProto listIds(
           com.google.protobuf.RpcController controller,
           fintekkers.requests.price.QueryPriceRequestProto request)
           throws com.google.protobuf.ServiceException {
@@ -622,13 +622,13 @@ public final class PriceService {
       "ice\022y\n\016CreateOrUpdate\0222.fintekkers.reque" +
       "sts.price.CreatePriceRequestProto\0323.fint" +
       "ekkers.requests.price.CreatePriceRespons" +
-      "eProto\022q\n\010GetByIDs\0221.fintekkers.requests" +
+      "eProto\022q\n\010GetByIds\0221.fintekkers.requests" +
       ".price.QueryPriceRequestProto\0322.fintekke" +
       "rs.requests.price.QueryPriceResponseProt" +
       "o\022q\n\006Search\0221.fintekkers.requests.price." +
       "QueryPriceRequestProto\0322.fintekkers.requ" +
       "ests.price.QueryPriceResponseProto0\001\022p\n\007" +
-      "ListIDs\0221.fintekkers.requests.price.Quer" +
+      "ListIds\0221.fintekkers.requests.price.Quer" +
       "yPriceRequestProto\0322.fintekkers.requests" +
       ".price.QueryPriceResponseProto\022{\n\026Valida" +
       "teCreateOrUpdate\0222.fintekkers.requests.p" +

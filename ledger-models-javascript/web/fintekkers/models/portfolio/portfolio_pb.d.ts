@@ -24,6 +24,16 @@ export class PortfolioProto extends jspb.Message {
   getIsLink(): boolean;
   setIsLink(value: boolean): PortfolioProto;
 
+  getValidFrom(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+  setValidFrom(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): PortfolioProto;
+  hasValidFrom(): boolean;
+  clearValidFrom(): PortfolioProto;
+
+  getValidTo(): fintekkers_models_util_local_timestamp_pb.LocalTimestampProto | undefined;
+  setValidTo(value?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto): PortfolioProto;
+  hasValidTo(): boolean;
+  clearValidTo(): PortfolioProto;
+
   getPortfolioName(): string;
   setPortfolioName(value: string): PortfolioProto;
 
@@ -42,6 +52,8 @@ export namespace PortfolioProto {
     uuid?: fintekkers_models_util_uuid_pb.UUIDProto.AsObject,
     asOf?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
     isLink: boolean,
+    validFrom?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
+    validTo?: fintekkers_models_util_local_timestamp_pb.LocalTimestampProto.AsObject,
     portfolioName: string,
   }
 }

@@ -102,13 +102,13 @@ class Position():
         for field in self.get_fields():
             out.write(FieldProto.Name(number=field.field))
             out.write(',')
-            out.write(self.get_field_display(field.field))
+            out.write(self.get_field_display(field))
             out.write(';')
 
         for measure in self.get_measures():
             out.write(MeasureProto.Name(number=measure.measure))
             out.write(',')
-            tmp:Decimal = self.get_measure(measure.measure)
+            tmp:Decimal = self.get_measure(measure)
             out.write(str(tmp))
             out.write(';')
         

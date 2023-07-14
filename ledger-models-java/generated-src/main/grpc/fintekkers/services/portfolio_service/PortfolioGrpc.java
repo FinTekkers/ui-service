@@ -47,34 +47,34 @@ public final class PortfolioGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto,
-      fintekkers.requests.portfolio.QueryPortfolioResponseProto> getGetByIDsMethod;
+      fintekkers.requests.portfolio.QueryPortfolioResponseProto> getGetByIdsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "GetByIDs",
+      fullMethodName = SERVICE_NAME + '/' + "GetByIds",
       requestType = fintekkers.requests.portfolio.QueryPortfolioRequestProto.class,
       responseType = fintekkers.requests.portfolio.QueryPortfolioResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto,
-      fintekkers.requests.portfolio.QueryPortfolioResponseProto> getGetByIDsMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto, fintekkers.requests.portfolio.QueryPortfolioResponseProto> getGetByIDsMethod;
-    if ((getGetByIDsMethod = PortfolioGrpc.getGetByIDsMethod) == null) {
+      fintekkers.requests.portfolio.QueryPortfolioResponseProto> getGetByIdsMethod() {
+    io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto, fintekkers.requests.portfolio.QueryPortfolioResponseProto> getGetByIdsMethod;
+    if ((getGetByIdsMethod = PortfolioGrpc.getGetByIdsMethod) == null) {
       synchronized (PortfolioGrpc.class) {
-        if ((getGetByIDsMethod = PortfolioGrpc.getGetByIDsMethod) == null) {
-          PortfolioGrpc.getGetByIDsMethod = getGetByIDsMethod =
+        if ((getGetByIdsMethod = PortfolioGrpc.getGetByIdsMethod) == null) {
+          PortfolioGrpc.getGetByIdsMethod = getGetByIdsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.portfolio.QueryPortfolioRequestProto, fintekkers.requests.portfolio.QueryPortfolioResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIDs"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetByIds"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.portfolio.QueryPortfolioRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.portfolio.QueryPortfolioResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new PortfolioMethodDescriptorSupplier("GetByIDs"))
+              .setSchemaDescriptor(new PortfolioMethodDescriptorSupplier("GetByIds"))
               .build();
         }
       }
     }
-    return getGetByIDsMethod;
+    return getGetByIdsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto,
@@ -109,34 +109,34 @@ public final class PortfolioGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto,
-      fintekkers.requests.portfolio.QueryPortfolioResponseProto> getListIDsMethod;
+      fintekkers.requests.portfolio.QueryPortfolioResponseProto> getListIdsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "ListIDs",
+      fullMethodName = SERVICE_NAME + '/' + "ListIds",
       requestType = fintekkers.requests.portfolio.QueryPortfolioRequestProto.class,
       responseType = fintekkers.requests.portfolio.QueryPortfolioResponseProto.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto,
-      fintekkers.requests.portfolio.QueryPortfolioResponseProto> getListIDsMethod() {
-    io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto, fintekkers.requests.portfolio.QueryPortfolioResponseProto> getListIDsMethod;
-    if ((getListIDsMethod = PortfolioGrpc.getListIDsMethod) == null) {
+      fintekkers.requests.portfolio.QueryPortfolioResponseProto> getListIdsMethod() {
+    io.grpc.MethodDescriptor<fintekkers.requests.portfolio.QueryPortfolioRequestProto, fintekkers.requests.portfolio.QueryPortfolioResponseProto> getListIdsMethod;
+    if ((getListIdsMethod = PortfolioGrpc.getListIdsMethod) == null) {
       synchronized (PortfolioGrpc.class) {
-        if ((getListIDsMethod = PortfolioGrpc.getListIDsMethod) == null) {
-          PortfolioGrpc.getListIDsMethod = getListIDsMethod =
+        if ((getListIdsMethod = PortfolioGrpc.getListIdsMethod) == null) {
+          PortfolioGrpc.getListIdsMethod = getListIdsMethod =
               io.grpc.MethodDescriptor.<fintekkers.requests.portfolio.QueryPortfolioRequestProto, fintekkers.requests.portfolio.QueryPortfolioResponseProto>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIDs"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListIds"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.portfolio.QueryPortfolioRequestProto.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   fintekkers.requests.portfolio.QueryPortfolioResponseProto.getDefaultInstance()))
-              .setSchemaDescriptor(new PortfolioMethodDescriptorSupplier("ListIDs"))
+              .setSchemaDescriptor(new PortfolioMethodDescriptorSupplier("ListIds"))
               .build();
         }
       }
     }
-    return getListIDsMethod;
+    return getListIdsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<fintekkers.requests.portfolio.CreatePortfolioRequestProto,
@@ -258,9 +258,9 @@ public final class PortfolioGrpc {
 
     /**
      */
-    public void getByIDs(fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
+    public void getByIds(fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.portfolio.QueryPortfolioResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIDsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetByIdsMethod(), responseObserver);
     }
 
     /**
@@ -272,9 +272,9 @@ public final class PortfolioGrpc {
 
     /**
      */
-    public void listIDs(fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
+    public void listIds(fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.portfolio.QueryPortfolioResponseProto> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIDsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListIdsMethod(), responseObserver);
     }
 
     /**
@@ -301,7 +301,7 @@ public final class PortfolioGrpc {
                 fintekkers.requests.portfolio.CreatePortfolioResponseProto>(
                   this, METHODID_CREATE_OR_UPDATE)))
           .addMethod(
-            getGetByIDsMethod(),
+            getGetByIdsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 fintekkers.requests.portfolio.QueryPortfolioRequestProto,
@@ -315,7 +315,7 @@ public final class PortfolioGrpc {
                 fintekkers.requests.portfolio.QueryPortfolioResponseProto>(
                   this, METHODID_SEARCH)))
           .addMethod(
-            getListIDsMethod(),
+            getListIdsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 fintekkers.requests.portfolio.QueryPortfolioRequestProto,
@@ -363,10 +363,10 @@ public final class PortfolioGrpc {
 
     /**
      */
-    public void getByIDs(fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
+    public void getByIds(fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.portfolio.QueryPortfolioResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getGetByIdsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -379,10 +379,10 @@ public final class PortfolioGrpc {
 
     /**
      */
-    public void listIDs(fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
+    public void listIds(fintekkers.requests.portfolio.QueryPortfolioRequestProto request,
         io.grpc.stub.StreamObserver<fintekkers.requests.portfolio.QueryPortfolioResponseProto> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getListIDsMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getListIdsMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -425,9 +425,9 @@ public final class PortfolioGrpc {
 
     /**
      */
-    public fintekkers.requests.portfolio.QueryPortfolioResponseProto getByIDs(fintekkers.requests.portfolio.QueryPortfolioRequestProto request) {
+    public fintekkers.requests.portfolio.QueryPortfolioResponseProto getByIds(fintekkers.requests.portfolio.QueryPortfolioRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getGetByIDsMethod(), getCallOptions(), request);
+          getChannel(), getGetByIdsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -440,9 +440,9 @@ public final class PortfolioGrpc {
 
     /**
      */
-    public fintekkers.requests.portfolio.QueryPortfolioResponseProto listIDs(fintekkers.requests.portfolio.QueryPortfolioRequestProto request) {
+    public fintekkers.requests.portfolio.QueryPortfolioResponseProto listIds(fintekkers.requests.portfolio.QueryPortfolioRequestProto request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getListIDsMethod(), getCallOptions(), request);
+          getChannel(), getListIdsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -484,18 +484,18 @@ public final class PortfolioGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.portfolio.QueryPortfolioResponseProto> getByIDs(
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.portfolio.QueryPortfolioResponseProto> getByIds(
         fintekkers.requests.portfolio.QueryPortfolioRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getGetByIDsMethod(), getCallOptions()), request);
+          getChannel().newCall(getGetByIdsMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.portfolio.QueryPortfolioResponseProto> listIDs(
+    public com.google.common.util.concurrent.ListenableFuture<fintekkers.requests.portfolio.QueryPortfolioResponseProto> listIds(
         fintekkers.requests.portfolio.QueryPortfolioRequestProto request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getListIDsMethod(), getCallOptions()), request);
+          getChannel().newCall(getListIdsMethod(), getCallOptions()), request);
     }
 
     /**
@@ -544,7 +544,7 @@ public final class PortfolioGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.portfolio.CreatePortfolioResponseProto>) responseObserver);
           break;
         case METHODID_GET_BY_IDS:
-          serviceImpl.getByIDs((fintekkers.requests.portfolio.QueryPortfolioRequestProto) request,
+          serviceImpl.getByIds((fintekkers.requests.portfolio.QueryPortfolioRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.portfolio.QueryPortfolioResponseProto>) responseObserver);
           break;
         case METHODID_SEARCH:
@@ -552,7 +552,7 @@ public final class PortfolioGrpc {
               (io.grpc.stub.StreamObserver<fintekkers.requests.portfolio.QueryPortfolioResponseProto>) responseObserver);
           break;
         case METHODID_LIST_IDS:
-          serviceImpl.listIDs((fintekkers.requests.portfolio.QueryPortfolioRequestProto) request,
+          serviceImpl.listIds((fintekkers.requests.portfolio.QueryPortfolioRequestProto) request,
               (io.grpc.stub.StreamObserver<fintekkers.requests.portfolio.QueryPortfolioResponseProto>) responseObserver);
           break;
         case METHODID_VALIDATE_CREATE_OR_UPDATE:
@@ -625,9 +625,9 @@ public final class PortfolioGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new PortfolioFileDescriptorSupplier())
               .addMethod(getCreateOrUpdateMethod())
-              .addMethod(getGetByIDsMethod())
+              .addMethod(getGetByIdsMethod())
               .addMethod(getSearchMethod())
-              .addMethod(getListIDsMethod())
+              .addMethod(getListIdsMethod())
               .addMethod(getValidateCreateOrUpdateMethod())
               .addMethod(getValidateQueryRequestMethod())
               .build();

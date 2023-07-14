@@ -76,8 +76,8 @@ var PriceService = exports.PriceService = {
     responseSerialize: serialize_fintekkers_requests_price_CreatePriceResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_price_CreatePriceResponseProto,
   },
-  getByIDs: {
-    path: '/fintekkers.services.price_service.Price/GetByIDs',
+  getByIds: {
+    path: '/fintekkers.services.price_service.Price/GetByIds',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
@@ -98,8 +98,8 @@ var PriceService = exports.PriceService = {
     responseSerialize: serialize_fintekkers_requests_price_QueryPriceResponseProto,
     responseDeserialize: deserialize_fintekkers_requests_price_QueryPriceResponseProto,
   },
-  listIDs: {
-    path: '/fintekkers.services.price_service.Price/ListIDs',
+  listIds: {
+    path: '/fintekkers.services.price_service.Price/ListIds',
     requestStream: false,
     responseStream: false,
     requestType: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,

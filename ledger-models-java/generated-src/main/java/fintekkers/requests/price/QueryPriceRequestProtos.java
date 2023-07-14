@@ -35,7 +35,7 @@ public final class QueryPriceRequestProtos {
       "o\0320fintekkers/models/position/position_f" +
       "ilter.proto\"\372\001\n\026QueryPriceRequestProto\022\024" +
       "\n\014object_class\030\001 \001(\t\022\017\n\007version\030\002 \001(\t\0220\n" +
-      "\005uuids\030\025 \003(\0132!.fintekkers.models.util.UU" +
+      "\005uuIds\030\025 \003(\0132!.fintekkers.models.util.UU" +
       "IDProto\022K\n\022search_price_input\030\026 \001(\0132/.fi" +
       "ntekkers.models.position.PositionFilterP" +
       "roto\022:\n\005as_of\030\027 \001(\0132+.fintekkers.models." +
@@ -54,7 +54,7 @@ public final class QueryPriceRequestProtos {
     internal_static_fintekkers_requests_price_QueryPriceRequestProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fintekkers_requests_price_QueryPriceRequestProto_descriptor,
-        new java.lang.String[] { "ObjectClass", "Version", "Uuids", "SearchPriceInput", "AsOf", });
+        new java.lang.String[] { "ObjectClass", "Version", "UuIds", "SearchPriceInput", "AsOf", });
     fintekkers.models.util.Uuid.getDescriptor();
     fintekkers.models.util.LocalTimestamp.getDescriptor();
     fintekkers.models.position.PositionFilterProtos.getDescriptor();

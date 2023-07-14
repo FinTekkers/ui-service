@@ -33,15 +33,19 @@ public final class PriceProtos {
       "s/util/decimal_value.proto\032,fintekkers/m" +
       "odels/util/local_timestamp.proto\032!fintek" +
       "kers/models/util/uuid.proto\032)fintekkers/" +
-      "models/security/security.proto\"\250\002\n\nPrice" +
+      "models/security/security.proto\"\250\003\n\nPrice" +
       "Proto\022\024\n\014object_class\030\001 \001(\t\022\017\n\007version\030\002" +
       " \001(\t\022/\n\004uuid\030\005 \001(\0132!.fintekkers.models.u" +
       "til.UUIDProto\022:\n\005as_of\030\006 \001(\0132+.fintekker" +
       "s.models.util.LocalTimestampProto\022\017\n\007is_" +
-      "link\030\007 \001(\010\0228\n\005price\030\n \001(\0132).fintekkers.m" +
-      "odels.util.DecimalValueProto\022;\n\010security" +
-      "\030\013 \001(\0132).fintekkers.models.security.Secu" +
-      "rityProtoB\017B\013PriceProtosP\001b\006proto3"
+      "link\030\007 \001(\010\022?\n\nvalid_from\030\010 \001(\0132+.fintekk" +
+      "ers.models.util.LocalTimestampProto\022=\n\010v" +
+      "alid_to\030\t \001(\0132+.fintekkers.models.util.L" +
+      "ocalTimestampProto\0228\n\005price\030\n \001(\0132).fint" +
+      "ekkers.models.util.DecimalValueProto\022;\n\010" +
+      "security\030\013 \001(\0132).fintekkers.models.secur" +
+      "ity.SecurityProtoB\017B\013PriceProtosP\001b\006prot" +
+      "o3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -56,7 +60,7 @@ public final class PriceProtos {
     internal_static_fintekkers_models_price_PriceProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fintekkers_models_price_PriceProto_descriptor,
-        new java.lang.String[] { "ObjectClass", "Version", "Uuid", "AsOf", "IsLink", "Price", "Security", });
+        new java.lang.String[] { "ObjectClass", "Version", "Uuid", "AsOf", "IsLink", "ValidFrom", "ValidTo", "Price", "Security", });
     fintekkers.models.util.DecimalValue.getDescriptor();
     fintekkers.models.util.LocalTimestamp.getDescriptor();
     fintekkers.models.util.Uuid.getDescriptor();

@@ -94,6 +94,32 @@ private static final long serialVersionUID = 0L;
             isLink_ = input.readBool();
             break;
           }
+          case 66: {
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder subBuilder = null;
+            if (validFrom_ != null) {
+              subBuilder = validFrom_.toBuilder();
+            }
+            validFrom_ = input.readMessage(fintekkers.models.util.LocalTimestamp.LocalTimestampProto.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(validFrom_);
+              validFrom_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
+          case 74: {
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder subBuilder = null;
+            if (validTo_ != null) {
+              subBuilder = validTo_.toBuilder();
+            }
+            validTo_ = input.readMessage(fintekkers.models.util.LocalTimestamp.LocalTimestampProto.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(validTo_);
+              validTo_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           case 82: {
             java.lang.String s = input.readStringRequireUtf8();
 
@@ -296,6 +322,58 @@ private static final long serialVersionUID = 0L;
     return isLink_;
   }
 
+  public static final int VALID_FROM_FIELD_NUMBER = 8;
+  private fintekkers.models.util.LocalTimestamp.LocalTimestampProto validFrom_;
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+   * @return Whether the validFrom field is set.
+   */
+  @java.lang.Override
+  public boolean hasValidFrom() {
+    return validFrom_ != null;
+  }
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+   * @return The validFrom.
+   */
+  @java.lang.Override
+  public fintekkers.models.util.LocalTimestamp.LocalTimestampProto getValidFrom() {
+    return validFrom_ == null ? fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : validFrom_;
+  }
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+   */
+  @java.lang.Override
+  public fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder getValidFromOrBuilder() {
+    return getValidFrom();
+  }
+
+  public static final int VALID_TO_FIELD_NUMBER = 9;
+  private fintekkers.models.util.LocalTimestamp.LocalTimestampProto validTo_;
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+   * @return Whether the validTo field is set.
+   */
+  @java.lang.Override
+  public boolean hasValidTo() {
+    return validTo_ != null;
+  }
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+   * @return The validTo.
+   */
+  @java.lang.Override
+  public fintekkers.models.util.LocalTimestamp.LocalTimestampProto getValidTo() {
+    return validTo_ == null ? fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : validTo_;
+  }
+  /**
+   * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+   */
+  @java.lang.Override
+  public fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder getValidToOrBuilder() {
+    return getValidTo();
+  }
+
   public static final int STRATEGY_NAME_FIELD_NUMBER = 10;
   private volatile java.lang.Object strategyName_;
   /**
@@ -397,6 +475,12 @@ private static final long serialVersionUID = 0L;
     if (isLink_ != false) {
       output.writeBool(7, isLink_);
     }
+    if (validFrom_ != null) {
+      output.writeMessage(8, getValidFrom());
+    }
+    if (validTo_ != null) {
+      output.writeMessage(9, getValidTo());
+    }
     if (!getStrategyNameBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 10, strategyName_);
     }
@@ -429,6 +513,14 @@ private static final long serialVersionUID = 0L;
     if (isLink_ != false) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(7, isLink_);
+    }
+    if (validFrom_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(8, getValidFrom());
+    }
+    if (validTo_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(9, getValidTo());
     }
     if (!getStrategyNameBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, strategyName_);
@@ -468,6 +560,16 @@ private static final long serialVersionUID = 0L;
     }
     if (getIsLink()
         != other.getIsLink()) return false;
+    if (hasValidFrom() != other.hasValidFrom()) return false;
+    if (hasValidFrom()) {
+      if (!getValidFrom()
+          .equals(other.getValidFrom())) return false;
+    }
+    if (hasValidTo() != other.hasValidTo()) return false;
+    if (hasValidTo()) {
+      if (!getValidTo()
+          .equals(other.getValidTo())) return false;
+    }
     if (!getStrategyName()
         .equals(other.getStrategyName())) return false;
     if (hasParent() != other.hasParent()) return false;
@@ -501,6 +603,14 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + IS_LINK_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getIsLink());
+    if (hasValidFrom()) {
+      hash = (37 * hash) + VALID_FROM_FIELD_NUMBER;
+      hash = (53 * hash) + getValidFrom().hashCode();
+    }
+    if (hasValidTo()) {
+      hash = (37 * hash) + VALID_TO_FIELD_NUMBER;
+      hash = (53 * hash) + getValidTo().hashCode();
+    }
     hash = (37 * hash) + STRATEGY_NAME_FIELD_NUMBER;
     hash = (53 * hash) + getStrategyName().hashCode();
     if (hasParent()) {
@@ -658,6 +768,18 @@ private static final long serialVersionUID = 0L;
       }
       isLink_ = false;
 
+      if (validFromBuilder_ == null) {
+        validFrom_ = null;
+      } else {
+        validFrom_ = null;
+        validFromBuilder_ = null;
+      }
+      if (validToBuilder_ == null) {
+        validTo_ = null;
+      } else {
+        validTo_ = null;
+        validToBuilder_ = null;
+      }
       strategyName_ = "";
 
       if (parentBuilder_ == null) {
@@ -705,6 +827,16 @@ private static final long serialVersionUID = 0L;
         result.asOf_ = asOfBuilder_.build();
       }
       result.isLink_ = isLink_;
+      if (validFromBuilder_ == null) {
+        result.validFrom_ = validFrom_;
+      } else {
+        result.validFrom_ = validFromBuilder_.build();
+      }
+      if (validToBuilder_ == null) {
+        result.validTo_ = validTo_;
+      } else {
+        result.validTo_ = validToBuilder_.build();
+      }
       result.strategyName_ = strategyName_;
       if (parentBuilder_ == null) {
         result.parent_ = parent_;
@@ -775,6 +907,12 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getIsLink() != false) {
         setIsLink(other.getIsLink());
+      }
+      if (other.hasValidFrom()) {
+        mergeValidFrom(other.getValidFrom());
+      }
+      if (other.hasValidTo()) {
+        mergeValidTo(other.getValidTo());
       }
       if (!other.getStrategyName().isEmpty()) {
         strategyName_ = other.strategyName_;
@@ -1267,6 +1405,244 @@ private static final long serialVersionUID = 0L;
       isLink_ = false;
       onChanged();
       return this;
+    }
+
+    private fintekkers.models.util.LocalTimestamp.LocalTimestampProto validFrom_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder> validFromBuilder_;
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     * @return Whether the validFrom field is set.
+     */
+    public boolean hasValidFrom() {
+      return validFromBuilder_ != null || validFrom_ != null;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     * @return The validFrom.
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProto getValidFrom() {
+      if (validFromBuilder_ == null) {
+        return validFrom_ == null ? fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : validFrom_;
+      } else {
+        return validFromBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     */
+    public Builder setValidFrom(fintekkers.models.util.LocalTimestamp.LocalTimestampProto value) {
+      if (validFromBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        validFrom_ = value;
+        onChanged();
+      } else {
+        validFromBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     */
+    public Builder setValidFrom(
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder builderForValue) {
+      if (validFromBuilder_ == null) {
+        validFrom_ = builderForValue.build();
+        onChanged();
+      } else {
+        validFromBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     */
+    public Builder mergeValidFrom(fintekkers.models.util.LocalTimestamp.LocalTimestampProto value) {
+      if (validFromBuilder_ == null) {
+        if (validFrom_ != null) {
+          validFrom_ =
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.newBuilder(validFrom_).mergeFrom(value).buildPartial();
+        } else {
+          validFrom_ = value;
+        }
+        onChanged();
+      } else {
+        validFromBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     */
+    public Builder clearValidFrom() {
+      if (validFromBuilder_ == null) {
+        validFrom_ = null;
+        onChanged();
+      } else {
+        validFrom_ = null;
+        validFromBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder getValidFromBuilder() {
+      
+      onChanged();
+      return getValidFromFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder getValidFromOrBuilder() {
+      if (validFromBuilder_ != null) {
+        return validFromBuilder_.getMessageOrBuilder();
+      } else {
+        return validFrom_ == null ?
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : validFrom_;
+      }
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_from = 8;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder> 
+        getValidFromFieldBuilder() {
+      if (validFromBuilder_ == null) {
+        validFromBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder>(
+                getValidFrom(),
+                getParentForChildren(),
+                isClean());
+        validFrom_ = null;
+      }
+      return validFromBuilder_;
+    }
+
+    private fintekkers.models.util.LocalTimestamp.LocalTimestampProto validTo_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder> validToBuilder_;
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     * @return Whether the validTo field is set.
+     */
+    public boolean hasValidTo() {
+      return validToBuilder_ != null || validTo_ != null;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     * @return The validTo.
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProto getValidTo() {
+      if (validToBuilder_ == null) {
+        return validTo_ == null ? fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : validTo_;
+      } else {
+        return validToBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     */
+    public Builder setValidTo(fintekkers.models.util.LocalTimestamp.LocalTimestampProto value) {
+      if (validToBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        validTo_ = value;
+        onChanged();
+      } else {
+        validToBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     */
+    public Builder setValidTo(
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder builderForValue) {
+      if (validToBuilder_ == null) {
+        validTo_ = builderForValue.build();
+        onChanged();
+      } else {
+        validToBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     */
+    public Builder mergeValidTo(fintekkers.models.util.LocalTimestamp.LocalTimestampProto value) {
+      if (validToBuilder_ == null) {
+        if (validTo_ != null) {
+          validTo_ =
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.newBuilder(validTo_).mergeFrom(value).buildPartial();
+        } else {
+          validTo_ = value;
+        }
+        onChanged();
+      } else {
+        validToBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     */
+    public Builder clearValidTo() {
+      if (validToBuilder_ == null) {
+        validTo_ = null;
+        onChanged();
+      } else {
+        validTo_ = null;
+        validToBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder getValidToBuilder() {
+      
+      onChanged();
+      return getValidToFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     */
+    public fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder getValidToOrBuilder() {
+      if (validToBuilder_ != null) {
+        return validToBuilder_.getMessageOrBuilder();
+      } else {
+        return validTo_ == null ?
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto.getDefaultInstance() : validTo_;
+      }
+    }
+    /**
+     * <code>.fintekkers.models.util.LocalTimestampProto valid_to = 9;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder> 
+        getValidToFieldBuilder() {
+      if (validToBuilder_ == null) {
+        validToBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            fintekkers.models.util.LocalTimestamp.LocalTimestampProto, fintekkers.models.util.LocalTimestamp.LocalTimestampProto.Builder, fintekkers.models.util.LocalTimestamp.LocalTimestampProtoOrBuilder>(
+                getValidTo(),
+                getParentForChildren(),
+                isClean());
+        validTo_ = null;
+      }
+      return validToBuilder_;
     }
 
     private java.lang.Object strategyName_ = "";

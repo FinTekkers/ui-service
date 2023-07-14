@@ -19,7 +19,7 @@ export class PriceClient {
                response: fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto) => void
   ): grpcWeb.ClientReadableStream<fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto>;
 
-  getByIDs(
+  getByIds(
     request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
@@ -31,7 +31,7 @@ export class PriceClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
 
-  listIDs(
+  listIds(
     request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
@@ -64,7 +64,7 @@ export class PricePromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_price_create_price_response_pb.CreatePriceResponseProto>;
 
-  getByIDs(
+  getByIds(
     request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
@@ -74,7 +74,7 @@ export class PricePromiseClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;
 
-  listIDs(
+  listIds(
     request: fintekkers_requests_price_query_price_request_pb.QueryPriceRequestProto,
     metadata?: grpcWeb.Metadata
   ): Promise<fintekkers_requests_price_query_price_response_pb.QueryPriceResponseProto>;

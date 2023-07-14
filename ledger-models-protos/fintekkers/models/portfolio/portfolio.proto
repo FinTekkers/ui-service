@@ -19,5 +19,8 @@ message PortfolioProto {
   fintekkers.models.util.LocalTimestampProto as_of = 6;
   bool is_link = 7;
 
+  util.LocalTimestampProto valid_from = 8;
+  util.LocalTimestampProto valid_to = 9;
+
   string portfolio_name = 10;
 }
