@@ -23,6 +23,7 @@ class Testing(unittest.TestCase):
         directed_quantity = position.get_measure_value(MeasureProto.DIRECTED_QUANTITY)
         
         #Will throw an error if they don't exist
+        print(position)
         
 if __name__ == '__main__':
     unittest.main()

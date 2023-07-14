@@ -65,30 +65,6 @@ impl PriceWrapper {
     }
 }
 
-// impl RawDataModelObject for PriceWrapper {
-//     fn get_id(&self) -> UUIDWrapper {
-//         UUIDWrapper::new(self.proto.uuid.as_ref().unwrap().clone())
-//     }
-//
-//     fn get_valid_from(&self) -> LocalTimestampWrapper{
-//         LocalTimestampWrapper::now()
-//     }
-//
-//     fn get_valid_to(&self) -> Option<LocalTimestampWrapper> {
-//         Some(LocalTimestampWrapper::now())
-//     }
-//
-//     fn get_as_of(&self) -> LocalTimestampWrapper {
-//         LocalTimestampWrapper::new(self.proto.as_of.as_ref().unwrap().clone())
-//     }
-//
-//     fn encode<B>(&self) -> Vec<u8> {
-//         let mut buf = Vec::new();
-//         &self.proto.encode(&mut buf).unwrap();
-//         buf
-//     }
-// }
-
 raw_data_model_object_trait!(PriceWrapper);
 
 impl From<PriceWrapper> for PriceProto {
@@ -112,9 +88,13 @@ impl Eq for PriceWrapper {}
 
 pub struct PriceProtoBuilder {
     as_of: LocalTimestampWrapper,
+    valid_from: LocalTimestampWrapper,
+    valid_to: Option<LocalTimestampWrapper>,
+
     object_class: String,
     version: String,
     is_link: bool,
+
     uuid: UUIDWrapper,
     security: Option<SecurityProto>,
     price: Option<DecimalWrapper>
@@ -124,11 +104,15 @@ impl PriceProtoBuilder {
     pub fn new() -> Self {
         Self {
             as_of: LocalTimestampWrapper::now(),
+            valid_from: LocalTimestampWrapper::now(),
+            valid_to: None,
+
             //This is currently hardcoded, this will change in future versions
             object_class: "Security".to_string(),
             //The version is hardcoded, this will change in future versions
             version: "0.0.1".to_string(),
             is_link: false,
+
             uuid: UUIDWrapper::new_random(),
             security: None,
             price: None,
@@ -137,6 +121,16 @@ impl PriceProtoBuilder {
 
     pub fn as_of(mut self, as_of: LocalTimestampWrapper) -> Self {
         self.as_of = as_of.into();
+        self
+    }
+
+    pub fn valid_from(mut self, valid_from: LocalTimestampWrapper) -> Self {
+        self.valid_from = valid_from.into();
+        self
+    }
+
+    pub fn valid_to(mut self, valid_to: LocalTimestampWrapper) -> Self {
+        self.valid_to = valid_to.into();
         self
     }
 
@@ -171,12 +165,21 @@ impl PriceProtoBuilder {
     }
 
     pub fn build(self) -> Result<PriceProto, Error> {
+        let valid_to = match self.valid_to {
+            Some(..) => Some(self.valid_to.unwrap().proto),
+            None => None
+        };
+
         Ok(PriceProto {
-            as_of: Some(self.as_of.into()), // When other PR merged can do a into
+            as_of: Some(self.as_of.into()),
+            valid_from: Some(self.valid_from.into()),
+            valid_to,
+
             object_class: self.object_class,
             version: self.version,
             is_link: self.is_link,
-            uuid: Some(self.uuid.into()), // When other PR merged can do a into
+
+            uuid: Some(self.uuid.into()),
             price: Some(DecimalValueProto {
                 arbitrary_precision_value: self.price.unwrap().to_string()
             }),

@@ -119,7 +119,9 @@ mod tests {
         };
 
         let portfolio = fintekkers::models::portfolio::PortfolioProto {
-            as_of:  Some(as_of_timestamp),
+            as_of:  Some(as_of_timestamp.clone()),
+            valid_from:  Some(as_of_timestamp.clone()),
+            valid_to:  None,
             object_class: String::from("Portfolio"),
             version: String::from("0.0.1"),
             portfolio_name: String::from("PortfolioName"),

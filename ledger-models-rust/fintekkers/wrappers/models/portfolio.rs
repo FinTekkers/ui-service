@@ -1,6 +1,7 @@
 use crate::fintekkers::models::portfolio::PortfolioProto;
 use crate::fintekkers::models::util::{LocalTimestampProto, UuidProto};
 use crate::fintekkers::wrappers::models::utils::datetime::LocalTimestampWrapper;
+use crate::fintekkers::wrappers::models::utils::errors::Error;
 use crate::fintekkers::wrappers::models::utils::uuid_wrapper::UUIDWrapper;
 
 pub struct PortfolioWrapper {
@@ -26,11 +27,15 @@ impl PortfolioWrapper {
 }
 
 pub struct PortfolioProtoBuilder {
+    as_of: LocalTimestampWrapper,
+    valid_from: LocalTimestampWrapper,
+    valid_to: Option<LocalTimestampWrapper>,
+
     object_class: String,
     version: String,
-    uuid: UuidProto,
-    as_of: LocalTimestampProto,
     is_link: bool,
+
+    uuid: UUIDWrapper,
     portfolio_name: String,
 }
 
@@ -40,13 +45,32 @@ impl PortfolioProtoBuilder {
         let uuid_str = uuid.to_string();
 
         PortfolioProtoBuilder {
+            as_of: LocalTimestampWrapper::now(),
+            valid_from: LocalTimestampWrapper::now(),
+            valid_to: None,
+
             object_class: "Portfolio".to_string(),
             version: "0.0.1".to_string(),
-            uuid: uuid.into(),
-            as_of: LocalTimestampWrapper::now().into(),
             is_link: false,
+
+            uuid: UUIDWrapper::new_random(),
             portfolio_name: uuid_str,
         }
+    }
+
+    pub fn as_of(mut self, as_of: LocalTimestampWrapper) -> Self {
+        self.as_of = as_of.into();
+        self
+    }
+
+    pub fn valid_from(mut self, valid_from: LocalTimestampWrapper) -> Self {
+        self.valid_from = valid_from.into();
+        self
+    }
+
+    pub fn valid_to(mut self, valid_to: LocalTimestampWrapper) -> Self {
+        self.valid_to = valid_to.into();
+        self
     }
 
     pub fn object_class(mut self, object_class: String) -> PortfolioProtoBuilder {
@@ -59,13 +83,8 @@ impl PortfolioProtoBuilder {
         self
     }
 
-    pub fn uuid(mut self, uuid: UuidProto) -> PortfolioProtoBuilder {
+    pub fn uuid(mut self, uuid: UUIDWrapper) -> PortfolioProtoBuilder {
         self.uuid = uuid;
-        self
-    }
-
-    pub fn as_of(mut self, as_of: LocalTimestampProto) -> PortfolioProtoBuilder {
-        self.as_of = as_of;
         self
     }
 
@@ -79,15 +98,24 @@ impl PortfolioProtoBuilder {
         self
     }
 
-    pub fn build(self) -> PortfolioProto {
-        PortfolioProto {
+    pub fn build(self) -> Result<PortfolioProto, Error> {
+        let valid_to = match self.valid_to {
+            Some(..) => Some(self.valid_to.unwrap().proto),
+            None => None
+        };
+
+        Ok(PortfolioProto {
+            as_of: Some(self.as_of.into()),
+            valid_from: Some(self.valid_from.into()),
+            valid_to,
+
             object_class: self.object_class,
             version: self.version,
-            uuid: Some(self.uuid),
-            as_of: Some(self.as_of),
             is_link: self.is_link,
+
+            uuid: Some(self.uuid.into()),
             portfolio_name: self.portfolio_name,
-        }
+        })
     }
 }
 
@@ -99,10 +127,13 @@ mod test {
     fn test_portfolio_name() {
         let portfolio = PortfolioWrapper {
             proto: PortfolioProto {
+                as_of: None,
+                valid_from: None,
+                valid_to: None,
+
                 object_class: "Portfolio".to_string(),
                 version: "0.01".to_string(),
                 uuid: None,
-                as_of: None,
                 is_link: false,
                 portfolio_name: "Dummy Name".to_string(),
             }
@@ -115,12 +146,12 @@ mod test {
     fn test_portfolio_builder() {
         let proto = PortfolioProtoBuilder::new()
             .portfolio_name("Portfolio".to_string())
-            .build();
+            .build().unwrap();
 
         assert!(proto.portfolio_name.contains("Portfolio"));
 
         let proto2 = PortfolioProtoBuilder::new()
-            .build();
+            .build().unwrap();
 
         //Check it's 36 chars long and has a hyphen (i.e. its the UUID)
         assert!(proto2.portfolio_name.contains("-"));

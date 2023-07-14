@@ -37,9 +37,13 @@ impl Eq for SecurityWrapper {}
 
 pub struct SecurityProtoBuilder {
     as_of: LocalTimestampWrapper,
+    valid_from: LocalTimestampWrapper,
+    valid_to: Option<LocalTimestampWrapper>,
+
     object_class: String,
     version: String,
     is_link: bool,
+
     uuid: UUIDWrapper,
     security_type: SecurityTypeProto,
     asset_class: String,
@@ -51,6 +55,8 @@ impl SecurityProtoBuilder {
     pub fn new() -> Self {
         Self {
             as_of: LocalTimestampWrapper::now(),
+            valid_from: LocalTimestampWrapper::now(),
+            valid_to: None,
             //This is currently hardcoded, this will change in future versions
             object_class: "Security".to_string(),
             //The version is hardcoded, this will change in future versions
@@ -66,6 +72,16 @@ impl SecurityProtoBuilder {
 
     pub fn as_of(mut self, as_of: LocalTimestampWrapper) -> Self {
         self.as_of = as_of.into();
+        self
+    }
+
+    pub fn valid_from(mut self, valid_from: LocalTimestampWrapper) -> Self {
+        self.valid_from = valid_from.into();
+        self
+    }
+
+    pub fn valid_to(mut self, valid_to: LocalTimestampWrapper) -> Self {
+        self.valid_to = valid_to.into();
         self
     }
 
@@ -110,12 +126,21 @@ impl SecurityProtoBuilder {
     }
 
     pub fn build(self) -> Result<SecurityProto, Error> {
+        let valid_to = match self.valid_to {
+            Some(..) => Some(self.valid_to.unwrap().proto),
+            None => None
+        };
+
         Ok(SecurityProto {
-            as_of: Some(self.as_of.into()), // When other PR merged can do a into
+            as_of: Some(self.as_of.into()),
+            valid_from: Some(self.valid_from.into()),
+            valid_to,
+
             object_class: self.object_class,
             version: self.version,
             is_link: self.is_link,
-            uuid: Some(self.uuid.into()), // When other PR merged can do a into
+
+            uuid: Some(self.uuid.into()),
             security_type: self.security_type.into(),
             asset_class: self.asset_class,
             issuer_name: self.issuer_name,
