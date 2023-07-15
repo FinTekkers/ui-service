@@ -5,7 +5,7 @@
   "author": "Sam Sheridan",
   "license": "ISC",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "repository": {
     "type": "git",
     "url": "https://github.com/FinTekkers/ledger-models.git"
