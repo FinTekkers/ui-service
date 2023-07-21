@@ -76,11 +76,26 @@ impl fmt::Display for UUIDWrapper {
 
 #[cfg(test)]
 mod test {
+    use std::str::FromStr;
     use super::*;
     use uuid::Uuid;
 
     #[test]
     fn test_uuid_to_proto_and_back() {
+        let input_array = [217, 98, 253, 240, 51, 225, 77, 157, 153, 155, 126, 195, 80, 240, 203, 119];
+        let input = Vec::from(input_array);
+
+        let uuid = Uuid::from_slice(&input).unwrap();
+        let uuid_str = uuid.to_string();
+        println!("{}", uuid_str);
+
+        let uuid2 = Uuid::from_str(&"d962fdf0-33e1-4d9d-999b-7ec350f0cb77").unwrap();
+        let uuid2_str = uuid2.to_string();
+        println!("{}", uuid2_str);
+
+        let output_bytes = uuid2.into_bytes().to_vec();
+        assert_eq!(input, output_bytes);
+
         let random = UUIDWrapper::new_random();
         let random_str = random.to_string();
 
