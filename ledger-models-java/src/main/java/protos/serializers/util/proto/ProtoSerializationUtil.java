@@ -122,7 +122,11 @@ public class ProtoSerializationUtil {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
-        return Uuid.UUIDProto.newBuilder().setRawUuid(ByteString.copyFrom(bb.array())).build();
+
+        Uuid.UUIDProto.Builder builder = Uuid.UUIDProto.newBuilder()
+                .setRawUuid(ByteString.copyFrom(bb.array()));
+
+        return builder.build();
     }
 
     public static UUID deserializeUUID(Uuid.UUIDProto rawUUID) {

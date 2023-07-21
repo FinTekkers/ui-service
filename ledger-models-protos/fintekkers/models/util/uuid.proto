@@ -4,4 +4,9 @@ package fintekkers.models.util;
 
 message UUIDProto {
   bytes raw_uuid = 1;
+
+//  uint64 most_sig = 2;
+//  uint64 least_sig = 3;
+//
+//  string uuid_string = 4;
 }
