@@ -1,5 +1,0 @@
-include MANIFEST.in
-include README.rst
-include fintekkers/py.typed
-
-recursive-include * *.pyi
