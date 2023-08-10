@@ -4,6 +4,7 @@
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">
-	<h1>Welcome to Fintekk</h1>
+	<h1>Welcome to Fintekkers</h1>
 	<Login />
 </div>
+
