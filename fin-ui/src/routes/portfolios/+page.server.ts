@@ -14,7 +14,7 @@ export async function load() {
 	const portfolioService = new PortfolioService();
 
 	console.log('portfolioService', FieldProto.PORTFOLIO_NAME);
-	const portfolioData = portfolioService.searchPortfolio(now.to_date_proto(), FieldProto.PORTFOLIO_NAME, 'Federal Reserve SOMA Holdings')
+	const portfolioData = portfolioService.searchPortfolio(now.toProto(), FieldProto.PORTFOLIO_NAME, 'Federal Reserve SOMA Holdings')
 	.then((portfolios: PortfolioProto[]) => {
 		const results = portfolios.map((portfolio) => {
 			console.log(portfolio.getPortfolioName());
