@@ -12,7 +12,7 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"dependencies": {
-		"@fintekkers/ledger-models": "^0.1.60",
+		"@fintekkers/ledger-models": "^0.1.62",
 		"carbon-components-svelte": "^0.79.0"
 	},
 	"devDependencies": {
