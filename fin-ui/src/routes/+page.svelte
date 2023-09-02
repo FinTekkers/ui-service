@@ -1,10 +1,11 @@
-
-<script >
-	import Login from '../components/Login.svelte'
+<script lang="ts">
+  import SideMenu from "../components/SideMenu.svelte";
+  import Container from "../components/Container.svelte";
 </script>
 
-<div class="container h-full mx-auto flex justify-center items-center">
-	<h1>Welcome to Fintekkers</h1>
-	<Login />
+<div class="background_col h-full flex justify-between">
+  <SideMenu />
+  <Container />
 </div>
 
+<!-- all components here -->

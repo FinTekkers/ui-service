@@ -1,3 +1,4 @@
+// @ts-nocheck
 //Requests & Services
 import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";
 import type { PortfolioProto } from "@fintekkers/ledger-models/node/fintekkers/models/portfolio/portfolio_pb";
@@ -7,7 +8,7 @@ import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/pos
 import * as uuid from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 
-/** @type {import('./$types').PageServerLoad} */
+/** */
 export async function load() {
   const now = dt.ZonedDateTime.now();
 
