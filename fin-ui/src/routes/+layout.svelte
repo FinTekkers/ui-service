@@ -6,16 +6,9 @@
   // Most of your app wide CSS should be put in this file
   import "../app.postcss";
   import { AppBar, AppShell } from "@skeletonlabs/skeleton";
-  import SideMenu from "../components/SideMenu.svelte";
 </script>
 
 <AppShell>
-  <svelte:fragment slot="header">
-    <AppBar>
-      <div>
-        <h6>FINTEKKERS</h6>
-      </div>
-    </AppBar>
-  </svelte:fragment>
+  <svelte:fragment slot="header" />
   <slot />
 </AppShell>
