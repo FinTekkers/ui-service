@@ -2,6 +2,7 @@ import { writable, get } from "svelte/store";
 
 export const portfolioStore = writable<string[]>([]);
 export const currentMenu = writable<string>("home");
+export const Authentication = writable<boolean>(false);
 
 export const portfolioStoreUpdate = async (data: App.PageData) => {
   try {
