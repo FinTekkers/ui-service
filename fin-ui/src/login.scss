@@ -1,0 +1,158 @@
+@import "./style.scss";
+
+// page sizes
+
+.login_container {
+  width: 60vw;
+  height: 500px;
+}
+
+.branding {
+  width: 100%;
+}
+
+// background
+
+.loginpage_bgc_overlay {
+  background-color: $background-color;
+  position: absolute;
+  z-index: 2;
+}
+
+// left side
+.branding-image {
+  background-image: url("./lib/images/brandimage01.jpeg");
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transition: 0.5s ease-in-out;
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.branding-image-overlay {
+  width: 90%;
+  height: 90%;
+  padding: 2em;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-direction: column;
+
+  h3,
+  h1 {
+    color: $white;
+  }
+
+  p {
+    width: 70%;
+  }
+}
+
+// right side
+
+.branding-form {
+  position: absolute;
+  left: 40%;
+  width: 60%;
+  height: 100%;
+  background-color: $white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form_container {
+  width: 20vw;
+  position: relative;
+  left: 3vw;
+  @include flex(column, space-between, null, 1em);
+
+  .sign_up_headline {
+    font-size: 1.5rem;
+    color: $primary-color;
+  }
+
+  .form_fields {
+    @include flex(column, center, null, 0);
+    gap: 1em;
+
+    span {
+      color: $grey;
+      font-size: 1rem - 0.2rem;
+      margin-bottom: 1em;
+    }
+
+    .sign_up_btn {
+      background-color: $primary-color;
+      transition: all 0.5s ease-in-out;
+
+      &:hover {
+        background-color: $primary-button;
+      }
+    }
+
+    .checkIsPasswordVisible {
+      outline: none;
+      border: solid 1px $border-color;
+      appearance: none;
+      background-color: white;
+      transition: all 0.5s ease-in-out;
+
+      &:checked {
+        outline: none;
+        border: none;
+        appearance: none;
+        background-color: $primary-color;
+      }
+    }
+  }
+
+  .divider {
+    color: rgb(112, 112, 112);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    position: relative;
+
+    .one,
+    .two {
+      position: absolute;
+      top: 50%;
+      width: 20%;
+      color: $grey;
+    }
+
+    .one {
+      left: 20%;
+    }
+
+    .two {
+      right: 20%;
+    }
+  }
+
+  .google_OAuth {
+    button {
+      width: 100%;
+      background-color: white;
+      border: solid 1px rgb(112, 112, 112);
+      color: rgb(112, 112, 112);
+      transition: all 0.5s ease-in-out;
+      @include flex(row, center, center, 1em);
+
+      &:hover {
+        background-color: $primary-color;
+
+        span {
+          color: $white;
+        }
+      }
+    }
+  }
+}
