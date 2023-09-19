@@ -1,6 +1,11 @@
 <script lang="ts">
   import Icon from "@iconify/svelte";
-  import { currentMenu } from "../store/store";
+  import {
+    currentMenu,
+    Authentication,
+    goto,
+    Authenticate,
+  } from "../store/store";
   import { menuList } from "../util/Util";
 
   const changeMenu = (item: string) => {
@@ -9,7 +14,7 @@
   };
 </script>
 
-<div class="w-1/4 p-5 flex flex-col gap-10 relative sidemenu_container">
+<div class="w-1/4 p-5 flex flex-col gap-20 relative sidemenu_container">
   <div
     class=" p-2 custom-menutitle cursor-pointer"
     on:click={() => changeMenu(menuList.Home)}
@@ -55,8 +60,16 @@
     <span>Account</span>
   </div>
   <div
-    class="absolute bottom-10 mx-w-1xl p-2 flex gap-4 cursor-pointer"
-    on:click={() => changeMenu(menuList.Logout)}
+    class="absolute custom-menutitle-logout bottom-20 mx-w-1xl p-2 flex gap-4 cursor-pointer"
+    on:click={() => {
+      Authenticate(false);
+
+      if ($Authentication == false) {
+        goto("/");
+      }
+
+      changeMenu(menuList.Logout);
+    }}
   >
     <Icon
       icon="solar:logout-3-bold"
@@ -67,15 +80,25 @@
   </div>
 </div>
 
-<style>
+<style lang="scss">
+  @import "../style.scss";
+
+  .sidemenu_container {
+    padding: 2em 0 0 2em;
+    background-color: $white;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.096);
+    width: 20vw;
+  }
+
   .custom-menutitle {
     display: flex;
     position: relative;
     gap: 10px;
+    color: $primary-color;
   }
 
-  .sidemenu_container {
-    background-color: rgb(90, 83, 121);
+  .custom-menutitle-logout {
+    color: $primary-color;
   }
 
   .menu_icon {

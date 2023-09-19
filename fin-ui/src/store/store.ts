@@ -20,3 +20,9 @@ export const portfolioStoreUpdate = async (data: App.PageData) => {
     }
   }
 };
+
+export const goto = (url: string) => (window.location.href = url);
+
+export const Authenticate = (value: boolean) => {
+  Authentication.set(value);
+};
