@@ -1,6 +1,11 @@
 {
-	"/": [],
+	"/": [
+		"src/routes/+page.server.ts"
+	],
 	"/portfolios": [
 		"src/routes/portfolios/+page.server.ts"
+	],
+	"/security/[id]": [
+		"src/routes/security/[id]/+page.server.ts"
 	]
 }

@@ -1,18 +1,22 @@
 <script lang="ts">
-  import { currentMenu, goto, Authentication } from "../store/store";
-  import { menuList } from "../util/Util";
+  import { currentMenu } from "../store/store";
+  import { menuList } from "../lib/Util";
 
-  const Authenticate = () => {
-    Authentication.set(false);
-  };
+  // const Authenticate = () => {
+  //   Authentication.set(false);
+  // };
 </script>
 
 <!-- conditional render components -->
 <div class="p-5 h-full w-screen mainmenu_container">
   {#if $currentMenu == menuList.Home}
-    <div class="menu">Home</div>
+    <div class="menu">Home
+     <a href="/security/1" >→✅</a>
+    </div>
   {:else if $currentMenu == menuList.Dashboard}
-    <div class="menu">Dashboard</div>
+    <div class="menu">Dashboard
+      <a href="/security/2" >→✅</a>
+    </div>
   {:else if $currentMenu == menuList.Portfolio}
     <div class="menu">Portfolio</div>
   {:else if $currentMenu == menuList.Account}

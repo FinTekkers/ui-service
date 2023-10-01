@@ -1,8 +1,7 @@
 import { writable, get } from "svelte/store";
 
+// main portfolio data store & methods
 export const portfolioStore = writable<string[]>([]);
-export const currentMenu = writable<string>("home");
-export const Authentication = writable<boolean>(false);
 
 export const portfolioStoreUpdate = async (data: App.PageData) => {
   try {
@@ -21,8 +20,17 @@ export const portfolioStoreUpdate = async (data: App.PageData) => {
   }
 };
 
-export const goto = (url: string) => (window.location.href = url);
+// main menu navigation store & methods
+export const currentMenu = writable<string>("home");
 
-export const Authenticate = (value: boolean) => {
-  Authentication.set(value);
-};
+
+// login page store & methods
+export const isSignInOrSignUp = writable<boolean>(false)
+
+export const toggleSignInForm = ()=>{
+       let bool = get(isSignInOrSignUp)
+       isSignInOrSignUp.update((store)=>{
+         store = !bool;
+         return store
+       })
+}

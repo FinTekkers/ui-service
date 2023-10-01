@@ -1,16 +1,11 @@
-<script lang="ts">
+`<script lang="ts">
   import Icon from "@iconify/svelte";
-  import {
-    currentMenu,
-    Authentication,
-    goto,
-    Authenticate,
-  } from "../store/store";
-  import { menuList } from "../util/Util";
+  import {currentMenu} from "../store/store";
+  import { menuList } from "$lib/Util";
+  import {goto} from "$lib/helper";
 
   const changeMenu = (item: string) => {
     currentMenu.set(item);
-    console.log($currentMenu);
   };
 </script>
 
@@ -62,12 +57,8 @@
   <div
     class="absolute custom-menutitle-logout bottom-20 mx-w-1xl p-2 flex gap-4 cursor-pointer"
     on:click={() => {
-      Authenticate(false);
-
-      if ($Authentication == false) {
         goto("/");
-      }
-
+      
       changeMenu(menuList.Logout);
     }}
   >
@@ -86,7 +77,7 @@
   .sidemenu_container {
     padding: 2em 0 0 2em;
     background-color: $white;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.096);
+    // box-shadow: 2px 2px 10px rgba(206, 206, 206, 0.034);
     width: 20vw;
   }
 
@@ -107,3 +98,4 @@
     position: absolute;
   }
 </style>
+`
