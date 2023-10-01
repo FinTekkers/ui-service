@@ -1,25 +1,42 @@
 @import "./style.scss";
 
-// page sizes
+// Login page ****************
 
-.login_container {
-  width: 60vw;
-  height: 500px;
-}
-
-.branding {
-  width: 100%;
-}
-
-// background
-
+// login page container and default
 .loginpage_bgc_overlay {
   background-color: $background-color;
   position: absolute;
   z-index: 2;
+
+  .login_container {
+  width: 60vw;
+  height: 500px;
+
+
+    .branding-form {
+    position: absolute;
+    left: 40%;
+    width: 60%;
+    height: 100%;
+    background-color: $white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+}
 }
 
-// left side
+.form_btn {
+      background-color: $primary-color;
+      transition: all 0.5s ease-in-out;
+
+      &:hover {
+        background-color: $primary-button;
+      }
+}
+
+// login branding section - left side
 .branding-image {
   background-image: url("./lib/images/brandimage01.jpeg");
   background-position: center center;
@@ -33,9 +50,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-}
 
-.branding-image-overlay {
+  .branding-image-overlay {
   width: 90%;
   height: 90%;
   padding: 2em;
@@ -44,41 +60,92 @@
   align-items: flex-start;
   flex-direction: column;
 
-  h3,
-  h1 {
+  .logo {
     color: $white;
   }
 
   p {
     width: 70%;
   }
+
+  button{
+    font-weight: bold;
+  }
+}
 }
 
-// right side
+// login form section - right side
+.form{
+  height: 60vh;
 
-.branding-form {
-  position: absolute;
-  left: 40%;
-  width: 60%;
-  height: 100%;
-  background-color: $white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
-.form_container {
-  width: 20vw;
-  position: relative;
-  left: 3vw;
-  @include flex(column, space-between, null, 1em);
+  .form_container {
+    width: 20vw;
+    position: relative;
+    left: 3vw;
+    @include flex(column, space-between, null, 1em);
 
-  .sign_up_headline {
+  .form_headline {
     font-size: 1.5rem;
     color: $primary-color;
   }
 
-  .form_fields {
+  // sign up form
+  .sign_up_fields{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto ;
+  gap: .5em;
+  width: 300px;
+  height: 30vh;
+
+  label{
+    height: max-content;
+    position: relative;
+    input{
+      width: 100%;
+      height: 2.5em;
+      color: $grey;
+    }
+  }
+
+  label:nth-child(1){
+   grid-column: 1/2;
+  }
+  label:nth-child(2){
+   grid-column: 2/-1;
+  }
+  label:nth-child(3){
+   grid-column: 1/-1;
+  }
+  label:nth-child(4){
+   grid-column: 1/-1;
+  }
+  label:nth-child(5){
+   grid-column: 1/-1;
+  }
+  label:nth-child(6){
+   grid-column: 1/-1;
+
+   button{
+     width: 100%;
+   }
+  }
+
+  .togglePasswordDisplayIcon_signUp{
+     position: absolute;
+     top: 15%;
+     right: 5%;
+     transition: all .5s ease-in-out;
+     cursor: pointer;
+     color: $grey;
+  }
+
+
+}
+
+// sign in form
+  .sign_in_fields {
     @include flex(column, center, null, 0);
     gap: 1em;
 
@@ -86,15 +153,6 @@
       color: $grey;
       font-size: 1rem - 0.2rem;
       margin-bottom: 1em;
-    }
-
-    .sign_up_btn {
-      background-color: $primary-color;
-      transition: all 0.5s ease-in-out;
-
-      &:hover {
-        background-color: $primary-button;
-      }
     }
 
     .checkIsPasswordVisible {
@@ -111,14 +169,31 @@
         background-color: $primary-color;
       }
     }
+
+
+    .passwordField{
+      position: relative;
+      .togglePasswordDisplayIcon{
+        position: absolute;
+        top: 50%;
+        right: 5%;
+        transition: all .5s ease-in-out;
+        cursor: pointer;
+      }
+    }
+
+
   }
 
+
+
   .divider {
-    color: rgb(112, 112, 112);
+    color: $grey;
     width: 100%;
     display: flex;
     justify-content: center;
     position: relative;
+    font-size:.8rem;
 
     .one,
     .two {
@@ -141,8 +216,8 @@
     button {
       width: 100%;
       background-color: white;
-      border: solid 1px rgb(112, 112, 112);
-      color: rgb(112, 112, 112);
+      border: solid 1px $grey;
+      color: $grey;
       transition: all 0.5s ease-in-out;
       @include flex(row, center, center, 1em);
 
@@ -155,4 +230,10 @@
       }
     }
   }
+   }
 }
+
+
+
+
+
