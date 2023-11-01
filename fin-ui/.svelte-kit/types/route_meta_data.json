@@ -2,6 +2,9 @@
 	"/": [
 		"src/routes/+page.server.ts"
 	],
+	"/login": [
+		"src/routes/login/+page.server.ts"
+	],
 	"/portfolios": [
 		"src/routes/portfolios/+page.server.ts"
 	],

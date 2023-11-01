@@ -1,19 +1,20 @@
 import { fail, redirect } from "@sveltejs/kit";
+import * as Yup from 'yup';
+
+const signInSchema = Yup.object({
+    searchQuery:Yup.string().min(3,'please enter a word').required('please enter text'),
+})
 
 export const actions = {
-    default: async ({request, cookies})=>{
-       const data = await request.formData();
-       const email = data.get('Email');
-       const password = data.get('Password');
-
-
-       if(!email|| !password){
-           return fail(400, {error:"enter email or password"})
-       }
+    search: async ({request}:{ request: Request })=>{
       
-       cookies.set('session', JSON.stringify({userId:123}))
-
-       throw redirect(303, "/portfolios")
+        try{
+               const data = await request.formData();
+               const searchQuery = data.get('search');
+               console.log('search query', searchQuery);
+        }catch(error){
+            console.log('something went wrong', error)
+        }
 
 
     }

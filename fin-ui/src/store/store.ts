@@ -20,6 +20,22 @@ export const portfolioStoreUpdate = async (data: App.PageData) => {
   }
 };
 
+// sidebar store
+export const sideMenuStore = writable<boolean>(false);
+
+// sidebar method
+
+export const toggleSidebarMenu = ()=>{
+  let bool = get(sideMenuStore);
+
+  sideMenuStore.update((store)=>{
+   store = !bool;
+   return store;
+  })
+}
+
+
+
 // main menu navigation store & methods
 export const currentMenu = writable<string>("home");
 

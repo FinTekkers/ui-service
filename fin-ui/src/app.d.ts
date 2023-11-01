@@ -7,4 +7,9 @@ declare namespace App {
   // interface Platform {}
 }
 
-declare namespace Login {}
+declare namespace Login {
+
+  interface formError{
+    error:string
+  }
+}
