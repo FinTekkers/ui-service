@@ -1,31 +1,27 @@
 
 <script lang="ts">
-    import LoginBrandPage from "../components/LoginBrandPage.svelte";
-    import LoginForm from "../components/LoginForm.svelte";
-
-  export let data;
-  export let form;
+  import LandingSection from "../components/LandingSection.svelte";
+    import AboutSection from "../components/AboutSection.svelte";
+    import Video_section from '../components/VideoSection.svelte';
+    import VideoSection from "../components/VideoSection.svelte";
+    import Icon from "@iconify/svelte";
 
 </script>
 
 
-
-<div class="loginpage_bgc_overlay h-full flex justify-between">
-  <form method="post">
-    <div class=" w-screen h-screen flex justify-center items-center">
-      <div class="login_container grid grid-cols-2 rounded relative">
-        <LoginBrandPage />
-        <div
-          class="branding branding-form p-2 rounded-xl flex justify-center items-center"
-        >
-        <LoginForm />
-        </div>
-      </div>
-    </div>
-  </form>
+<div class="landing_page_overlay">
+ <LandingSection />
+ <AboutSection />
+ <VideoSection />
 </div>
 
-<style>
+
+<style lang="scss">
   @import "../style.scss";
-  @import "../login.scss";
+
+  .landing_page_overlay{
+    height: 100vh;
+    background-color: $background-color;
+  }
+
 </style>

@@ -1,4 +1,4 @@
-`<script lang="ts">
+<script lang="ts">
   import Icon from "@iconify/svelte";
   import {currentMenu} from "../store/store";
   import { menuList } from "$lib/Util";
@@ -77,7 +77,7 @@
   .sidemenu_container {
     padding: 2em 0 0 2em;
     background-color: $white;
-    // box-shadow: 2px 2px 10px rgba(206, 206, 206, 0.034);
+    box-shadow: 2px 2px 10px rgba(206, 206, 206, 0.034);
     width: 20vw;
   }
 
@@ -98,4 +98,3 @@
     position: absolute;
   }
 </style>
-`

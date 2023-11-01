@@ -2,9 +2,7 @@
   import { AppBar } from "@skeletonlabs/skeleton";
 </script>
 
-<div class="main_navbar">
-  <h6 class="logo">FTK</h6>
-</div>
+
 
 <slot />
 
