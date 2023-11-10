@@ -12,6 +12,8 @@ $white: whitesmoke;
 $black: #05192a;
 $grey: #86929c;
 
+$bd-radius:6px;
+
 *::before,
 *::after,
 * {
@@ -26,6 +28,17 @@ $grey: #86929c;
   justify-content: $jc;
   align-items: $ai;
   gap: $gap;
+}
+
+.debug{
+  border: solid 1px red;
+}
+
+.centerAbsolute {
+  position: absolute;
+  top:50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
 }
 
 .body-cover {

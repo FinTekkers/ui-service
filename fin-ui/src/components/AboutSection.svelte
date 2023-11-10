@@ -28,7 +28,6 @@
 
     .About_section{
         padding: 4em 1em 1em 1em;
-        margin-top: 2em;
         @include flex(row, center, center, 1.5em);
         background-color: $primary-color;
         height: 50vh;
@@ -37,7 +36,7 @@
         @include flex(column, center, center, 1.5em);
 
           &:nth-child(n){
-              width: 23vw;
+              width: 25vw;
               border: solid 1px rgba(255, 255, 255, 0.102);
               border-radius: 6px;
               padding: 1em;
@@ -48,6 +47,24 @@
           }
       }
 
+    }
+
+    @media screen and (max-width:600px){
+         .About_section{
+           height: max-content;
+                .abt_section{
+                @include flex(column, center, center, 1.5em);
+                    &:nth-child(n){
+                        min-width: 25vw;
+                        max-width: 30vw;
+                        width: 300px;
+
+                        p{
+                            font-size: .8rem;
+                        }
+                    }
+                }
+         }
     }
 
 </style>

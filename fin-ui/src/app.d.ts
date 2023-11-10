@@ -8,8 +8,17 @@ declare namespace App {
 }
 
 declare namespace Login {
-
   interface formError{
     error:string
   }
 }
+
+
+declare namespace Obr{
+  interface userArchetypes{
+    title:string,
+    content:string,
+    link:string
+  }
+}
+
