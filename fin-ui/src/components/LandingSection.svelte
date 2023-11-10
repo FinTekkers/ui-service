@@ -1,8 +1,10 @@
 
 <script lang="ts">
     import { CodeBlock } from '@skeletonlabs/skeleton';
+    import ObrLanding from './Onboarding/OBRLanding.svelte';
  </script>
 <div class="Intro_section">
+     <ObrLanding />
     <div class="intro_description">
         <h1>Welcome to Fintekkers</h1>
         <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius, aliquam veritatis commodi suscipit quo iure accusantium nostrum esse nam deleniti, nihil sint repudiandae veniam earum id saepe sunt ipsa totam?
@@ -96,6 +98,15 @@
  
      }
 
+}
+
+
+@media screen and (max-width:600px){
+
+      .Intro_section{
+          height: 100%;
+          padding-bottom:2em;
+      }
 }
 
 </style>
