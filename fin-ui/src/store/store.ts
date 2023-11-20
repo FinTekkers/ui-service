@@ -33,7 +33,17 @@ export const toggleSidebarMenu = ()=>{
    return store;
   })
 }
+// Boolean store 
+export const obrPromptBoolean = writable<boolean>(true)
 
+export const toggleObrPromptBoolean = ()=>{
+  let bool = get(obrPromptBoolean);
+  
+  obrPromptBoolean.update((store)=>{
+    store = !bool;
+    return store;
+  })
+}
 
 
 // main menu navigation store & methods
