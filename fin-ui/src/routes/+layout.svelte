@@ -7,6 +7,7 @@
   import "../app.postcss";
   import { AppShell } from "@skeletonlabs/skeleton";
   import Icon from "@iconify/svelte";
+  import {goto} from '../lib/helper';
 
   // navbar toggle
   import {toggleSidebarMenu,sideMenuStore} from '../store/store'
@@ -44,7 +45,7 @@
    </div>
 
     <div class="navigation_bar">
-       <div class="logo">Fintekkers</div>
+       <div class="logo" on:click={()=>goto('/')}>Fintekkers</div>
        <div class="navigation_links">
          <ul>
            <li><a href="#">Trial</a></li>
@@ -98,6 +99,7 @@
     .logo{
       font-weight: bold;
       font-size: 1.2rem;
+      cursor: pointer;
     }
 
     .navigation_links{

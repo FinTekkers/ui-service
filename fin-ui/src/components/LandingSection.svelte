@@ -1,16 +1,19 @@
 
 <script lang="ts">
     import { CodeBlock } from '@skeletonlabs/skeleton';
-    import ObrLanding from './Onboarding/OBRLanding.svelte';
+    import {goto} from '../lib/helper';
+
  </script>
 <div class="Intro_section">
-     <ObrLanding />
+   
     <div class="intro_description">
         <h1>Welcome to Fintekkers</h1>
         <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius, aliquam veritatis commodi suscipit quo iure accusantium nostrum esse nam deleniti, nihil sint repudiandae veniam earum id saepe sunt ipsa totam?
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius, aliquam veritatis commodi suscipit quo iure accusantium nostrum esse nam deleniti, nihil sint repudiandae veniam earum id saepe sunt ipsa totam?
         </p>
-       <button>Try now</button>
+       <button on:click={()=>{
+          goto('/login')
+       }}>Try now</button>
     </div>
     <div class="intro_visualiser">
       <CodeBlock language="ts" code={`
