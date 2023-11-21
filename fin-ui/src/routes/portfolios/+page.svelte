@@ -9,7 +9,6 @@
 
 <div class="w-screen h-full flex">
   <SideMenu />
-  <Main />
 
   <PortfolioGrid rows={data.portfolioData} />
 </div>
