@@ -1,19 +1,15 @@
-{@debug}
 <script lang="ts">
-	import { Tile } from 'carbon-components-svelte';
-	import PortfolioGrid from '../../components/PortfolioGrid.svelte';
-
-	export let data: import('./$types').PageData;
+  import { Tile } from "carbon-components-svelte";
+  import { onMount } from "svelte";
+  import PortfolioGrid from "../../components/PortfolioGrid.svelte";
+  import { portfolioStoreUpdate, portfolioStore } from "../../store/store";
+  import Main from "../../components/Main.svelte";
+  import SideMenu from "../../components/SideMenu.svelte";
 </script>
 
-<div>
-	<Tile>
-		<PortfolioGrid rows={data.portfolioData} />
-	</Tile>
-</div>
+{@debug}
 
-<style>
-	:global(:root) {
-		--grid-height: 75vh;
-	}
-</style>
+<div class="w-screen h-full flex">
+  <SideMenu />
+  <Main />
+</div>
