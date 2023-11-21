@@ -1,7 +1,9 @@
-import { w as writable } from "./index.js";
-const portfolioStore = writable([]);
+import { w as writable } from "./index2.js";
+const sideMenuStore = writable(false);
 const currentMenu = writable("home");
+const isSignInOrSignUp = writable(false);
 export {
   currentMenu as c,
-  portfolioStore as p
+  isSignInOrSignUp as i,
+  sideMenuStore as s
 };
