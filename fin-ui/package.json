@@ -13,7 +13,7 @@
 		"test": "vitest"
 	},
 	"dependencies": {
-		"@fintekkers/ledger-models": "^0.1.62",
+		"@fintekkers/ledger-models": "^0.1.65",
 		"carbon-components-svelte": "^0.79.0",
 		"sass": "^1.66.1"
 	},
