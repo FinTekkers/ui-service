@@ -13,6 +13,7 @@
   export let form:Login.formError;
 
 
+
  </script>   
 
 
@@ -69,7 +70,7 @@
               </label>
 
               <label for="">
-              <button class="form_btn text-white font-bold py-2 px-4 rounded"
+              <button type="submit"  class="form_btn text-white font-bold py-2 px-4 rounded"
                >Sign Up →
              </button>
             </label>
@@ -127,11 +128,11 @@
                 </div>
               
                 {#if $isSignInOrSignUp}
-                <button class="form_btn text-white font-bold py-2 px-4 rounded"
+                <button type="submit" class="form_btn text-white font-bold py-2 px-4 rounded"
                   >Sign Up →
                 </button>
                 {:else}
-                 <button class="form_btn text-white font-bold py-2 px-4 rounded"
+                 <button type="submit" class="form_btn text-white font-bold py-2 px-4 rounded"
                   >Sign In →
                 </button>
                 {/if}
