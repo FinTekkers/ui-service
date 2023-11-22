@@ -11,9 +11,7 @@
                         
             Welcome to Fintekkers </h1>
 
-            <div class="landing_image"> 
-                <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="">
-            </div>
+     
         <p>
 
             Get started with Fintekkers instantly!  <br/>  Fintekkers platform provides
@@ -23,6 +21,35 @@
        <button class="Trynow_btn" on:click={()=>{
           goto('/login')
        }}>Try now</button>
+
+       <div class="description">
+
+        <div class="description_tip">
+            <Icon
+                      icon="line-md:cog-loop"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+            Consolidate all your trading tools into a single platform
+        </div>
+        <div class="description_tip">
+            <Icon
+                      icon="line-md:cog-loop"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+            Access robust real-time, historical & alternative data
+        </div>
+        <div class="description_tip">
+            <Icon
+                      icon="line-md:cog-loop"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+            Lean on free dedicated US-based support
+        </div>
+
+       </div>
     </div>
     <div class="intro_visualiser">
         <div class="codeblock">
@@ -81,6 +108,43 @@
         height: 100vh;
         @include flex(row, space-between, flex-start, 2em); 
         padding: 6em;
+        background-color: $background-color;
+        position: relative;
+
+        .description{
+            max-width: 45vw;
+            @include flex(row, center, center, .5em); 
+            @extend .centerAbsolute;
+            left: 50%;
+            transform: translate(-100%,0%);
+            font-size: 1rem;
+
+
+            .description_tip{
+             @include flex(column , center, center, 1em); 
+             border: solid 1px $grey;
+             height: 20vh;
+             width: 12vw;
+             text-align: center;
+             border-radius: $bd-radius;
+             position: absolute;
+
+             &:nth-child(1){
+                 left: 7%;
+                 top: 5%;
+             }
+
+                &:nth-child(2){
+                 left: 37.5%;
+                 top: 25%;
+             }
+                &:nth-child(3){
+                 left: 7%;
+                 top: 50%;
+             }
+            }
+
+        }
 
 
         div:nth-child(n) {
@@ -119,6 +183,8 @@
                 font-weight:bold;
                 font-size: 1rem;
                 height: 8vh;
+                background-color: $success;
+                color: $black;
 
                 &:hover{
                     background-color: $primary-color;
