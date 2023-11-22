@@ -4,12 +4,14 @@
     import AboutSection from "../components/AboutSection.svelte";
     import Video_section from '../components/VideoSection.svelte';
     import VideoSection from "../components/VideoSection.svelte";
+    import LandingOverview from '../components/LandingOverview.svelte';
     import Icon from "@iconify/svelte";
 
 </script>
 
 
 <div class="landing_page_overlay">
+ <LandingOverview />
  <LandingSection />
  <AboutSection />
  <VideoSection />
