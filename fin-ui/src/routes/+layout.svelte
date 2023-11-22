@@ -45,7 +45,13 @@
    </div>
 
     <div class="navigation_bar">
-       <div class="logo" on:click={()=>goto('/')}>Fintekkers</div>
+       <div class="logo" on:click={()=>goto('/')}>
+          <Icon
+                      icon="material-symbols:finance-mode"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+        Fintekkers</div>
        <div class="navigation_links">
          <ul>
            <li><a href="#">Trial</a></li>
@@ -53,6 +59,14 @@
            <li><a href="#">Plugins</a></li>
            <li><a href="#">Playground</a></li>
            <li><a href="#">Contact Us</a></li>
+           <li>
+              <Icon
+                      icon="ic:twotone-phone"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+              412-234-4312
+          </li>
          </ul>
        </div>
        <div class="search_bar">
@@ -100,12 +114,20 @@
       font-weight: bold;
       font-size: 1.2rem;
       cursor: pointer;
+    @include flex(center, center, row, .5em);
+
     }
 
     .navigation_links{
       ul{
       @include flex(center, flex-start, row, 1em);
       width: 50vw;
+
+      li:last-child{
+      @include flex(center, center, row, .4em);
+      margin-left: 1em;
+        
+      }
       }
     }
 
