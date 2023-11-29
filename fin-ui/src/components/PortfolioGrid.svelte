@@ -5,10 +5,14 @@
 		ToolbarContent,
 		ToolbarSearch,
 		Button,
-		Pagination
-	} from 'carbon-components-svelte';
+		Pagination,
+	} from "carbon-components-svelte";
 
-	export let rows: Array<{ portfolioName:string; portfolioId:string }>; //: string; portfolioId: string | undefined; id: string }>;
+	export let rows: Array<{
+		portfolioName: string;
+		portfolioId: string;
+		portfolioAsOf: string;
+	}>; //: string; portfolioId: string | undefined; id: string }>;
 </script>
 
 <div class="container mx-auto my-6 shadow px-10 py-7">
@@ -18,6 +22,7 @@
 			<tr>
 				<th class="text-semibold text-lg"> Portfolio </th>
 				<th class="text-semibold text-lg">ID</th>
+				<th class="text-semibold text-lg">Created (AsOf)</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -25,6 +30,7 @@
 				<tr class="table-row border-b border-slate-400">
 					<td class="table-cell">{row.portfolioName}</td>
 					<td class="table-cell">{row.portfolioId}</td>
+					<td class="table-cell">{row.portfolioAsOf}</td>
 				</tr>
 			{/each}
 		</tbody>
