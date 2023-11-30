@@ -2,17 +2,15 @@
     import { CodeBlock } from '@skeletonlabs/skeleton';
     import {goto} from '../lib/helper';
   import Icon from "@iconify/svelte";
+  import {reveal} from 'svelte-reveal'
 
  </script>
 <div class="Intro_section">
    
     <div class="intro_description">
-        <h1>
-                        
-            Welcome to Fintekkers </h1>
-
-     
-        <p>
+        <h1 use:reveal={{ transition: "fly" }}>                       
+            Welcome to Fintekkers </h1>  
+        <p use:reveal={{ transition: "fly", delay:3 }}>
 
             Get started with Fintekkers instantly!  <br/>  Fintekkers platform provides
             you all the APIs you need to build your own fintech product, or
@@ -24,25 +22,25 @@
 
        <div class="description">
 
-        <div class="description_tip">
+        <div class="description_tip" use:reveal={{ transition: "slide" }}>
             <Icon
-                      icon="line-md:cog-loop"
+                      icon="formkit:group"
                       style="width: 25px; height: 25px;"
                       
                     /> 
-            Consolidate all your trading tools into a single platform
+            Consolidate all your trading tools 
         </div>
-        <div class="description_tip">
+        <div class="description_tip" use:reveal={{ transition: "slide", delay:0.5 }}>
             <Icon
-                      icon="line-md:cog-loop"
+                      icon="carbon:time"
                       style="width: 25px; height: 25px;"
                       
                     /> 
-            Access robust real-time, historical & alternative data
+            Access robust real-time data
         </div>
-        <div class="description_tip">
+        <div class="description_tip" use:reveal={{ transition: "slide", delay:1.5 }}>
             <Icon
-                      icon="line-md:cog-loop"
+                      icon="icons8:support"
                       style="width: 25px; height: 25px;"
                       
                     /> 
@@ -122,7 +120,7 @@
 
             .description_tip{
              @include flex(column , center, center, 1em); 
-             border: solid 1px $grey;
+             border: solid 1px $primary-color;
              height: 20vh;
              width: 12vw;
              text-align: center;
@@ -188,6 +186,7 @@
 
                 &:hover{
                     background-color: $primary-color;
+                    color:$white
                 }
                 
             }

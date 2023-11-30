@@ -1,18 +1,18 @@
-<script lang="ts">
-
+<script >
+     import { reveal } from 'svelte-reveal';
 </script>
 
-<div class="landing_overview">
+<div class="landing_overview" >
     <div class="overlay">
     </div>
 
     <div class="content">
-        <h1>Welcome to Fintekkers</h1>
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptate, error.</p>
+        <h1 class="content_title" use:reveal={{ transition: "fade" }}>Welcome to Fintekkers</h1>
+        <p class="content_paragraph">Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptate, error.</p>
 
         <div class="action_buttons">
-            <button class="button">Explore Product</button>
-            <button class="button">Try Now</button>
+            <button class="button btn_explore_product">Explore Product</button>
+            <button class="button btn_Try_Now">Try Now</button>
         </div>
     </div>
 </div>
@@ -33,6 +33,7 @@
          @extend   .centerAbsolute;
          width: 100%;
          @include flex(column, center, center, 3em);
+         
 
          .action_buttons{
          @include flex(row, center, center, 1em);
@@ -48,6 +49,22 @@
                  &:nth-child(2){
                      background-color: $success;
                      color: $black;
+                 }
+             }
+
+             .btn_explore_product{
+                 transition: all .5s ease-in-out;
+                 &:hover{
+                     background-color: $success;
+                     color: $black;
+                 }
+             }
+
+             .btn_Try_Now{
+                 transition: all .5s ease-in-out;
+                 &:hover{
+                     background-color: $primary-color;
+                     color: $white;
                  }
              }
          }
