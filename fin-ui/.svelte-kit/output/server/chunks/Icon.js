@@ -1,3 +1,4 @@
+import { c as create_ssr_component, o as onDestroy, i as spread, j as escape_object, f as createEventDispatcher } from "./index3.js";
 const matchIconName = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const stringToIcon = (value, validate, allowSimpleName, provider = "") => {
   const colonSeparated = value.split(":");
@@ -1674,8 +1675,40 @@ function generateIcon(icon, props) {
     ...icon
   }, props) : null;
 }
-const SideMenu_svelte_svelte_type_style_lang = "";
+const Icon = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  const state = {
+    // Last icon name
+    name: "",
+    // Loading status
+    loading: null,
+    // Destroyed status
+    destroyed: false
+  };
+  let mounted = false;
+  let data;
+  const onLoad = (icon) => {
+    if (typeof $$props.onLoad === "function") {
+      $$props.onLoad(icon);
+    }
+    const dispatch = createEventDispatcher();
+    dispatch("load", { icon });
+  };
+  function loaded() {
+  }
+  onDestroy(() => {
+    state.destroyed = true;
+  });
+  {
+    {
+      const iconData = checkIconState($$props.icon, state, mounted, loaded, onLoad);
+      data = iconData ? generateIcon(iconData.data, $$props) : null;
+      if (data && iconData.classes) {
+        data.attributes["class"] = (typeof $$props["class"] === "string" ? $$props["class"] + " " : "") + iconData.classes.join(" ");
+      }
+    }
+  }
+  return `${data ? `${data.svg ? `<svg${spread([escape_object(data.attributes)], {})}><!-- HTML_TAG_START -->${data.body}<!-- HTML_TAG_END --></svg>` : `<span${spread([escape_object(data.attributes)], {})}></span>`}` : ``}`;
+});
 export {
-  checkIconState as c,
-  generateIcon as g
+  Icon as I
 };

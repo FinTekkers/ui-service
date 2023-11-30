@@ -1,105 +1,10 @@
-import { g as get_store_value, c as create_ssr_component, e as escape, a as add_attribute, b as compute_slots, v as validate_component } from "../../chunks/index2.js";
-import { w as writable } from "../../chunks/index.js";
-import "../../chunks/SideMenu.svelte_svelte_type_style_lang.js";
+import { c as create_ssr_component, a as add_attribute, e as escape, b as compute_slots, d as subscribe, v as validate_component, n as null_to_empty } from "../../chunks/index3.js";
+import "../../chunks/ProgressBar.svelte_svelte_type_style_lang.js";
+import { I as Icon } from "../../chunks/Icon.js";
+import { s as sideMenuStore } from "../../chunks/store.js";
 const themeSkeleton = "";
 const skeleton = "";
 const app = "";
-const stores = {};
-function localStorageStore(key, initialValue, options) {
-  options?.serializer ?? JSON;
-  options?.storage ?? "local";
-  if (!stores[key]) {
-    const store = writable(initialValue, (set2) => {
-    });
-    const { subscribe, set } = store;
-    stores[key] = {
-      set(value) {
-        set(value);
-      },
-      update(updater) {
-        const value = updater(get_store_value(store));
-        set(value);
-      },
-      subscribe
-    };
-  }
-  return stores[key];
-}
-localStorageStore("modeOsPrefers", false);
-localStorageStore("modeUserPrefers", void 0);
-localStorageStore("modeCurrent", false);
-const cBase = "flex flex-col";
-const cRowMain = "grid items-center";
-const cRowHeadline = "";
-const cSlotLead = "flex-none flex justify-between items-center";
-const cSlotDefault = "flex-auto";
-const cSlotTrail = "flex-none flex items-center space-x-4";
-const AppBar = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  let classesBase;
-  let classesRowMain;
-  let classesRowHeadline;
-  let classesSlotLead;
-  let classesSlotDefault;
-  let classesSlotTrail;
-  let $$slots = compute_slots(slots);
-  let { background = "bg-surface-100-800-token" } = $$props;
-  let { border = "" } = $$props;
-  let { padding = "p-4" } = $$props;
-  let { shadow = "" } = $$props;
-  let { spacing = "space-y-4" } = $$props;
-  let { gridColumns = "grid-cols-[auto_1fr_auto]" } = $$props;
-  let { gap = "gap-4" } = $$props;
-  let { regionRowMain = "" } = $$props;
-  let { regionRowHeadline = "" } = $$props;
-  let { slotLead = "" } = $$props;
-  let { slotDefault = "" } = $$props;
-  let { slotTrail = "" } = $$props;
-  let { label = "" } = $$props;
-  let { labelledby = "" } = $$props;
-  if ($$props.background === void 0 && $$bindings.background && background !== void 0)
-    $$bindings.background(background);
-  if ($$props.border === void 0 && $$bindings.border && border !== void 0)
-    $$bindings.border(border);
-  if ($$props.padding === void 0 && $$bindings.padding && padding !== void 0)
-    $$bindings.padding(padding);
-  if ($$props.shadow === void 0 && $$bindings.shadow && shadow !== void 0)
-    $$bindings.shadow(shadow);
-  if ($$props.spacing === void 0 && $$bindings.spacing && spacing !== void 0)
-    $$bindings.spacing(spacing);
-  if ($$props.gridColumns === void 0 && $$bindings.gridColumns && gridColumns !== void 0)
-    $$bindings.gridColumns(gridColumns);
-  if ($$props.gap === void 0 && $$bindings.gap && gap !== void 0)
-    $$bindings.gap(gap);
-  if ($$props.regionRowMain === void 0 && $$bindings.regionRowMain && regionRowMain !== void 0)
-    $$bindings.regionRowMain(regionRowMain);
-  if ($$props.regionRowHeadline === void 0 && $$bindings.regionRowHeadline && regionRowHeadline !== void 0)
-    $$bindings.regionRowHeadline(regionRowHeadline);
-  if ($$props.slotLead === void 0 && $$bindings.slotLead && slotLead !== void 0)
-    $$bindings.slotLead(slotLead);
-  if ($$props.slotDefault === void 0 && $$bindings.slotDefault && slotDefault !== void 0)
-    $$bindings.slotDefault(slotDefault);
-  if ($$props.slotTrail === void 0 && $$bindings.slotTrail && slotTrail !== void 0)
-    $$bindings.slotTrail(slotTrail);
-  if ($$props.label === void 0 && $$bindings.label && label !== void 0)
-    $$bindings.label(label);
-  if ($$props.labelledby === void 0 && $$bindings.labelledby && labelledby !== void 0)
-    $$bindings.labelledby(labelledby);
-  classesBase = `${cBase} ${background} ${border} ${spacing} ${padding} ${shadow} ${$$props.class ?? ""}`;
-  classesRowMain = `${cRowMain} ${gridColumns} ${gap} ${regionRowMain}`;
-  classesRowHeadline = `${cRowHeadline} ${regionRowHeadline}`;
-  classesSlotLead = `${cSlotLead} ${slotLead}`;
-  classesSlotDefault = `${cSlotDefault} ${slotDefault}`;
-  classesSlotTrail = `${cSlotTrail} ${slotTrail}`;
-  return `<div class="${"app-bar " + escape(classesBase, true)}" data-testid="app-bar" role="toolbar"${add_attribute("aria-label", label, 0)}${add_attribute("aria-labelledby", labelledby, 0)}>
-	<div class="${"app-bar-row-main " + escape(classesRowMain, true)}">
-		${$$slots.lead ? `<div class="${"app-bar-slot-lead " + escape(classesSlotLead, true)}">${slots.lead ? slots.lead({}) : ``}</div>` : ``}
-		
-		<div class="${"app-bar-slot-default " + escape(classesSlotDefault, true)}">${slots.default ? slots.default({}) : ``}</div>
-		
-		${$$slots.trail ? `<div class="${"app-bar-slot-trail " + escape(classesSlotTrail, true)}">${slots.trail ? slots.trail({}) : ``}</div>` : ``}</div>
-	
-	${$$slots.headline ? `<div class="${"app-bar-row-headline " + escape(classesRowHeadline, true)}">${slots.headline ? slots.headline({}) : ``}</div>` : ``}</div>`;
-});
 const cBaseAppShell = "w-full h-full flex flex-col overflow-hidden";
 const cContentArea = "w-full h-full flex overflow-hidden";
 const cPage = "flex-1 overflow-x-hidden flex flex-col";
@@ -170,19 +75,60 @@ const AppShell = create_ssr_component(($$result, $$props, $$bindings, slots) => 
 	
 	${$$slots.footer ? `<footer id="shell-footer" class="${"flex-none " + escape(classesFooter, true)}">${slots.footer ? slots.footer({}) : ``}</footer>` : ``}</div>`;
 });
-const ProgressBar_svelte_svelte_type_style_lang = "";
+const _layout_svelte_svelte_type_style_lang = "";
+const css = {
+  code: ".svelte-9oiej2.svelte-9oiej2::before,.svelte-9oiej2.svelte-9oiej2::after,.svelte-9oiej2.svelte-9oiej2{padding:0;margin:0;box-sizing:border-box}.debug.svelte-9oiej2.svelte-9oiej2{border:solid 1px red}.centerAbsolute.svelte-9oiej2.svelte-9oiej2{position:absolute;top:50%;left:50%;transform:translate(-50%, -50%)}.body-cover.svelte-9oiej2.svelte-9oiej2{background-color:#0c3a46;position:absolute}.button.svelte-9oiej2.svelte-9oiej2{padding:0.5rem 1rem;border-radius:5px;background-color:#258ea8}.navigation_bar.svelte-9oiej2.svelte-9oiej2{height:8vh;padding:1em;background-color:#0c3a46;display:flex;flex-direction:center;justify-content:space-between;align-items:row;gap:1em}.navigation_bar.svelte-9oiej2 .logo.svelte-9oiej2{font-weight:bold;font-size:1.2rem}.navigation_bar.svelte-9oiej2 .navigation_links ul.svelte-9oiej2{display:flex;flex-direction:center;justify-content:flex-start;align-items:row;gap:1em;width:50vw}.navigation_bar.svelte-9oiej2 .search_bar .search_bar_form.svelte-9oiej2{width:20vw}.navigation_bar.svelte-9oiej2 .search_bar .search_bar_form .search_bar_container input.svelte-9oiej2{padding:0.5em 1em}.navigation_bar.svelte-9oiej2 .search_bar .search_bar_form .search_bar_container .search_btn.svelte-9oiej2{padding:0 0.3em;height:100%;position:absolute;top:0%;right:0%;font-size:0.8rem;background-color:#1b6f85;border-top-right-radius:6px;border-bottom-right-radius:6px}.Footer.svelte-9oiej2.svelte-9oiej2{width:100%;height:10vh;padding:1em;display:flex;flex-direction:row;justify-content:center;align-items:center;gap:1em;position:absolute;bottom:0;background-color:#0c3a46}.hamburger_nav.svelte-9oiej2.svelte-9oiej2{display:none}.hamburger_btn.svelte-9oiej2.svelte-9oiej2{display:none}@media screen and (max-width: 1200px){.navigation_bar.svelte-9oiej2.svelte-9oiej2{display:none}.hamburger_btn.svelte-9oiej2.svelte-9oiej2{display:block;position:absolute;right:0;margin:1em;z-index:100}.hidden.svelte-9oiej2.svelte-9oiej2{right:-100%}.show.svelte-9oiej2.svelte-9oiej2{right:0%}.hamburger_nav.svelte-9oiej2.svelte-9oiej2{display:block;width:30vw;height:100%;position:absolute;z-index:3;top:0;background-color:#1b6f85;transition:all 0.2s ease-in-out}}@media screen and (max-width: 600px){.hamburger_nav.svelte-9oiej2.svelte-9oiej2{width:100vw;background-color:#1b6f85}}",
+  map: null
+};
 const Layout = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let $sideMenuStore, $$unsubscribe_sideMenuStore;
+  $$unsubscribe_sideMenuStore = subscribe(sideMenuStore, (value) => $sideMenuStore = value);
+  let { data } = $$props;
+  let { form } = $$props;
+  if ($$props.data === void 0 && $$bindings.data && data !== void 0)
+    $$bindings.data(data);
+  if ($$props.form === void 0 && $$bindings.form && form !== void 0)
+    $$bindings.form(form);
+  $$result.css.add(css);
+  $$unsubscribe_sideMenuStore();
   return `${validate_component(AppShell, "AppShell").$$render($$result, {}, {}, {
-    header: () => {
-      return `${validate_component(AppBar, "AppBar").$$render($$result, {}, {}, {
-        default: () => {
-          return `<div><h6>FINTEKKERS</h6></div>`;
-        }
-      })}
-  `;
-    },
     default: () => {
-      return `${slots.default ? slots.default({}) : ``}`;
+      return `<div class="${escape(null_to_empty(`hamburger_nav ${$sideMenuStore ? "show" : "hidden"}`), true) + " svelte-9oiej2"}"></div>
+
+   <div class="hamburger_btn svelte-9oiej2">${$sideMenuStore ? `<button class="close_btn svelte-9oiej2">${validate_component(Icon, "Icon").$$render(
+        $$result,
+        {
+          icon: "ic:outline-close",
+          style: "width: 35px; height: 35px;"
+        },
+        {},
+        {}
+      )}</button>` : `<button class="open_btn svelte-9oiej2">${validate_component(Icon, "Icon").$$render(
+        $$result,
+        {
+          icon: "mdi:hamburger-menu",
+          style: "width: 35px; height: 35px;"
+        },
+        {},
+        {}
+      )}</button>`}</div>
+
+    <div class="navigation_bar svelte-9oiej2"><div class="logo svelte-9oiej2">Fintekkers</div>
+       <div class="navigation_links svelte-9oiej2"><ul class="svelte-9oiej2"><li class="svelte-9oiej2"><a href="#" class="svelte-9oiej2">Trial</a></li>
+           <li class="svelte-9oiej2"><a href="#" class="svelte-9oiej2">Docs</a></li>
+           <li class="svelte-9oiej2"><a href="#" class="svelte-9oiej2">Plugins</a></li>
+           <li class="svelte-9oiej2"><a href="#" class="svelte-9oiej2">Playground</a></li>
+           <li class="svelte-9oiej2"><a href="#" class="svelte-9oiej2">Contact Us</a></li></ul></div>
+       <div class="search_bar svelte-9oiej2"><div class="search_bar_form svelte-9oiej2"><form method="post" action="/search" class="svelte-9oiej2"><label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white svelte-9oiej2">Search</label>
+                <div class="relative search_bar_container svelte-9oiej2"><input type="search" name="search" id="default-search" class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 svelte-9oiej2" placeholder="Search Mockups, Logos..." required>
+                    <button type="submit" class="search_btn dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 svelte-9oiej2">Search
+                    </button></div></form></div></div></div>
+
+
+  ${slots.default ? slots.default({}) : ``}
+  <div class="Footer svelte-9oiej2"><div class="quicklinks svelte-9oiej2"><h1 class="svelte-9oiej2">Quicklinks</h1></div>
+    <div class="ressources svelte-9oiej2"><h1 class="svelte-9oiej2">Ressources</h1></div>
+    <div class="contactInfo svelte-9oiej2"><h1 class="svelte-9oiej2">Contact Info</h1></div></div>`;
     }
   })}`;
 });
