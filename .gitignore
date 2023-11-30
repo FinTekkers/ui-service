@@ -1,5 +1,5 @@
 #Svelte kit build files
-fin-ui/.svelte-kit
+.svelte-kit/
 
 #IDE related folders
 .vscode
