@@ -6,6 +6,8 @@
   // Most of your app wide CSS should be put in this file
   import "../app.postcss";
   import { AppShell } from "@skeletonlabs/skeleton";
+  import {reveal} from 'svelte-reveal';
+
   import Icon from "@iconify/svelte";
   import {goto} from '../lib/helper';
 
@@ -44,7 +46,7 @@
   
    </div>
 
-    <div class="navigation_bar">
+    <div class="navigation_bar"  >
        <div class="logo" on:click={()=>goto('/')}>
           <Icon
                       icon="material-symbols:finance-mode"
@@ -88,16 +90,89 @@
 
 
   <slot />
+
   <div class="Footer">
-    <div class="quicklinks">
-      <h1>Quicklinks</h1>
-    </div>
-    <div class="ressources">
-      <h1>Ressources</h1>
-    </div>
-    <div class="contactInfo">
-      <h1>Contact Info</h1>
-    </div>
+        <div class="footer_content">
+
+          <div class="footer_logo" >
+           
+            <h2>   <Icon
+                      icon="material-symbols:finance-mode"
+                      style="width: 25px; height: 25px;"
+                      
+                    />  Fintekkers</h2>
+          </div>
+
+         <div class="social_links">
+
+          <div class="icon" data-custom='facebook'>
+
+            <Icon
+                      icon="basil:facebook-outline"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+          </div>
+
+          <div class="icon" data-custom='stackoverflow'>
+             <Icon
+                      icon="jam:stackoverflow"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+          </div>
+
+          <div class="icon" data-custom='github'>
+
+            <Icon
+                      icon="ri:github-fill"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+
+          </div>
+          <div class="icon" data-custom='twitter'>
+            <Icon
+                      icon="pajamas:twitter"
+                      style="width: 25px; height: 25px;"
+                      
+                    /> 
+
+          </div>
+           
+            
+            
+        </div>
+
+          <div class="quicklinks">
+            <h1>About Us</h1>
+            <ul>
+              <li><a href="#">Home</a></li>
+              <li><a href="#">About us</a></li>
+              <li><a href="#">Contact info</a></li>
+              <li><a href="#">Reviews</a></li>
+            </ul>
+          </div>
+          <div class="Product overview">
+            <h1>Product Overview</h1>
+            <ul>
+              <li><a href="#">Trade Idea</a></li>
+              <li><a href="#">Analysis</a></li>
+              <li><a href="#">Pricing</a></li>
+            </ul>
+          </div>
+          <div class="ressources">
+            <h1>Contact Info</h1>
+            <ul>
+              <li><a href="#">University</a></li>
+              <li><a href="#">Learning Center</a></li>
+              <li><a href="#">Support</a></li>
+            </ul>
+          </div>
+
+        </div>
+
+        
   </div>
 </AppShell>
 
@@ -138,10 +213,11 @@
         .search_bar_container{
           input{
             padding: .5em 1em ;
+            border: none;
           }
 
           .search_btn{
-            padding: 0 .3em;
+            padding: 0 .6em;
             height: 100%;
             position: absolute;
             top: 0%;
@@ -159,12 +235,70 @@
 
   .Footer{
     width: 100%;
-    height: 10vh;
+    height: 50vh;
     padding: 1em;
     @include flex(row,center, center, 1em);
-    position: absolute;
-    bottom: 0;
     background-color: $background-color;
+    position: relative;
+    bottom: -250vh;
+    clear: both;
+
+
+    
+
+    .footer_content{
+    width: 40vw;
+    @include flex(row,space-between, flex-start, 1em);
+
+    .footer_logo{
+      position: absolute;
+      width: 10vw;
+      left: 10%;
+   
+      h2{
+              @include flex(row,space-between, flex-start, .5em);
+
+      }
+    }
+
+    .social_links{
+    position: absolute;
+    right:  -10%;
+    width: 30vw;
+    @include flex(row,space-between, flex-start, 1em);
+
+    .icon{
+      cursor: pointer;
+      position: relative;
+
+      &::before{
+        position: absolute;
+        left: 2vw;
+        opacity: 0;
+        content: attr(data-custom);
+        transition: all .5s ease;
+      }
+
+      &:hover::before{
+        left: 2.5vw;
+        opacity: 1;
+      
+      }
+    }
+
+    }
+
+    div:nth-child(n){
+    @include flex(column,space-between, flex-start, 1em);
+
+    ul{
+    @include flex(column,space-between, flex-start, 1em);
+      
+    }
+
+    }
+
+    }
   }
 
   .hamburger_nav{
