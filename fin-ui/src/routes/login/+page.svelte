@@ -2,14 +2,16 @@
 <script lang="ts">
   import LoginBrandPage from "../../components/LoginBrandPage.svelte";
   import LoginForm from "../../components/LoginForm.svelte";
-
-  export let data;
+  export let data:any;
   export let form: Login.formError;
+
+
 
 </script>
 
 <div class="loginpage_bgc_overlay h-full flex justify-between">
-  <form method="post">
+  <form method="POST" action="?/login">
+
     <div class=" w-screen h-screen flex justify-center items-center">
       <div class="login_container grid grid-cols-2 rounded relative">
         <LoginBrandPage />
