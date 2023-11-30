@@ -2,9 +2,9 @@
 // for information about these interfaces
 // and what to do when importing types
 declare namespace App {
-  // interface PageData {}
-  // interface Error {}
-  // interface Platform {}
+  interface booleans{
+    obrUser:boolean
+  }
 }
 
 declare namespace Login {
@@ -12,6 +12,8 @@ declare namespace Login {
     error:string
   }
 }
+
+
 
 
 declare namespace Obr{
