@@ -1,12 +1,11 @@
 // @ts-nocheck
 //Requests & Services
 import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";
-import type { PortfolioProto } from "@fintekkers/ledger-models/node/fintekkers/models/portfolio/portfolio_pb";
-import type { ServiceError } from "@grpc/grpc-js";
 
 import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-import * as uuid from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
+import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portfolio/portfolio";
 
 /** */
 export async function load() {
@@ -14,46 +13,29 @@ export async function load() {
 
   const portfolioService = new PortfolioService();
 
-  console.log("portfolioService1", FieldProto.PORTFOLIO_NAME);
-  console.log("portfolioService2", FieldProto.PORTFOLIO);
+  const filter: PositionFilter = new PositionFilter();
+  filter.addFilter(FieldProto.PORTFOLIO_NAME, "Federal Reserve SOMA Holdings");
 
   const portfolioData = portfolioService
-    .searchPortfolio(
-      now.toProto(),
-      FieldProto.PORTFOLIO_NAME,
-      "Federal Reserve SOMA Holdings"
-    )
-    .then((portfolios: PortfolioProto[]) => {
+    .searchPortfolio(now.toProto(), filter)
+    .then((portfolios: Portfolio[]) => {
+      console.log("Portfolios found: " + portfolios.length);
+
       const results = portfolios.map(portfolio => {
-        const serializedData: object = {};
-
-        // Iterate through keys in the data object
-        Object.keys(portfolio.wrappers_["5"].array[0]).forEach(key => {
-          // Serialize or transform the inner object as needed
-          serializedData[key] = serializeInnerObject(
-            portfolio.wrappers_["5"].array[0][key]
-          );
-        });
-
         return {
           portfolioName: portfolio.getPortfolioName(),
-          portfolioData: serializedData,
-          portfolioId: uuid.UUID.fromU8Array(
-            portfolio.getUuid()!.getRawUuid_asU8()
-          ).toString(),
+          portfolioAsOf: portfolio.getAsOf().toString(),
+          portfolioId: portfolio.getID().toString()
         };
       });
 
       return results;
     })
-    .catch((err: ServiceError) => {
-      return {};
+    .catch((err: Error) => {
+      return {
+        portfolioName: "Error: " + err.message, portfolioAsOf: "", portfolioId: ""
+      };
     });
 
   return { portfolioData };
-}
-
-function serializeInnerObject(obj) {
-  // Implement serialization logic here
-  return obj; // Replace this with the serialized data
 }
