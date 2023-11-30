@@ -6,11 +6,14 @@
     import VideoSection from "../components/VideoSection.svelte";
     import LandingOverview from '../components/LandingOverview.svelte';
     import Icon from "@iconify/svelte";
+    import Page from '../routes/+page.svelte';
+
+
 
 </script>
 
 
-<div class="landing_page_overlay">
+<div class="landing_page_overlay" >
  <LandingOverview />
  <LandingSection />
  <AboutSection />
@@ -23,6 +26,7 @@
 
   .landing_page_overlay{
     height: 100vh;
+    width: 100vw;
     background-color: $background-color;
   }
 
