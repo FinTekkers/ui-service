@@ -1,23 +1,5 @@
-#Rust related folders
-ledger-models-rust/target
-ledger-models-rust/protos
-valuation-service/target
-
-#Java / Gradle related folders (Java build)
-.gradle
-
-#Python related folders
-.pytest_cache
-__pycache__
-*egg-info
-.venv/
-
-#Build related folders:
-build/
-dist/
-out/
-target
-target/**
+#Svelte kit build files
+.svelte-kit/
 
 #IDE related folders
 .vscode
