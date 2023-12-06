@@ -1,5 +1,9 @@
 <script >
      import { reveal } from 'svelte-reveal';
+     import {goto} from '../lib/helper';
+     import {toggleUnderConstruct, UnderConstructBoolean} from '../store/store'
+
+     $:console.log($UnderConstructBoolean)
 </script>
 
 <div class="landing_overview" >
@@ -11,8 +15,8 @@
         <p class="content_paragraph">Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptate, error.</p>
 
         <div class="action_buttons">
-            <button class="button btn_explore_product">Explore Product</button>
-            <button class="button btn_Try_Now">Try Now</button>
+            <button class="button btn_explore_product" on:click={()=>toggleUnderConstruct('xploreProduct')} disabled>Explore Product</button>
+            <button class="button btn_Try_Now" on:click={()=> goto('/login')}>Try Now</button>
         </div>
     </div>
 </div>
