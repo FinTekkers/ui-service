@@ -29,9 +29,10 @@ import {obrPromptBoolean} from '../../store/store';
         padding: 1em;
         @include flex(row, center, center, 1em);
         @extend .centerAbsolute;
-        background-color: $white;
         border-radius: $bd-radius;
         transition: all .5s ease;
+        background: rgba(255, 255, 255, 0.856);
+
     }
 
       .overlay_window{
