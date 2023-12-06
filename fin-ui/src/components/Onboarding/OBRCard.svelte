@@ -4,19 +4,35 @@ export let user:Obr.userArchetypes;
 import {toggleObrPromptBoolean} from '../../store/store';
 </script>
 
-<div class="obr_card" on:click={()=> {
+<div class={ user.type == "Business" ? "obr_card_notsupported" : "obr_card"} on:click={()=> {
   toggleObrPromptBoolean()
  
 }} >
   <slot >
-       <Icon icon='solar:user-linear' style='width:50px;height:50px; color:#1b6f85' class='icon'/>
-       <h1>{user.title}</h1>
-       <p>{user.content}</p>
+     {#if user.type == "Business"}
+       <Icon icon='solar:user-linear' style='width:50px;height:50px; color:#cccccc; position:absolute; top:20px' class={'icon'}/>
+     {:else}
+       <Icon icon='solar:user-linear' style='width:50px;height:50px; color:#1b6f85; position:absolute; top:20px' class={'icon'}/>
+     {/if}
+       <h1 class={user.type == "Business" ? 'notSupported' : ''}>{user.title}</h1>
+       <p class={user.type == "Business" ? 'notSupported' : ''} >{user.type == "Business" ? "Not supported yet" : user.content}</p>
+
     </slot>
 </div>
 
 <style lang="scss">
   @import "../../style.scss";
+
+  .obr_card_notsupported{
+    @extend .obr_card;
+
+
+      &:hover{
+            cursor:not-allowed !important;
+            border: solid 1px $grey !important;
+        }
+
+  }
 
 
   .obr_card{ 
@@ -27,7 +43,8 @@ import {toggleObrPromptBoolean} from '../../store/store';
     @include flex(column,center,center, 1em);
     transition: all .5s ease;
     border: solid 1px $grey;
-    
+    position: relative;
+    background-color: $white;    
 
     &:hover{
             cursor: pointer;
@@ -38,11 +55,14 @@ import {toggleObrPromptBoolean} from '../../store/store';
 
     h1{
       color:$black;
+      position: absolute;
     }
 
     p{
       text-align:center;
       color: $grey;
+      position: absolute;
+      top: 60%;
     }
 
   }

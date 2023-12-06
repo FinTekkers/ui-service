@@ -17,7 +17,8 @@ declare namespace Obr{
   interface userArchetypes{
     title:string,
     content:string,
-    link:string
+    link:string,
+    type:string
   }
 }
 

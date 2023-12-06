@@ -17,6 +17,7 @@
    {#if $obrPromptBoolean}
      <ObrLanding />
     {:else}
+    <!-- decide what type of OBR to load based on selection -->
      <OBRPrompt obrStepNumber={1} obrCardPosition='obr_stepone' />
     {/if}
   {#if $currentMenu == menuList.Home}
