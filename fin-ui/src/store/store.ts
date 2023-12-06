@@ -60,3 +60,25 @@ export const toggleSignInForm = ()=>{
          return store
        })
 }
+
+
+// store of booleans
+export const UnderConstructBoolean  = writable<Debug.underConstruct>({
+    xploreProduct:false,
+})  
+
+export const toggleUnderConstruct = (key:keyof Debug.underConstruct)=>{
+    let bool = get(UnderConstructBoolean);
+    UnderConstructBoolean.update((store) => {
+                  // Check if the key exists in the store
+                  if (store.hasOwnProperty(key)) {
+                    // Toggle the boolean value of the specified key
+                    store[key] = !store[key];
+                  } else {
+                    // If the key doesn't exist, you may want to handle this case accordingly
+                    console.error(`Key '${key}' does not exist in the store.`);
+                  }
+    return { ...store };
+})
+
+}

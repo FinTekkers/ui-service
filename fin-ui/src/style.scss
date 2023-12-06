@@ -35,6 +35,11 @@ $bd-radius:6px;
   border: solid 1px red;
 }
 
+.notSupported{
+  color: $grey !important;
+  font-weight: bold;
+}
+
 .centerAbsolute {
   position: absolute;
   top:50%;
