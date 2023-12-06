@@ -1,8 +1,8 @@
 <script lang="ts">
     import { CodeBlock } from '@skeletonlabs/skeleton';
     import {goto} from '../lib/helper';
-  import Icon from "@iconify/svelte";
-  import {reveal} from 'svelte-reveal'
+    import Icon from "@iconify/svelte";
+    import {reveal} from 'svelte-reveal'
 
  </script>
 <div class="Intro_section">

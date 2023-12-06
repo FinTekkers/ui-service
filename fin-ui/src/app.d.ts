@@ -13,9 +13,6 @@ declare namespace Login {
   }
 }
 
-
-
-
 declare namespace Obr{
   interface userArchetypes{
     title:string,
@@ -24,3 +21,9 @@ declare namespace Obr{
   }
 }
 
+
+declare namespace Debug{
+  interface underConstruct{
+    xploreProduct:boolean
+  }
+}
