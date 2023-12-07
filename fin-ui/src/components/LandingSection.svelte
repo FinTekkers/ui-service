@@ -50,7 +50,7 @@
        </div>
     </div>
     <div class="intro_visualiser">
-        <div class="codeblock">
+        <div class="codeblock codeblock_one">
           <p>
               <Icon
                       icon="line-md:cog-loop"
@@ -67,31 +67,41 @@
             />
         </div>
 
-        <div class="codeblock">
-          <p> <Icon
+        <div class="codeblock codeblock_two">
+   
+
+             <div class="codeblock-api">
+                        <p> <Icon
                       icon="material-symbols:electric-bolt-outline"
                       style="width: 25px; height: 25px;"
                       
                     />  Make your first API call:</p> 
-               <CodeBlock
-                   language="ts"
-                   code={`
-                           // Model Utils
-                           import { FieldProto } from '../../../fintekkers/models/position/field_pb';
-                           import * as uuid from '../../models/utils/uuid';
-                           import * as dt from '../../models/utils/datetime';
-       
-                           //Requests & Services
-                           import { PortfolioService } from './PortfolioService';
-       
-                           const now = dt.ZonedDateTime.now();
-       
-                           const portfolioService = new PortfolioService();
-       
-                           var searchResults = await portfolioService.searchPortfolio(now.toProto(), new PositionFilter().addEqualsFilter(FieldProto.PORTFOLIO_NAME, 'Federal Reserve SOMA Holdings'));
-                           console.log(searchResults[0].getPortfolioName());
-             `}
-               />
+
+                 <CodeBlock
+                     language="ts"
+  
+                     class="whitespace-wrap overflow w-full h-5/6"
+                   
+                     code={`
+// Model Utils
+    import { FieldProto } from '../../../fintekkers/models/position/field_pb';
+    import * as uuid from '../../models/utils/uuid';
+    import * as dt from '../../models/utils/datetime';
+         
+//Requests & Services
+    import { PortfolioService } from './PortfolioService';
+
+    const now = dt.ZonedDateTime.now();
+
+    const portfolioService = new PortfolioService();
+
+    var searchResults = await portfolioService.searchPortfolio(now.toProto(), 
+    new PositionFilter().addEqualsFilter(FieldProto.PORTFOLIO_NAME, 
+    'Federal Reserve SOMA Holdings'));
+    console.log(searchResults[0].getPortfolioName());
+               `}
+                 />
+             </div>
         </div>
 
     </div> 
@@ -100,21 +110,24 @@
 <style lang="scss">
     @import "../style.scss";
 
+
+
+  
+
    
     .Intro_section {
         width: 100%;
         height: 100vh;
         @include flex(row, space-between, flex-start, 2em); 
-        padding: 6em;
+        padding: 2em;
         background-color: $background-color;
         position: relative;
 
         .description{
             max-width: 45vw;
-            @include flex(row, center, center, .5em); 
             @extend .centerAbsolute;
             left: 50%;
-            transform: translate(-100%,0%);
+            transform: translate(-110%,0%);
             font-size: 1rem;
 
 
@@ -149,7 +162,10 @@
             padding: 1em;
             width: 50%;
             height: 50vh;
+
         }
+
+      
  
         .intro_description {
              display: flex;
@@ -199,10 +215,36 @@
         flex-direction: column;
         height: 100vh !important;
 
+        .codeblock_one{
+            position: absolute;
+            left: 46%;
+            top: 10%;
+        }
+
+      
+         .codeblock-api{
+            position: absolute;
+            width: 51vw !important;
+            height: 65vh !important;
+            height: max-content;
+            left: 46%;
+            top: 37%;
+            
+
+            p{
+            margin-bottom: 1em;
+            text-align: left;
+            width: 15vw;
+            }
+
+    
+   }
+
 
         .codeblock{
          width: 100% !important; 
          @include flex(column, flex-start, flex-start, 2em);
+
 
          p{
              @include flex(row, center, center, 1em);

@@ -5,7 +5,10 @@ import {toggleObrPromptBoolean} from '../../store/store';
 </script>
 
 <div class={ user.type == "Business" ? "obr_card_notsupported" : "obr_card"} on:click={()=> {
-  toggleObrPromptBoolean()
+
+  if(user.type !== "Business"){
+    toggleObrPromptBoolean()
+  }
  
 }} >
   <slot >
