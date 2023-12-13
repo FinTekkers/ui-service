@@ -279,6 +279,18 @@
         width: 90vw !important;
       }
 
+      .sign_in_fields{
+        input{
+          font-size: .8rem;
+        }
+      }
+
+      .sign_up_fields{
+        input{
+          font-size: .8rem;
+        }
+      }
+
         form{
                 
           .form_container{
@@ -304,8 +316,9 @@
         .logo{
           width: 30vw;
           position: absolute;
-          left: -4%;
+          left: 0%;
           text-align: center;
+
         }
 
         p{
