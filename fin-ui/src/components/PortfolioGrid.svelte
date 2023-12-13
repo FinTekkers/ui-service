@@ -15,7 +15,7 @@
 	}>; //: string; portfolioId: string | undefined; id: string }>;
 </script>
 
-<div class="container mx-auto my-6 shadow px-10 py-7">
+<div class="portfolio_container container mx-auto my-6 shadow px-10 py-7">
 	<h2 class="text-3xl font-extrabold my-3">Portfolios</h2>
 	<table class="min-w-full text-left">
 		<thead class="border-b border-slate-400">
@@ -36,3 +36,14 @@
 		</tbody>
 	</table>
 </div>
+
+<style lang="scss">
+	@import "../style.scss";
+.portfolio_container{
+	height: 100%;
+	width: 82vw;
+	background-color: $primary-color;
+	padding: 1em;
+}
+
+</style>

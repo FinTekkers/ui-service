@@ -15,17 +15,24 @@
     <div class=" w-screen h-screen flex justify-center items-center">
       <div class="login_container grid grid-cols-2 rounded relative">
         <LoginBrandPage />
-        <div
-          class="branding branding-form p-2 rounded-xl flex justify-center items-center"
-        >
-        <LoginForm {data} {form} />
-        </div>
+              <div
+                class="branding branding-form p-2 rounded-xl flex justify-center items-center"
+              >
+                 <LoginForm {data} {form} />
+              </div>
       </div>
     </div>
   </form>
 </div>
 
-<style>
+<style >
   @import "../../style.scss";
   @import "../../login.scss";
+
+
+
+  
+
+
+
 </style>

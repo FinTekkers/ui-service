@@ -1,13 +1,20 @@
 <script lang="ts">
-  import { AppBar } from "@skeletonlabs/skeleton";
 </script>
 
+<div class="main_ui_menu grow">
+  <slot />
+</div>
 
-
-<slot />
 
 <style lang="scss">
   @import "../../style.scss";
+
+  .main_ui_menu{
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh !important;
+    overflow: hidden;
+  }
 
   .main_navbar {
     padding: 1em;

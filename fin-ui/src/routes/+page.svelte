@@ -7,6 +7,7 @@
     import LandingOverview from '../components/LandingOverview.svelte';
     import Icon from "@iconify/svelte";
     import Page from '../routes/+page.svelte';
+    import Footer from '../components/Footer.svelte';
 
 
 
@@ -18,6 +19,7 @@
  <LandingSection />
  <AboutSection />
  <VideoSection />
+ <Footer />
 </div>
 
 
@@ -29,5 +31,8 @@
     width: 100vw;
     background-color: $background-color;
   }
+
+
+
 
 </style>
