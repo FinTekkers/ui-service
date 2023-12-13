@@ -9,11 +9,17 @@ $success: #7cd2ba;
 $error: #c43d5a;
 
 $white: whitesmoke;
+$tealwhite:#edfbfd;
+$tealblack:#edfbfd;
 $black: #05192a;
 $grey: #86929c;
 $transpblack: #05192a59;
 
 $bd-radius:6px;
+
+
+$breakingpoint_md: 1200px;
+$breakingpoint_mobile: 600px;
 
 *::before,
 *::after,
@@ -23,6 +29,13 @@ $bd-radius:6px;
   box-sizing: border-box;
 }
 
+html, body {
+  overflow-x: hidden !important;
+}
+body {
+  position: relative
+}
+
 @mixin flex($fd, $jc, $ai, $gap) {
   display: flex;
   flex-direction: $fd;
@@ -30,6 +43,8 @@ $bd-radius:6px;
   align-items: $ai;
   gap: $gap;
 }
+
+
 
 .debug{
   border: solid 1px red;

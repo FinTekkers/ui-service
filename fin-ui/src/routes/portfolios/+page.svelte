@@ -1,5 +1,4 @@
 <script lang="ts">
-  import PortfolioGrid from "../../components/PortfolioGrid.svelte";
   import Main from "../../components/Main.svelte";
   import SideMenu from "../../components/SideMenu.svelte";
   export let data: import("./$types").PageData;
@@ -9,7 +8,5 @@
 
 <div class="w-screen h-full flex">
   <SideMenu />
-  <Main/>
-
-  <PortfolioGrid rows={data.portfolioData} />
+  <Main data={data} />
 </div>

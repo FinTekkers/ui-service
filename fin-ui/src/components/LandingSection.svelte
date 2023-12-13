@@ -257,7 +257,10 @@
         }
     }
 
-    @media screen and (max-width: 1200px) {
+    
+
+
+    @media screen and (max-width: $breakingpoint_md) {
         .Intro_section {
             display: grid;
             gap: 1em;
@@ -266,7 +269,7 @@
             
 
             div:nth-child(n) {
-                width: 80vw;
+                width: 100%;
             }
             div:nth-child(1) {
                 text-align: center;
@@ -274,18 +277,64 @@
 
             .intro_description {
                 gap: 1.5em;
+             @include flex(column , center, center, 2em); 
+
+
+
+                .description{
+                 display: none;
+                }
+
+
+                p{
+                    width: 70%;
+
+                }
+
 
                 button {
-                    width: 50vw;
-                    margin: 0 auto;
+                width: 30vw;
+
                 }
             }
+           
+
+            .intro_visualiser{
+                gap: 1em;
+                position: relative;
+
+
+                  .codeblock_one{
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    @include flex(column , center, center, 1em); 
+                  }
+
+                    .codeblock-api{
+                        position: absolute;
+                        left: 0;
+                        top: 25%;
+                        width: 100% !important;
+                        height: 80vh !important;
+                        height: max-content;
+
+
+
+
+                                p{
+                                    width: 100%;
+                                }
+                    }
+
+            }
+
         }
     }
 
     @media screen and (max-width: 600px) {
         .Intro_section {
-            height: 100%;
+            height: 160%;
             padding-bottom: 2em;
         }
     }

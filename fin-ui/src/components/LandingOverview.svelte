@@ -49,6 +49,7 @@
 
                  &:nth-child(1){
                      background-color: $primary-color;
+                     order:2
                  }
                  &:nth-child(2){
                      background-color: $success;
@@ -88,5 +89,76 @@
             z-index: 0;
 
         }
+    }
+
+
+    @media screen and (max-width: $breakingpoint_md){
+    @import "../style.scss";
+
+       .landing_overview{
+
+           .content{
+               height: 60vh;
+
+
+               .content_title{
+                 font-size: 3.5rem;
+                 line-height: 1em;
+               }
+
+               .content_paragraph{
+                   text-align: center;
+                 margin-bottom: .5em;
+
+               }
+
+               .action_buttons{
+                   .button{
+                       min-width: 200px;
+                       
+                   }
+               }
+           }
+
+       }
+
+    
+    }
+
+
+     @media screen and (max-width: $breakingpoint_mobile){
+    @import "../style.scss";
+
+       .landing_overview{
+
+           .content{
+         @include flex(column, center, center, 1em);
+
+
+               .content_title{
+                 font-size: 2.5rem;
+                 width: 300px;
+                 line-height: 1em;
+               }
+
+                .content_paragraph{
+                   text-align: center;
+                   width: 50%;
+               }
+
+               .action_buttons{
+               @include flex(column, center, center, 1em);
+
+               button{
+                   &:nth-child(1){
+                       order:2
+                   }
+               }
+               }
+           }
+
+       }
+
+    
     }
 </style>

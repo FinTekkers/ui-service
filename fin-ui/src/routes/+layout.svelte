@@ -10,6 +10,7 @@
 
   import Icon from "@iconify/svelte";
   import {goto} from '../lib/helper';
+  import Footer from '../components/Footer.svelte';
 
   // navbar toggle
   import {toggleSidebarMenu,sideMenuStore} from '../store/store'
@@ -24,10 +25,72 @@
 </script>
 
 <AppShell>
-	  <div class={`hamburger_nav ${$sideMenuStore ? 'show' : 'hidden'}` }>
-    
-    </div>
+  
+	  <div class={`hamburger_nav ${$sideMenuStore ? 'show' : 'hidden'}` }>   
+        <div class="navigation_bar"  >
+          <div class="logo" on:click={()=>goto('/')}>
+              <Icon
+                          icon="material-symbols:finance-mode"
+                          style="width: 25px; height: 25px;"
+                          
+                        /> 
+            Fintekkers</div>
 
+                  <div class="search_bar">
+            <div class="search_bar_form">
+                <form method="post" action="/search">   
+                    <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                    <div class="relative search_bar_container">
+                    
+                        <input type="search" name="search" id="default-search" class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Mockups, Logos..." required>
+                        <button type="submit" class=" search_btn  dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Search
+                        </button>
+                    </div>
+                </form>
+      
+            </div>
+          </div>
+          <div class="navigation_links">
+            <ul>
+              <li><Icon
+                          icon="material-symbols:finance-mode"
+                          style="width: 25px; height: 25px;"
+                          
+                        /><a href="#">Trial</a></li>
+              <li><Icon
+                          icon="material-symbols:finance-mode"
+                          style="width: 25px; height: 25px;"
+                          
+                        /><a href="#">Docs</a></li>
+              <li><Icon
+                          icon="material-symbols:finance-mode"
+                          style="width: 25px; height: 25px;"
+                          
+                        /><a href="#">Plugins</a></li>
+              <li><Icon
+                          icon="material-symbols:finance-mode"
+                          style="width: 25px; height: 25px;"
+                          
+                        /><a href="#">Playground</a></li>
+              <li><Icon
+                          icon="material-symbols:finance-mode"
+                          style="width: 25px; height: 25px;"
+                          
+                        /><a href="#">Contact Us</a></li>
+              <li>
+                  <Icon
+                          icon="ic:twotone-phone"
+                          style="width: 25px; height: 25px;"
+                          
+                        /> 
+                  412-234-4312
+              </li>
+            </ul>
+          </div>
+    
+        </div>
+    </div>
    <div class="hamburger_btn">
      {#if $sideMenuStore}
       <button class="close_btn" on:click={()=>toggleSidebarMenu()}>
@@ -46,134 +109,53 @@
   
    </div>
 
-    <div class="navigation_bar"  >
-       <div class="logo" on:click={()=>goto('/')}>
-          <Icon
-                      icon="material-symbols:finance-mode"
-                      style="width: 25px; height: 25px;"
-                      
-                    /> 
-        Fintekkers</div>
-       <div class="navigation_links">
-         <ul>
-           <li><a href="#">Trial</a></li>
-           <li><a href="#">Docs</a></li>
-           <li><a href="#">Plugins</a></li>
-           <li><a href="#">Playground</a></li>
-           <li><a href="#">Contact Us</a></li>
-           <li>
+  <svelte:fragment slot="header">
+        <div class="navigation_bar"  >
+          <div class="logo" on:click={()=>goto('/')}>
               <Icon
-                      icon="ic:twotone-phone"
-                      style="width: 25px; height: 25px;"
-                      
-                    /> 
-              412-234-4312
-          </li>
-         </ul>
-       </div>
-       <div class="search_bar">
-         <div class="search_bar_form">
-            <form method="post" action="/search">   
-                <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
-                <div class="relative search_bar_container">
-                 
-                    <input type="search" name="search" id="default-search" class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Mockups, Logos..." required>
-                    <button type="submit" class=" search_btn  dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                     Search
-                    </button>
-                </div>
-            </form>
-  
-         </div>
-       </div>
-    </div>
-
-
-  <slot />
-
-  <div class="Footer">
-        <div class="footer_content">
-
-          <div class="footer_logo" >
-           
-            <h2>   <Icon
-                      icon="material-symbols:finance-mode"
-                      style="width: 25px; height: 25px;"
-                      
-                    />  Fintekkers</h2>
+                          icon="material-symbols:finance-mode"
+                          style="width: 25px; height: 25px;"
+                          
+                        /> 
+            Fintekkers</div>
+          <div class="navigation_links">
+            <ul>
+              <li><a href="#">Trial</a></li>
+              <li><a href="#">Docs</a></li>
+              <li><a href="#">Plugins</a></li>
+              <li><a href="#">Playground</a></li>
+              <li><a href="#">Contact Us</a></li>
+              <li>
+                  <Icon
+                          icon="ic:twotone-phone"
+                          style="width: 25px; height: 25px;"
+                          
+                        /> 
+                  412-234-4312
+              </li>
+            </ul>
           </div>
-
-         <div class="social_links">
-
-          <div class="icon" data-custom='facebook'>
-
-            <Icon
-                      icon="basil:facebook-outline"
-                      style="width: 25px; height: 25px;"
-                      
-                    /> 
+          <div class="search_bar">
+            <div class="search_bar_form">
+                <form method="post" action="/search">   
+                    <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                    <div class="relative search_bar_container">
+                    
+                        <input type="search" name="search" id="default-search" class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Mockups, Logos..." required>
+                        <button type="submit" class=" search_btn  dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Search
+                        </button>
+                    </div>
+                </form>
+      
+            </div>
           </div>
-
-          <div class="icon" data-custom='stackoverflow'>
-             <Icon
-                      icon="jam:stackoverflow"
-                      style="width: 25px; height: 25px;"
-                      
-                    /> 
-          </div>
-
-          <div class="icon" data-custom='github'>
-
-            <Icon
-                      icon="ri:github-fill"
-                      style="width: 25px; height: 25px;"
-                      
-                    /> 
-
-          </div>
-          <div class="icon" data-custom='twitter'>
-            <Icon
-                      icon="pajamas:twitter"
-                      style="width: 25px; height: 25px;"
-                      
-                    /> 
-
-          </div>
-           
-            
-            
         </div>
+  </svelte:fragment>
 
-          <div class="quicklinks">
-            <h1>About Us</h1>
-            <ul>
-              <li><a href="#">Home</a></li>
-              <li><a href="#">About us</a></li>
-              <li><a href="#">Contact info</a></li>
-              <li><a href="#">Reviews</a></li>
-            </ul>
-          </div>
-          <div class="Product overview">
-            <h1>Product Overview</h1>
-            <ul>
-              <li><a href="#">Trade Idea</a></li>
-              <li><a href="#">Analysis</a></li>
-              <li><a href="#">Pricing</a></li>
-            </ul>
-          </div>
-          <div class="ressources">
-            <h1>Contact Info</h1>
-            <ul>
-              <li><a href="#">University</a></li>
-              <li><a href="#">Learning Center</a></li>
-              <li><a href="#">Support</a></li>
-            </ul>
-          </div>
+    <slot />
 
-        </div>
 
-        
-  </div>
 </AppShell>
 
 
@@ -233,84 +215,20 @@
 
   }
 
-  .Footer{
-    width: 100%;
-    height: 50vh;
-    padding: 1em;
-    @include flex(row,center, center, 1em);
-    background-color: $background-color;
-    position: relative;
-    bottom: -250vh;
-    clear: both;
-
-
-    
-
-    .footer_content{
-    width: 40vw;
-    @include flex(row,space-between, flex-start, 1em);
-
-    .footer_logo{
-      position: absolute;
-      width: 10vw;
-      left: 10%;
-   
-      h2{
-              @include flex(row,space-between, flex-start, .5em);
-
-      }
-    }
-
-    .social_links{
-    position: absolute;
-    right:  -10%;
-    width: 30vw;
-    @include flex(row,space-between, flex-start, 1em);
-
-    .icon{
-      cursor: pointer;
-      position: relative;
-
-      &::before{
-        position: absolute;
-        left: 2vw;
-        opacity: 0;
-        content: attr(data-custom);
-        transition: all .5s ease;
-      }
-
-      &:hover::before{
-        left: 2.5vw;
-        opacity: 1;
-      
-      }
-    }
-
-    }
-
-    div:nth-child(n){
-    @include flex(column,space-between, flex-start, 1em);
-
-    ul{
-    @include flex(column,space-between, flex-start, 1em);
-      
-    }
-
-    }
-
-    }
-  }
-
   .hamburger_nav{
     display: none;
   }
 
   .hamburger_btn{
       display: none;
+      padding: 1em;
 
   }
 
-  @media screen and (max-width: 1200px) {
+  @media screen and (max-width: $breakingpoint_md) {
+
+  
+
      .navigation_bar{
        display: none;
      }
@@ -324,13 +242,7 @@
       }
 
 
-      .hidden{
-        right: -100%;
-      }
-
-      .show{
-        right: 0%;
-      }
+      
      
 
      .hamburger_nav{
@@ -340,17 +252,183 @@
       position: absolute;
       z-index: 3;
       top: 0;
-      background-color: $primary-color;
+        background-color:$background-color;
+      
       transition: all .2s ease-in-out;
+
+            .navigation_bar{
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: block;
+        background: none;
+        padding: 2em;
+        width: inherit;
+        @include flex(column, space-between, center, 1em);
+        margin-top: 2em;
+
+        .search_bar{
+          width: 100%;
+
+          .search_bar_form{
+            width: 100%;
+            height: 6vh;
+
+
+           .search_bar_container{
+                input{
+                  padding: 1em ;
+                  border: none;
+                }
+            }
+
+
+
+            
+          }
+        }
+
+
+        .logo{
+         width: 100%;
+         @include flex(row, flex-start, center, 1em);
+
+       
+        }
+
+        .navigation_links{
+          width: 100%;
+          height: 50vh;
+          margin-top: 2em;
+        ul{
+
+           @include flex(column, center, center, 1em);
+          width: 20vw;
+
+          li{
+          width: 100%;
+          @include flex(row, flex-start, center, .4em);
+
+
+           &:last-child{
+          @include flex(row, flex-start, center, .4em);
+          margin-left: 0;
+        
+         }
+          }
+
+        } 
+
+        }
+      }
+
+
+    
      }
+
+     .hidden{
+        right: -100%;
+        display: none;
+
+
+      }
+
+      .show{
+        right: 0%;
+      }
 
   }
 
-   @media screen and (max-width: 600px) {
+  @media screen and (max-width: $breakingpoint_mobile) {
+
+
    .hamburger_nav{
       width: 100vw;
-      background-color: $primary-color;
+      background-color:$background-color;
+      
+
+
+      .navigation_bar{
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: block;
+        background: none;
+        padding: 2em;
+        width: inherit;
+        @include flex(column, space-between, center, 1em);
+        margin-top: 2em;
+        background-color:$background-color;
+
+        .search_bar{
+          width: 100%;
+          margin-top: 2em;
+
+          .search_bar_form{
+            width: 100%;
+            height: 6vh;
+
+
+           .search_bar_container{
+                input{
+                  padding: 1em ;
+                  border: none;
+                }
+            }
+
+
+
+            
+          }
+        }
+
+
+        .logo{
+         width: 100%;
+         @include flex(row, flex-start, center, 1em);
+
+       
+        }
+
+        .navigation_links{
+          width: 100%;
+          height: 50vh;
+          margin-top: 2em;
+        ul{
+
+           @include flex(column, center, center, 1em);
+          margin: 0 auto;
+          width: 30vw;
+
+          li{
+          width: 100%;
+          @include flex(row, flex-start, center, .4em);
+
+
+           &:last-child{
+          @include flex(row, flex-start, center, .4em);
+          margin-left: 0;
+        
+         }
+          }
+
+        } 
+
+        }
+      }
      }
+
+     
+
+      .hidden{
+        right: -100%;
+        display: none;
+        
+      }
+
+      .show{
+        right: 0%;
+      }
 
    }
 
