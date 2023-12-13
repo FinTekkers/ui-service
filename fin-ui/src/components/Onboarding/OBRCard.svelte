@@ -70,4 +70,53 @@ import {toggleObrPromptBoolean} from '../../store/store';
 
   }
 
+
+  @media screen and (max-width: $breakingpoint_md){
+    .obr_card{
+        width: 25vw;
+        aspect-ratio: 1/1;
+
+
+          h1{
+      color:$black;
+      position: absolute;
+    }
+
+    p{
+      text-align:center;
+      color: $grey;
+      position: absolute;
+      top: 60%;
+      font-size: .8rem;
+    }
+    }
+    
+}
+
+  @media screen and (max-width: $breakingpoint_mobile){
+    .obr_card{
+        width: 40vw;
+        aspect-ratio: 1/1;
+
+
+          h1{
+      color:$black;
+      position: absolute;
+      font-size: .8rem;
+      margin-top: 2em;
+    }
+
+    p{
+      text-align:center;
+      color: $grey;
+      position: absolute;
+      top: 60%;
+      font-size: .8rem;
+      margin-top: 1em;
+
+    }
+    }
+    
+}
+
 </style>

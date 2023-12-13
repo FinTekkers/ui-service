@@ -8,7 +8,6 @@ import {obrPromptBoolean} from '../../store/store';
 </script>
 
 <div>
-
     <div class="overlay_window"></div>
     
     <div class="obr_landing">
@@ -41,4 +40,19 @@ import {obrPromptBoolean} from '../../store/store';
             @extend .centerAbsolute;
             background-color: $transpblack;
         }
+
+
+@media screen and (max-width: $breakingpoint_md){
+    .obr_landing{
+        width: 90%;
+    }
+    
+}
+        
+@media screen and (max-width: $breakingpoint_mobile){
+    .obr_landing{
+        width: 90%;
+    }
+    
+}
 </style>
