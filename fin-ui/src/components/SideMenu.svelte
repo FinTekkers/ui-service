@@ -76,7 +76,7 @@
 
   .sidemenu_container {
     padding: 2em 0 0 2em;
-    background-color: $white;
+    background-color: $tealwhite;
     box-shadow: 2px 2px 10px rgba(206, 206, 206, 0.034);
     width: 20vw;
   }
@@ -97,4 +97,17 @@
     font-size: 25px;
     position: absolute;
   }
+
+@media screen and (max-width: $breakingpoint_mobile){
+
+  .sidemenu_container{
+    padding-left: 1em;
+    div{
+      span{
+        display: none;
+      }
+    }
+  }
+  
+}
 </style>

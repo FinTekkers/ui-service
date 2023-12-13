@@ -238,6 +238,98 @@
    }
 }
 
+// 
+
+
+
+  @media screen and (max-width: $breakingpoint_md) {
+
+      .login_container{
+        width: 90vw !important;
+      }
+
+      form{
+                
+          .form_container{
+            // border: solid 3px red;
+            width: 100% !important;
+          }
+
+          .sign_up_fields{
+            width: 90% !important;
+           
+
+
+          }
+      }
+
+      .branding-image{
+        width: 35vw;
+          }
+
+      .google_OAuth{
+        width: 90%;
+      }
+  }
+
+
+  @media screen and (max-width: $breakingpoint_mobile) {
+
+      .login_container{
+        width: 90vw !important;
+      }
+
+        form{
+                
+          .form_container{
+            width: 90% !important;
+            height: 88%;
+            position: absolute !important;
+            left: 0;
+
+            .form_headline{
+              margin: 1em 0;
+
+            }
+          }
+
+          .sign_up_fields{
+            width: 100% !important;
+          }
+      }
+
+      .branding-image{
+        width: 35vw;
+
+        .logo{
+          width: 30vw;
+          position: absolute;
+          left: -4%;
+          text-align: center;
+        }
+
+        p{
+          display: none;
+        }
+
+        button{
+          width: 30vw;
+          position: absolute;
+          left: -5%;
+          bottom: 10%;
+        }
+      }
+
+      .google_OAuth{
+        width: 100%;
+
+        span{
+          font-size: .8rem;
+        }
+      }
+  }
+
+
 
 
 

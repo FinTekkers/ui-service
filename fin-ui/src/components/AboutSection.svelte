@@ -49,7 +49,7 @@
     @import "../style.scss";
 
     .About_section{
-        padding: 4em 1em 1em 1em;
+        padding: 1em;
         @include flex(row, center, center, 1.5em);
         background-color: $primary-color;
         height: 50vh;
@@ -77,18 +77,37 @@
 
     }
 
-    @media screen and (max-width:600px){
+
+    @media screen and (max-width: $breakingpoint_md) {
+     .About_section{
+        padding: 1em;
+
+         .abt_section{
+             
+            &:nth-child(n){
+                width: 30%;
+            }
+
+         }
+     }
+    }
+
+    @media screen and (max-width:$breakingpoint_mobile){
          .About_section{
            height: max-content;
+           display: grid;
+           grid-template-columns: 1fr;
+           grid-template-rows: 1fr 1fr 1fr;
+
                 .abt_section{
                 @include flex(column, center, center, 1.5em);
                     &:nth-child(n){
                         min-width: 25vw;
-                        max-width: 30vw;
-                        width: 300px;
+                        max-width: 100%;
+                        width: 100%;
 
                         p{
-                            font-size: .8rem;
+                            font-size: 1rem;
                         }
                     }
                 }
