@@ -90,7 +90,7 @@
           </li>
           <li>
             <Icon icon="ic:twotone-phone" style="width: 25px; height: 25px;" />
-            412-234-4312
+            412-234-4312 <!-- TODO: WhatsApp biz messenger -->
           </li>
         </ul>
       </div>
