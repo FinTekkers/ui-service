@@ -58,42 +58,6 @@
           </form>
         </div>
       </div>
-      <div class="navigation_links">
-        <ul>
-          <li>
-            <Icon
-              icon="material-symbols:finance-mode"
-              style="width: 25px; height: 25px;"
-            /><a href="#">Trial</a>
-          </li>
-          <!-- Can link to the API key once that's built -->
-          <li>
-            <Icon
-              icon="material-symbols:finance-mode"
-              style="width: 25px; height: 25px;"
-            /><a href="https://github.com/FinTekkers/ledger-models">Docs</a>
-          </li>
-          <!-- TODO: Update the ledger models README.md for consumers-->
-          <li>
-            <Icon
-              icon="material-symbols:finance-mode"
-              style="width: 25px; height: 25px;"
-            /><a href="#">Playground</a>
-            <!-- Can link to the REPL when built (repl.it seems to work already but need a one-click way to get it up and running)-->
-          </li>
-          <li>
-            <Icon
-              icon="material-symbols:finance-mode"
-              style="width: 25px; height: 25px;"
-            /><a href="#">Contact Us</a>
-            <!-- TODO: LinkedIn, WhatsApp biz, Email, ?-->
-          </li>
-          <li>
-            <Icon icon="ic:twotone-phone" style="width: 25px; height: 25px;" />
-            412-234-4312 <!-- TODO: WhatsApp biz messenger -->
-          </li>
-        </ul>
-      </div>
     </div>
   </div>
   <div class="hamburger_btn">
