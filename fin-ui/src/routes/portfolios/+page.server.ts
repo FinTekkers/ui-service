@@ -13,7 +13,7 @@ export async function load() {
   const portfolioService = new PortfolioService();
 
   const filter: PositionFilter = new PositionFilter();
-  filter.addFilter(FieldProto.PORTFOLIO_NAME, "Federal Reserve SOMA Holdings");
+  filter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, "Federal Reserve SOMA Holdings");
 
   const portfolioData = portfolioService
     .searchPortfolio(now.toProto(), filter)
