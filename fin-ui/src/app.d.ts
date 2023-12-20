@@ -19,6 +19,16 @@ declare namespace Obr{
     content:string,
     link:string,
     type:string
+  };
+
+  interface codeBlockContent{
+    language:string,
+    installCMD:string,
+    importCode:string
+  };
+  interface codeBlockData{
+    codeLanguage:codeBlockContent;
+   
   }
 }
 
