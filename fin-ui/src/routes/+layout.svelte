@@ -31,66 +31,31 @@
         Fintekkers
       </div>
 
-      <div class="search_bar">
-        <div class="search_bar_form">
-          <form method="post" action="/search">
-            <label
-              for="default-search"
-              class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
-              >Search</label
-            >
-            <div class="relative search_bar_container">
-              <input
-                type="search"
-                name="search"
-                id="default-search"
-                class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="Search Mockups, Logos..."
-                required
-              />
-              <button
-                type="submit"
-                class=" search_btn dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
-                Search
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
       <div class="navigation_links">
         <ul>
           <li>
             <Icon
               icon="material-symbols:finance-mode"
               style="width: 25px; height: 25px;"
-            /><a href="#">Trial</a>
+            /><a href="#">Get started instantly</a>
           </li>
-          <!-- Can link to the API key once that's built -->
           <li>
             <Icon
               icon="material-symbols:finance-mode"
               style="width: 25px; height: 25px;"
             /><a href="https://github.com/FinTekkers/ledger-models">Docs</a>
           </li>
-          <!-- TODO: Update the ledger models README.md for consumers-->
           <li>
             <Icon
               icon="material-symbols:finance-mode"
               style="width: 25px; height: 25px;"
-            /><a href="#">Playground</a>
-            <!-- Can link to the REPL when built (repl.it seems to work already but need a one-click way to get it up and running)-->
+            /><a href="#">Pricing</a>
           </li>
           <li>
             <Icon
               icon="material-symbols:finance-mode"
               style="width: 25px; height: 25px;"
             /><a href="#">Contact Us</a>
-            <!-- TODO: LinkedIn, WhatsApp biz, Email, ?-->
-          </li>
-          <li>
-            <Icon icon="ic:twotone-phone" style="width: 25px; height: 25px;" />
-            412-234-4312 <!-- TODO: WhatsApp biz messenger -->
           </li>
         </ul>
       </div>
@@ -119,43 +84,15 @@
       </div>
       <div class="navigation_links">
         <ul>
-          <li><a href="#">Trial</a></li>
-          <li><a href="#">Docs</a></li>
-          <li><a href="#">Plugins</a></li>
-          <li><a href="#">Playground</a></li>
-          <li><a href="#">Contact Us</a></li>
           <li>
-            <Icon icon="ic:twotone-phone" style="width: 25px; height: 25px;" />
-            412-234-4312
+            <a href="#todo_link_to_repl_when_complete">Get started instantly</a>
           </li>
+          <li>
+            <a href="https://github.com/FinTekkers/ledger-models">Docs</a>
+          </li>
+          <li><a href="#">Pricing (currently free for everyone)</a></li>
+          <li><a href="#">Contact Us</a></li>
         </ul>
-      </div>
-      <div class="search_bar">
-        <div class="search_bar_form">
-          <form method="post" action="/search">
-            <label
-              for="default-search"
-              class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
-              >Search</label
-            >
-            <div class="relative search_bar_container">
-              <input
-                type="search"
-                name="search"
-                id="default-search"
-                class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="Search Mockups, Logos..."
-                required
-              />
-              <button
-                type="submit"
-                class=" search_btn dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
-                Search
-              </button>
-            </div>
-          </form>
-        </div>
       </div>
     </div>
   </svelte:fragment>
