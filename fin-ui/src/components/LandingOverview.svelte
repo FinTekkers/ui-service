@@ -17,8 +17,8 @@
             Welcome to Fintekkers
         </h1>
         <p class="content_paragraph">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptate,
-            error.
+            Premier Fintech Infrastructure. We worry about scale, security and
+            plumbing while you focus on your competitive advantage, your ideas.
         </p>
 
         <div class="action_buttons">
@@ -40,7 +40,7 @@
     .landing_overview {
         width: 100%;
         height: 100vh;
-        background-image: url("../lib/images/background.png");
+        background-image: url("https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
