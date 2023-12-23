@@ -2,7 +2,8 @@
     import { CodeBlock } from '@skeletonlabs/skeleton';
     import {goto} from '../lib/helper';
     import Icon from "@iconify/svelte";
-    import {reveal} from 'svelte-reveal'
+    import {reveal} from 'svelte-reveal';
+    import CustomCodeBlock from '../components/Utility/CustomCodeBlock.svelte'
 
  </script>
 <div class="Intro_section">
@@ -59,12 +60,8 @@
                     /> 
               Install Fintekkers client libraries:
           </p>
-            <CodeBlock
-                language="ts"
-                code={`
-              npm i @fintekkers/ledger-models
-            `}
-            />
+                    <CustomCodeBlock  />
+
         </div>
 
         <div class="codeblock codeblock_two">
@@ -77,30 +74,6 @@
                       
                     />  Make your first API call:</p> 
 
-                 <CodeBlock
-                     language="ts"
-  
-                     class="whitespace-wrap overflow w-full h-5/6"
-                   
-                     code={`
-// Model Utils
-    import { FieldProto } from '../../../fintekkers/models/position/field_pb';
-    import * as uuid from '../../models/utils/uuid';
-    import * as dt from '../../models/utils/datetime';
-         
-//Requests & Services
-    import { PortfolioService } from './PortfolioService';
-
-    const now = dt.ZonedDateTime.now();
-
-    const portfolioService = new PortfolioService();
-
-    var searchResults = await portfolioService.searchPortfolio(now.toProto(), 
-    new PositionFilter().addEqualsFilter(FieldProto.PORTFOLIO_NAME, 
-    'Federal Reserve SOMA Holdings'));
-    console.log(searchResults[0].getPortfolioName());
-               `}
-                 />
              </div>
         </div>
 
@@ -109,15 +82,10 @@
 
 <style lang="scss">
     @import "../style.scss";
-
-
-
-  
-
    
     .Intro_section {
         width: 100%;
-        height: 100vh;
+        height: 120vh;
         @include flex(row, space-between, flex-start, 2em); 
         padding: 2em;
         background-color: $background-color;
@@ -224,15 +192,13 @@
       
          .codeblock-api{
             position: absolute;
-            width: 51vw !important;
-            height: 65vh !important;
-            height: max-content;
+            width: max-content !important;
+            height: 5vh !important;
             left: 46%;
-            top: 37%;
+            top: 36%;
             
 
             p{
-            margin-bottom: 1em;
             text-align: left;
             width: 15vw;
             }
@@ -266,6 +232,7 @@
             gap: 1em;
             height: max-content;
             padding-bottom: 2em;
+            height: 120%;
             
 
             div:nth-child(n) {
@@ -278,11 +245,16 @@
             .intro_description {
                 gap: 1.5em;
              @include flex(column , center, center, 2em); 
+             width: 40vw !important;
 
 
 
                 .description{
-                 display: none;
+                position: absolute;
+                top: 50%;
+                left: 55%;
+                  
+
                 }
 
 
@@ -302,6 +274,22 @@
             .intro_visualiser{
                 gap: 1em;
                 position: relative;
+                 width: 90vw !important;
+                height: 50vh !important;
+                position: absolute;
+                right: -75%;
+                transform: translateX(-50%);
+                top: 40%;
+
+                 .codeblock{
+                    width: 70% !important;
+                    
+                    p{
+                    width: 40vw;
+                    
+                }
+
+            }
 
 
                   .codeblock_one{
@@ -313,14 +301,12 @@
 
                     .codeblock-api{
                         position: absolute;
-                        left: 0;
-                        top: 25%;
+                        left: -50%;
+                        transform: translateX(35%);
+                        top: -30%;
                         width: 100% !important;
                         height: 80vh !important;
                         height: max-content;
-
-
-
 
                                 p{
                                     width: 100%;
@@ -332,10 +318,70 @@
         }
     }
 
-    @media screen and (max-width: 600px) {
+    @media screen and (max-width: $breakingpoint_mobile) {
         .Intro_section {
-            height: 160%;
+            height: 180%;
             padding-bottom: 2em;
+
+            .intro_description{
+                width: 90vw  !important;
+                p{
+                width: 100%;
+
+                }
+
+
+
+
+                .description{
+                position: absolute;
+                bottom:0% !important;
+                display: none;
+
+
+                }
+
+
+                p{
+                    width: 70%;
+
+                }
+
+
+           
+            }
+
+            
+
+            .intro_visualiser{
+                width: 90vw !important;
+                height: 50vh !important;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                top: 55%;
+
+                .codeblock{
+                    width: 100% !important;
+                    
+                    p{
+                    width: 90vw;
+                    
+                }
+
+            .codeblock-api{
+                    position: absolute;
+                    top: -30%;
+                    left: 0%;
+                    display: none;
+                 
+                
+
+    
+                }
+
+                }
+            }
         }
     }
 </style>

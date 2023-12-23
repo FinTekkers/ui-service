@@ -17,8 +17,8 @@
             Welcome to Fintekkers
         </h1>
         <p class="content_paragraph">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptate,
-            error.
+            Premier Fintech Infrastructure. We worry about scale, security and
+            plumbing while you focus on your competitive advantage, your ideas.
         </p>
 
         <div class="action_buttons">
