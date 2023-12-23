@@ -40,7 +40,7 @@
     .landing_overview {
         width: 100%;
         height: 100vh;
-        background-image: url("../lib/images/background.png");
+        background-image: url("background.png");
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
