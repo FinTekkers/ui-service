@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from "@iconify/svelte";
-  import {isSignInOrSignUp} from '../store/store';
+  import {isSignInOrSignUp} from '../../store/store';
   
 
   let isPasswordVisible = false;

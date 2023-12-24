@@ -44,7 +44,14 @@ body {
   gap: $gap;
 }
 
-
+.glass_background{
+  border: solid 1px $grey;
+  backdrop-filter: blur(13px) saturate(180%);
+  -webkit-backdrop-filter: blur(13px) saturate(180%);
+  background-color: #0b2e367e;
+  border-radius: 12px;
+  border: 1px solid #5a96a37e;
+}
 
 .debug{
   border: solid 1px red;

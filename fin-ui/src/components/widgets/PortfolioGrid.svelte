@@ -38,7 +38,7 @@
 </div>
 
 <style lang="scss">
-	@import "../style.scss";
+	@import "../../style.scss";
 .portfolio_container{
 	height: 100%;
 	width: 82vw;

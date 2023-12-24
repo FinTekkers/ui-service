@@ -1,26 +1,22 @@
 <script lang="ts">
-  // The ordering of these imports is critical to your app working properly
   import "@skeletonlabs/skeleton/themes/theme-skeleton.css";
-  // If you have source.organizeImports set to true in VSCode, then it will auto change this ordering
   import "@skeletonlabs/skeleton/styles/skeleton.css";
-  // Most of your app wide CSS should be put in this file
   import "../app.postcss";
+
+  // external imports
   import { AppShell } from "@skeletonlabs/skeleton";
-  import { reveal } from "svelte-reveal";
-
   import Icon from "@iconify/svelte";
+
+  // internal imports
   import { goto } from "../lib/helper";
-  import Footer from "../components/Footer.svelte";
-
-  // navbar toggle
   import { toggleSidebarMenu, sideMenuStore } from "../store/store";
-
   // form data
   export let data;
   export let form;
 </script>
 
 <AppShell>
+  <!-- hamburger navbar to move into own component -->
   <div class={`hamburger_nav ${$sideMenuStore ? "show" : "hidden"}`}>
     <div class="navigation_bar">
       <div class="logo" on:click={() => goto("/")}>
@@ -73,6 +69,7 @@
     {/if}
   </div>
 
+ <!-- main navigation bar -->
   <svelte:fragment slot="header">
     <div class="navigation_bar">
       <div class="logo" on:click={() => goto("/")}>
@@ -85,18 +82,34 @@
       <div class="navigation_links">
         <ul>
           <li>
-            <a href="#todo_link_to_repl_when_complete">Get started instantly</a>
+            <a href="#todo_link_to_repl_when_complete">Get started</a>
           </li>
           <li>
-            <a href="https://github.com/FinTekkers/ledger-models">Docs</a>
+            <a href="https://github.com/FinTekkers/ledger-models">
+               <Icon
+          icon="solar:document-outline"
+          style="width: 25px; height: 25px;"
+        />
+              Docs</a>
           </li>
-          <li><a href="#">Pricing (currently free for everyone)</a></li>
-          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">
+             <Icon
+          icon="akar-icons:price-cut"
+          style="width: 25px; height: 25px;"
+        />
+            Pricing (currently free for everyone)</a></li>
+          <li><a href="#">
+             <Icon
+          icon="grommet-icons:contact"
+          style="width: 25px; height: 25px;"
+        />
+            Contact Us</a></li>
         </ul>
       </div>
     </div>
   </svelte:fragment>
 
+  <!-- body -->
   <slot />
 </AppShell>
 
@@ -104,59 +117,80 @@
   @import "../style.scss";
 
   .navigation_bar {
-    height: 8vh;
+    height: 10vh;
     padding: 1em;
     background-color: $background-color;
-    @include flex(center, space-between, row, 1em);
-    .logo {
-      font-weight: bold;
-      font-size: 1.2rem;
-      cursor: pointer;
-      @include flex(center, center, row, 0.5em);
-    }
-
-    .navigation_links {
-      ul {
-        @include flex(center, flex-start, row, 1em);
-        width: 50vw;
-
-        li:last-child {
-          @include flex(center, center, row, 0.4em);
-          margin-left: 1em;
+    @include flex(row, space-between, center, 1em);
+        .logo {
+          font-weight: bold;
+          font-size: 1.2rem;
+          margin-left: 3em;
+          cursor: pointer;
+          @include flex(center, center, row, 0.5em);
         }
-      }
-    }
 
-    .search_bar {
-      .search_bar_form {
-        width: 20vw;
+        .navigation_links {
+              ul {
+                @include flex(row, center, center, 1em);
+                width: 60vw;
 
-        .search_bar_container {
-          input {
-            padding: 0.5em 1em;
-            border: none;
-          }
+                li{
+                  padding: .6em 1em ;
+                  position: relative;
+                  cursor: pointer;
 
-          .search_btn {
-            padding: 0 0.6em;
-            height: 100%;
-            position: absolute;
-            top: 0%;
-            right: 0%;
-            font-size: 0.8rem;
-            background-color: $primary-color;
-            border-top-right-radius: 6px;
-            border-bottom-right-radius: 6px;
-          }
+                  &:not(:first-child)::before {
+                    content: '';
+                    width: 0; 
+                    height: 2px;
+                    background-color: $primary-color;
+                    position: absolute;
+                    bottom: -1%;
+                    border-radius: $bd-radius;
+                    left: 0%; 
+                    transform: translateX(-50%);
+                    transition: width 0.5s ease-in-out, left 0.5s ease-in-out; 
+                  }
+
+                  &:hover::before {
+                    width: 95%; 
+                    left: 50%;
+
+                  }
+                  a{
+
+                    @include flex(row, center, center, .5em);
+
+                    
+                  }
+                }
+
+                li:first-child{
+                  border-radius: 50px;
+                  background-color: $success;
+                  transition: all .5s ease-in-out;
+                  color: $background-color;
+                  font-weight: bold;
+
+
+                  &:hover{
+                    background-color: $primary-color;
+                    color:$white
+                  }
+                }
+
+                li:last-child {
+                  @include flex(center, center, row, 0.4em);
+                  margin-left: 1em;
+                }
+              }
         }
-      }
-    }
   }
+
 
   .hamburger_nav {
     display: none;
   }
-
   .hamburger_btn {
     display: none;
     padding: 1em;
@@ -167,15 +201,7 @@
       display: none;
     }
 
-    .hamburger_btn {
-      display: block;
-      position: absolute;
-      right: 0;
-      margin: 1em;
-      z-index: 100;
-    }
-
-    .hamburger_nav {
+     .hamburger_nav {
       display: block;
       width: 30vw;
       height: 100%;
@@ -196,22 +222,6 @@
         width: inherit;
         @include flex(column, space-between, center, 1em);
         margin-top: 2em;
-
-        .search_bar {
-          width: 100%;
-
-          .search_bar_form {
-            width: 100%;
-            height: 6vh;
-
-            .search_bar_container {
-              input {
-                padding: 1em;
-                border: none;
-              }
-            }
-          }
-        }
 
         .logo {
           width: 100%;
@@ -239,12 +249,17 @@
         }
       }
     }
-
+    .hamburger_btn {
+      display: block;
+      position: absolute;
+      right: 0;
+      margin: 1em;
+      z-index: 100;
+    }
     .hidden {
       right: -100%;
       display: none;
     }
-
     .show {
       right: 0%;
     }
@@ -266,23 +281,6 @@
         @include flex(column, space-between, center, 1em);
         margin-top: 2em;
         background-color: $background-color;
-
-        .search_bar {
-          width: 100%;
-          margin-top: 2em;
-
-          .search_bar_form {
-            width: 100%;
-            height: 6vh;
-
-            .search_bar_container {
-              input {
-                padding: 1em;
-                border: none;
-              }
-            }
-          }
-        }
 
         .logo {
           width: 100%;
@@ -313,9 +311,9 @@
     }
 
     .hidden {
-      right: -100%;
-      display: none;
-    }
+        right: -100%;
+        display: none;
+      }
 
     .show {
       right: 0%;

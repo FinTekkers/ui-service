@@ -47,7 +47,7 @@ export const toggleObrPromptBoolean = ()=>{
 
 
 // main menu navigation store & methods
-export const currentMenu = writable<string>("home");
+export const selectedDashboardMenu = writable<string>("home");
 
 
 // login page store & methods

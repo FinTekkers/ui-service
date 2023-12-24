@@ -3,12 +3,12 @@
     import { reveal } from "svelte-reveal";
 </script>
 
-<div class="About_section">
+<div class="Our-features-container">
     <div
-        class="abt_section abt_section_1"
+        class="our-feature our-feature_1"
         use:reveal={{ transition: "fly", y: 10 }}
     >
-        <div class="abt_subsectionTitle">
+        <div class="feature-headline">
             <Icon
                 icon="icon-park-outline:speed"
                 style="width: 25px; height: 25px;"
@@ -22,10 +22,10 @@
         </p>
     </div>
     <div
-        class="abt_section abt_section_2"
+        class="our-feature our-feature_2"
         use:reveal={{ transition: "fly", y: 20, delay: 20 }}
     >
-        <div class="abt_subsectionTitle">
+        <div class="feature-headline">
             <Icon
                 icon="game-icons:flexible-lamp"
                 style="width: 25px; height: 25px;"
@@ -42,10 +42,10 @@
         </p>
     </div>
     <div
-        class="abt_section abt_section_3"
+        class="our-feature our-feature_3"
         use:reveal={{ transition: "fly", y: 30, delay: 30 }}
     >
-        <div class="abt_subsectionTitle">
+        <div class="feature-headline">
             <Icon icon="octicon:goal-24" style="width: 25px; height: 25px;" />
             <h2>Flexible</h2>
         </div>
@@ -62,17 +62,25 @@
 <style lang="scss">
     @import "../style.scss";
 
-    .About_section {
+    .Our-features-container {
         padding: 1em;
         @include flex(row, center, center, 1.5em);
         background-color: $primary-color;
+       
         height: 50vh;
 
-        .abt_section {
+        .our-feature {
             @include flex(column, center, center, 1.5em);
+            height: 30vh;
+            line-height: 1.5em;
+             border: solid 1px rgba(255, 255, 255, 0.322) !important;
+            position: relative;
 
-            .abt_subsectionTitle {
+            .feature-headline {
                 @include flex(row, center, center, 0.5em);
+                position: absolute;
+                top: 7%;
+
             }
 
             &:nth-child(n) {
@@ -83,16 +91,17 @@
 
                 p {
                     text-align: center;
+                    padding-top: 2em;
                 }
             }
         }
     }
 
     @media screen and (max-width: $breakingpoint_md) {
-        .About_section {
+        .Our-features-container {
             padding: 1em;
 
-            .abt_section {
+            .our-feature {
                 &:nth-child(n) {
                     width: 30%;
                 }
@@ -101,13 +110,13 @@
     }
 
     @media screen and (max-width: $breakingpoint_mobile) {
-        .About_section {
+        .Our-features-container {
             height: max-content;
             display: grid;
             grid-template-columns: 1fr;
             grid-template-rows: 1fr 1fr 1fr;
 
-            .abt_section {
+            .our-feature {
                 @include flex(column, center, center, 1.5em);
                 &:nth-child(n) {
                     min-width: 25vw;
