@@ -1,5 +1,5 @@
 <script lang="ts">
-import {toggleSignInForm, isSignInOrSignUp} from '../store/store'
+import {toggleSignInForm, isSignInOrSignUp} from '../../store/store'
 </script>
 
 <div class="branding-image p-2 rounded-xl">
@@ -21,5 +21,5 @@ import {toggleSignInForm, isSignInOrSignUp} from '../store/store'
 </div>
 
 <style lang="scss">
- @import "../style.scss";
+ @import "../../style.scss";
 </style>

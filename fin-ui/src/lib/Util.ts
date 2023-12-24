@@ -1,4 +1,4 @@
-export enum menuList {
+export enum dashboardMenuList {
   Home = "home",
   Dashboard = "Dashboard",
   Portfolio = "Portfolio",

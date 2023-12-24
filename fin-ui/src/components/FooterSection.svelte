@@ -1,9 +1,10 @@
 <script lang="ts">
+  // external import
   import Icon from "@iconify/svelte";
 </script>
 
 <div class="Footer">
-  <div class="footer_content">
+  <div class="footer_container">
     <div class="footer_logo">
       <h2>
         <Icon
@@ -13,7 +14,7 @@
       </h2>
     </div>
 
-    <div class="social_links">
+    <div class="footer_social_links">
       <div class="icon" data-custom="facebook">
         <Icon
           icon="basil:facebook-outline"
@@ -34,7 +35,7 @@
     </div>
 
     <div class="footer_links">
-      <div class="quicklinks">
+      <div >
         <h1>About Us</h1>
         <ul>
           <li><a href="#">Home</a></li>
@@ -48,7 +49,7 @@
           </li>
         </ul>
       </div>
-      <div class="resources">
+      <div >
         <h1>Contact Info</h1>
         <ul>
           <li>
@@ -77,6 +78,47 @@
     bottom: 0;
     clear: both;
 
+    .footer_container {
+      width: 40vw;
+      @include flex(row, space-between, flex-start, 1em);
+
+            .footer_logo {
+              position: absolute;
+              width: 10vw;
+              left: 10%;
+
+              h2 {
+                @include flex(row, space-between, flex-start, 0.2em);
+                font-size: 1.5rem;
+              }
+            }
+
+            .footer_social_links {
+              position: absolute;
+              right: -10%;
+              width: 30vw;
+              @include flex(column, space-between, flex-start, 1em);
+
+              .icon {
+                cursor: pointer;
+                position: relative;
+
+                &::before {
+                  position: absolute;
+                  left: 2vw;
+                  opacity: 0;
+                  content: attr(data-custom);
+                  transition: all 0.5s ease;
+                }
+
+                &:hover::before {
+                  left: 2.5vw;
+                  opacity: 1;
+                }
+              }
+            }
+    }
+
     .footer_links {
       width: 100%;
       @include flex(row, space-between, flex-start, 1em);
@@ -95,46 +137,7 @@
       }
     }
 
-    .footer_content {
-      width: 40vw;
-      @include flex(row, space-between, flex-start, 1em);
-
-      .footer_logo {
-        position: absolute;
-        width: 10vw;
-        left: 10%;
-
-        h2 {
-          @include flex(row, space-between, flex-start, 0.2em);
-          font-size: 1.5rem;
-        }
-      }
-
-      .social_links {
-        position: absolute;
-        right: -10%;
-        width: 30vw;
-        @include flex(column, space-between, flex-start, 1em);
-
-        .icon {
-          cursor: pointer;
-          position: relative;
-
-          &::before {
-            position: absolute;
-            left: 2vw;
-            opacity: 0;
-            content: attr(data-custom);
-            transition: all 0.5s ease;
-          }
-
-          &:hover::before {
-            left: 2.5vw;
-            opacity: 1;
-          }
-        }
-      }
-    }
+  
   }
 
   @media screen and (max-width: $breakingpoint_mobile) {
@@ -142,7 +145,7 @@
       position: relative;
       padding: 2em;
 
-      .footer_content {
+      .footer_container {
         width: 100%;
         .footer_logo {
           position: absolute;
@@ -158,7 +161,7 @@
           }
         }
 
-        .social_links {
+        .footer_social_links {
           @include flex(row, center, center, 1em);
           left: 20%;
           transform: translateX(-50%);
