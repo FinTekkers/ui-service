@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Main from "../../components/Main.svelte";
-  import SideMenu from "../../components/SideMenu.svelte";
+  import Dashboard from "../../components/Dashboard.svelte";
+  import DashboardSideBar from "../../components/DashboardSideBar.svelte";
   export let data: import("./$types").PageData;
 </script>
 
 {@debug}
 
 <div class="w-screen h-full flex">
-  <SideMenu />
-  <Main data={data} />
+  <DashboardSideBar />
+  <Dashboard data={data} />
 </div>

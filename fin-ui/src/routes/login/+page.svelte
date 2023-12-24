@@ -1,7 +1,7 @@
 
 <script lang="ts">
-  import LoginBrandPage from "../../components/LoginBrandPage.svelte";
-  import LoginForm from "../../components/LoginForm.svelte";
+  import LoginBrandPage from "../../components/login/LoginBrandPage.svelte";
+  import LoginForm from "../../components/login/LoginForm.svelte";
   export let data:any;
   export let form: Login.formError;
 
@@ -28,11 +28,5 @@
 <style >
   @import "../../style.scss";
   @import "../../login.scss";
-
-
-
-  
-
-
 
 </style>
