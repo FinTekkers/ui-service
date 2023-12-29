@@ -71,7 +71,7 @@ import {toggleObrPromptBoolean} from '../../store/store';
   }
 
 
-  @media screen and (max-width: $breakingpoint_md){
+  @media screen and (max-width: $breakingpoint_medium){
     .obr_card{
         width: 25vw;
         aspect-ratio: 1/1;

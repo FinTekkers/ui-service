@@ -42,7 +42,7 @@ import {obrPromptBoolean} from '../../store/store';
         }
 
 
-@media screen and (max-width: $breakingpoint_md){
+@media screen and (max-width: $breakingpoint_medium){
     .obr_landing{
         width: 90%;
     }

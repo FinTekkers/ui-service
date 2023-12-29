@@ -199,7 +199,7 @@
         }
     }
 
-    @media screen and (max-width: $breakingpoint_md) {
+    @media screen and (max-width: $breakingpoint_medium) {
 
    .custom_codeblock{
        width: 40vw;
