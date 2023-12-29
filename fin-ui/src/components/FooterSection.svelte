@@ -153,6 +153,7 @@
           left: 50%;
           transform: translateX(-50%);
           width: 100%;
+          margin-top: 2em;
           @include flex(row, space-between, flex-start, 2em);
 
           h2 {
@@ -162,10 +163,11 @@
         }
 
         .footer_social_links {
-          @include flex(row, center, center, 1em);
-          left: 20%;
-          transform: translateX(-50%);
+          @include flex(row, center, center, 2em);
+          left: 0%;
           bottom: 10%;
+          width: 100%;
+
 
           .icon {
             &::before {
@@ -173,6 +175,26 @@
             }
           }
         }
+      }
+
+
+      .footer_links{
+
+        div:nth-child(n) {
+        width: 100%;
+        height: 100%;
+        text-align: center;
+
+        h1 {
+          margin-bottom: 1em;
+        }
+
+        ul {
+          line-height: 2em;
+        }
+      }
+
+
       }
     }
   }

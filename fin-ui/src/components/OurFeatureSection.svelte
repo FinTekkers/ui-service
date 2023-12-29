@@ -97,7 +97,7 @@
         }
     }
 
-    @media screen and (max-width: $breakingpoint_md) {
+    @media screen and (max-width: $breakingpoint_medium) {
         .Our-features-container {
             padding: 1em;
 
