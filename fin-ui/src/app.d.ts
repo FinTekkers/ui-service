@@ -5,6 +5,13 @@ declare namespace App {
   interface booleans{
     obrUser:boolean
   }
+
+  interface NavbarURL {
+    url:string,
+    text:string,
+    id:string,
+    icon:string
+  }
 }
 
 declare namespace Login {
