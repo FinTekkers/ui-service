@@ -237,7 +237,7 @@
         }
     }
 
-    @media screen and (max-width: $breakingpoint_md) {
+    @media screen and (max-width: $breakingpoint_medium) {
         .get-started-container {
             display: grid;
             gap: 1em;
@@ -333,34 +333,42 @@
         .get-started-container {
             height: 180%;
             padding-bottom: 2em;
+            
+
 
             .get-started-text{
-                width: 90vw  !important;
+                width: 100vw;
+                min-width: 450px;
+                position: absolute;
+                left: 50%;
+                top: 3%;
+                transform: translateX(-50%);
+
+             
+
                 p{
-                width: 100%;
-
+                width: 100% !important;
+                text-align: start;
                 }
-
-
-
 
                 .key-advantage-features{
                 position: absolute;
                 bottom:0% !important;
                 display: none;
-
-
                 }
 
 
                 p{
                     width: 70%;
 
+
                 }
 
 
            
             }
+
+        
 
             
 
@@ -371,6 +379,7 @@
                 left: 50%;
                 transform: translateX(-50%);
                 top: 55%;
+
 
                 .codeblock{
                     width: 100% !important;

@@ -1,4 +1,3 @@
-@import "./nav.scss";
 
 $background-color: #0c3a46;
 $primary-color: #1b6f85;
@@ -18,7 +17,7 @@ $transpblack: #05192a59;
 $bd-radius:6px;
 
 
-$breakingpoint_md: 1200px;
+$breakingpoint_medium: 1200px;
 $breakingpoint_mobile: 600px;
 
 *::before,
@@ -81,3 +80,74 @@ body {
 }
 
 
+.navigation_bar {
+    height: 10vh;
+    padding: 1em;
+    background-color: $background-color;
+    @include flex(row, space-between, center, 1em);
+        .logo {
+          font-weight: bold;
+          font-size: 1.2rem;
+          margin-left: 3em;
+          cursor: pointer;
+          @include flex(center, center, row, 0.5em);
+        }
+
+        .navigation_links {
+              ul {
+                @include flex(row, center, center, 1em);
+                width: 60vw;
+
+                li{
+                  padding: .6em 1em ;
+                  position: relative;
+                  cursor: pointer;
+                  @include flex(row,center, center,1em);
+
+                  &:not(:first-child)::before {
+                    content: '';
+                    width: 0; 
+                    height: 2px;
+                    background-color: $primary-color;
+                    position: absolute;
+                    bottom: -1%;
+                    border-radius: $bd-radius;
+                    left: 0%; 
+                    transform: translateX(-50%);
+                    transition: width 0.5s ease-in-out, left 0.5s ease-in-out; 
+                  }
+
+                  &:hover::before {
+                    width: 95%; 
+                    left: 50%;
+
+                  }
+                  a{
+
+                    @include flex(row, center, center, .5em);
+
+                    
+                  }
+                }
+
+                li:first-child{
+                  border-radius: 50px;
+                  background-color: $success;
+                  transition: all .5s ease-in-out;
+                  color: $background-color;
+                  font-weight: bold;
+
+
+                  &:hover{
+                    background-color: $primary-color;
+                    color:$white
+                  }
+                }
+
+                li:last-child {
+                  @include flex(center, center, row, 0.4em);
+                  margin-left: 1em;
+                }
+              }
+        }
+  }
