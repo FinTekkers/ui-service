@@ -16,7 +16,6 @@
 </script>
 
 <div class="landing-page-container">
-    <!-- <div class="landing-page-overlay" /> -->
 
     <div class="landing-content">
         <h1 class="landing-headline" use:reveal={{ transition: "fade" }}>
@@ -69,37 +68,7 @@
         </div>
         </div>
     </div>
-    <!-- <div class="landing-image">
-     <img src={computerImage} alt="computer-vector">
 
-     <div class="landing-image-icon first-icon">
-         <Icon
-           icon="solar:graph-up-outline"
-           style="width: 150px; height: 150px;color:#258ea8;opacity:50%"
-           class='icon'
-                            
-         />
-         
-     </div>
-     <div class="landing-image-icon second-icon">
-         <Icon
-           icon="cil:graph"
-           style="width: 150px; height: 150px; color:#258ea8; opacity:50%"
-           class='icon'
-                            
-         />
-         
-     </div>
-     <div class="landing-image-icon third-icon">
-         <Icon
-           icon="pepicons-print:coins"
-           style="width: 120px; height: 120px; color:#258ea8; opacity:50%"
-           class='icon'
-                            
-         />
-         
-     </div>
-    </div> -->
 </div>
 
 <style lang="scss">
@@ -114,7 +83,6 @@
         grid-template-columns: repeat(2,1fr);
         grid-template-rows: repeat(6,20%);
         border-radius: $bd-radius;
-        // @include flex(row,center,center, 1em);
 
 
         .landing-content {
@@ -127,21 +95,16 @@
             padding: 1em;
             @extend .glass_background;
 
-            // @include flex(column, center, flex-start, 3em);
-            // padding-left: 5em;
-            // border-radius: $bd-radius;
 
             .landing-headline {
                 font-size: 3rem;
                 text-align: left;
-                // width: 40vw;
                 line-height: 1.2em;
                 grid-area:3/2/4/12;
             }
 
 
             .landing-description{
-                // width: 30vw; 
                 font-size: 1em;
                 grid-area:4/2/5/8;
                 margin-top: 1em;
@@ -149,11 +112,8 @@
             }
 
             .landing-cta-buttons {
-                // @include flex(row, center, center, 1em);
                 grid-area:5/2/5/7;
-                // position: relative;
-                // z-index: 1;
-                // top: -50px; 
+    
 
                 button {
                     min-width: 100px;
@@ -201,8 +161,7 @@
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
                 grid-template-rows: repeat(6,100px);
-                // position: absolute;
-                // right: 10px;
+
 
                 img{
                     display: block;
@@ -211,31 +170,16 @@
                 }
                 
 
-                .landing-image-icon{
-                    // position:  absolute;
-                    // z-index: -1;
-                    // left: 80%;
-                    // top: 45%;   
-                    // display: none;
-                }
-
                 .first-icon{
                     grid-area:5/4/5/4;
                 }
 
                 .second-icon{
-                    // top: 10%;
-                    // left: 10px;
-                    // display: none;
                     grid-area: 2/1/2/1;
 
                 }
 
                 .third-icon{
-                    // top: 62%;
-                    // left: 10%;
-                    // z-index: 3;
-                    // display: none;
                     grid-area: 7/2/7/2;
                 }
             }
@@ -243,14 +187,6 @@
       
         }
 
-        .landing-page-overlay {
-            width: inherit;
-            height: inherit;
-            background-color: rgba(0, 0, 0, 0.719);
-            @extend .centerAbsolute;
-            z-index: 0;
-            display: none;
-        }
     }
 
     @media screen and (max-width: $breakingpoint_medium) {
@@ -278,13 +214,9 @@
                 }
 
                 .landing-image{
-                    // grid-area: 3/10/6/17;
                     display: none;
                 .landing-image-icon{
                     display: none;
-
-
-
                 }
 
             }
@@ -299,33 +231,46 @@
 
         .landing-page-container {
             .landing-content {
-                @include flex(column, center, center, 1em);
-                height: 100vh;
                 padding: 0;
+                grid-template-columns: 1fr;
+                display: grid;
+                
+
 
                 .landing-headline {
                     font-size: 2.5rem;
                     width:100%;
-                    line-height: 1em;
+                    line-height: 1.2em;
                     text-align: center;
+                    grid-area:3/1/3/-1;
+
+
+
 
                 }
 
                 .landing-description {
-                    text-align: center;
-                    width: 50%;
+                  text-align: center;
+                  width: 90%;
+                   grid-area:4/1/5/-1;
+                   margin-top: 3em;
 
                 }
 
                
 
                 .landing-cta-buttons {
-                    @include flex(column, center, center, 1em);
+                  @include flex(column,center, center,0em);
+                grid-area:6/1/6/-1;
 
 
                     button {
+                        width: 50%;
+
                         &:nth-child(1) {
                             order: 2;
+                            margin-bottom: 1em;
+                            margin-right: 0;
                         }
                     }
                 }
