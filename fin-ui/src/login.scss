@@ -27,6 +27,14 @@
 }
 }
 
+.login-container-parent{
+  
+  .login_container{
+    height: 70vh;
+
+  }
+}
+
 .form_btn {
       background-color: $primary-color;
       transition: all 0.5s ease-in-out;
@@ -76,203 +84,107 @@
 }
 }
 
-// login form section - right side
-.form{
-  height: 60vh;
 
 
-  .form_container {
-    width: 20vw;
-    position: relative;
-    left: 3vw;
-    @include flex(column, space-between, null, 1em);
+    @media screen and (max-width: $breakingpoint_medium){
+        .login-container-parent{
+            display: grid;
+            grid-template-columns: 1fr;
 
-  .form_headline {
-    font-size: 1.5rem;
-    color: $primary-color;
+          .login_container{
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            grid-template-rows: 1fr;
+            width: 90vw;
+            margin: 0 auto;
+            gap: 1em;
+       
+             .branding-image{
+              overflow: hidden;
+              }
+
+             .form_container{
+              width: 30vw;
+
+              .sign_up_fields{
+                // width: 35vw;
+                display: grid;
+                grid-template-columns: 1fr;
+               label{
+                 input{
+                   width: 100%;
+                 }
+               }
+
+               label:nth-child(n){
+                grid-column: 1/-1;
+
+               }
+              }
+
+              .sign_in_fields {
+
+                 label{
+                  height: max-content;
+                  position: relative;
+                  input{
+                    width: 100%;
+                    height: 3em;
+                    color: $grey;
+                  }
   }
 
-  // sign up form
-  .sign_up_fields{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto ;
-  gap: .5em;
-  width: 300px;
-  height: 30vh;
-
-  label{
-    height: max-content;
-    position: relative;
-    input{
-      width: 100%;
-      height: 2.5em;
-      color: $grey;
-    }
-  }
-
-  label:nth-child(1){
-   grid-column: 1/2;
-  }
-  label:nth-child(2){
-   grid-column: 2/-1;
-  }
-  label:nth-child(3){
-   grid-column: 1/-1;
-  }
-  label:nth-child(4){
-   grid-column: 1/-1;
-  }
-  label:nth-child(5){
-   grid-column: 1/-1;
-  }
-  label:nth-child(6){
-   grid-column: 1/-1;
-
-   button{
-     width: 100%;
-   }
-  }
-
-  .togglePasswordDisplayIcon_signUp{
-     position: absolute;
-     top: 15%;
-     right: 5%;
-     transition: all .5s ease-in-out;
-     cursor: pointer;
-     color: $grey;
-  }
+              }
 
 
-}
+              .form_btn{
+                background-color: $primary-color;
+                transition: all .5s ease-in-out;
 
-// sign in form
-  .sign_in_fields {
-    @include flex(column, center, null, 0);
-    gap: 1em;
+                &:hover{
+                background-color: $primary-button;
 
-    span {
-      color: $grey;
-      font-size: 1rem - 0.2rem;
-      margin-bottom: 1em;
-    }
+                }
+              }
 
-    .error_message{
-      color:$error;
-      font-size: .8rem;
-    }
-
-    .checkIsPasswordVisible {
-      outline: none;
-      border: solid 1px $border-color;
-      appearance: none;
-      background-color: white;
-      transition: all 0.5s ease-in-out;
-
-      &:checked {
-        outline: none;
-        border: none;
-        appearance: none;
-        background-color: $primary-color;
-      }
-    }
+              .google_OAuth{
+                button{
+                  span{
+                    font-size: .8rem;
+                  }
+                }
+              }
 
 
-    .passwordField{
-      position: relative;
-      .togglePasswordDisplayIcon{
-        position: absolute;
-        top: 50%;
-        right: 5%;
-        transition: all .5s ease-in-out;
-        cursor: pointer;
-      }
-    }
+              .form_headline{
+                padding-top: 1em;
+              }
 
 
-  }
+              }
+
+            .form_headline{
+                  width: 25vw;
+                  margin-bottom: 1em;
+                  font-size: 1.2rem;
+            }
+
+            
 
 
+          }
 
-  .divider {
-    color: $grey;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    position: relative;
-    font-size:.8rem;
+        
 
-    .one,
-    .two {
-      position: absolute;
-      top: 50%;
-      width: 20%;
-      color: $grey;
-    }
-
-    .one {
-      left: 20%;
-    }
-
-    .two {
-      right: 20%;
-    }
-  }
-
-  .google_OAuth {
-    button {
-      width: 100%;
-      background-color: white;
-      border: solid 1px $grey;
-      color: $grey;
-      transition: all 0.5s ease-in-out;
-      @include flex(row, center, center, 1em);
-
-      &:hover {
-        background-color: $primary-color;
-
-        span {
-          color: $white;
         }
-      }
+        
+   
+     
+
     }
-  }
-   }
-}
-
-// 
 
 
 
-  @media screen and (max-width: $breakingpoint_medium) {
-
-      .login_container{
-        width: 90vw !important;
-      }
-
-      form{
-                
-          .form_container{
-            // border: solid 3px red;
-            width: 100% !important;
-          }
-
-          .sign_up_fields{
-            width: 90% !important;
-           
-
-
-          }
-      }
-
-      .branding-image{
-        width: 35vw;
-          }
-
-      .google_OAuth{
-        width: 90%;
-      }
-  }
 
 
   @media screen and (max-width: $breakingpoint_mobile) {

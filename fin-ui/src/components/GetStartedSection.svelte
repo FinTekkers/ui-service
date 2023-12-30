@@ -12,7 +12,7 @@
 <div class="get-started-container">
     <div class="get-started-text">
        
-        <div use:reveal={{ transition: "fly", delay:3 }}>
+        <div class="get-started-text-intro" use:reveal={{ transition: "fly", delay:3 }}>
 
            <p class="get-started-text-title">
                 <Icon
@@ -26,13 +26,15 @@
             solve your business opportunities at miminum cost.
 
            </p> 
-        </div>
-       <button class="get-started-cta-button" on:click={()=>{
+
+          <button class="get-started-cta-button" on:click={()=>{
           goto('/login')
        }}>
        
        
        Get Started</button>
+        </div>
+  
 
        <div class="key-advantage-features">
 
@@ -64,30 +66,35 @@
        </div>
     </div>
     <div class="get-started-code">
-                <div class="codeblock codeblock_one">
-                <p>
-                    <Icon
-                            icon="line-md:cog-loop"
-                            style="width: 25px; height: 25px;"
-                            
-                            /> 
-                    Install Fintekkers client libraries:
-                </p>
-                            <CustomCodeBlock  />
+                <div class="codeblock ">
+       
+                        <p>
+                            <Icon
+                                    icon="line-md:cog-loop"
+                                    style="width: 25px; height: 25px;"
+                                    
+                                    /> 
+                            Install Fintekkers client libraries
 
-                </div>
-                <div class="codeblock codeblock_two">
+                            <span>
+                                /
+                            </span>
+
+                            <Icon
+                                    icon="material-symbols:electric-bolt-outline"
+                                    style="width: 25px; height: 25px;"
+                                    
+                                    />  Make your first API call
+                        </p>
+
         
+                        <div class="code-block-installation">
 
-                    <div class="get-started-code-text">
-                                <p> <Icon
-                            icon="material-symbols:electric-bolt-outline"
-                            style="width: 25px; height: 25px;"
-                            
-                            />  Make your first API call:</p> 
+                            <CustomCodeBlock  />
+                        </div>
 
-                    </div>
                 </div>
+       
     </div> 
 </div>
 
@@ -96,271 +103,317 @@
    
     .get-started-container {
         width: 100%;
-        height: 120vh;
-        @include flex(row, space-between, flex-start, 2em); 
-        padding: 2em;
         background-color: $background-color;
-        position: relative;
-        padding-left: 5em;
         border-radius: $bd-radius;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(50vw, 1fr));
+
+
+         
+       .get-started-text {
+             gap: 1em;
+             padding: 1em;
+             display: grid;
+             grid-template-columns: repeat(4,1fr);
+
+            .get-started-text-intro{
+                display: grid;
+                grid-template-columns: repeat(auto-fill,minmax(100px, 1fr));
+                grid-column: 1/-1; 
+                padding: 1em;
+                gap: 1em;
+
+
+
+
+                .get-started-text-title{
+                  @include flex(row, flex-start, center, .5em);
+                   font-size: 1.5rem;
+                   grid-area: 1/1/1/-1;
+                   // grid-area: title;
+
+                }
+    
+                .get-started-text-paragraph{
+                   // width: 30vw;
+                   line-height: 2em; 
+                   grid-area: 2/1/2/5;
+                //    margin: 1em 0;
+    
+                }
+
+
+                button {
+                    @extend .button;
+                    // width: 15vw;
+                    transition: all .5s ease;
+                    font-weight:bold;
+                    font-size: 1rem;
+                    height: 8vh;
+                    background-color: $success;
+                    color: $black;
+                    grid-area: 3/1/3/3;
+                    border-radius: 30px;
+                    width: 20vh;
+
+                    
+                    // grid-area: button;
+
+                    // position: absolute;
+                    // bottom: 20%;
+                    // left: 15px;
+
+                    &:hover{
+                        background-color: $primary-color;
+                        color:$white
+                    }
+                    
+                }
+            }
+
 
 
         .key-advantage-features{
-            max-width: 50vw;
-            width: 50vw !important;
-            @extend .centerAbsolute;
-            left: 0%;
-            top: 100%;
-            transform: translate(0%,0%);
-            font-size: 1rem;
-
+       
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(5vw, 1fr)); 
+            justify-content: center;
+            gap: 1em;
+            grid-auto-flow: dense;
+            grid-column: 1/-1;
+            padding: 1em;
 
             .key-advantage-feature{
-             @include flex(column , center, center, 1em); 
-             border: solid 1px $primary-color;
-             height: 20vh;
-             width: 12vw;
-             text-align: center;
-             border-radius: $bd-radius;
-             position: absolute;
-
-             &:nth-child(1){
-                 left: 2%;
-                 top: 5%;
-             }
-
-            &:nth-child(2){
-                 left: 30.5%;
-                 top: 25%;
-             }
-            &:nth-child(3){
-                 left: 2%;
-                 top: 55%;
-             }
+                border-radius: $bd-radius;
+                padding: 1em;
+                aspect-ratio: 1/1;
+                @include flex(column , center, center, 1em); 
+                border: solid 1px $primary-color;
+                text-align: center;
             }
 
         }
 
 
-        div:nth-child(n) {
-            padding: 1em;
-            width: 50%;
-            height: 50vh;
+
 
         }
 
-      
- 
-    .get-started-text {
-            @include flex(column, center, flex-start, 1em);
-             padding: 0 !important;
-             position: relative;
-
-             .get-started-text-title{
-                 width: 30vw;
-                 @include flex(row, flex-start, center, .5em);
-                 font-size: 1.5rem;
-
-             }
-
-             .get-started-text-paragraph{
-                width: 30vw;
-                line-height: 3em;
-             }
-
-            button {
-                @extend .button;
-                width: 15vw;
-                transition: all .5s ease;
-                font-weight:bold;
-                font-size: 1rem;
-                height: 8vh;
-                background-color: $success;
-                color: $black;
-                position: absolute;
-                bottom: 20%;
-                left: 15px;
-
-
-
-                &:hover{
-                    background-color: $primary-color;
-                    color:$white
-                }
-                
-            }
-        }
-    }
-
-    .get-started-code {
+       .get-started-code {
         gap: 2em;
-        display: flex;
-        flex-direction: column;
-        height: 100vh !important;
+   
+        
 
-        .codeblock_one{
-            position: absolute;
-            left: 46%;
-            top: 10%;
+
+        .codeblock{
+            padding: 2em 1em 1em 1em;
+            display: grid;
+            grid-template-columns: repeat(5,1fr);
+            justify-content: center;
+            align-items: center;
+            
+
+
+
+        p{
+            grid-column: 1/-1;
+            @include flex(row,center, center, 1em);
+            margin-bottom: 1em;
+
         }
 
+
+        }
       
          .get-started-code-text{
-            position: absolute;
-            width: max-content !important;
-            height: 5vh !important;
-            left: 46%;
-            top: 36%;
-            
 
             p{
             text-align: left;
-            width: 15vw;
             }
 
     
    }
 
-    .codeblock{
-         width: 100% !important; 
-         @include flex(column, flex-start, flex-start, 2em);
+    }
 
 
-         p{
-             @include flex(row, center, center, 1em);
-         }
 
-         &:nth-child(1){
-             height:200px;
-         }
 
-        }
+      
+
     }
 
     @media screen and (max-width: $breakingpoint_medium) {
         .get-started-container {
-            display: grid;
-            gap: 1em;
-            height: max-content;
-            padding-bottom: 2em;
-            height: 120%;
-            
+        grid-template-columns: 1fr;
 
-            div:nth-child(n) {
-                width: 100%;
-            }
-            div:nth-child(1) {
-                text-align: center;
-            }
+        .get-started-text {
 
-            .get-started-text {
-                gap: 1.5em;
-             @include flex(column , center, center, 2em); 
-             width: 40vw !important;
-
-
-
-                .key-advantage-features{
-                position: absolute;
-                top: 50%;
-                left: 55%;
-                  
-
-                }
-
-
-                p{
-                    width: 70%;
-
-                }
-
-
-                button {
-                width: 30vw;
-
-                }
-            }
-           
-
-            .get-started-code{
-                gap: 1em;
-                position: relative;
-                 width: 90vw !important;
-                height: 50vh !important;
-                position: absolute;
-                right: -75%;
-                transform: translateX(-50%);
-                top: 40%;
-
-                 .codeblock{
-                    width: 70% !important;
-                    
-                    p{
-                    width: 40vw;
-                    
-                }
-
-            }
-
-
-                  .codeblock_one{
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    @include flex(column , center, center, 1em); 
-                  }
-
-                    .get-started-code-text{
-                        position: absolute;
-                        left: -50%;
-                        transform: translateX(35%);
-                        top: -30%;
-                        width: 100% !important;
-                        height: 80vh !important;
-                        height: max-content;
-
-                                p{
-                                    width: 100%;
-                                }
+                .get-started-text-intro{
+                display: grid;
+                justify-items: center;
+                    .get-started-text-paragraph{
+                    grid-area: 2/1/2/-1;
+                    width: 50vw;
+                    text-align: center;
                     }
 
-            }
+                    button {
+                        grid-area: 3/1/3/-1;
+                    }
+
+                }
+
+                .key-advantage-features{
+                    grid-template-columns: repeat(auto-fit, 15vw); 
+
+                }
 
         }
+
+        .get-started-code{
+
+            .codeblock{
+
+            .code-block-installation{
+                border: solid 2px green;
+                grid-column: 1/-1;
+                border: solid 1px $grey;
+                backdrop-filter: blur(13px) saturate(180%);
+                -webkit-backdrop-filter: blur(13px) saturate(180%);
+                background-color: #0b2e367e;
+                border-radius: 12px;
+                border: 1px solid #5a96a37e;
+                padding: 1em 0;
+                margin: 1em 0 0 0;
+             
+            }
+
+            }
+
+            
+        }
+
+   
+
+        }
+        //     display: grid;
+        //     gap: 1em;
+        //     height: max-content;
+        //     padding-bottom: 2em;
+        //     height: 120%;
+            
+
+        //     div:nth-child(n) {
+        //         width: 100%;
+        //     }
+        //     div:nth-child(1) {
+        //         text-align: center;
+        //     }
+
+        //     .get-started-text {
+        //         gap: 1.5em;
+        //      @include flex(column , center, center, 2em); 
+        //      width: 40vw !important;
+
+
+
+        //         .key-advantage-features{
+        //         position: absolute;
+        //         top: 50%;
+        //         left: 55%;
+                  
+
+        //         }
+
+
+        //         p{
+        //             width: 70%;
+
+        //         }
+
+
+        //         button {
+        //         width: 30vw;
+
+        //         }
+        //     }
+           
+
+        //     .get-started-code{
+        //         gap: 1em;
+        //         position: relative;
+        //          width: 90vw !important;
+        //         height: 50vh !important;
+        //         position: absolute;
+        //         right: -75%;
+        //         transform: translateX(-50%);
+        //         top: 40%;
+
+        //          .codeblock{
+        //             width: 70% !important;
+                    
+        //             p{
+        //             width: 40vw;
+                    
+        //         }
+
+        //     }
+
+
+        //           .codeblock_one{
+        //             position: absolute;
+        //             left: 0;
+        //             top: 0;
+        //             @include flex(column , center, center, 1em); 
+        //           }
+
+        //             .get-started-code-text{
+        //                 position: absolute;
+        //                 left: -50%;
+        //                 transform: translateX(35%);
+        //                 top: -30%;
+        //                 width: 100% !important;
+        //                 height: 80vh !important;
+        //                 height: max-content;
+
+        //                         p{
+        //                             width: 100%;
+        //                         }
+        //             }
+
+        //     }
+
+        // }
     }
 
     @media screen and (max-width: $breakingpoint_mobile) {
         .get-started-container {
-            height: 180%;
             padding-bottom: 2em;
-            
-
 
             .get-started-text{
-                width: 100vw;
-                min-width: 450px;
-                position: absolute;
-                left: 50%;
-                top: 3%;
-                transform: translateX(-50%);
-
              
+              .get-started-text-intro{
 
-                p{
-                width: 100% !important;
-                text-align: start;
-                }
+                  .get-started-text-title,.get-started-text-paragraph{
+                  width: 90vw;
+                  @include flex(row, center, center, 1em)
+                  
+  
+                  }
+
+              }
 
                 .key-advantage-features{
-                position: absolute;
-                bottom:0% !important;
-                display: none;
+                grid-template-columns: repeat(3,1fr);
+                border-bottom: solid 1px rgba(255, 255, 255, 0.229);
+                padding-bottom: 3em;
+     
                 }
 
 
                 p{
                     width: 70%;
-
 
                 }
 
@@ -368,37 +421,15 @@
            
             }
 
-        
-
-            
-
             .get-started-code{
-                width: 90vw !important;
-                height: 50vh !important;
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                top: 55%;
-
 
                 .codeblock{
-                    width: 100% !important;
                     
                     p{
                     width: 90vw;
                     
                 }
 
-            .get-started-code-text{
-                    position: absolute;
-                    top: -30%;
-                    left: 0%;
-                    display: none;
-                 
-                
-
-    
-                }
 
                 }
             }

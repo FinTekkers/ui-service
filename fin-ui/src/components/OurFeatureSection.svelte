@@ -63,17 +63,21 @@
     @import "../style.scss";
 
     .Our-features-container {
-        padding: 1em;
-        @include flex(row, center, center, 1.5em);
+        padding: 2em 1em;
         background-color: $primary-color;
+        display: grid;
+        grid-template-columns:repeat(3, 1fr);
+        grid-template-rows: 1fr ;
+        justify-items: center;
+        align-items: center;
+
        
-        height: 50vh;
 
         .our-feature {
             @include flex(column, center, center, 1.5em);
             height: 30vh;
             line-height: 1.5em;
-             border: solid 1px rgba(255, 255, 255, 0.322) !important;
+            border: solid 1px rgba(255, 255, 255, 0.322) !important;
             position: relative;
 
             .feature-headline {
@@ -99,11 +103,17 @@
 
     @media screen and (max-width: $breakingpoint_medium) {
         .Our-features-container {
-            padding: 1em;
+            grid-template-columns: 1fr;
+            gap: 1em;
 
             .our-feature {
+                display: grid;
+                justify-items: center;
+                align-items: center;
+      
                 &:nth-child(n) {
-                    width: 30%;
+                   grid-column: 1/-1;
+                   width: 60%;
                 }
             }
         }
