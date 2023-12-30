@@ -150,4 +150,37 @@ body {
                 }
               }
         }
-  }
+}
+
+
+
+
+
+
+.form{
+  height: 100%;
+
+
+      .form_container {
+        width: 25vw;
+        position: relative;
+        left: 3vw;
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        grid-template-rows: repeat(5, 50px);
+        gap: 1em;
+
+            .form_headline {
+                font-size: 1.5rem;
+                color: $primary-color;
+                grid-area: 1/1/1/1;
+
+            }
+
+            
+
+        }
+
+}
+
+

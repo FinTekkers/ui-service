@@ -50,16 +50,8 @@ export const toggleObrPromptBoolean = ()=>{
 export const selectedDashboardMenu = writable<string>("home");
 
 
-// login page store & methods
-export const isSignInOrSignUp = writable<boolean>(false)
 
-export const toggleSignInForm = ()=>{
-       let bool = get(isSignInOrSignUp)
-       isSignInOrSignUp.update((store)=>{
-         store = !bool;
-         return store
-       })
-}
+
 
 
 // store of booleans
@@ -82,3 +74,29 @@ export const toggleUnderConstruct = (key:keyof Debug.underConstruct)=>{
 })
 
 }
+
+// login page store & methods
+export const isSignInOrSignUp = writable<boolean>(false)
+
+
+export const toggleSignInForm = ()=>{
+       let bool = get(isSignInOrSignUp)
+       isSignInOrSignUp.update((store)=>{
+         store = !bool;
+         return store
+       })
+}
+
+export const isPasswordVisible = writable<boolean>(false)
+
+export const togglePasswordVisibility = ()=>{
+  let bool = get(isPasswordVisible);
+
+  isPasswordVisible.update((store)=>{
+      store = !bool;
+      return store;
+  })
+}
+
+
+
