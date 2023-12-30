@@ -102,34 +102,48 @@
     
 </script>
 
+<div class="code-block-installation-container">
+    <div class="custom_header">
+        <div class="custom_header_title" on:click={()=>toggleCodeLang('Typescript')}>Typescript</div>
+        <div class="custom_header_title" on:click={()=>toggleCodeLang('Rust')}>Rust</div>
+        <div class="custom_header_title" on:click={()=>toggleCodeLang('Java')}>Java</div>
+    </div>
+    <div class="custom_codeblock">
+    <div class="copy_btn" on:click={()=>copyCode('command')}>{commandIsCopied ? '👍' : "Copy"}</div>
+    <div class="code_language">{codeLanguage}</div>
+    <div class="code_content" id="mycode_command">
+         {codeCommand}
+    </div>
+    </div>
+    <div class="custom_codeblock">
+    <div class="copy_btn" on:click={()=>copyCode('content')}>{contentIsCopied ? '👍' : "Copy"}</div>
+    <div class="code_language">{codeLanguage}</div>
+    <div class="code_content" id="mycode_content">
+         {codeContent}
+    </div>
+    </div>
 
-<div class="custom_header">
-    <div class="custom_header_title" on:click={()=>toggleCodeLang('Typescript')}>Typescript</div>
-    <div class="custom_header_title" on:click={()=>toggleCodeLang('Rust')}>Rust</div>
-    <div class="custom_header_title" on:click={()=>toggleCodeLang('Java')}>Java</div>
-</div>
-<div class="custom_codeblock">
-<div class="copy_btn" on:click={()=>copyCode('command')}>{commandIsCopied ? '👍' : "Copy"}</div>
-<div class="code_language">{codeLanguage}</div>
-<div class="code_content" id="mycode_command">
-     {codeCommand}
-</div>
-</div>
-<div class="custom_codeblock">
-<div class="copy_btn" on:click={()=>copyCode('content')}>{contentIsCopied ? '👍' : "Copy"}</div>
-<div class="code_language">{codeLanguage}</div>
-<div class="code_content" id="mycode_content">
-     {codeContent}
-</div>
 </div>
 
 
 <style lang="scss">
     @import "../../style.scss";
 
+    .code-block-installation-container{
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 48vw;
+        
+
+
+        
+    }
+
     .custom_header{
         @include flex(row,center, center, 1em);
         border-radius: $bd-radius;
+        position: relative;
+        z-index: 3;
         
 
 
@@ -151,13 +165,13 @@
     }
 
     .custom_codeblock{
-        width: max-content;
+        width: 100%;
         height: max-content;
         background:rgb(24, 24, 24);
         padding:  1em;
         border-radius: $bd-radius;
         position: relative;
-        min-width: 20vw;
+        // min-width: 20vw;
         margin: 1em 0;
 
         .code_language{
@@ -190,8 +204,8 @@
 
         .code_content{
             margin-top: 2em;
-            width: 100%;
-            max-width: 50vw;
+            // width: 100%;
+            // max-width: 50vw;
             height: max-content;
             overflow: hidden;
             white-space:pre-wrap;
@@ -201,14 +215,22 @@
 
     @media screen and (max-width: $breakingpoint_medium) {
 
-   .custom_codeblock{
-       width: 40vw;
+    .code-block-installation-container{
+        width: 100%;
 
-
-       .code_content{
-           max-width: 100%;
-       }
     }
+
+    
+
+    .custom_codeblock{
+        width: 80%;
+        margin: 1em auto;
+
+
+        .code_content{
+            max-width: 100%;
+        }
+        }
     }
 
 

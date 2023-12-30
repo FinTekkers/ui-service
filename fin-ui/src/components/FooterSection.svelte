@@ -14,25 +14,6 @@
       </h2>
     </div>
 
-    <div class="footer_social_links">
-      <div class="icon" data-custom="facebook">
-        <Icon
-          icon="basil:facebook-outline"
-          style="width: 25px; height: 25px;"
-        />
-      </div>
-
-      <div class="icon" data-custom="stackoverflow">
-        <Icon icon="jam:stackoverflow" style="width: 25px; height: 25px;" />
-      </div>
-
-      <div class="icon" data-custom="github">
-        <Icon icon="ri:github-fill" style="width: 25px; height: 25px;" />
-      </div>
-      <div class="icon" data-custom="twitter">
-        <Icon icon="pajamas:twitter" style="width: 25px; height: 25px;" />
-      </div>
-    </div>
 
     <div class="footer_links">
       <div >
@@ -62,6 +43,27 @@
         </ul>
       </div>
     </div>
+
+    
+    <div class="footer_social_links">
+      <div class="icon" data-custom="facebook">
+        <Icon
+          icon="basil:facebook-outline"
+          style="width: 25px; height: 25px;"
+        />
+      </div>
+
+      <div class="icon" data-custom="stackoverflow">
+        <Icon icon="jam:stackoverflow" style="width: 25px; height: 25px;" />
+      </div>
+
+      <div class="icon" data-custom="github">
+        <Icon icon="ri:github-fill" style="width: 25px; height: 25px;" />
+      </div>
+      <div class="icon" data-custom="twitter">
+        <Icon icon="pajamas:twitter" style="width: 25px; height: 25px;" />
+      </div>
+    </div>
   </div>
 </div>
 
@@ -70,34 +72,42 @@
 
   .Footer {
     width: 100%;
-    height: 50vh;
+    height: 60vh;
     padding: 1em;
-    @include flex(row, center, center, 1em);
     background-color: $background-color;
-    position: relative !important;
-    bottom: 0;
-    clear: both;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    align-content: center;
 
     .footer_container {
-      width: 40vw;
-      @include flex(row, space-between, flex-start, 1em);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(5,10vh);
+    height: 50vh;
+    padding: 1em;
+        justify-content: center;
+    align-items: center;
+    justify-items: center;
+    align-content: center;
+
 
             .footer_logo {
-              position: absolute;
-              width: 10vw;
-              left: 10%;
+              grid-area: 3/1/3/2;
 
+            
               h2 {
-                @include flex(row, space-between, flex-start, 0.2em);
+                @include flex(row, flex-start, flex-start, 0.2em);
                 font-size: 1.5rem;
+
               }
             }
 
             .footer_social_links {
-              position: absolute;
-              right: -10%;
-              width: 30vw;
               @include flex(column, space-between, flex-start, 1em);
+              grid-area: 3/6/4/-1;
+
 
               .icon {
                 cursor: pointer;
@@ -121,11 +131,18 @@
 
     .footer_links {
       width: 100%;
-      @include flex(row, space-between, flex-start, 1em);
+      grid-area: 1/2/6/6;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(10vw, 1fr));
+      justify-content: center;
+      justify-items: center;
+      align-items: center;
+
 
       div:nth-child(n) {
         width: 100%;
         height: 100%;
+        text-align: center;
 
         h1 {
           margin-bottom: 1em;
@@ -140,10 +157,48 @@
   
   }
 
+  @media screen and (max-width: $breakingpoint_medium) {
+
+    .Footer{
+      grid-template-columns: 1fr ;
+
+      .footer_container{
+      grid-template-columns: 1fr ;
+      grid-template-rows: repeat(4,1fr);
+      gap: 1em;
+
+            .footer_logo {
+               grid-area: 1/1/1/2;
+             }
+
+            .footer_social_links{
+               grid-area: 4/1/4/-1;
+               width: 50vw;
+               margin: 0 auto;
+              @include flex(row, space-between, flex-start, 1em);
+
+          .icon {
+            &::before {
+              display: none;
+            }
+          }
+            }
+
+            .footer_links{
+               grid-area: 2/1/2/-1;
+            }
+      
+      }
+    }
+
+  }
+
+
   @media screen and (max-width: $breakingpoint_mobile) {
     .Footer {
       position: relative;
       padding: 2em;
+      height: 60vh;
 
       .footer_container {
         width: 100%;
