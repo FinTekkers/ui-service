@@ -6,8 +6,8 @@ import {sideBarURLText} from '../lib/uidata'
 
 
 </script>
-    <div class="navigation_bar">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="navigation_bar">
       <div class="logo" on:click={() => goto("/")}>
         <IconLink iconName='material-symbols:finance-mode'>
            Fintekkers
@@ -23,6 +23,11 @@ import {sideBarURLText} from '../lib/uidata'
            {/each}
         </ul>
       </div>
+      <div class="contact" on:click={()=>goto("/contactus")}>
+        <IconLink iconName='akar-icons:price-cut'>
+          Contact Us
+        </IconLink>
+      </div>
     </div>
 
 
@@ -31,7 +36,8 @@ import {sideBarURLText} from '../lib/uidata'
     @import "../style.scss";
 
 
-    @media screen and (max-width: $breakingpoint_medium) {
+
+   @media screen and (max-width: $breakingpoint_medium) {
     .navigation_bar {
       display: none;
     }
