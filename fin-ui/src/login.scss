@@ -86,7 +86,7 @@
 
 
 
-    @media screen and (max-width: $breakingpoint_medium){
+  @media screen and (max-width: $breakingpoint_medium){
         .login-container-parent{
             display: grid;
             grid-template-columns: 1fr;
