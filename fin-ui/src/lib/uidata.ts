@@ -98,9 +98,4 @@ export const sideBarURLText:App.NavbarURL[] = [{
     text:'Pricing (free)',
     id:'pricing',
     icon:'akar-icons:price-cut'
-  },{
-    url:'#',
-    text:'Contact Us',
-    id:'contact-us',
-    icon:'akar-icons:price-cut'
   }]

@@ -6,10 +6,9 @@
   import {sideBarURLText} from '../lib/uidata'
 
 </script>
-
-  <div class={`hamburger_nav ${$sideMenuStore ? "show" : "hidden"}`}>
-    <div class="navigation_bar">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class={`hamburger_nav ${$sideMenuStore ? "show" : "hidden"}`}>
+    <div class="sidebar-navigation">
       <div class="logo" on:click={() => goto('/')}>
         <IconLink iconName="material-symbols:finance-mode" >
              Fintekkers
@@ -27,6 +26,12 @@
              </li>
             {/each}
         </ul>
+      </div>
+
+      <div class="contact" on:click={()=>goto("/contactus")}>
+        <IconLink iconName='akar-icons:price-cut'>
+          Contact Us
+        </IconLink>
       </div>
     </div>
   </div>
@@ -53,6 +58,48 @@
     display: none;
     padding: 1em;
   }
+
+  .sidebar-navigation{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5,100px);
+
+    div:nth-child(n){
+      grid-column: 1/-1;
+      cursor: pointer;
+      margin: 0 auto;
+    }
+    .logo{
+      grid-row:2/2;
+      @include flex(row, flex-start, flex-start, 1em);
+      font-weight: bold;
+
+      
+    }
+
+    .navigation_links{
+      grid-row: 3/5;
+
+      ul{
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(5, 50px);
+
+        li{
+          @include flex(row, flex-start, flex-start, 1em);
+        }
+
+  
+      }
+    }
+
+    .contact{
+      grid-row: 6/6;
+          @include flex(row, flex-start, flex-start, 1em);
+
+    }
+  }
+
 
     @media screen and (max-width: $breakingpoint_medium) {
     .navigation_bar {
