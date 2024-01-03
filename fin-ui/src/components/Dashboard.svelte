@@ -1,11 +1,9 @@
 <script lang="ts">
 
   // internal imports
-  import { selectedDashboardMenu } from "../store/store";
   import { dashboardMenuList } from "../lib/Util";
+  import { obrPromptBoolean, selectedDashboardMenu } from "../store/store";
   import ObrLanding from './onboarding/OBRLanding.svelte';
-  import {obrPromptBoolean} from '../store/store';
-  import OBRPrompt from './onboarding/OBRPrompt.svelte';
   import PortfolioGrid from "./widgets/PortfolioGrid.svelte";
   export let data: any;
   

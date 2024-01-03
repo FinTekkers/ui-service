@@ -1,13 +1,10 @@
 
 <script lang="ts">
+  import Footer from '../components/FooterSection.svelte';
   import LandingSection from "../components/GetStartedSection.svelte";
-    import AboutSection from "../components/OurFeatureSection.svelte";
-    import Video_section from '../components/VideoSection.svelte';
-    import VideoSection from "../components/VideoSection.svelte";
-    import LandingOverview from '../components/LandingSection.svelte';
-    import Icon from "@iconify/svelte";
-    import Page from '../routes/+page.svelte';
-    import Footer from '../components/FooterSection.svelte';
+  import LandingOverview from '../components/LandingSection.svelte';
+  import AboutSection from "../components/OurFeatureSection.svelte";
+  import VideoSection from "../components/VideoSection.svelte";
 
 
 
