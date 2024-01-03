@@ -12,7 +12,18 @@ declare namespace App {
     id:string,
     icon:string
   }
+
+interface FooterLink {
+  text: string;
+  url: string;
 }
+
+interface FooterSection {
+  title: string;
+  links: FooterLink[];
+}
+
+
 
 declare namespace Login {
   interface formError{

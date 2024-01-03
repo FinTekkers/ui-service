@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Icon from "@iconify/svelte";
-  import {isSignInOrSignUp} from '../../store/store';
+  import { isSignInOrSignUp } from '../../store/store';
   import SignInForm from "./SignInForm.svelte";
   import SignUpForm from "./SignUpForm.svelte";
   

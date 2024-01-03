@@ -1,8 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { identity } from "svelte/internal";
-    import {installCodeLang} from '../../lib/uidata';
-    let isCopied:boolean = false;
+    import { installCodeLang } from '../../lib/uidata';
+    
     let commandIsCopied:boolean = false;
     let contentIsCopied:boolean = false;
     let copiedContent:HTMLElement|null;

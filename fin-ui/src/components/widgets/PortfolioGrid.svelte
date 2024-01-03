@@ -1,13 +1,5 @@
 <script lang="ts">
-	import {
-		DataTable,
-		Toolbar,
-		ToolbarContent,
-		ToolbarSearch,
-		Button,
-		Pagination,
-	} from "carbon-components-svelte";
-
+	
 	export let rows: Array<{
 		portfolioName: string;
 		portfolioId: string;
