@@ -86,20 +86,39 @@ TODO - Need to write the Java server script
 }]
 
 
-export const sideBarURLText: App.NavbarURL[] = [{
-    url: '#todo_link_to_repl_when_complete',
-    text: 'Get Started',
-    id: 'get-started',
-    icon: 'material-symbols:finance-mode'
-}, {
-    url: 'https://github.com/FinTekkers/ledger-models',
-    text: 'Docs',
-    id: 'documentation',
-    icon: 'solar:document-outline'
-}
-    , {
-    url: '#',
-    text: 'Pricing (free)',
-    id: 'pricing',
-    icon: 'akar-icons:price-cut'
-}]
+export const sideBarURLText:App.NavbarURL[] = [{
+    url:'#todo_link_to_repl_when_complete',
+    text:'Get Started',
+    id:'get-started',
+    icon:'material-symbols:finance-mode'
+  },{
+    url:'https://github.com/FinTekkers/ledger-models',
+    text:'Docs',
+    id:'documentation',
+    icon:'solar:document-outline'
+  } 
+  ,{
+    url:'#',
+    text:'Pricing (free)',
+    id:'pricing',
+    icon:'akar-icons:price-cut'
+  }]
+
+export const footerURLText:App.FooterSection[]=[
+ {
+    title: "More info",
+    links: [
+      { text: "Home", url: "#" },
+      { text: "About us", url: "https://www.linkedin.com/company/fintekkers" },
+      { text: "Contact info", url: "https://www.linkedin.com/company/fintekkers" }
+    ]
+  },
+ {
+    title: "Useful links",
+    links: [
+      { text: "Github Ledger Models", url: "#" },
+      { text: "Code Examples", url: "#" },
+      { text: "Support", url: "#" }
+    ]
+  }
+]

@@ -1,12 +1,10 @@
 <script lang="ts">
     // external imports
-    import { CodeBlock } from '@skeletonlabs/skeleton';
-    import {reveal} from 'svelte-reveal';
     import Icon from "@iconify/svelte";
-
-    // internal imports
-    import {goto} from '../lib/helper';
-    import CustomCodeBlock from './custom_components/CustomCodeBlock.svelte'
+    import { reveal } from 'svelte-reveal';
+// internal imports
+    import { goto } from '../lib/helper';
+    import CustomCodeBlock from './custom_components/CustomCodeBlock.svelte';
 
  </script>
 <div class="get-started-container">

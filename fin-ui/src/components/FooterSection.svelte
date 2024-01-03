@@ -1,6 +1,7 @@
 <script lang="ts">
   // external import
   import Icon from "@iconify/svelte";
+  import {footerURLText} from '../lib/uidata';
 </script>
 
 <div class="Footer">
@@ -16,10 +17,21 @@
 
 
     <div class="footer_links">
-      <div >
+        {#each footerURLText as footerURL}
+         <div>
+           <h1>{footerURL.title}</h1>
+           <ul>
+               {#each footerURL.links as link}
+                 <li><a href={link.url}>{link.text}</a></li>
+               {/each}
+           </ul>
+         </div>
+        {/each}
+
+      <!-- <div >
         <h1>About Us</h1>
         <ul>
-          <li><a href="#">Home</a></li>
+          <li><a href="#" >Home</a></li>
           <li>
             <a href="https://www.linkedin.com/company/fintekkers">About us</a>
           </li>
@@ -41,7 +53,7 @@
           <li><a href="#">Code Examples</a></li>
           <li><a href="#">Support</a></li>
         </ul>
-      </div>
+      </div> -->
     </div>
 
     
@@ -133,16 +145,22 @@
       width: 100%;
       grid-area: 1/2/6/6;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(10vw, 1fr));
-      justify-content: center;
-      justify-items: center;
-      align-items: center;
+      grid-template-columns: 1fr 1fr;
+
+      div:nth-child(1){
+        grid-column: 1/1;
+      }
+      div:nth-child(2){
+        grid-column: 2/-1;
+      }
 
 
       div:nth-child(n) {
         width: 100%;
         height: 100%;
         text-align: center;
+
+        
 
         h1 {
           margin-bottom: 1em;
