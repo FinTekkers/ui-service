@@ -1,16 +1,13 @@
 <script lang="ts">
 
     // external exports
-    import { reveal } from "svelte-reveal";
     import Icon from "@iconify/svelte";
-
-
-    // internal imports
+    import { reveal } from "svelte-reveal";
+// internal imports
     import { goto } from "../lib/helper";
     import computerImage from '../lib/images/stock.png';
     import {
-        toggleUnderConstruct,
-        UnderConstructBoolean,
+        toggleUnderConstruct
     } from "../store/store";
 
 </script>

@@ -99,3 +99,22 @@ export const sideBarURLText:App.NavbarURL[] = [{
     id:'pricing',
     icon:'akar-icons:price-cut'
   }]
+
+export const footerURLText:App.FooterSection[]=[
+ {
+    title: "More info",
+    links: [
+      { text: "Home", url: "#" },
+      { text: "About us", url: "https://www.linkedin.com/company/fintekkers" },
+      { text: "Contact info", url: "https://www.linkedin.com/company/fintekkers" }
+    ]
+  },
+ {
+    title: "Useful links",
+    links: [
+      { text: "Github Ledger Models", url: "#" },
+      { text: "Code Examples", url: "#" },
+      { text: "Support", url: "#" }
+    ]
+  }
+]
