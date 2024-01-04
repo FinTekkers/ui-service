@@ -1,6 +1,6 @@
 <script lang="ts">
 import Icon from "@iconify/svelte";
-export let user:Obr.userArchetypes;
+export let user:App.userArchetypes;
 import {toggleObrPromptBoolean} from '../../store/store';
 </script>
 
