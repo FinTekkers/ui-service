@@ -7,28 +7,14 @@
     let copiedContent:HTMLElement|null;
     let copiedCommand:HTMLElement|null;
 
-    let codeLanguage:string = 'Typescript';
-    let codeCommand:string = `npm i @fintekkers/ledger-models`;
-    let codeContent:string = `// Model Utils
-    import { FieldProto } from '../../../fintekkers/models/position/field_pb';
-    import * as uuid from '../../models/utils/uuid';
-    import * as dt from '../../models/utils/datetime';
-         
-//Requests & Services
-    import { PortfolioService } from './PortfolioService';
+    const {Typescript} = installCodeLang;
 
-    const now = dt.ZonedDateTime.now();
 
-    const portfolioService = new PortfolioService();
+    let codeLanguage:string = Typescript.language;
+    let codeCommand:string = Typescript.installCMD;
+    let codeContent:string = Typescript.importCode;
 
-    var searchResults = await portfolioService.searchPortfolio(now.toProto(), 
-    new PositionFilter().addEqualsFilter(FieldProto.PORTFOLIO_NAME, 
-    'Federal Reserve SOMA Holdings'));
-    console.log(searchResults[0].getPortfolioName());
-               `;
-
-    const codeBlockData:Obr.codeBlockData[]= installCodeLang;
-
+    const codeBlockData = installCodeLang;
 
     const clearIsCopied = ()=>{
         commandIsCopied = false;
@@ -77,25 +63,14 @@
     }
 
     const toggleCodeLang = (lang:string)=>{
-       if(lang === 'Typescript' && codeBlockData.length!==0){
-           const {language, installCMD,importCode} =  codeBlockData[0].codeLanguage;
-           codeLanguage = language;
-           codeCommand = installCMD;
-           codeContent = importCode;
-       }
-       if(lang === 'Rust' && codeBlockData.length!==0){
-           const {language, installCMD,importCode} =  codeBlockData[1].codeLanguage;
-           codeLanguage = language;
-           codeCommand = installCMD;
-           codeContent = importCode;
-       }
-       if(lang === 'Java' && codeBlockData.length!==0){
-           const {language, installCMD,importCode} =  codeBlockData[2].codeLanguage;
-           codeLanguage = language;
-           codeCommand = installCMD;
-           codeContent = importCode;
-       }
-       
+        for(const [key, value] of Object.entries(codeBlockData) ){
+                    if(lang === key && codeBlockData !== null){
+                        const {language, installCMD,importCode} =  value;
+                        codeLanguage = language;
+                        codeCommand = installCMD;
+                        codeContent = importCode;
+                    }
+        }
 
     }
     
@@ -103,9 +78,9 @@
 
 <div class="code-block-installation-container">
     <div class="custom_header">
-        <div class="custom_header_title" on:click={()=>toggleCodeLang('Typescript')}>Typescript</div>
-        <div class="custom_header_title" on:click={()=>toggleCodeLang('Rust')}>Rust</div>
-        <div class="custom_header_title" on:click={()=>toggleCodeLang('Java')}>Java</div>
+        {#each Object.entries(codeBlockData) as [key, _value] }
+        <div class="custom_header_title"  on:click={()=>toggleCodeLang(key)}>{key}</div>
+        {/each}
     </div>
     <div class="custom_codeblock">
     <div class="copy_btn" on:click={()=>copyCode('command')}>{commandIsCopied ? '👍' : "Copy"}</div>
@@ -132,10 +107,6 @@
         display: grid;
         grid-template-columns: 1fr;
         width: 48vw;
-        
-
-
-        
     }
 
     .custom_header{
