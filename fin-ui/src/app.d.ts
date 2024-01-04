@@ -23,33 +23,32 @@ interface FooterSection {
   links: FooterLink[];
 }
 
+interface userArchetypes{
+  title:string,
+  content:string,
+  link:string,
+  type:string
+};
 
+interface codeBlockContent{
+  language:string,
+  installCMD:string,
+  importCode:string
+};
+
+
+interface codeBlockData{
+  codeLanguage:codeBlockContent;
+  
+}
+
+}
 
 declare namespace Login {
   interface formError{
     error:string
   }
 }
-
-declare namespace Obr{
-  interface userArchetypes{
-    title:string,
-    content:string,
-    link:string,
-    type:string
-  };
-
-  interface codeBlockContent{
-    language:string,
-    installCMD:string,
-    importCode:string
-  };
-  interface codeBlockData{
-    codeLanguage:codeBlockContent;
-   
-  }
-}
-
 
 declare namespace Debug{
   interface underConstruct{
