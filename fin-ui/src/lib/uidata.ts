@@ -14,10 +14,10 @@ export const userArchetypes: App.userArchetypes[] = [{
 }]
 
 export const installCodeLang = {
-Typescript: {
-    language: "Typescript",
-    installCMD: " npm i @fintekkers/ledger-models",
-    importCode: `
+    Typescript: {
+        language: "Typescript",
+        installCMD: " npm i @fintekkers/ledger-models",
+        importCode: `
         // Model Utils
             import { FieldProto } from '../../../fintekkers/models/position/field_pb';
             import * as uuid from '../../models/utils/uuid';
@@ -35,91 +35,79 @@ Typescript: {
             'Federal Reserve SOMA Holdings'));
             console.log(searchResults[0].getPortfolioName());
                     `
-},
+    },
 
-Python: {
-    language: "Python",
-    installCMD: "pip install fintekkers-ledger-models",
-    importCode: `
-    //NOTE: Needs a few changes
-
-    from fintekkers.models.position.position_filter_pb2 import PositionFilterProto
-    from fintekkers.requests.portfolio.query_portfolio_request_pb2 import (
-        QueryPortfolioRequestProto,
-    )
-    from fintekkers.wrappers.services.portfolio import PortfolioService
-    from fintekkers.wrappers.models.util.date_utils import datetime
-    
-    
-    def test_transaction_position():
-        now = datetime.now()
-    
+    Python: {
+        language: "Python",
+        installCMD: "pip install fintekkers-ledger-models",
+        importCode: `
+        from fintekkers.models.position.field_pb2 import FieldProto
+        from fintekkers.wrappers.requests.portfolio import QueryPortfolioRequest
+        from fintekkers.wrappers.services.portfolio import PortfolioService
+        
+        portfolio_to_find = "Federal Reserve SOMA Holdings"    
         portfolioService = PortfolioService()
     
-        request = QueryPortfolioRequestProto(
-            search_portfolio_input=PositionFilterProto(), as_of=now
-        )
+        request = QueryPortfolioRequest.create_query_request({
+                FieldProto.PORTFOLIO_NAME: portfolio_to_find,
+        })
     
-        searchResults = portfolioService.search(request)
-    
-        for searchResult in searchResults:
-            print(searchResult.get_name())
-            break
-    
+        searchResults: list[Portfolio] = list(portfolioService.search(request))
+        print(searchResults[0].get_name())
     `
-},
+    },
 
-Java: {
-language: "Java",
-installCMD: `<dependency>
+    Java: {
+        language: "Java",
+        installCMD: `<dependency>
 <groupId>io.github.fintekkers</groupId>
 <artifactId>ledger-models</artifactId>
 <version>0.1.68</version>
 </dependency>
 
 see <a href="https://github.com/FinTekkers/ledger-models/packages/1743372">github packages</a>`,
-importCode: `
+        importCode: `
 TODO - Need to write the Java server script
         `
+    }
 }
+
+
+export const sideBarURLText: App.NavbarURL[] = [{
+    url: '#todo_link_to_repl_when_complete',
+    text: 'Get Started',
+    id: 'get-started',
+    icon: 'material-symbols:finance-mode'
+}, {
+    url: 'https://github.com/FinTekkers/ledger-models',
+    text: 'Docs',
+    id: 'documentation',
+    icon: 'solar:document-outline'
 }
+    , {
+    url: '#',
+    text: 'Pricing (free)',
+    id: 'pricing',
+    icon: 'akar-icons:price-cut'
+}]
 
-
-export const sideBarURLText:App.NavbarURL[] = [{
-    url:'#todo_link_to_repl_when_complete',
-    text:'Get Started',
-    id:'get-started',
-    icon:'material-symbols:finance-mode'
-  },{
-    url:'https://github.com/FinTekkers/ledger-models',
-    text:'Docs',
-    id:'documentation',
-    icon:'solar:document-outline'
-  } 
-  ,{
-    url:'#',
-    text:'Pricing (free)',
-    id:'pricing',
-    icon:'akar-icons:price-cut'
-  }]
-
-export const footerURLText:App.FooterSection[]=[
- {
-    title: "More info",
-    links: [
-      { text: "Home", url: "#" },
-      { text: "About us", url: "https://www.linkedin.com/company/fintekkers" },
-      { text: "Contact info", url: "https://www.linkedin.com/company/fintekkers" }
-    ]
-  },
- {
-    title: "Useful links",
-    links: [
-      { text: "Github Ledger Models", url: "#" },
-      { text: "Code Examples", url: "#" },
-      { text: "Support", url: "#" }
-    ]
-  }
+export const footerURLText: App.FooterSection[] = [
+    {
+        title: "More info",
+        links: [
+            { text: "Home", url: "#" },
+            { text: "About us", url: "https://www.linkedin.com/company/fintekkers" },
+            { text: "Contact info", url: "https://www.linkedin.com/company/fintekkers" }
+        ]
+    },
+    {
+        title: "Useful links",
+        links: [
+            { text: "Github Ledger Models", url: "#" },
+            { text: "Code Examples", url: "#" },
+            { text: "Support", url: "#" }
+        ]
+    }
 ]
 
 
@@ -152,31 +140,28 @@ export const installCodeLangMap: App.codeBlockData[] = [{
         language: "Python",
         installCMD: "pip install fintekkers-ledger-models",
         importCode: `
-        //NOTE: Needs a few changes
-
-        from fintekkers.models.position.position_filter_pb2 import PositionFilterProto
-        from fintekkers.requests.portfolio.query_portfolio_request_pb2 import (
-            QueryPortfolioRequestProto,
-        )
+        from fintekkers.models.position.field_pb2 import FieldProto
+        from fintekkers.wrappers.requests.portfolio import QueryPortfolioRequest
         from fintekkers.wrappers.services.portfolio import PortfolioService
-        from fintekkers.wrappers.models.util.date_utils import datetime
         
+        portfolio_to_find = "Federal Reserve SOMA Holdings"
+    
+        portfolioService = PortfolioService()
+    
+        request = QueryPortfolioRequest.create_query_request(
+            {
+                FieldProto.PORTFOLIO_NAME: portfolio_to_find,
+            }
+        )
         
-        def test_transaction_position():
-            now = datetime.now()
-        
-            portfolioService = PortfolioService()
-        
-            request = QueryPortfolioRequestProto(
-                search_portfolio_input=PositionFilterProto(), as_of=now
-            )
-        
-            searchResults = portfolioService.search(request)
-        
-            for searchResult in searchResults:
-                print(searchResult.get_name())
-                break
-        
+        searchResults = portfolioService.search(request)
+    
+        portfolio_name = None
+        for searchResult in searchResults:
+            portfolio_name = searchResult.get_name()
+            break
+    
+        assert portfolio_name == portfolio_to_find        
         `
     }
 }, {
