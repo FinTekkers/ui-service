@@ -67,7 +67,21 @@ export const installCodeLang = {
 
 see <a href="https://github.com/FinTekkers/ledger-models/packages/1743372">github packages</a>`,
         importCode: `
-TODO - Need to write the Java server script
+        import fintekkers.models.position.*;
+        import fintekkers.requests.portfolio.*;        
+
+        PortfolioService portfolioService = PortfolioService.getInstance();
+
+        QueryPortfolioRequestProto request = QueryPortfolioRequestProto.newBuilder()
+                .setSearchPortfolioInput(PositionFilterProto.newBuilder()
+                        .addFilters(
+                                FieldMapEntry.newBuilder()
+                                        .setField(FieldProto.PORTFOLIO_NAME)
+                                        .setStringValue("Federal Reserve SOMA Holdings").build()
+                        ).build()).build();
+
+        QueryPortfolioResponseProto result = portfolioService.search(request).next();
+        System.out.println(result.getPortfolioResponseList().get(0).getPortfolioName());
         `
     }
 }
