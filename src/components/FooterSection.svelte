@@ -28,32 +28,6 @@
          </div>
         {/each}
 
-      <!-- <div >
-        <h1>About Us</h1>
-        <ul>
-          <li><a href="#" >Home</a></li>
-          <li>
-            <a href="https://www.linkedin.com/company/fintekkers">About us</a>
-          </li>
-          <li>
-            <a href="https://www.linkedin.com/company/fintekkers"
-              >Contact info</a
-            >
-          </li>
-        </ul>
-      </div>
-      <div >
-        <h1>Contact Info</h1>
-        <ul>
-          <li>
-            <a href="https://github.com/FinTekkers/ledger-models"
-              >Github Ledger Models</a
-            >
-          </li>
-          <li><a href="#">Code Examples</a></li>
-          <li><a href="#">Support</a></li>
-        </ul>
-      </div> -->
     </div>
 
     
@@ -86,7 +60,7 @@
     width: 100%;
     height: 60vh;
     padding: 1em;
-    background-color: $background-color;
+    background-color: $bgc-color;
     display: grid;
     justify-content: center;
     align-items: center;
@@ -166,7 +140,7 @@
           margin-bottom: 1em;
         }
 
-        ul {
+        :is(ul) {
           line-height: 2em;
         }
       }
@@ -262,7 +236,7 @@
           margin-bottom: 1em;
         }
 
-        ul {
+        :is(ul) {
           line-height: 2em;
         }
       }

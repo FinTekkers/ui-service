@@ -101,7 +101,7 @@
    
     .get-started-container {
         width: 100%;
-        background-color: $background-color;
+        background-color: $bgc-color;
         border-radius: $bd-radius;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(50vw, 1fr));

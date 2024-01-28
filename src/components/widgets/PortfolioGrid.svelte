@@ -4,7 +4,7 @@
 		portfolioName: string;
 		portfolioId: string;
 		portfolioAsOf: string;
-	}>; //: string; portfolioId: string | undefined; id: string }>;
+	}>;
 </script>
 
 <div class="portfolio_container container mx-auto my-6 shadow px-10 py-7">

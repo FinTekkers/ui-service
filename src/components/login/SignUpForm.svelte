@@ -1,52 +1,58 @@
 <script lang='ts'>
+  // external imports
   import Icon from "@iconify/svelte";
-  import { togglePasswordVisibility, isPasswordVisible} from '../../store/store';
-  export let data:any;
-  export let form:Login.formError;
+  // internal imports
+  import { customBooleanStoreUpdater, booleanStore} from '../../store/store';
+  import {booleanKeys} from '$lib/Util';
+  import Google_OAuth from '../custom_components/Google_OAuth.svelte';
+
+  $:isPasswordVisible = $booleanStore[booleanKeys.IS_PASSWORD_VISIBLE]
 
 </script>
 
- <!-- svelte-ignore a11y-click-events-have-key-events -->
 
    <div class="sign_up_fields">
+
                         <label for="name">
                           <input class="rounded-md sign_up_name" type="text" name="name" id="name" placeholder="Enter name">
                         </label>
+
                         <label for="surname">
                           <input class="rounded-md sign_up_surname" type="text" name="surname" id="surname" placeholder="Enter surname">
                         </label>
+
                         <label for="email">
                           <input class="rounded-md sign_up_email" type="email" name="email" id="email" placeholder="Enter email">
                         </label>
+
                         <label for="password">
                           <input class="rounded-md sign_up_password" 
                           type={isPasswordVisible ? "text" : "password"}
                           name="password" id="password" placeholder="Enter password">
 
                           {#if isPasswordVisible}
-                          <span class="togglePasswordDisplayIcon_signUp" on:click={()=>togglePasswordVisibility()}>
-                            <Icon
-                                icon="solar:eye-linear"
-                                style="width: 25px; height: 25px;"
-                                
-                              />
-                          </span>
-                            {:else}
-                            <span class="togglePasswordDisplayIcon_signUp" on:click={()=>togglePasswordVisibility()}>
-                              <Icon
-                                icon="clarity:eye-hide-line"
-                                style="width: 25px; height: 25px;"
-                                
-                              />
-                            </span>
+                              <span class="togglePasswordDisplayIcon_signUp" on:keydown={()=>('x')} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
+                                <Icon
+                                    icon="solar:eye-linear"
+                                    style="width: 25px; height: 25px;"
+                                    
+                                  />
+                              </span>
+                         {:else}
+                              <span class="togglePasswordDisplayIcon_signUp" on:keydown={()=>('x')} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
+                                  <Icon
+                                    icon="clarity:eye-hide-line"
+                                    style="width: 25px; height: 25px;"
+                                    
+                                  />
+                              </span>
                           {/if}
                         </label>
-                        <label for="confirmpassword">
-                          <input class="rounded-md sign_up_confirm_password" 
-                          type={isPasswordVisible ? "text" : "password"}
-                          name="confirmpassword" id="confirmpassword" placeholder="Confirm password">
 
-                  
+                        <label for="confirmpassword">
+                              <input class="rounded-md sign_up_confirm_password" 
+                              type={isPasswordVisible ? "text" : "password"}
+                              name="confirmpassword" id="confirmpassword" placeholder="Confirm password">
                         </label>
 
                       <label for="submit">
@@ -56,30 +62,20 @@
                       </label>
 
                         <div class="divider">
-                                <div class="one border-t border-gray-500" />
-                                <span>OR</span>
-                                <div class="two border-t border-gray-500" />
+                              <div class="one border-t border-gray-500" />
+                                 <span>OR</span>
+                              <div class="two border-t border-gray-500" />
                        </div>
   
-              <div class="google_OAuth">
-                <button
-                  type="submit"
-                  class="font-bold py-2 px-4 rounded focus:outline-none focus:border-green-500 hover:border-green-500 focus:ring-green-500 focus:ring-1"
-                >
-                  <Icon
-                    icon="flat-color-icons:google"
-                    style="width: 25px; height: 25px;"
-                  />
-                  <span> Continue with Google </span>
-                </button>
-              </div>
+                      <div class="google_OAuth">
+                        <Google_OAuth />
+                      </div>
               </div>
 
 
     <style lang="scss">
         @import "../../style.scss";
 
-        // sign up form
          .sign_up_fields{
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -88,11 +84,11 @@
             gap: 1em;
        
 
-            label{
+            :is(label){
                 height: max-content;
                 position: relative;
             
-                input{
+                :is(input){
                     width: 100%;
                     height: 2.5em;
                     color: $grey;
@@ -104,7 +100,7 @@
             label:nth-child(n){
             grid-column: 1/-1;
 
-                    button{
+                    :is(button){
                         width: 100%;
                     }
             }
@@ -152,7 +148,7 @@
 
                 }
 
-                span{
+                :is(span){
                     grid-column: 2/2;
                     position:absolute;
                     top: 0;
@@ -165,27 +161,13 @@
 
             .google_OAuth{
                 grid-area:7/1/7/-1;
-                button{
-                border: solid 2px $primary-color;
-                background-color: $white;
-                color: $primary-color;
-                @include flex(row, center, center, 1em);
-                height: 6vh;
-                width: 100%;
-                transition: all .5s ease;
-
-                &:hover{
-                    color: $white;
-                    background-color: $primary-color;
-                    border: solid 1px $white;
-                }
 
                 }
              
             }
 
 
-            }
+            
 
 
  

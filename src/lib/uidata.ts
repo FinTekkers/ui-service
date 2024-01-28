@@ -1,6 +1,8 @@
+import type { userArchetypes, NavbarURL, FooterSection, codeBlockData } from "./types";
+import type { installCodeLangType,dashboardMenuType } from "./types";
 
 
-export const userArchetypes: App.userArchetypes[] = [{
+export const userArchetypeData: userArchetypes[] = [{
     title: "Business user",
     content: "Save money",
     link: "Business landing page",
@@ -13,11 +15,49 @@ export const userArchetypes: App.userArchetypes[] = [{
     type: "Engineer"
 }]
 
-export const installCodeLang = {
-Typescript: {
-    language: "Typescript",
-    installCMD: " npm i @fintekkers/ledger-models",
-    importCode: `
+export const sideBarURLText:NavbarURL[] = [{
+    url:'#todo_link_to_repl_when_complete',
+    text:'Get Started',
+    id:'get-started',
+    icon:'material-symbols:finance-mode'
+  },{
+    url:'https://github.com/FinTekkers/ledger-models',
+    text:'Docs',
+    id:'documentation',
+    icon:'solar:document-outline'
+  } 
+  ,{
+    url:'#',
+    text:'Pricing (free)',
+    id:'pricing',
+    icon:'akar-icons:price-cut'
+  }]
+
+export const footerURLText:FooterSection[]=[
+ {
+    title: "More info",
+    links: [
+      { text: "Home", url: "#" },
+      { text: "About us", url: "https://www.linkedin.com/company/fintekkers" },
+      { text: "Contact info", url: "https://www.linkedin.com/company/fintekkers" }
+    ]
+  },
+ {
+    title: "Useful links",
+    links: [
+      { text: "Github Ledger Models", url: "#" },
+      { text: "Code Examples", url: "#" },
+      { text: "Support", url: "#" }
+    ]
+  }
+]
+
+// update both installCodeLang && installCodeLangMap (to be improved)
+export const installCodeLang:installCodeLangType = {
+    Typescript: {
+        language: "Typescript",
+        installCMD: " npm i @fintekkers/ledger-models",
+        importCode: `
         // Model Utils
             import { FieldProto } from '../../../fintekkers/models/position/field_pb';
             import * as uuid from '../../models/utils/uuid';
@@ -35,12 +75,12 @@ Typescript: {
             'Federal Reserve SOMA Holdings'));
             console.log(searchResults[0].getPortfolioName());
                     `
-},
+    },
 
-Python: {
-    language: "Python",
-    installCMD: "pip install fintekkers-ledger-models",
-    importCode: `
+    Python: {
+        language: "Python",
+        installCMD: "pip install fintekkers-ledger-models",
+        importCode: `
     //NOTE: Needs a few changes
 
     from fintekkers.models.position.position_filter_pb2 import PositionFilterProto
@@ -67,63 +107,24 @@ Python: {
             break
     
     `
-},
+    },
 
-Java: {
-language: "Java",
-installCMD: `<dependency>
-<groupId>io.github.fintekkers</groupId>
-<artifactId>ledger-models</artifactId>
-<version>0.1.68</version>
-</dependency>
+    Java: {
+        language: "Java",
+        installCMD: `<dependency>
+        <groupId>io.github.fintekkers</groupId>
+        <artifactId>ledger-models</artifactId>
+        <version>0.1.68</version>
+        </dependency>
 
-see <a href="https://github.com/FinTekkers/ledger-models/packages/1743372">github packages</a>`,
-importCode: `
-TODO - Need to write the Java server script
-        `
+        see <a href="https://github.com/FinTekkers/ledger-models/packages/1743372">github packages</a>`,
+                importCode: `
+        TODO - Need to write the Java server script
+                `
+    },
+
 }
-}
-
-
-export const sideBarURLText:App.NavbarURL[] = [{
-    url:'#todo_link_to_repl_when_complete',
-    text:'Get Started',
-    id:'get-started',
-    icon:'material-symbols:finance-mode'
-  },{
-    url:'https://github.com/FinTekkers/ledger-models',
-    text:'Docs',
-    id:'documentation',
-    icon:'solar:document-outline'
-  } 
-  ,{
-    url:'#',
-    text:'Pricing (free)',
-    id:'pricing',
-    icon:'akar-icons:price-cut'
-  }]
-
-export const footerURLText:App.FooterSection[]=[
- {
-    title: "More info",
-    links: [
-      { text: "Home", url: "#" },
-      { text: "About us", url: "https://www.linkedin.com/company/fintekkers" },
-      { text: "Contact info", url: "https://www.linkedin.com/company/fintekkers" }
-    ]
-  },
- {
-    title: "Useful links",
-    links: [
-      { text: "Github Ledger Models", url: "#" },
-      { text: "Code Examples", url: "#" },
-      { text: "Support", url: "#" }
-    ]
-  }
-]
-
-
-export const installCodeLangMap: App.codeBlockData[] = [{
+export const installCodeLangMap: codeBlockData[] = [{
     codeLanguage: {
         language: "Typescript",
         installCMD: " npm i @fintekkers/ledger-models",
@@ -194,3 +195,37 @@ TODO - Need to write the Java server script
                `
     }
 }]
+
+export const dashboardMenuData:dashboardMenuType= {
+    home:{
+        location: "HOME",
+        navigateTo: "HOME",
+        style:"p-2 user-menu cursor-pointer",
+        iconName: "material-symbols:home",
+        menuName:"Home"
+    },
+
+    dashboard:{
+        location: "DASHBOARD",
+        navigateTo: "DASHBOARD",
+        style:"p-2 user-menu cursor-pointer",
+        iconName: "ic:baseline-dashboard",
+        menuName:"Dashboard"
+    },
+
+    portfolio:{
+        location: "PORTFOLIO",
+        navigateTo: "PORTFOLIO",
+        style:"p-2 user-menu cursor-pointer",
+        iconName: "solar:graph-new-bold",
+        menuName:"Portfolio"
+    },
+
+    account:{
+        location: "ACCOUNT",
+        navigateTo:"ACCOUNT",
+        style:"p-2 user-menu cursor-pointer",
+        iconName: "ant-design:setting-filled",
+        menuName:"Account"
+    },
+}

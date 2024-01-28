@@ -1,4 +1,5 @@
 <script lang='ts'>
+  // internal imports
  export let obrCardPosition:string;
  export let obrStepNumber:number;
 </script>
