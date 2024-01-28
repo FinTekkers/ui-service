@@ -113,7 +113,7 @@
       position: absolute;
       z-index: 3;
       top: 0;
-      background-color: $background-color;
+      background-color: $bgc-color;
 
       transition: all 0.2s ease-in-out;
 
@@ -173,7 +173,7 @@
   @media screen and (max-width: $breakingpoint_mobile) {
     .hamburger_nav {
       width: 100vw;
-      background-color: $background-color;
+      background-color: $bgc-color;
 
       .navigation_bar {
         position: absolute;
@@ -185,7 +185,7 @@
         width: inherit;
         @include flex(column, space-between, center, 1em);
         margin-top: 2em;
-        background-color: $background-color;
+        background-color: $bgc-color;
 
 
         .logo {

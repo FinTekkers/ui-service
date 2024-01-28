@@ -26,7 +26,7 @@
   .landing_page_overlay{
     height: 100vh;
     width: 100vw;
-    background-color: $background-color;
+    background-color: $bgc-color;
   }
 
 

@@ -2,10 +2,8 @@
 
 <script lang='ts'>
     	/** @type {import('./$types').PageData} */
-	export let data:any;
 
 	/** @type {import('./$types').ActionData} */
-	export let form:Login.formError;
 </script>
 
 <div class="contact-us">
@@ -33,7 +31,7 @@
     grid-template-columns: repeat(2,1fr);
     grid-template-rows:1fr;
     height: 100vh;
-    background: $background-color;
+    background: $bgc-color;
 
     .contact-us-text{
         padding: 1em;
@@ -48,7 +46,7 @@
                 grid-area: 5/2/5/3;
             }
 
-            p{
+           :is(p){
                 color:$white;
                 grid-area: 6/2/6/4;
 
@@ -71,7 +69,7 @@
 
         
 
-            label{
+            :is(label){
                 @include flex(column, center, flex-start, .5em);
                 color: $grey;
                 height: max-content;
@@ -134,7 +132,7 @@
                             grid-area: 1/2/1/4;
                         }
 
-                        p{
+                       :is(p){
                             color:$white;
                             grid-area: 2/2/2/4;
                             display: none;

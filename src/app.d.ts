@@ -2,56 +2,18 @@
 // for information about these interfaces
 // and what to do when importing types
 declare namespace App {
-  interface booleans{
-    obrUser:boolean
-  }
 
-  interface NavbarURL {
-    url:string,
-    text:string,
-    id:string,
-    icon:string
-  }
+      interface Error {
+        [prop:string]:string,
+        error: object
+      }
 
-interface FooterLink {
-  text: string;
-  url: string;
-}
+      interface Locals{
 
-interface FooterSection {
-  title: string;
-  links: FooterLink[];
-}
+      }
 
-interface userArchetypes{
-  title:string,
-  content:string,
-  link:string,
-  type:string
-}
+      interface PageData{
 
-interface codeBlockContent{
-  language:string,
-  installCMD:string,
-  importCode:string
-}
+      }
 
-
-interface codeBlockData{
-  codeLanguage:codeBlockContent;
-  
-}
-
-}
-
-declare namespace Login {
-  interface formError{
-    error:string
-  }
-}
-
-declare namespace Debug{
-  interface underConstruct{
-    xploreProduct:boolean
-  }
 }

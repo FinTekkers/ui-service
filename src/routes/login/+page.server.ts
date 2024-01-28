@@ -1,4 +1,4 @@
-import { fail, redirect } from "@sveltejs/kit";
+import {  redirect } from "@sveltejs/kit";
 import * as Yup from 'yup';
 
 
@@ -46,4 +46,3 @@ export const actions = {
 function isValidationError(error: unknown): error is Yup.ValidationError {
     return (error as Yup.ValidationError)?.inner !== undefined;
 }
-

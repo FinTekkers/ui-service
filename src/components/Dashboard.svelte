@@ -1,38 +1,36 @@
 <script lang="ts">
-
   // internal imports
   import { dashboardMenuList } from "../lib/Util";
-  import { obrPromptBoolean, selectedDashboardMenu } from "../store/store";
+  import { selectedDashboardMenu, booleanStore } from "../store/store";
   import ObrLanding from './onboarding/OBRLanding.svelte';
   import PortfolioGrid from "./widgets/PortfolioGrid.svelte";
-  export let data: any;
-  
+   export let data:App.PageData;
 </script>
 
-<!-- conditional render components -->
-<!-- decide what type of OBR to load based on selection -->
 
 <div class="p-5 h-full w-screen dashboard-container">
-          {#if $obrPromptBoolean}
+  
+          {#if $booleanStore.IS_OBR_PROMPT_SHOWING}
               <ObrLanding />
           {:else}
-              <!-- <OBRPrompt obrStepNumber={1} obrCardPosition='obr_stepone' /> -->
+              {console.log('waiting for onboarding component')}
           {/if}
-          {#if $selectedDashboardMenu == dashboardMenuList.Home}
+
+          {#if $selectedDashboardMenu == dashboardMenuList.HOME}
               <div class="dashboard-menu">Home
                   <a href="/security/1" >→✅</a>
               </div>
-          {:else if $selectedDashboardMenu == dashboardMenuList.Dashboard}
+          {:else if $selectedDashboardMenu == dashboardMenuList.DASHBOARD}
               <div class="dashboard-menu">Dashboard
                  <a href="/security/2" >→✅</a>
               </div>
-          {:else if $selectedDashboardMenu == dashboardMenuList.Portfolio}
+          {:else if $selectedDashboardMenu == dashboardMenuList.PORTFOLIO}
               <PortfolioGrid rows={data.portfolioData} />
-          {:else if $selectedDashboardMenu == dashboardMenuList.Account}
+          {:else if $selectedDashboardMenu == dashboardMenuList.ACCOUNT}
               <div class="dashboard-menu">Account 
                  <a href="/security/2" >→✅</a>
               </div>
-          {:else if $selectedDashboardMenu == dashboardMenuList.Logout}
+          {:else if $selectedDashboardMenu == dashboardMenuList.LOGOUT}
               <div class="dashboard-menu">Goodbye</div>
           {/if}
 </div>

@@ -6,9 +6,8 @@ import {sideBarURLText} from '../lib/uidata'
 
 
 </script>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="navigation_bar">
-      <div class="logo" on:click={() => goto("/")}>
+      <div class="logo" on:keydown={()=>('x')} on:click={() => goto("/")}>
         <IconLink iconName='material-symbols:finance-mode'>
            Fintekkers
         </IconLink>
@@ -23,7 +22,7 @@ import {sideBarURLText} from '../lib/uidata'
            {/each}
         </ul>
       </div>
-      <div class="contact" on:click={()=>goto("/contactus")}>
+      <div class="contact" on:keydown={()=>('x')} on:click={()=>goto("/contactus")}>
         <IconLink iconName='akar-icons:price-cut'>
           Contact Us
         </IconLink>
@@ -49,7 +48,7 @@ import {sideBarURLText} from '../lib/uidata'
       position: absolute;
       z-index: 3;
       top: 0;
-      background-color: $background-color;
+      background-color: $bgc-color;
 
       transition: all 0.2s ease-in-out;
 
@@ -73,7 +72,7 @@ import {sideBarURLText} from '../lib/uidata'
           width: 100%;
           height: 50vh;
           margin-top: 2em;
-          ul {
+          :is(ul) {
             @include flex(column, center, center, 1em);
             width: 20vw;
 
@@ -109,7 +108,7 @@ import {sideBarURLText} from '../lib/uidata'
   @media screen and (max-width: $breakingpoint_mobile) {
     .hamburger_nav {
       width: 100vw;
-      background-color: $background-color;
+      background-color: $bgc-color;
 
       .navigation_bar {
         position: absolute;
@@ -121,7 +120,7 @@ import {sideBarURLText} from '../lib/uidata'
         width: inherit;
         @include flex(column, space-between, center, 1em);
         margin-top: 2em;
-        background-color: $background-color;
+        background-color: $bgc-color;
 
         .logo {
           width: 100%;
@@ -132,7 +131,7 @@ import {sideBarURLText} from '../lib/uidata'
           width: 100%;
           height: 50vh;
           margin-top: 2em;
-          ul {
+          :is(ul) {
             @include flex(column, center, center, 1em);
             margin: 0 auto;
             width: 30vw;

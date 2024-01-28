@@ -1,8 +1,8 @@
 <script lang='ts'>
+
+// internal imports
 import ObrCard from "./OBRCard.svelte";
-import OBRPrompt from './OBRPrompt.svelte';
-import { userArchetypes } from "$lib/uidata";
-import {obrPromptBoolean} from '../../store/store';
+import { userArchetypeData } from "$lib/uidata";
 
  
 </script>
@@ -11,7 +11,7 @@ import {obrPromptBoolean} from '../../store/store';
     <div class="overlay_window"></div>
     
     <div class="obr_landing">
-    {#each userArchetypes as user} 
+    {#each userArchetypeData as user} 
             <ObrCard {user} />
     {/each}
     </div>
