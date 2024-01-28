@@ -8,9 +8,7 @@ const config = {
   preprocess: vitePreprocess(),
 
   vitePlugin:{
-     experimental:{
        inspector:true
-     }
   },
 
   css: {
@@ -33,11 +31,16 @@ const config = {
   },
 
   onwarn: (warning, handler) => {
-        const { code, frame } = warning;
-        if (code === "css-unused-selector")
-            return;
+        const { code, _frame } = warning;
+        if (code === "css-unused-selector"){
+          return;
+        } 
+        if (code === 'a11y-click-events-have-key-events'){
+          return
+        } 
 
         handler(warning);
     },
+
 };
 export default config;
