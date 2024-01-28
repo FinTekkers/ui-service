@@ -26,6 +26,9 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const YOUR_AWS_ACCOUNT_ID: string;
+	export const ACCOUNT: string;
+	export const ARN: string;
 	export const MANPATH: string;
 	export const TERM_PROGRAM: string;
 	export const NODE: string;
@@ -114,6 +117,9 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		YOUR_AWS_ACCOUNT_ID: string;
+		ACCOUNT: string;
+		ARN: string;
 		MANPATH: string;
 		TERM_PROGRAM: string;
 		NODE: string;
