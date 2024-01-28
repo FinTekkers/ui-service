@@ -1,74 +1,51 @@
 <script lang="ts">
   // external exports
   import Icon from "@iconify/svelte";
-  import {selectedDashboardMenu} from "../store/store";
-
   // internal exports
+  import {selectedDashboardMenuUpdater} from "../store/store";
   import { dashboardMenuList } from "$lib/Util";
   import {goto} from "$lib/helper";
+  import {dashboardMenuData} from '$lib/uidata';
 
-  const toggleMenu = (item: string) => {
-    selectedDashboardMenu.set(item);
-  };
+
+  //  this function is to ensure accessibility
+  const handleKeyDown:(key:keyof typeof dashboardMenuList)=>void = (dashboardMenuKey: keyof typeof dashboardMenuList)=>{
+      selectedDashboardMenuUpdater(dashboardMenuKey)
+  }
+
+
 </script>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
-  <div
-    class="p-2 user-menu cursor-pointer"
-    on:click={() => toggleMenu(dashboardMenuList.Home)}
+
+{#each Object.entries(dashboardMenuData) as [_menukey, menuValue] }
+  
+  <div class="p-2 user-menu cursor-pointer"
+    on:keydown={()=>handleKeyDown('HOME')}
+    on:click={() => selectedDashboardMenuUpdater(menuValue.location)}
   >
-    <Icon
-      icon="material-symbols:home"
+     <Icon
+      icon={menuValue.iconName}
       class="user-menu-icon"
-      style="width: 25px; height: 25px;"
+      style={menuValue.style}
     />
-    <span>Home</span>
+    <span>{menuValue.menuName}</span>
   </div>
-  <div
-    class=" p-2 user-menu cursor-pointer"
-    on:click={() => toggleMenu(dashboardMenuList.Dashboard)}
-  >
-    <Icon
-      icon="ic:baseline-dashboard"
-      class="user-menu-icon"
-      style="width: 25px; height: 25px;"
-    />
-    <span>Dashboard</span>
-  </div>
-  <div
-    class=" p-2 user-menu gap-4 cursor-pointer"
-    on:click={() => toggleMenu(dashboardMenuList.Portfolio)}
-  >
-    <Icon
-      icon="solar:graph-new-bold"
-      class="align-bottom text-lg"
-      style="width: 25px; height: 25px;"
-    />
-    <span>Portfolio</span>
-  </div>
-  <div
-    class=" p-2 user-menu cursor-pointer"
-    on:click={() => toggleMenu(dashboardMenuList.Account)}
-  >
-    <Icon
-      icon="ant-design:setting-filled"
-      class="user-menu-icon"
-      style="width: 25px; height: 25px;"
-    />
-    <span>Account</span>
-  </div>
+
+{/each}
+
   <div
     class=" user-menu-logout user-menu cursor-pointer"
+    on:keydown={()=>handleKeyDown("LOGOUT")}
     on:click={() => {
         goto("/");
       
-      toggleMenu(dashboardMenuList.Logout);
+      selectedDashboardMenuUpdater(dashboardMenuList.LOGOUT);
     }}
   >
     <Icon
       icon="solar:logout-3-bold"
       class="user-menu-icon"
-      style="width: 25px; height: 25px;"
+      style="width: 20px; height: 20px;"
     />
     <span>Logout</span>
   </div>
@@ -125,7 +102,7 @@
       width: 100%;
       margin-right: 1em;
 
-      span{
+      :is(span){
         display: none;
       }
     }

@@ -1,5 +1,5 @@
 
-$background-color: #0c3a46;
+$bgc-color: #0c3a46;
 $primary-color: #1b6f85;
 $primary-button: #258ea8;
 $border-color: #164e63;
@@ -13,6 +13,7 @@ $tealblack:#edfbfd;
 $black: #05192a;
 $grey: #86929c;
 $transpblack: #05192a59;
+$bordercoltransp: #164e63;
 
 $bd-radius:6px;
 
@@ -28,8 +29,8 @@ $breakingpoint_mobile: 600px;
   box-sizing: border-box;
 }
 
-html, body {
-  overflow-x: hidden !important;
+html {
+  overflow-x: hidden;
 }
 body {
   position: relative
@@ -52,9 +53,7 @@ body {
   border: 1px solid #5a96a37e;
 }
 
-.debug{
-  border: solid 1px red;
-}
+
 
 .notSupported{
   color: $grey !important;
@@ -69,7 +68,7 @@ body {
 }
 
 .body-cover {
-  background-color: $background-color;
+  background-color: $bgc-color;
   position: absolute;
 }
 
@@ -83,7 +82,7 @@ body {
 .navigation_bar {
     height: 10vh;
     padding: 1em;
-    background-color: $background-color;
+    background-color: $bgc-color;
     @include flex(row, space-between, center, 1em);
         .logo {
           font-weight: bold;
@@ -94,7 +93,7 @@ body {
         }
 
         .navigation_links {
-              ul {
+              :is(ul) {
                 @include flex(row, center, center, 1em);
                 width: 60vw;
 
@@ -134,7 +133,7 @@ body {
                   border-radius: 50px;
                   background-color: $success;
                   transition: all .5s ease-in-out;
-                  color: $background-color;
+                  color: $bgc-color;
                   font-weight: bold;
 
 
@@ -186,5 +185,4 @@ body {
         }
 
 }
-
 

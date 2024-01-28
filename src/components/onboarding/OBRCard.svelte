@@ -1,17 +1,19 @@
 <script lang="ts">
+// external imports
 import Icon from "@iconify/svelte";
-export let user:App.userArchetypes;
-import {toggleObrPromptBoolean} from '../../store/store';
+// internal imports
+import type {userArchetypes} from '../../lib/types'
+export let user:userArchetypes;
+import {customBooleanStoreUpdater} from '../../store/store';
+import {booleanKeys} from '../../lib/Util'
 </script>
 
-<div class={ user.type == "Business" ? "obr_card_notsupported" : "obr_card"} on:click={()=> {
-
-  if(user.type !== "Business"){
-    toggleObrPromptBoolean()
-  }
- 
+<div class={ user.type == "Business" ? "obr_card_notsupported" : "obr_card"} on:keydown={()=>(console.log(''))} on:click={()=> {
+    if(user.type !== "Business"){
+      customBooleanStoreUpdater(booleanKeys.IS_OBR_PROMPT_SHOWING)
+    }
 }} >
-  <slot >
+     <slot >
      {#if user.type == "Business"}
        <Icon icon='solar:user-linear' style='width:50px;height:50px; color:#cccccc; position:absolute; top:20px' class={'icon'}/>
      {:else}
@@ -61,7 +63,7 @@ import {toggleObrPromptBoolean} from '../../store/store';
       position: absolute;
     }
 
-    p{
+    :is(p){
       text-align:center;
       color: $grey;
       position: absolute;
@@ -82,7 +84,7 @@ import {toggleObrPromptBoolean} from '../../store/store';
       position: absolute;
     }
 
-    p{
+    :is(p){
       text-align:center;
       color: $grey;
       position: absolute;
@@ -106,7 +108,7 @@ import {toggleObrPromptBoolean} from '../../store/store';
       margin-top: 2em;
     }
 
-    p{
+    :is(p){
       text-align:center;
       color: $grey;
       position: absolute;
