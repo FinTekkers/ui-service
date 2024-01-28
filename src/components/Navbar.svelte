@@ -15,6 +15,7 @@ import {sideBarURLText} from '../lib/uidata'
       <div class="navigation_links">
         <ul>
            {#each sideBarURLText as urlText}
+           
            <li>
             <IconLink iconName={urlText.icon} />
             <a href={urlText.url}>{urlText.text}</a>
