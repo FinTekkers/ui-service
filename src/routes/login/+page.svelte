@@ -3,7 +3,7 @@
   import LoginBrandPage from "../../components/login/LoginBrandPage.svelte";
   import LoginForm from "../../components/login/LoginForm.svelte";
   export let data:any;
-  export let form: Login.formError;
+  export let form:App.Error;
 
 
 

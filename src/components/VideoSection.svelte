@@ -44,7 +44,7 @@
 
                     p {
                         width: 40vw;
-                        color: $background-color;
+                        color: $bgc-color;
                         font-size: 2rem;
                         margin-bottom: 1em;
                         font-weight: bold;

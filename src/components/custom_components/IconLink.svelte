@@ -1,5 +1,7 @@
 <script lang='ts'>
+  // extenral imports
   import Icon from "@iconify/svelte";
+  // internal imports
   export let iconName:string;
   export let iconCss:string = "width: 25px; height: 25px;";
 

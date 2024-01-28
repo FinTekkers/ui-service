@@ -1,5 +1,7 @@
 <script lang="ts">
+    // external imports
     import { onMount } from "svelte";
+    // internal imports
     import { installCodeLang } from '../../lib/uidata';
     
     let commandIsCopied:boolean = false;
@@ -8,15 +10,13 @@
     let copiedCommand:HTMLElement|null;
 
     const {Typescript} = installCodeLang;
-
-
     let codeLanguage:string = Typescript.language;
     let codeCommand:string = Typescript.installCMD;
     let codeContent:string = Typescript.importCode;
 
     const codeBlockData = installCodeLang;
 
-    const clearIsCopied = ()=>{
+    const clearIsCopied:()=>void = ()=>{
         commandIsCopied = false;
         contentIsCopied = false;
     }
@@ -32,6 +32,13 @@
      });
 
     const copyCode = async (copyRule:string)=>{
+         
+          const callSetTimeout = (fnTobeCleared: Function, time: number) => {
+                setTimeout(() => {
+                    fnTobeCleared();
+                }, time);
+            };
+
         try{
 
             if(copiedCommand !== null && copyRule === 'command'){
@@ -39,7 +46,11 @@
             await navigator.clipboard.writeText(copiedText);
             commandIsCopied = true;
 
-            setTimeout(clearIsCopied ,1000);
+
+            callSetTimeout(()=>{
+                  clearIsCopied()
+             }, 1000)
+
 
             }
             if(copiedContent !== null && copyRule === 'content'){
@@ -47,7 +58,10 @@
             await navigator.clipboard.writeText(copiedText);
             contentIsCopied = true;
 
-            setTimeout(clearIsCopied ,1000);
+            callSetTimeout(()=>{
+                  clearIsCopied()
+             }, 1000)
+             
 
             }
 
@@ -79,18 +93,18 @@
 <div class="code-block-installation-container">
     <div class="custom_header">
         {#each Object.entries(codeBlockData) as [key, _value] }
-        <div class="custom_header_title"  on:click={()=>toggleCodeLang(key)}>{key}</div>
+        <div class="custom_header_title" on:keydown={()=>("x")}  on:click={()=>toggleCodeLang(key)}>{key}</div>
         {/each}
     </div>
     <div class="custom_codeblock">
-    <div class="copy_btn" on:click={()=>copyCode('command')}>{commandIsCopied ? '👍' : "Copy"}</div>
+    <div class="copy_btn" on:keydown={()=>("x")} on:click={()=>copyCode('command')}>{commandIsCopied ? '👍' : "Copy"}</div>
     <div class="code_language">{codeLanguage}</div>
     <div class="code_content" id="mycode_command">
          {codeCommand}
     </div>
     </div>
     <div class="custom_codeblock">
-    <div class="copy_btn" on:click={()=>copyCode('content')}>{contentIsCopied ? '👍' : "Copy"}</div>
+    <div class="copy_btn" on:keydown={()=>("x")} on:click={()=>copyCode('content')}>{contentIsCopied ? '👍' : "Copy"}</div>
     <div class="code_language">{codeLanguage}</div>
     <div class="code_content" id="mycode_content">
          {codeContent}
@@ -141,7 +155,6 @@
         padding:  1em;
         border-radius: $bd-radius;
         position: relative;
-        // min-width: 20vw;
         margin: 1em 0;
 
         .code_language{
@@ -174,8 +187,6 @@
 
         .code_content{
             margin-top: 2em;
-            // width: 100%;
-            // max-width: 50vw;
             height: max-content;
             overflow: hidden;
             white-space:pre-wrap;

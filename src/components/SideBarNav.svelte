@@ -1,15 +1,19 @@
 <script lang="ts">
-  import { toggleSidebarMenu, sideMenuStore } from "../store/store";
+  import { booleanStore, customBooleanStoreUpdater } from "../store/store";
+  import {booleanKeys} from '../lib/Util';
   import Icon from "@iconify/svelte";
  import { goto } from "$lib/helper";
   import IconLink from "./custom_components/IconLink.svelte";
   import {sideBarURLText} from '../lib/uidata'
 
+  $: isSideNavActive = $booleanStore[booleanKeys.IS_SIDE_NAV_ACTIVE];
+
+
 </script>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class={`hamburger_nav ${$sideMenuStore ? "show" : "hidden"}`}>
+
+  <div class={`hamburger_nav ${isSideNavActive ? "show" : "hidden"}`}>
     <div class="sidebar-navigation">
-      <div class="logo" on:click={() => goto('/')}>
+      <div class="logo" on:keydown={()=>('x')} on:click={() => goto('/')}>
         <IconLink iconName="material-symbols:finance-mode" >
              Fintekkers
         </IconLink>
@@ -28,7 +32,7 @@
         </ul>
       </div>
 
-      <div class="contact" on:click={()=>goto("/contactus")}>
+      <div class="contact" on:keydown={()=>('x')} on:click={()=>goto("/contactus")}>
         <IconLink iconName='akar-icons:price-cut'>
           Contact Us
         </IconLink>
@@ -36,12 +40,12 @@
     </div>
   </div>
   <div class="hamburger_btn">
-    {#if $sideMenuStore}
-      <button class="close_btn" on:click={() => toggleSidebarMenu()}>
+    {#if isSideNavActive}
+      <button class="close_btn" on:click={() => customBooleanStoreUpdater(booleanKeys.IS_SIDE_NAV_ACTIVE)}>
         <Icon icon="ic:outline-close" style="width: 35px; height: 35px;" />
       </button>
     {:else}
-      <button class="open_btn" on:click={() => toggleSidebarMenu()}>
+      <button class="open_btn" on:click={() => customBooleanStoreUpdater(booleanKeys.IS_SIDE_NAV_ACTIVE)}>
         <Icon icon="mdi:hamburger-menu" style="width: 35px; height: 35px;" />
       </button>
     {/if}
@@ -113,7 +117,7 @@
       position: absolute;
       z-index: 3;
       top: 0;
-      background-color: $background-color;
+      background-color: $bgc-color;
 
       transition: all 0.2s ease-in-out;
 
@@ -137,7 +141,7 @@
           width: 100%;
           height: 50vh;
           margin-top: 2em;
-          ul {
+          :is(ul) {
             @include flex(column, center, center, 1em);
             width: 20vw;
 
@@ -173,7 +177,7 @@
   @media screen and (max-width: $breakingpoint_mobile) {
     .hamburger_nav {
       width: 100vw;
-      background-color: $background-color;
+      background-color: $bgc-color;
 
       .navigation_bar {
         position: absolute;
@@ -185,7 +189,7 @@
         width: inherit;
         @include flex(column, space-between, center, 1em);
         margin-top: 2em;
-        background-color: $background-color;
+        background-color: $bgc-color;
 
 
         .logo {
@@ -200,7 +204,7 @@
           height: 50vh;
           margin-top: 2em;
 
-          ul {
+          :is(ul) {
             @include flex(column, center, center, 3em);
             margin: 0 auto;
             width: 30vw;

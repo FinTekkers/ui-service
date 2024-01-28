@@ -1,12 +1,15 @@
 <script lang="ts">
+    // external imports
   import Icon from "@iconify/svelte";
-  import {isSignInOrSignUp, togglePasswordVisibility, isPasswordVisible} from '../../store/store';
+   //  internal imports  
+  import {booleanStore, customBooleanStoreUpdater} from '../../store/store';
+  import { booleanKeys } from "$lib/Util";
+  import type {formError} from '$lib/types';
+  import Google_OAuth from '../custom_components/Google_OAuth.svelte';
 
-  export let data:any;
-  export let form:Login.formError;
+  export let form:formError;
 </script>
 
-                                <!-- svelte-ignore a11y-click-events-have-key-events -->
 
 <div class="sign_in_fields">
                       <label for="Email">
@@ -19,17 +22,18 @@
                         />
                       
                       </label>
+
                       <label for="Password" class="passwordField">
                         <span>Password:</span>
                         <input
                           class="rounded-md {"border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
-                          type={$isPasswordVisible ? "text" : "password"}
+                          type={$booleanStore.IS_PASSWORD_VISIBLE ? "text" : "password"}
                           name="Password"
                           placeholder="Enter your password"
                         />
 
-                      {#if $isPasswordVisible}
-                                <span class="togglePasswordDisplayIcon" on:click={()=>togglePasswordVisibility()}>
+                      {#if $booleanStore.IS_PASSWORD_VISIBLE}
+                                <span class="togglePasswordDisplayIcon" on:keydown={()=>("x")} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
                                     <Icon
                                         icon="solar:eye-linear"
                                         style="width: 25px; height: 25px;"
@@ -37,7 +41,7 @@
                                     />
                                 </span>
                                 {:else}
-                                <span class="togglePasswordDisplayIcon" on:click={()=>togglePasswordVisibility()}>
+                                <span class="togglePasswordDisplayIcon" on:keydown={()=>("x")} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
                                 <Icon
                                     icon="clarity:eye-hide-line"
                                     style="width: 25px; height: 25px;"
@@ -55,7 +59,7 @@
                         {/if}
                       </div>
                     
-                      {#if $isSignInOrSignUp}
+                      {#if $booleanStore.IS_SIGN_IN_OR_SIGN_UP}
                             <button type="submit" class="form_btn text-white font-bold py-2 px-4 rounded"
                                 >Sign Up →
                             </button>
@@ -73,16 +77,7 @@
                     </div>
         
                     <div class="google_OAuth">
-                                    <button
-                                    type="submit"
-                                    class="font-bold py-2 px-4 rounded focus:outline-none focus:border-green-500 hover:border-green-500 focus:ring-green-500 focus:ring-1"
-                                    >
-                                            <Icon
-                                                icon="flat-color-icons:google"
-                                                style="width: 25px; height: 25px;"
-                                            />
-                                            <span> Continue with Google </span>
-                                    </button>
+                        <Google_OAuth />
                     </div>
                 
 </div>
@@ -102,7 +97,7 @@
             grid-column: 1/-1;
             color: $grey;
 
-                    button{
+                    :is(button){
                         width: 100%;
                     }
             }
@@ -112,11 +107,11 @@
             position: relative;
             }
 
-            label{
+            :is(label){
                 height: max-content;
                 position: relative;
             
-                input{
+                :is(input){
                     width: 100%;
                     height: 3em;
                     color: $grey;
@@ -159,7 +154,7 @@
 
                 }
 
-                span{
+                :is(span){
                     grid-column: 2/2;
                     position:absolute;
                     top: 0;
@@ -171,23 +166,7 @@
             }
 
             .google_OAuth{
-                grid-area:7/1/7/-1;
-                button{
-                border: solid 2px $primary-color;
-                background-color: $white;
-                color: $primary-color;
-                @include flex(row, center, center, 1em);
-                height: 6vh;
-                width: 100%;
-                transition: all .5s ease;
-
-                &:hover{
-                    color: $white;
-                    background-color: $primary-color;
-                    border: solid 1px $white;
-                }
-
-                }
+                grid-area:7/1/7/-1;        
              
             }
 

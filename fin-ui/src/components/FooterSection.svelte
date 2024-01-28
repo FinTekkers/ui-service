@@ -86,7 +86,7 @@
     width: 100%;
     height: 60vh;
     padding: 1em;
-    background-color: $background-color;
+    background-color: $bgc-color;
     display: grid;
     justify-content: center;
     align-items: center;

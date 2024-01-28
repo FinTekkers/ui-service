@@ -33,7 +33,7 @@
     grid-template-columns: repeat(2,1fr);
     grid-template-rows:1fr;
     height: 100vh;
-    background: $background-color;
+    background: $bgc-color;
 
     .contact-us-text{
         padding: 1em;

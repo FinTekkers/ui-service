@@ -7,8 +7,9 @@
     import { goto } from "../lib/helper";
     import computerImage from '../lib/images/stock.png';
     import {
-        toggleUnderConstruct
+        customBooleanStoreUpdater,
     } from "../store/store";
+    import {booleanKeys} from '$lib/Util'
 
 </script>
 
@@ -28,7 +29,7 @@
             >
             <button
                 class="button explore-product-button"
-                on:click={() => toggleUnderConstruct("xploreProduct")}
+                on:click={() => customBooleanStoreUpdater(booleanKeys.IS_FEATURE_ACTIVE)}
                 disabled>Explore Product</button
             >
            

@@ -1,102 +1,57 @@
 import { writable, get } from "svelte/store";
+import type { booleanStoreType, portfolioStoreType } from "../lib/types";
+import  { booleanKeys } from "$lib/Util";
 
-// main portfolio data store & methods
-export const portfolioStore = writable<string[]>([]);
 
-export const portfolioStoreUpdate = async (data: App.PageData) => {
+// store updating all project booleans
+export const booleanStore = writable<booleanStoreType>({
+ [booleanKeys.IS_SIDE_NAV_ACTIVE]: false,
+ [booleanKeys.IS_OBR_PROMPT_SHOWING]:true,
+ [booleanKeys.IS_SIGN_IN_OR_SIGN_UP]:false,
+ [booleanKeys.IS_PASSWORD_VISIBLE]:false,
+ [booleanKeys.IS_FEATURE_ACTIVE]:false,
+})
+
+// function that updates the boolean store, receive a key to target specific boolean
+export const customBooleanStoreUpdater:(key:booleanKeys)=>void = (key: booleanKeys)=>{
+  let _storeValue = get(booleanStore);
+  if(typeof key === 'string'){ 
+    booleanStore.update((store)=>{
+      store[key] = !_storeValue[key]
+      return store
+ })
+
+}
+
+
+
+}
+
+// store importing the api content to populate the dashboards #number of calls, #keys, etc.;
+export const portfolioStore = writable<portfolioStoreType>([]);
+
+export const portfolioStoreUpdater = async (data: App.PageData) => {
   try {
     const portfolioData = await data;
     if (portfolioData !== null || undefined) {
-      portfolioStore.update(store => {
-        store = data;
+      portfolioStore.update((store) => {
+        store = portfolioData;
         return store;
       });
     }
   } catch (error) {
     if (error) {
-      console.log("something went wrong in portfolio update");
+      console.log("Something went wrong - portfolio update 🛑");
       console.log(error);
     }
   }
 };
 
-// sidebar store
-export const sideMenuStore = writable<boolean>(false);
-
-// sidebar method
-
-export const toggleSidebarMenu = ()=>{
-  let bool = get(sideMenuStore);
-
-  sideMenuStore.update((store)=>{
-   store = !bool;
-   return store;
-  })
-}
-// Boolean store 
-export const obrPromptBoolean = writable<boolean>(true)
-
-export const toggleObrPromptBoolean = ()=>{
-  let bool = get(obrPromptBoolean);
-  
-  obrPromptBoolean.update((store)=>{
-    store = !bool;
-    return store;
-  })
-}
-
-
-// main menu navigation store & methods
 export const selectedDashboardMenu = writable<string>("home");
 
-
-
-
-
-
-// store of booleans
-export const UnderConstructBoolean  = writable<Debug.underConstruct>({
-    xploreProduct:false,
-})  
-
-export const toggleUnderConstruct = (key:keyof Debug.underConstruct)=>{
-    let bool = get(UnderConstructBoolean);
-    UnderConstructBoolean.update((store) => {
-                  // Check if the key exists in the store
-                  if (store.hasOwnProperty(key)) {
-                    // Toggle the boolean value of the specified key
-                    store[key] = !store[key];
-                  } else {
-                    // If the key doesn't exist, you may want to handle this case accordingly
-                    console.error(`Key '${key}' does not exist in the store.`);
-                  }
-    return { ...store };
-})
-
-}
-
-// login page store & methods
-export const isSignInOrSignUp = writable<boolean>(false)
-
-
-export const toggleSignInForm = ()=>{
-       let bool = get(isSignInOrSignUp)
-       isSignInOrSignUp.update((store)=>{
-         store = !bool;
-         return store
-       })
-}
-
-export const isPasswordVisible = writable<boolean>(false)
-
-export const togglePasswordVisibility = ()=>{
-  let bool = get(isPasswordVisible);
-
-  isPasswordVisible.update((store)=>{
-      store = !bool;
-      return store;
-  })
-}
+export const selectedDashboardMenuUpdater = (item: string) => {
+    selectedDashboardMenu.set(item);
+  };
 
 
 
