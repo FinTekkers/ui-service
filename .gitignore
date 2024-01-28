@@ -12,3 +12,7 @@ fin-iu/.svelte-kit/
 
 #npm
 node_modules/
+
+
+#AWS installer
+AWSCLIV2.pkg
