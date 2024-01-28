@@ -11,6 +11,7 @@ import {sideBarURLText} from '../lib/uidata'
         <IconLink iconName='material-symbols:finance-mode'>
            Fintekkers
         </IconLink>
+        
       </div>
       <div class="navigation_links">
         <ul>
