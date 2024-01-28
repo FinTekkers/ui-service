@@ -5,7 +5,7 @@
     import { reveal } from "svelte-reveal";
 // internal imports
     import { goto } from "../lib/helper";
-    import computerImage from '../lib/images/stock.png';
+    import computerImage from '../static/images/stock.png';
     import {
         customBooleanStoreUpdater,
     } from "../store/store";
