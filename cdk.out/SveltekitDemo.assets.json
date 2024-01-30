@@ -1,0 +1,32 @@
+{
+  "version": "36.0.0",
+  "files": {
+    "7b4bdfe0bc54e1fa6f7f38705843855a16614420d14ffc50dd7b41d0831c2cbc": {
+      "source": {
+        "path": "asset.7b4bdfe0bc54e1fa6f7f38705843855a16614420d14ffc50dd7b41d0831c2cbc",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "7b4bdfe0bc54e1fa6f7f38705843855a16614420d14ffc50dd7b41d0831c2cbc.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "71adb88715a2560e521247ac4f0a17e0dbdc4b1dd6905df47e2d4bc8c6f26fd3": {
+      "source": {
+        "path": "SveltekitDemo.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "71adb88715a2560e521247ac4f0a17e0dbdc4b1dd6905df47e2d4bc8c6f26fd3.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
