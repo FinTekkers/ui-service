@@ -5,9 +5,6 @@
   import LandingOverview from '../components/LandingSection.svelte';
   import AboutSection from "../components/OurFeatureSection.svelte";
   import VideoSection from "../components/VideoSection.svelte";
-
-
-
 </script>
 
 

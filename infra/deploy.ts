@@ -9,10 +9,11 @@ class SveltekitDemo extends cdk.Stack {
 		super(scope, id);
 
 		const handler = new lambda.Function(this, 'SveltekitHandler', {
-			code: lambda.Code.fromAsset(resolve(process.cwd(), 'build')),
-			handler: 'lambda-handler.handler',
-			runtime: lambda.Runtime.NODEJS_18_X
-		});
+            code: lambda.Code.fromAsset(resolve(process.cwd(), 'build')),
+            handler: './pre-build-lambda-assets/lambda-handler.js',  // Adjust the path here
+            runtime: lambda.Runtime.NODEJS_18_X
+        });
+
 
 		const api = new apigateway.LambdaRestApi(this, 'API', { handler });
 
