@@ -19,7 +19,7 @@ export const sideBarURLText:NavbarURL[] = [{
     url:'#todo_link_to_repl_when_complete',
     text:'Get Started',
     id:'get-started',
-    icon:'material-symbols:finance-mode'
+    icon:'streamline:startup'
   },{
     url:'https://github.com/FinTekkers/ledger-models',
     text:'Docs',
@@ -28,9 +28,10 @@ export const sideBarURLText:NavbarURL[] = [{
   } 
   ,{
     url:'#',
-    text:'Pricing (free)',
+    text:'Pricing (free for now)',
     id:'pricing',
-    icon:'akar-icons:price-cut'
+    icon:'arcticons:priceconverter'
+   
   }]
 
 export const footerURLText:FooterSection[]=[
