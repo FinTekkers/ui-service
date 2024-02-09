@@ -25,12 +25,11 @@
 
            </p> 
 
-          <button class="get-started-cta-button" on:click={()=>{
+        <button class="get-started-cta-button" on:click={()=>{
           goto('/login')
        }}>
        
-       
-       Get Started</button>
+       <Icon icon="streamline:startup"   style="width: 25px; height: 25px;" /></button>
         </div>
 
         <div class="get-started-image">
@@ -145,7 +144,7 @@
                    text-align: center;
                 }
 
-
+            
                 button {
                     @extend .button;
                     transition: all .5s ease;
@@ -157,6 +156,7 @@
                     grid-area: 3/3/3/3;
                     border-radius: 30px;
                     width: 20vh;
+                    @include flex(row, center, center,0);
 
                     &:hover{
                         background-color: $primary-color;

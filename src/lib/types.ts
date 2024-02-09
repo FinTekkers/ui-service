@@ -9,7 +9,12 @@ export type portfolioStoreType = any;
 export type formError = {
   message?:string,
   formError?: ArrayLike<unknown>,
-  Error?:object
+  Error?:object,
+  missing?:boolean,
+  firstname?:string,
+  lastname?:string,
+  email?:string,
+  success?:boolean,
 
 }
 
