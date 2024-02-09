@@ -14,7 +14,7 @@
   <div class={`hamburger_nav ${isSideNavActive ? "show" : "hidden"}`}>
     <div class="sidebar-navigation">
       <div class="logo" on:keydown={()=>('x')} on:click={() => goto('/')}>
-        <IconLink iconName="material-symbols:finance-mode" >
+        <IconLink iconName="carbon:finance" >
              Fintekkers
         </IconLink>
       </div>
@@ -33,7 +33,7 @@
       </div>
 
       <div class="contact" on:keydown={()=>('x')} on:click={()=>goto("/contactus")}>
-        <IconLink iconName='akar-icons:price-cut'>
+        <IconLink iconName='bytesize:mail'>
           Contact Us
         </IconLink>
       </div>
@@ -65,20 +65,22 @@
 
   .sidebar-navigation{
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(5,1fr);
     grid-template-rows: repeat(5,100px);
 
     div:nth-child(n){
       grid-column: 1/-1;
       cursor: pointer;
       margin: 0 auto;
+      justify-content: center;
+      width: 100%;
     }
+
+    
     .logo{
       grid-row:2/2;
       @include flex(row, flex-start, flex-start, 1em);
       font-weight: bold;
-
-      
     }
 
     .navigation_links{
@@ -88,10 +90,37 @@
         display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: repeat(5, 50px);
+        justify-content: center;
+        justify-items: center;
+
 
         li{
           @include flex(row, flex-start, flex-start, 1em);
+          position: relative;
+
+                 &::before {
+                    content: '';
+                    width: 0; 
+                    height: 2px;
+                    background-color: $primary-color;
+                    position: absolute;
+                    bottom: 30%;
+                    border-radius: $bd-radius;
+                    left: 0%; 
+                    transform: translateX(-50%);
+                    transition: width 0.5s ease-in-out, left 0.5s ease-in-out; 
+                  }
+
+                  &:hover::before {
+                    width: 95%; 
+                    left: 50%;
+
+                  }
+
         }
+
+        
+               
 
   
       }

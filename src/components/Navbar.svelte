@@ -8,7 +8,7 @@ import {sideBarURLText} from '../lib/uidata'
 </script>
     <div class="navigation_bar">
       <div class="logo" on:keydown={()=>('x')} on:click={() => goto("/")}>
-        <IconLink iconName='material-symbols:finance-mode'>
+        <IconLink iconName='carbon:finance'>
            Fintekkers
         </IconLink>
       </div>
@@ -24,7 +24,7 @@ import {sideBarURLText} from '../lib/uidata'
         </ul>
       </div>
       <div class="contact" on:keydown={()=>('x')} on:click={()=>goto("/contactus")}>
-        <IconLink iconName='akar-icons:price-cut'>
+        <IconLink iconName='bytesize:mail'>
           Contact Us
         </IconLink>
       </div>
@@ -35,7 +35,9 @@ import {sideBarURLText} from '../lib/uidata'
 <style lang="scss">
     @import "../style.scss";
 
-
+   .contact{
+    margin-right: 2em;
+   }
 
    @media screen and (max-width: $breakingpoint_medium) {
     .navigation_bar {

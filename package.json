@@ -22,6 +22,7 @@
 		"latest-version": "^8.0.0",
 		"polka": "^0.5.2",
 		"sass": "^1.66.1",
+		"svelte-toasts": "^1.1.2",
 		"vite-node": "^1.2.2"
 	},
 	"devDependencies": {
@@ -61,7 +62,6 @@
 		"svelte-jester": "^3.0.0",
 		"svelte-preprocess": "^5.0.4",
 		"svelte-reveal": "^0.7.0",
-		"sveltekit-superforms": "^1.7.1",
 		"tailwindcss": "^3.3.3",
 		"ts-node": "^10.9.2",
 		"tslib": "^2.4.1",

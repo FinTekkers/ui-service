@@ -1,5 +1,6 @@
 
 <script lang="ts">
+
   import Footer from '../components/FooterSection.svelte';
   import LandingSection from "../components/GetStartedSection.svelte";
   import LandingOverview from '../components/LandingSection.svelte';
@@ -7,14 +8,13 @@
   import VideoSection from "../components/VideoSection.svelte";
 </script>
 
-
-<div class="landing_page_overlay" >
- <LandingOverview />
- <LandingSection />
- <AboutSection />
- <VideoSection />
- <Footer />
-</div>
+      <div class="landing_page_overlay" >
+            <LandingOverview />
+            <LandingSection />
+            <AboutSection />
+            <VideoSection />
+            <Footer />
+      </div>
 
 
 <style lang="scss">
