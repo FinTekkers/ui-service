@@ -1,5 +1,6 @@
 import {  redirect } from "@sveltejs/kit";
 import * as Yup from 'yup';
+import { isValidationError } from "$lib/helper.js";
 
 
 const signInSchema = Yup.object({
@@ -19,6 +20,8 @@ export const actions = {
 
             isValid = await signInSchema.validate({ email, password }, { abortEarly: false });
 
+            console.log('sign in is valid', isValid)
+
             // Check if email and password exist
             if (email && password) {
                 // No validation errors and redirection is triggered outside the try block
@@ -28,8 +31,7 @@ export const actions = {
             if (isValidationError(validationError)) {
                 const validationErrors = validationError.inner.map((error: { message: string }) => error.message);
                 formError = validationErrors;
-            } else {
-                console.log('error', validationError);
+                console.log('form error', formError)
             }
         }
 
@@ -43,6 +45,6 @@ export const actions = {
     }
 };
 
-function isValidationError(error: unknown): error is Yup.ValidationError {
-    return (error as Yup.ValidationError)?.inner !== undefined;
-}
+// function isValidationError(error: unknown): error is Yup.ValidationError {
+//     return (error as Yup.ValidationError)?.inner !== undefined;
+// }

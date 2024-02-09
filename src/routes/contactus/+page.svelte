@@ -1,26 +1,133 @@
 
-
 <script lang='ts'>
-    	/** @type {import('./$types').PageData} */
+import type { formError } from '$lib/types';
+import { writable} from "svelte/store";
 
-	/** @type {import('./$types').ActionData} */
+/** @type {import('./$types').ActionData} */
+export let form: formError;
+
+let focusedElement: string | null = null;
+let inputValue: { [key: string]: string } = {};
+let isTypingField = writable<string>('');
+
+
+
+
+const showToast = () => {
+    toasts.success('success!','your message is sent', {duration:3000, placement:'top-right'})   
+};
+
+const handleFocus = (field:string)=>{
+  focusedElement = field;
+}
+
+const handleBlur = (field:string)=>{
+  focusedElement = null
+}
+
+const handleChange = (fieldName: string, value: string) => {
+  inputValue[fieldName] = value;
+  isTypingField.update((store)=>{
+      store = fieldName;
+      return store
+  }) 
+
+};
+
+const handleSubmit = ()=>{
+     showToast();   
+}
+
+const displayError = (fieldName: string) => {
+        isTypingField.update((store)=>{
+                store = fieldName;
+                return store
+         }) 
+        if (form?.formError) {
+            const errors = Array.from(form.formError);
+            return errors.includes(fieldName) && fieldName === $isTypingField;
+        }
+        return false;
+};
+
+
+const handleClear = ()=>{
+    form = {}
+}
+
+
+
 </script>
 
-<div class="contact-us">
-    <div class="contact-us-text">
-       <h1>Contact Us</h1>
-       <p>Need to get in touch with us? Either fill out the form with your inquiry or find the email you'd like to contact below</p>
-    </div>
-    <div class="contact-us-form">
-        <form method="POST" action="contactus?/message">
-            <label for="fistname"><span>Firstname</span><input id="firstname" name="firstname" type="text" placeholder="firstname"></label>
-            <label for="lastname"><span>Lastname</span><input id="lastname" name="lastname" type="text" placeholder="lastname"></label>
-            <label for="emaol"><span>Email</span><input id="email" type="email" name="email" placeholder="email"></label>
-            <label for="message"><span>What Can we help you with ?</span><textarea id="message" name="message" rows="4" placeholder="" ></textarea></label>
-            <input class="submit_btn" type="submit" /> 
-        </form>
-    </div>
-</div>
+
+        <div class="contact-us">
+            <div class="contact-us-text">
+            <h1>Contact Us</h1>
+            <p>Need to get in touch with us? Either fill out the form with your inquiry or find the email you'd like to contact below</p>
+            </div>
+            <div class="contact-us-form">
+            
+
+                <form method="POST" action="?/message" on:submit={handleSubmit}  >
+                    <label for="fistname">
+                        <span class={`${focusedElement === 'firstname' || inputValue['firstname']  ? 'labelFloat' : ''}`}>
+                            First name
+                        </span>
+                    <input on:focus={() => handleFocus('firstname')}  on:change={(event) => handleChange('firstname', event?.target.value)} on:blur={()=>handleBlur('firstname')} id="firstname" name="firstname" type="text"  value={form?.firstname ?? ''}>
+                     {#if displayError('firstname')}
+                        <div class="error_message">
+                            <p class='form_error'>⚠️ Enter firstname</p>
+                        </div>
+                    {/if}
+                    
+                    </label>
+                  
+                    <label for="lastname">
+                        <span class={`${focusedElement === 'lastname' || inputValue['lastname'] ? 'labelFloat' : ''}`}>
+                            Last name
+                        </span>
+                        <input on:focus={() => handleFocus('lastname')} on:change={(event) => handleChange('lastname', event?.target.value)} on:blur={()=>handleBlur('lastname')} id="lastname" name="lastname" type="text"  value={form?.lastname ?? ''}>
+                        {#if displayError('lastname')}
+                                <div class="error_message">
+                                    <p class='form_error'>⚠️ Enter lastname</p>
+                                </div>
+                        {/if}
+                    </label>
+                    <label for="email">
+                        <span class={`${focusedElement === 'email' || inputValue['email'] ? 'labelFloat' : ''}`}>
+                            Email
+                        </span>
+                        <input on:focus={() => handleFocus('email')} on:change={(event) => handleChange('email', event?.target.value)} on:blur={()=>handleBlur('email')}   id="email" type="email" name="email"  value={form?.email ?? ''}>
+                         {#if displayError('email')}
+                                <div class="error_message">
+                                    <p class='form_error'>⚠️ Enter email</p>
+                                </div>
+                        {/if}
+                    </label>
+                    <label for="message">
+                        <span class={`${focusedElement === 'message' || inputValue['message'] ? 'labelFloat' : ''}`}>
+                            Enter your message
+                        </span>
+                        <textarea on:focus={() => handleFocus('message')} on:change={(event) => handleChange('message', event?.target.value)} on:blur={()=>handleBlur('message')}  id="message" name="message" rows="3" value={form?.message ?? ''}  />
+                        {#if displayError('message')}
+                                <div class="error_message">
+                                    <p class='form_error'>⚠️ Enter message</p>
+                                </div>
+                        {/if}    
+                    </label>
+                    <label for="">
+                        <button class="clear_form" on:click={handleClear}>Clear</button>
+                    </label>
+                    <label for="">
+                    <input class="submit_btn" type="submit" /> 
+                    </label>
+                    
+                
+                </form>
+            </div>
+   
+        </div>
+
 
 <style lang="scss">
 @import "../../style.scss";
@@ -59,13 +166,21 @@
         grid-template-columns: repeat(6, 1fr);
         grid-template-rows: repeat(6, 100px);
 
+        .error_message{
+            grid-column: 1/3;
+            color:$error;    
+            display: grid;
+            left: 0;
+            
+        }
+
         form{
-        grid-column: 2/6;
-        grid-row: 2/7;
-        display: grid;
-        grid-template-columns: repeat(auto-fit,1fr);
-        grid-template-rows: repeat(8,100px);
-        gap: 1em;
+            grid-column: 2/6;
+            grid-row: 2/7;
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            grid-template-rows: repeat(8,minmax(90px, 100px));
+            gap: 1em;
 
         
 
@@ -79,8 +194,35 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: 1fr;
 
+               
+
+                &:nth-child(n){
+                    position: relative;
+
+                     span{
+                        width: max-content;
+                        position: absolute;
+                        transition: all .5s ease-in-out;
+                        left: 3%;
+                        top: -25%;
+                        pointer-events: none;
+                        background-color: $bgc-color;
+                        border-radius: $bd-radius;
+                        padding: 0 .5rem;
+                    }
+
+
+                    .labelFloat{
+                       
+                        background-color: $primary-button;
+                        border-radius: $bd-radius;
+                        color: $white;
+                    }
+                }
+
                 &:nth-child(1){
                     grid-area: 1/1/2/-1;
+                   
                 }
                 &:nth-child(2){
                     grid-area: 2/1/3/-1;
@@ -90,6 +232,18 @@
                 }
                 &:nth-child(4){
                     grid-area: 4/1/5/-1;
+                    span{
+                        top:-10%
+                    }
+                }
+                 &:nth-child(5){
+                    grid-area: 5/1/5/2;
+
+                }
+
+                 &:nth-child(6){
+                    grid-area: 5/2/6/3;
+               
                 }
                
             
@@ -98,6 +252,12 @@
                     padding-left: 1em;
                     border-radius: $bd-radius;
                     min-height: 6vh;
+                    background-color: transparent;
+                    border: solid 1px $white;
+                }
+
+                textarea{
+                    padding: 1em;
                 }
 
             }
@@ -109,7 +269,30 @@
                     border-radius: $bd-radius;
                     background-color: $primary-color;
                     font-weight: bold;
+                    cursor: pointer;
+                    color: $white;
+                    transition: background-color .5s  ease;
+                    border: none;
+
+                    &:hover{
+                        background-color: $primary-button;
+                    }
                 }
+
+             .clear_form{
+                @extend .button;
+                margin-top: 2em;
+                grid-column:1/1;
+                grid-row: 5/5;
+                height: 8vh;
+                background-color: $grey;
+                color:$white;
+                transition: background-color .5s  ease;
+
+                   &:hover{
+                        background-color: $ltgrey;
+                    }
+             }
         }
     }
 
@@ -145,6 +328,8 @@
 
             .contact-us-form{
              grid-template-columns: repeat(8, 1fr);
+
+             
                 
                 form{
                 grid-column: 3/7;
