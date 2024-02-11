@@ -6,23 +6,15 @@ import { writable} from "svelte/store";
 /** @type {import('./$types').ActionData} */
 export let form: formError;
 
+
+
 let focusedElement: string | null = null;
 let inputValue: { [key: string]: string } = {};
 let isTypingField = writable<string>('');
 
-
-
-
-const showToast = () => {
-    toasts.success('success!','your message is sent', {duration:3000, placement:'top-right'})   
-};
-
+// functions handling micro interaction of form
 const handleFocus = (field:string)=>{
   focusedElement = field;
-}
-
-const handleBlur = (field:string)=>{
-  focusedElement = null
 }
 
 const handleChange = (fieldName: string, value: string) => {
@@ -34,10 +26,8 @@ const handleChange = (fieldName: string, value: string) => {
 
 };
 
-const handleSubmit = ()=>{
-     showToast();   
-}
 
+// displaying errors from form 
 const displayError = (fieldName: string) => {
         isTypingField.update((store)=>{
                 store = fieldName;
@@ -50,7 +40,7 @@ const displayError = (fieldName: string) => {
         return false;
 };
 
-
+// clear form
 const handleClear = ()=>{
     form = {}
 }
@@ -68,7 +58,7 @@ const handleClear = ()=>{
             <div class="contact-us-form">
             
 
-                <form method="POST" action="?/message" on:submit={handleSubmit}  >
+                <form method="POST" action="?/message"   >
                     <label for="fistname">
                         <span class={`${focusedElement === 'firstname' || inputValue['firstname']  ? 'labelFloat' : ''}`}>
                             First name

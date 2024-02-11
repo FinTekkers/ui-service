@@ -6,30 +6,44 @@
   import { booleanKeys } from "$lib/Util";
   import type {formError} from '$lib/types';
   import Google_OAuth from '../custom_components/Google_OAuth.svelte';
-
+  export let data: App.PageData;
   export let form:formError;
+
+    const displayError = (fieldName: string) => {
+
+    if (form?.formError) {
+        const errors = Array.from(form.formError);
+        return errors.includes(fieldName);
+    }
+    return false;
+};
 </script>
 
 
 <div class="sign_in_fields">
                       <label for="Email">
-                        <span>Email address:</span>
+                        <span class="email_span_text">Email address:</span>
                         <input
                           class="rounded-md { "border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
                           type="text"
                           name="Email"
-                          placeholder="Enter your email"
+                          value={form?.email ?? ''}
+                          
                         />
-                      
+                            {#if displayError('email')}
+                                <div class="error_message">
+                                     <p class='form_error'>⚠️ Enter email</p>
+                                </div>    
+                            {/if}   
                       </label>
 
                       <label for="Password" class="passwordField">
-                        <span>Password:</span>
+                        <span class="password_span_text">Password:</span>
                         <input
                           class="rounded-md {"border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
                           type={$booleanStore.IS_PASSWORD_VISIBLE ? "text" : "password"}
                           name="Password"
-                          placeholder="Enter your password"
+                          value={form?.password ?? ''}
                         />
 
                       {#if $booleanStore.IS_PASSWORD_VISIBLE}
@@ -49,15 +63,16 @@
                                 />
                                 </span>
                                {/if}
+                       <div class="error_message">
+                            {#if displayError('password')}
+                                <div class="error_message">
+                                     <p class='form_error'>⚠️ Enter password</p>
+                                </div>    
+                            {/if}   
+                      </div>
                       </label>
 
-                      <div class="error_message">
-                        {#if form?.formError}
-                            {#each form.formError as error}
-                              <p>{error}</p>
-                            {/each}
-                        {/if}
-                      </div>
+                     
                     
                       {#if $booleanStore.IS_SIGN_IN_OR_SIGN_UP}
                             <button type="submit" class="form_btn text-white font-bold py-2 px-4 rounded"
@@ -100,6 +115,17 @@
                     :is(button){
                         width: 100%;
                     }
+
+
+    .error_message{
+        color: $error;
+        font-size: .8rem;
+        position: absolute;
+        right: 0;
+        width: 100%;
+        @include flex(row, flex-end,null,0);
+        
+    }
             }
 
 
@@ -110,6 +136,8 @@
             :is(label){
                 height: max-content;
                 position: relative;
+                margin-bottom: 1em;
+                margin-top: 1em;
             
                 :is(input){
                     width: 100%;
@@ -117,6 +145,18 @@
                     color: $grey;
                     padding-left: 1em;
                     font-size: 1rem;
+                    background-color: none;
+                    border: solid 1px $grey;
+                }
+
+                .email_span_text,.password_span_text{
+                    position: absolute;
+                    left: 5%;
+                    top: -25%;
+                    background-color: white;
+                    border-radius: $bd-radius;
+                    padding: 0 .3em;
+                    font-size: .8rem;
                 }
             }
             
@@ -128,6 +168,7 @@
               .togglePasswordDisplayIcon{
                 position: absolute;
                 top: 50%;
+                transform: translateY(-50%);
                 right: 5%;
                 transition: all .5s ease-in-out;
                 cursor: pointer;
@@ -139,7 +180,7 @@
                 grid-area:6/1/6/-1;
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
-                grid-template-rows: repeat(2, 20px);
+                grid-template-rows: repeat(2, 10px);
                 position: relative;
                 justify-content: center;
                 align-items: center;
@@ -157,9 +198,9 @@
                 :is(span){
                     grid-column: 2/2;
                     position:absolute;
-                    top: 0;
+                    top: -50%;
                     left: 50%;
-                    transform: translateX(-50%);
+                    transform: translateX(-50%) translateY(0%);
                 }
 
 
@@ -173,9 +214,6 @@
     }
 
 
-    .error_message{
-        color: $error;
-    }
 
 
 
