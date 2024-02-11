@@ -5,76 +5,130 @@
   import { customBooleanStoreUpdater, booleanStore} from '../../store/store';
   import {booleanKeys} from '$lib/Util';
   import Google_OAuth from '../custom_components/Google_OAuth.svelte';
+  import type { formError } from "$lib/types";
+
+  export let form:formError;
+  export let data: App.PageData;
+
+
+  // const handleClick = ()=>{
+  //   customBooleanStoreUpdater(booleanKeys.IS_SIGN_IN_OR_SIGN_UP)
+  // }
 
   $:isPasswordVisible = $booleanStore[booleanKeys.IS_PASSWORD_VISIBLE]
 
+const displayError = (fieldName: string) => {
+    
+        if (form?.formError) {
+            const errors = Array.from(form.formError);
+            return errors.includes(fieldName);
+        }
+        return false;
+};
+
+console.log('testing here', displayError('firstname'))
+
 </script>
 
+  <div class="sign_up_fields">
 
-   <div class="sign_up_fields">
+                       <label for="name">
+                         <span class="label_span_text">Enter first name:</span>
+                         <input class="rounded-md sign_up_name" type="text" name="firstname" id="name" >
+                          {#if displayError('firstname')}
+                               <div class="error_message">
+                                    <p class='form_error'>⚠️ Enter firstname</p>
+                               </div>    
+                           {/if} 
+                       </label>
 
-                        <label for="name">
-                          <input class="rounded-md sign_up_name" type="text" name="name" id="name" placeholder="Enter name">
-                        </label>
+                       <label for="surname">
+                         <span class="label_span_text">Enter last name:</span>
+                         <input class="rounded-md sign_up_surname" type="text" name="lastname" id="surname">
+                          {#if displayError('lastname')}
+                               <div class="error_message">
+                                    <p class='form_error'>⚠️ Enter lastname</p>
+                               </div>    
+                           {/if} 
+                       </label>
 
-                        <label for="surname">
-                          <input class="rounded-md sign_up_surname" type="text" name="surname" id="surname" placeholder="Enter surname">
-                        </label>
+                       <label for="email">
+                         <span class="label_span_text">Enter email:</span>
+                         <input class="rounded-md sign_up_email" type="email" name="email" id="email" >
+                           {#if displayError('email')}
+                               <div class="error_message">
+                                    <p class='form_error'>⚠️ Enter email</p>
+                               </div>    
+                           {/if} 
+                       </label>
 
-                        <label for="email">
-                          <input class="rounded-md sign_up_email" type="email" name="email" id="email" placeholder="Enter email">
-                        </label>
+                       <label for="password">
+                         <span class="label_span_text">Enter password:</span>
+                         <input class="rounded-md sign_up_password" 
+                         type={isPasswordVisible ? "text" : "password"}
+                         name="password" id="password">
 
-                        <label for="password">
-                          <input class="rounded-md sign_up_password" 
-                          type={isPasswordVisible ? "text" : "password"}
-                          name="password" id="password" placeholder="Enter password">
+                         {#if isPasswordVisible}
+                             <span class="togglePasswordDisplayIcon_signUp" on:keydown={()=>('x')} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
+                               <Icon
+                                   icon="solar:eye-linear"
+                                   style="width: 25px; height: 25px;"
+                                   
+                                 />
+                             </span>
+                        {:else}
+                             <span class="togglePasswordDisplayIcon_signUp" on:keydown={()=>('x')} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
+                                 <Icon
+                                   icon="clarity:eye-hide-line"
+                                   style="width: 25px; height: 25px;"
+                                   
+                                 />
+                             </span>
+                         {/if}
 
-                          {#if isPasswordVisible}
-                              <span class="togglePasswordDisplayIcon_signUp" on:keydown={()=>('x')} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
-                                <Icon
-                                    icon="solar:eye-linear"
-                                    style="width: 25px; height: 25px;"
-                                    
-                                  />
-                              </span>
-                         {:else}
-                              <span class="togglePasswordDisplayIcon_signUp" on:keydown={()=>('x')} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
-                                  <Icon
-                                    icon="clarity:eye-hide-line"
-                                    style="width: 25px; height: 25px;"
-                                    
-                                  />
-                              </span>
-                          {/if}
-                        </label>
+                          {#if displayError('password')}
+                               <div class="error_message">
+                                    <p class='form_error'>⚠️ Enter password</p>
+                               </div>    
+                           {/if} 
+                       </label>
 
-                        <label for="confirmpassword">
-                              <input class="rounded-md sign_up_confirm_password" 
-                              type={isPasswordVisible ? "text" : "password"}
-                              name="confirmpassword" id="confirmpassword" placeholder="Confirm password">
-                        </label>
+                       <label for="confirmpassword">
+                         <span class="label_span_text">Confirm password:</span>
+                             <input class="rounded-md sign_up_confirm_password" 
+                             type={isPasswordVisible ? "text" : "password"}
+                             name="confirmpassword" id="confirmpassword" >
+                              {#if displayError('confirmpassword')}
+                               <div class="error_message">
+                                    <p class='form_error'>⚠️ Password must match</p>
+                               </div>    
+                           {/if} 
+                       </label>
 
-                      <label for="submit">
-                              <button type="submit"  class="form_btn text-white font-bold py-2 px-4 rounded"
-                              >Sign Up →
+                     <label for="submit">
+                             <button type="submit" class="form_btn text-white font-bold py-2 px-4 rounded"
+                             >Sign Up →
                             </button>
-                      </label>
+                     </label>
 
-                        <div class="divider">
-                              <div class="one border-t border-gray-500" />
-                                 <span>OR</span>
-                              <div class="two border-t border-gray-500" />
-                       </div>
-  
-                      <div class="google_OAuth">
-                        <Google_OAuth />
+                       <div class="divider">
+                             <div class="one border-t border-gray-500" />
+                                <span>OR</span>
+                             <div class="two border-t border-gray-500" />
                       </div>
-              </div>
+ 
+                     <div class="google_OAuth">
+                       <Google_OAuth />
+                     </div>
+
+
+             </div>
 
 
     <style lang="scss">
         @import "../../style.scss";
+
+      
 
          .sign_up_fields{
             display: grid;
@@ -82,17 +136,38 @@
             grid-template-rows: auto ;
             grid-area: 2/1/6/-1;
             gap: 1em;
-       
+
+      
 
             :is(label){
                 height: max-content;
                 position: relative;
+                margin-bottom: .5em;
+
+                .label_span_text{
+                  position: absolute;
+                  left: 5%;
+                  top: -25%;
+                  background-color: $brightwhite;
+                  padding: 0 .5em;
+                  border-radius: $bd-radius;
+                  color: $grey;
+                  font-size: .8rem;
+
+                }
             
                 :is(input){
                     width: 100%;
                     height: 2.5em;
                     color: $grey;
                     padding-left: 1em;
+                }
+
+                .error_message{
+                  color:$error;
+                  position: absolute;
+                  right: 0;
+                  font-size: .8rem;
                 }
             }
 
@@ -133,7 +208,7 @@
                 grid-area:6/1/6/-1;
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
-                grid-template-rows: repeat(2, 20px);
+                grid-template-rows: repeat(2, 10px);
                 position: relative;
                 justify-content: center;
                 align-items: center;
@@ -151,9 +226,9 @@
                 :is(span){
                     grid-column: 2/2;
                     position:absolute;
-                    top: 0;
+                    top: -50%;
                     left: 50%;
-                    transform: translateX(-50%);
+                    transform: translateX(-50%) translateY(0%);
                 }
 
 
