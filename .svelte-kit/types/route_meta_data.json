@@ -11,6 +11,9 @@
 	"/portfolios": [
 		"src/routes/portfolios/+page.server.ts"
 	],
+	"/register": [
+		"src/routes/register/+page.server.ts"
+	],
 	"/security/[id]": [
 		"src/routes/security/[id]/+page.server.ts"
 	]
