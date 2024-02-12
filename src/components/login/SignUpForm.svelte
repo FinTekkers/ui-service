@@ -1,21 +1,16 @@
 <script lang='ts'>
-  // external imports
-  import Icon from "@iconify/svelte";
-  // internal imports
-  import { customBooleanStoreUpdater, booleanStore} from '../../store/store';
-  import {booleanKeys} from '$lib/Util';
-  import Google_OAuth from '../custom_components/Google_OAuth.svelte';
-  import type { formError } from "$lib/types";
+// external imports
+import Icon from "@iconify/svelte";
+// internal imports
+import { customBooleanStoreUpdater, booleanStore} from '../../store/store';
+import {booleanKeys} from '$lib/Util';
+import Google_OAuth from '../custom_components/Google_OAuth.svelte';
+import type { formError } from "$lib/types";
 
-  export let form:formError;
-  export let data: App.PageData;
+export let form:formError;
+export let data: App.PageData;
 
-
-  // const handleClick = ()=>{
-  //   customBooleanStoreUpdater(booleanKeys.IS_SIGN_IN_OR_SIGN_UP)
-  // }
-
-  $:isPasswordVisible = $booleanStore[booleanKeys.IS_PASSWORD_VISIBLE]
+$:isPasswordVisible = $booleanStore[booleanKeys.IS_PASSWORD_VISIBLE]
 
 const displayError = (fieldName: string) => {
     
@@ -26,15 +21,15 @@ const displayError = (fieldName: string) => {
         return false;
 };
 
-console.log('testing here', displayError('firstname'))
+console.log('testing here', form)
 
 </script>
 
   <div class="sign_up_fields">
 
                        <label for="name">
-                         <span class="label_span_text">Enter first name:</span>
-                         <input class="rounded-md sign_up_name" type="text" name="firstname" id="name" >
+                         <span class="label_span_text">first name:</span>
+                         <input class="rounded-md sign_up_name" type="text" name="firstname" id="firstname"  value={form?.firstname ?? ''} >
                           {#if displayError('firstname')}
                                <div class="error_message">
                                     <p class='form_error'>⚠️ Enter firstname</p>
@@ -43,8 +38,8 @@ console.log('testing here', displayError('firstname'))
                        </label>
 
                        <label for="surname">
-                         <span class="label_span_text">Enter last name:</span>
-                         <input class="rounded-md sign_up_surname" type="text" name="lastname" id="surname">
+                         <span class="label_span_text">last name:</span>
+                         <input class="rounded-md sign_up_surname" type="text" name="lastname" id="lastname"  value={form?.lastname ?? ''}>
                           {#if displayError('lastname')}
                                <div class="error_message">
                                     <p class='form_error'>⚠️ Enter lastname</p>
@@ -53,8 +48,8 @@ console.log('testing here', displayError('firstname'))
                        </label>
 
                        <label for="email">
-                         <span class="label_span_text">Enter email:</span>
-                         <input class="rounded-md sign_up_email" type="email" name="email" id="email" >
+                         <span class="label_span_text">email:</span>
+                         <input class="rounded-md sign_up_email" type="email" name="email" id="email" value={form?.email ?? ''} >
                            {#if displayError('email')}
                                <div class="error_message">
                                     <p class='form_error'>⚠️ Enter email</p>
@@ -63,10 +58,10 @@ console.log('testing here', displayError('firstname'))
                        </label>
 
                        <label for="password">
-                         <span class="label_span_text">Enter password:</span>
+                         <span class="label_span_text">password:</span>
                          <input class="rounded-md sign_up_password" 
                          type={isPasswordVisible ? "text" : "password"}
-                         name="password" id="password">
+                         name="password" id="password" value={form?.password ?? ''}>
 
                          {#if isPasswordVisible}
                              <span class="togglePasswordDisplayIcon_signUp" on:keydown={()=>('x')} on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_PASSWORD_VISIBLE)}>
@@ -85,7 +80,6 @@ console.log('testing here', displayError('firstname'))
                                  />
                              </span>
                          {/if}
-
                           {#if displayError('password')}
                                <div class="error_message">
                                     <p class='form_error'>⚠️ Enter password</p>
@@ -94,10 +88,10 @@ console.log('testing here', displayError('firstname'))
                        </label>
 
                        <label for="confirmpassword">
-                         <span class="label_span_text">Confirm password:</span>
+                         <span class="label_span_text">confirm password:</span>
                              <input class="rounded-md sign_up_confirm_password" 
                              type={isPasswordVisible ? "text" : "password"}
-                             name="confirmpassword" id="confirmpassword" >
+                             name="confirmpassword" id="confirmpassword" value={form?.confirmpassword ?? ''} >
                               {#if displayError('confirmpassword')}
                                <div class="error_message">
                                     <p class='form_error'>⚠️ Password must match</p>
