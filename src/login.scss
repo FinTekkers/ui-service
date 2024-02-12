@@ -107,17 +107,17 @@
               width: 30vw;
 
               .sign_up_fields{
-                // width: 35vw;
                 display: grid;
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
+                width: 35vw;
                label{
                  input{
                    width: 100%;
                  }
                }
 
-               label:nth-child(n){
-                grid-column: 1/-1;
+               label:nth-child(1){
+                grid-area: 1/1/1/2;
 
                }
               }
@@ -157,7 +157,7 @@
 
 
               .form_headline{
-                padding-top: 1em;
+                padding-top: 0;
               }
 
 
