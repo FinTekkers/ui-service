@@ -1,7 +1,9 @@
 <script lang="ts">
   // internal imports
-import {customBooleanStoreUpdater, booleanStore} from '../../store/store';
-import {booleanKeys} from "$lib/Util"
+import { booleanStore} from '../../store/store';
+import { page } from '$app/stores';  
+import {booleanKeys} from "$lib/Util";
+import {goto} from '$lib/helper';
 
 $:isSignInOrSignUp = $booleanStore[booleanKeys.IS_SIGN_IN_OR_SIGN_UP]
 </script>
@@ -16,9 +18,22 @@ $:isSignInOrSignUp = $booleanStore[booleanKeys.IS_SIGN_IN_OR_SIGN_UP]
               elit. Fugit, fugiat ullam?
             </p>
             {#if isSignInOrSignUp}
-            <button on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_SIGN_IN_OR_SIGN_UP)}>→ Sign In</button>
+            <button >→ Sign Up</button>
             {:else}
-            <button on:click={()=>customBooleanStoreUpdater(booleanKeys.IS_SIGN_IN_OR_SIGN_UP)}>→ Sign Up</button>
+            <button type="button" on:click={()=>{
+              if($page.url.pathname === "/register"){
+                goto("/login")
+              }
+
+              if($page.url.pathname === "/login"){
+                goto("/register")
+              }
+              }}>→ {#if $page.url.pathname == "/register"}
+                    Sign in
+                    {:else}
+                    Sign up
+                   {/if}
+            </button>
             {/if}
           </div>
 </div>
