@@ -4,7 +4,8 @@
   import LoginForm from "../../components/login/LoginForm.svelte";
   import SignInForm from "../../components/login/SignInForm.svelte";
   import {booleanStore} from '../../store/store';
-  import {booleanKeys} from "$lib/Util"
+  import {booleanKeys} from "$lib/Util";
+  import {page} from "$app/stores";
   export let data:App.PageData;
   export let form:App.Error;
 
@@ -31,9 +32,8 @@
             <div class="form_container">
                 <h1 class="form_headline">Sign In</h1>
                
-                  <SignInForm data={data} form={form} />
-              
-                    </div>
+                  <SignInForm data={data} form={form}  />
+          
              </div>
               </div>
       </div>
