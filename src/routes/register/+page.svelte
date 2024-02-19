@@ -34,9 +34,8 @@
                   <SignUpForm data={data} form={form} />
               
                     </div>
+             </div>               
              </div>
-               
-              </div>
       </div>
     </div>
   </form>
