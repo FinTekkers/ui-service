@@ -2,6 +2,7 @@
 .svelte-kit/
 fin-iu/.svelte-kit/
 .env
+build/
 
 #IDE related folders
 .vscode
