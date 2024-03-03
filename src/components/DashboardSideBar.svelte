@@ -3,7 +3,7 @@
   import Icon from "@iconify/svelte";
   // internal exports
   import {selectedDashboardMenuUpdater} from "../store/store";
-  import { dashboardMenuList } from "$lib/Util";
+      import type { dashboardMenuList } from "$lib/Util";
   import {goto} from "$lib/helper";
   import {dashboardMenuData} from '$lib/uidata';
 
@@ -20,7 +20,7 @@
 {#each Object.entries(dashboardMenuData) as [_menukey, menuValue] }
   
   <div class="p-2 user-menu cursor-pointer"
-    on:keydown={()=>handleKeyDown('HOME')}
+    on:keydown={()=>handleKeyDown('PORTFOLIO')}
     on:click={() => selectedDashboardMenuUpdater(menuValue.location)}
   >
      <Icon
@@ -33,7 +33,7 @@
 
 {/each}
 
-  <div
+  <!-- <div
     class=" user-menu-logout user-menu cursor-pointer"
     on:keydown={()=>handleKeyDown("LOGOUT")}
     on:click={() => {
@@ -48,7 +48,7 @@
       style="width: 20px; height: 20px;"
     />
     <span>Logout</span>
-  </div>
+  </div> -->
 </div>
 
 <style lang="scss">
