@@ -21,73 +21,90 @@
     });
     
     async function plotGraph() {
-        // @ts-ignore
-        const Plotly = await import('plotly.js-dist');
-        const amountByDate = {};
-        let cumulativeSum = 0;
-        
-        data.forEach(bond => {
-            const issueDate = bond.issueDate.toISOString().split('T')[0];
-            const maturityDate = bond.maturityDate.toISOString().split('T')[0];
-            
+    // @ts-ignore
+    const Plotly = await import('plotly.js-dist');
+    const cumulativeSumByYear = {};
+    const cumulativeSumByMaturityYear = {};
+
+    data.forEach(bond => {
+        const issueDate = new Date(bond.issueDate);
+        const maturityDate = new Date(bond.maturityDate);
+        const issueYear = issueDate.getFullYear();
+        const maturityYear = maturityDate.getFullYear();
+        const currentDate = new Date();
+
+        // If maturity date has not passed, add outstanding amount to cumulative sum by issue year
+        if (currentDate <= maturityDate) {
             // @ts-ignore
-            amountByDate[issueDate] = (amountByDate[issueDate] || 0) + bond.outstandingAmount;
+            cumulativeSumByYear[issueYear] = (cumulativeSumByYear[issueYear] || 0) + bond.outstandingAmount;
+        } else {
+            // If maturity date has passed, remove outstanding quantity only if it exists and doesn't make cumulative sum negative
             // @ts-ignore
-            amountByDate[maturityDate] = (amountByDate[maturityDate] || 0) + bond.outstandingAmount;
-        });
-        
-        const dates = Object.keys(amountByDate).sort();
-        const amounts = dates.map(date => {
-            // @ts-ignore
-            cumulativeSum += amountByDate[date];
-            return cumulativeSum;
-        });
-        
-        const trace = {
-            x: dates,
-            y: amounts,
-            type: 'scatter',
-            line: {
-                color: 'rgba(255,255,255,0.9)'
+            if (cumulativeSumByYear[issueYear] && cumulativeSumByYear[issueYear] >= bond.outstandingAmount) {
+                // @ts-ignore
+                cumulativeSumByYear[issueYear] -= bond.outstandingAmount;
             }
-        };
-        
-        const layout = {
+        }
+        // Subtract outstanding amount from cumulative sum by maturity year only if it doesn't make the cumulative sum negative
+        if (cumulativeSumByMaturityYear[maturityYear] && cumulativeSumByMaturityYear[maturityYear] >= bond.outstandingAmount) {
+            cumulativeSumByMaturityYear[maturityYear] -= bond.outstandingAmount;
+        }
+    });
+
+    const years = Array.from(new Set([...Object.keys(cumulativeSumByYear), ...Object.keys(cumulativeSumByMaturityYear)])).sort();
+    let cumulativeSum = 0;
+    const cumulativeSums = years.map(year => {
+        // Cumulative sum is the sum of outstanding amounts by year
+        cumulativeSum = (cumulativeSumByYear[year] || 0) + (cumulativeSumByMaturityYear[year] || 0);
+        return cumulativeSum;
+    });
+
+    const trace = {
+        x: years,
+        y: cumulativeSums,
+        type: 'scatter',
+        line: {
+            color: 'rgba(255,255,255,0.9)'
+        }
+    };
+
+    const layout = {
+        title: {
+            text: 'Cumulative Sum of Outstanding Amounts by Year',
+            font: {
+                color: '#fff'
+            }
+        },
+        xaxis: {
             title: {
-                text: 'Cumulative Sum of Outstanding Amounts Over Time',
+                text: 'Year',
                 font: {
                     color: '#fff'
                 }
             },
-            xaxis: {
-                title: {
-                    text: 'Date',
-                    font: {
-                        color: '#fff'
-                    }
-                },
-                tickfont: {
+            tickfont: {
+                color: '#fff'
+            }
+        },
+        yaxis: {
+            title: {
+                text: 'Cumulative Sum of Outstanding Amount',
+                font: {
                     color: '#fff'
                 }
             },
-            yaxis: {
-                title: {
-                    text: 'Cumulative Sum of Outstanding Amount',
-                    font: {
-                        color: '#fff'
-                    }
-                },
-                tickfont: {
-                    color: '#fff'
-                }
-            },
-            // Setting the dark theme
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            paper_bgcolor: '#258ea8'
-        };
-        
-        Plotly.newPlot('plot', [trace], layout);
-    }
+            tickfont: {
+                color: '#fff'
+            }
+        },
+        // Setting the dark theme
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: '#258ea8'
+    };
+
+    Plotly.newPlot('plot', [trace], layout);
+}
+
     
     function toggleGraphVisibility() {
         graphVisible = !graphVisible;
