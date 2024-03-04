@@ -1,6 +1,6 @@
 #Svelte kit build files
 .svelte-kit/
-fin-iu/.svelte-kit/
+build/
 .env
 
 #IDE related folders
