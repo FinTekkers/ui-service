@@ -5,6 +5,9 @@
 	"/contactus": [
 		"src/routes/contactus/+page.server.ts"
 	],
+	"/data": [
+		"src/routes/data/+page.server.ts"
+	],
 	"/login": [
 		"src/routes/login/+page.server.ts"
 	],
