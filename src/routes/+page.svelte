@@ -4,7 +4,7 @@
   import LandingOverview from "../components/LandingSection.svelte";
   import AboutSection from "../components/OurFeatureSection.svelte";
   import VideoSection from "../components/VideoSection.svelte";
-  import GraphSection from "../components/GraphSection.svelte";
+  // import GraphSection from "../components/GraphSection.svelte";
 
   export let data: import("./$types").PageData;
 </script>
@@ -12,7 +12,7 @@
 <div class="landing_page_overlay">
   <LandingOverview />
   <LandingSection />
-  <GraphSection />
+  <!-- <GraphSection /> -->
   <AboutSection />
   <VideoSection />
   <Footer />
