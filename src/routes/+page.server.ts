@@ -1,10 +1,8 @@
-import { fail, redirect } from "@sveltejs/kit";
 import * as Yup from 'yup';
 
 import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import { PositionFilterOperator } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb";
 import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
 
@@ -24,8 +22,6 @@ export const actions = {
     } catch (error) {
       console.log('something went wrong', error)
     }
-
-
   }
 }
 
@@ -41,9 +37,6 @@ export async function load() {
   );
 
   var securities = await securityService.searchSecurityAsOfNow(positionFilter);
-  // console.log({securities})
-
-  // assert(securities.length > 0);
   let results = [];
 
   //Map results into list of maps -> Date, Amount
@@ -87,8 +80,6 @@ export async function load() {
       }
     }
   }
-
-  // console.log({results});
 
   return { results };
 }
