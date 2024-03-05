@@ -1,9 +1,9 @@
 <script lang="ts">
     export let rows: Array<{
       cusip: string;
-      issueDate: string;
+      issueDate: Date;
       outstandingAmount: string;
-      maturityDate: string;
+      maturityDate: Date;
     }>;
   </script>
   
