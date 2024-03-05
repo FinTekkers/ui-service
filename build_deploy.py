@@ -67,10 +67,8 @@ def deploy_code_to_instance(instance_id: str) -> bool:
         # Set the port to be 443. Note this is running HTTP server but running on HTTPS port.
         # The load balancer on AWS will add the encryption/certificate termination and forward
         # to this port. We could expose to port 80, but the broker is already using that port
-        "sudo PORT=443",
-        "sudo ORIGIN=*",
         # Run the production server
-        "sudo pm2 start ui-service/build/index.js",
+        "sudo PORT=443 ORIGIN=* pm2 start ui-service/build/index.js",
     ]
 
     ssh_connect_with_retry(ssh, ip_address, 0)
@@ -83,7 +81,7 @@ def deploy_code_to_instance(instance_id: str) -> bool:
 
 
 if __name__ == "__main__":
-    from .build_createEC2 import create_instance
+    from build_createEC2 import create_instance
 
     instance_id = create_instance()
     result = deploy_code_to_instance(instance_id)
