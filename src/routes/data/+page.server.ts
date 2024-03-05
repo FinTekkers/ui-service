@@ -1,32 +1,21 @@
-// +page.server.ts
-
+import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
+import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
 import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
-import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
-import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
-import { TransactionService } from "@fintekkers/ledger-models/node/wrappers/services/transaction-service/TransactionService";
-import Transaction from "@fintekkers/ledger-models/node/wrappers/models/transaction/transaction";
-import { DecimalValueProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb";
-import { LocalDateProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_date_pb";
-import * as uuid from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
-import { TransactionTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/transaction/transaction_type_pb";
-import { PriceProto } from "@fintekkers/ledger-models/node/fintekkers/models/price/price_pb";
-import { TransactionProto } from "@fintekkers/ledger-models/node/fintekkers/models/transaction/transaction_pb";
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
   const now = dt.ZonedDateTime.now();
   const portfolioService = new PortfolioService();
   const securityService = new SecurityService();
-  const transactionService = new TransactionService();
 
   // Fetching portfolio data
   const filterPortfolio: PositionFilter = new PositionFilter();
   filterPortfolio.addEqualsFilter(FieldProto.PORTFOLIO_NAME, "Federal Reserve SOMA Holdings");
 
-  const portfolioData = portfolioService.searchPortfolio(now.toProto(), filterPortfolio)
+  const portfolioData = await portfolioService.searchPortfolio(now.toProto(), filterPortfolio)
     .then((portfolios) => {
       const results = portfolios.map((portfolio) => {
         return {
