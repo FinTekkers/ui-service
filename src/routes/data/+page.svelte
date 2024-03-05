@@ -6,12 +6,11 @@
     import { dashboardMenuList } from "$lib/Util";
     import { selectedDashboardMenu } from "../../store/store";
     export let data: import("./$types").PageData;
-    // Initialize selectedDashboardMenu with default value (e.g., Dashboard)
     selectedDashboardMenu.set(dashboardMenuList.PORTFOLIO);
   
     // Function to handle menu selection
     const handleMenuSelection = (event: CustomEvent<any>) => {
-      const menu: string = event.detail; // Extract the menu from event.detail
+      const menu: string = event.detail;
       selectedDashboardMenu.set(menu);
     };
   </script>
@@ -19,17 +18,6 @@
   <div class="w-screen h-full flex">
     <DashboardSidebar on:menuSelect={handleMenuSelection} />
     <div class="h-full w-screen dashboard-container">
-      <!-- {#if $obrPromptBoolean}
-        <ObrLanding />
-      {:else} -->
-      <!-- <OBRPrompt obrStepNumber={1} obrCardPosition='obr_stepone' /> -->
-      <!-- {/if} -->
-      
-      <!-- {:else if $selectedDashboardMenu == dashboardMenuList.DASHBOARD}
-        <div class="dashboard-menu">
-          Dashboard
-          <a href="/security/2">→✅</a>
-        </div> -->
       {#if $selectedDashboardMenu === dashboardMenuList.PORTFOLIO}
       <Portfolio rows={Array.isArray(data.portfolioData) ? data.portfolioData : [data.portfolioData]} />
   
