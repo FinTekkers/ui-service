@@ -8,7 +8,6 @@ import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portf
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 const { FieldProto } = pkg;
 
-
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
   const now = dt.ZonedDateTime.now();
