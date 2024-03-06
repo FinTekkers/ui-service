@@ -234,7 +234,7 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "TRANSACTION",
         navigateTo: "TRANSACTION",
         style:"p-2 user-menu cursor-pointer",
-        iconName: "solar:folder-security-bold",
+        iconName: "tabler:transaction-dollar",
         menuName:"Transaction"
     },
 
