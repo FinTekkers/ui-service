@@ -1,13 +1,9 @@
-    export enum dashboardMenuList {
-        // HOME = "HOME_PAGE",
-        // DASHBOARD = "DASHBOARD",
-        PORTFOLIO = "PORTFOLIO",
-        TRANSACTION = "TRANSACTION",
-        POSITION = "POSITION",
-        // ACCOUNT = "ACCOUNT",
-        // LOGOUT = "LOGOUT",
-        SECURITY = "SECURITY"
-    }
+export enum dashboardMenuList {
+    PORTFOLIO = "PORTFOLIO",
+    TRANSACTION = "TRANSACTION",
+    POSITION = "POSITION",
+    SECURITY = "SECURITY"
+}
 
 export enum booleanKeys{
   IS_SIDE_NAV_ACTIVE = "IS_SIDE_NAV_ACTIVE",
