@@ -10,6 +10,5 @@ export async function load() {
   const portfolios = await FetchPortfolio("Federal Reserve SOMA Holdings");
   const security = await FetchSecurity("Fixed Income", "US Government");
   const positions = await FetchPosition();
-
   return { security, portfolios, transactions, positions };
 }

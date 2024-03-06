@@ -127,9 +127,8 @@
     }
 
     .contact{
-      grid-row: 6/6;
+      grid-row: 5/6;
           @include flex(row, flex-start, flex-start, 1em);
-
     }
   }
 
@@ -232,6 +231,7 @@
           width: 100%;
           height: 50vh;
           margin-top: 2em;
+          display: none;
 
           :is(ul) {
             @include flex(column, center, center, 3em);
@@ -242,9 +242,11 @@
               width: 100%;
               @include flex(row, flex-start, center, 0.4em);
 
+
               &:last-child {
                 @include flex(row, flex-start, center, 0.4em);
                 margin-left: 0;
+
               }
             }
           }

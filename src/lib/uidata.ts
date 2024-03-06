@@ -198,22 +198,6 @@ TODO - Need to write the Java server script
 }]
 
 export const dashboardMenuData:dashboardMenuType= {
-    // home:{
-    //     location: "HOME",
-    //     navigateTo: "HOME",
-    //     style:"p-2 user-menu cursor-pointer",
-    //     iconName: "material-symbols:home",
-    //     menuName:"Home"
-    // },
-
-    // dashboard:{
-    //     location: "DASHBOARD",
-    //     navigateTo: "DASHBOARD",
-    //     style:"p-2 user-menu cursor-pointer",
-    //     iconName: "ic:baseline-dashboard",
-    //     menuName:"Dashboard"
-    // },
-
     portfolio:{
         location: "PORTFOLIO",
         navigateTo: "PORTFOLIO",
@@ -245,12 +229,4 @@ export const dashboardMenuData:dashboardMenuType= {
         iconName: "solar:folder-security-bold",
         menuName:"Position"
     },
-
-    // account:{
-    //     location: "ACCOUNT",
-    //     navigateTo:"ACCOUNT",
-    //     style:"p-2 user-menu cursor-pointer",
-    //     iconName: "ant-design:setting-filled",
-    //     menuName:"Account"
-    // },
 }
