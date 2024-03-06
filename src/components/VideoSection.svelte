@@ -79,7 +79,7 @@
                 width: 100%;
                 padding-bottom: 56.25%;
                 overflow: hidden;
-                left: -1%;
+                left: 0%;
             }
 
             .video_container {

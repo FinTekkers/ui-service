@@ -10,9 +10,9 @@ $:isSignInOrSignUp = $booleanStore[booleanKeys.IS_SIGN_IN_OR_SIGN_UP]
 
 <div class="branding-image p-2 rounded-xl">
           <div
-            class="branding-image-overlay backdrop-blur-lg bg-black/30 rounded-lg"
+            class="branding-image-overlay"
           >
-            <h1 class="logo">FINTEKKERS</h1>
+            <h1 class="logo" on:keydown={()=>'x'} on:click={()=>  goto("/")}>FINTEKKERS</h1>
             <p>
               Thousands of Lorem ipsum dolor sit amet consectetur adipisicing
               elit. Fugit, fugiat ullam?
@@ -40,4 +40,7 @@ $:isSignInOrSignUp = $booleanStore[booleanKeys.IS_SIGN_IN_OR_SIGN_UP]
 
 <style lang="scss">
  @import "../../style.scss";
+
+
+
 </style>
