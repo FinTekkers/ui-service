@@ -2,10 +2,13 @@
 <script lang="ts">
     import Portfolio from "../../components/widgets/PortfolioGrid.svelte";
     import Security from "../../components/widgets/SecurityGrid.svelte";
+    import Transaction from "../../components/widgets/TransactionGrid.svelte";
     import DashboardSidebar from "../../components/DashboardSideBar.svelte";
     import { dashboardMenuList } from "$lib/Util";
     import { selectedDashboardMenu } from "../../store/store";
     export let data: import("./$types").PageData;
+
+    // console.log(data.transactions)
     selectedDashboardMenu.set(dashboardMenuList.PORTFOLIO);
   
     // Function to handle menu selection
@@ -19,10 +22,11 @@
     <DashboardSidebar on:menuSelect={handleMenuSelection} />
     <div class="h-full w-screen dashboard-container">
       {#if $selectedDashboardMenu === dashboardMenuList.PORTFOLIO}
-      <Portfolio rows={Array.isArray(data.portfolioData) ? data.portfolioData : [data.portfolioData]} />
-  
+      <Portfolio rows={Array.isArray(data.portfolios) ? data.portfolios : [data.portfolios]} />
       {:else if $selectedDashboardMenu === dashboardMenuList.SECURITY}
-        <Security rows={Array.isArray(data.securityData) ? data.securityData : [data.securityData]} />
+        <Security rows={Array.isArray(data.security) ? data.security : [data.security]} />
+        {:else if $selectedDashboardMenu === dashboardMenuList.TRANSACTION}
+        <Transaction rows={Array.isArray(data.transactions) ? data.transactions : [data.transactions]} />
       {/if}
     </div>
   </div>
