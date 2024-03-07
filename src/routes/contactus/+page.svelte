@@ -23,7 +23,6 @@ const handleChange = (fieldName: string, value: string) => {
       store = fieldName;
       return store
   }) 
-
 };
 
 
@@ -109,7 +108,7 @@ const handleClear = ()=>{
                         <button class="clear_form" on:click={handleClear}>Clear</button>
                     </label>
                     <label for="">
-                    <input class="submit_btn" type="submit" /> 
+                        <input class="submit_btn" type="submit" /> 
                     </label>
                     
                 
@@ -235,8 +234,7 @@ const handleClear = ()=>{
                     grid-area: 5/2/6/3;
                
                 }
-               
-            
+                    
                 input, textarea{
                     color: $grey;
                     padding-left: 1em;
@@ -251,7 +249,7 @@ const handleClear = ()=>{
                 }
 
             }
-             .submit_btn{
+            .submit_btn{
                     margin-top: 2em;
                     grid-column:1/1;
                     grid-row: 5/5;
@@ -267,7 +265,7 @@ const handleClear = ()=>{
                     &:hover{
                         background-color: $primary-button;
                     }
-                }
+            }
 
              .clear_form{
                 @extend .button;
@@ -338,5 +336,73 @@ const handleClear = ()=>{
 
     }
 
+
+    @media screen and (max-width: $breakingpoint_mobile){
+
+
+    .contact-us-text{
+        padding: 1em;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(8, 50px);
+
+
+            h1{
+                font-size: 2rem;
+                color: $white;
+                width: 80vw;
+                padding-top: 0.2em;
+           
+            }
+
+           :is(p){
+                color:$white;
+                grid-area: 6/2/6/4;
+
+            }
+
+     
+
+    }
+
+           .contact-us-form{
+             grid-template-columns: repeat(8, 1fr);
+
+             
+                
+            form{
+                grid-column: 1/-1;
+                grid-row: 2/7;
+                display: grid;
+                grid-template-columns: repeat(auto-fit,1fr);
+                grid-template-rows: repeat(8,100px);
+                gap: 1em;
+                width: 80vw;
+                margin-top: 2em;
+
+
+                .submit_btn{
+                    padding: 0;
+                    margin: 0;
+                }
+
+
+                :is(label){
+
+                    &:nth-child(4){
+                      grid-column: 1/-1;
+                        
+                    }
+
+
+                }
+
+            
+            }
+
+            }
+          
+    
+    }
 
 </style>
