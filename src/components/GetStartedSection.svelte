@@ -320,14 +320,23 @@
                 grid-template-columns: repeat(3,1fr);
                 border-bottom: solid 1px rgba(255, 255, 255, 0.229);
                 padding-bottom: 3em;
-     
+
+                    .key-advantage-feature{
+                        height: 25vh;
+                        width: 29vw;
+                        font-size: .8rem;
+                    }
+
                 }
 
 
-               :is(p){
-                    width: 70%;
+ß
 
-                }
+
+                :is(p){
+                        width: 70%;
+
+                    }
 
 
            
