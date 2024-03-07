@@ -1,15 +1,13 @@
-import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
-import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
-import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";
-import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
+import { FetchTransaction } from "../../lib/transactions"
+import { FetchPortfolio } from "../../lib/portfolios"
+import { FetchSecurity} from "../../lib/security"
+
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
-  const now = dt.ZonedDateTime.now();
-  const portfolioService = new PortfolioService();
-  const securityService = new SecurityService();
+  const transactions = await FetchTransaction();
+  const portfolios = await FetchPortfolio("Federal Reserve SOMA Holdings");
+  const security = await FetchSecurity("Fixed Income", "US Government");
 
   // Fetching portfolio data
   const filterPortfolio: PositionFilter = new PositionFilter();
