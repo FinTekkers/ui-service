@@ -8,7 +8,7 @@
   </script>
   
   <div class="portfolio_container container mx-auto shadow px-10 py-7">
-    <h2 class="text-3xl font-extrabold my-3">Security Data</h2>
+    <h2 class="text-3xl font-extrabold my-3">Security</h2>
     <table class="min-w-full text-left table-fixed">
       <thead class="border-b border-slate-400">
         <tr>
