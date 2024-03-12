@@ -24,7 +24,7 @@ export async function FetchPosition(): Promise<PositionData[]> {
     filter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
 
     const request = new QueryPositionRequestProto()
-        .setFieldsList([FieldProto.ISSUE_DATE])
+        .setFieldsList([FieldProto.TRADE_DATE])
         .setMeasuresList([MeasureProto.DIRECTED_QUANTITY]);
 
     try {
