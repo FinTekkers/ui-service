@@ -1,5 +1,5 @@
 import * as ps from '@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService';
-import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/hardcoded.position';
+import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
 import * as positionFilter from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 import { QueryPositionRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_request_pb';
@@ -35,11 +35,11 @@ export async function FetchPosition(): Promise<PositionData[]> {
             const measures: MeasureValue = {};
 
             for (let field of element.getFields()) {
-                fields[field] = element.getFieldValue(field);
+                fields[field.getField()] = element.getFieldValue(field.getField());
             }
 
             for (let field of element.getMeasures()) {
-                measures[field] = element.getMeasureValue(field);
+                measures[field.getMeasure()] = element.getMeasureValue(field.getMeasure());
             }
 
             return { fields, measures };
