@@ -45,11 +45,11 @@ export async function FetchPosition(): Promise<PositionData[]> {
             return { fields, measures };
         });
 
-        console.log(positionsData);
+        // console.log(positionsData);
 
         return positionsData;
     } catch (error) {
         console.error('Error fetching position data:', error);
-        throw error; // Re-throw the error so that the caller can handle it
+        throw error;
     }
 }
