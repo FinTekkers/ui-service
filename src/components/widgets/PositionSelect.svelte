@@ -78,7 +78,6 @@
   option {
     padding: 0.5rem;
   }
-
   .position-button {
     background: $primary-color;
   }
