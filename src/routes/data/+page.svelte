@@ -3,7 +3,7 @@
   import Portfolio from "../../components/widgets/PortfolioGrid.svelte";
   import Security from "../../components/widgets/SecurityGrid.svelte";
   import Transaction from "../../components/widgets/TransactionGrid.svelte";
-  import PositionInput from "../../components/widgets/PositionInput.svelte";
+  import PositionSelect from "../../components/widgets/PositionSelect.svelte";
   import DashboardSidebar from "../../components/DashboardSideBar.svelte";
   import { dashboardMenuList } from "$lib/Util";
   import { selectedDashboardMenu } from "../../store/store";
@@ -39,8 +39,7 @@
           : [data.transactions]}
       />
     {:else if $selectedDashboardMenu === dashboardMenuList.POSITION}
-      <!-- Change to Positions menu item -->
-      <PositionInput />
+      <PositionSelect positions={data.positions} />
     {/if}
   </div>
 </div>
