@@ -16,7 +16,7 @@
               {console.log('waiting for onboarding component')}
           {/if}
 
-          {#if $selectedDashboardMenu == dashboardMenuList.HOME}
+          <!-- {#if $selectedDashboardMenu == dashboardMenuList.HOME}
               <div class="dashboard-menu">Home
                   <a href="/security/1" >→✅</a>
               </div>
@@ -32,7 +32,7 @@
               </div>
           {:else if $selectedDashboardMenu == dashboardMenuList.LOGOUT}
               <div class="dashboard-menu">Goodbye</div>
-          {/if}
+          {/if} -->
 </div>
 
 <style lang="scss">
