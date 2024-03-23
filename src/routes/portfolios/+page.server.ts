@@ -4,9 +4,7 @@ import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/servic
 import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portfolio/portfolio";
-
-import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
-const { FieldProto } = pkg;
+import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
