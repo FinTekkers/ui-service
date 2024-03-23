@@ -136,6 +136,8 @@
   @import "../style.scss";
   .graph {
     padding: 20px;
+    background-color: $bgc-color;
+    border-top: solid 1px $bordercoltransp;
   }
   .intro-chart {
     text-align: center;
