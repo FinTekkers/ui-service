@@ -1,6 +1,7 @@
 import * as Yup from 'yup';
 
-import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+const { FieldProto } = pkg;
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
