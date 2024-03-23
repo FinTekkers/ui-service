@@ -70,15 +70,19 @@
   opacity: 80%;
 
   .logo {
-    color: $white;
+    color: $primary-color;
   }
 
   p {
     width: 70%;
+    color: $primary-color;
+
   }
 
   button{
     font-weight: bold;
+    color: $primary-color;
+
   }
 }
 }
