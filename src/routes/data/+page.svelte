@@ -2,16 +2,18 @@
 <script lang="ts">
     import Portfolio from "../../components/widgets/PortfolioGrid.svelte";
     import Security from "../../components/widgets/SecurityGrid.svelte";
+    import Transaction from "../../components/widgets/TransactionGrid.svelte";
     import DashboardSidebar from "../../components/DashboardSideBar.svelte";
     import { dashboardMenuList } from "$lib/Util";
     import { selectedDashboardMenu } from "../../store/store";
     export let data: import("./$types").PageData;
-    // Initialize selectedDashboardMenu with default value (e.g., Dashboard)
+
+    // console.log(data.transactions)
     selectedDashboardMenu.set(dashboardMenuList.PORTFOLIO);
   
     // Function to handle menu selection
     const handleMenuSelection = (event: CustomEvent<any>) => {
-      const menu: string = event.detail; // Extract the menu from event.detail
+      const menu: string = event.detail;
       selectedDashboardMenu.set(menu);
     };
   </script>
@@ -19,22 +21,12 @@
   <div class="w-screen h-full flex">
     <DashboardSidebar on:menuSelect={handleMenuSelection} />
     <div class="h-full w-screen dashboard-container">
-      <!-- {#if $obrPromptBoolean}
-        <ObrLanding />
-      {:else} -->
-      <!-- <OBRPrompt obrStepNumber={1} obrCardPosition='obr_stepone' /> -->
-      <!-- {/if} -->
-      
-      <!-- {:else if $selectedDashboardMenu == dashboardMenuList.DASHBOARD}
-        <div class="dashboard-menu">
-          Dashboard
-          <a href="/security/2">→✅</a>
-        </div> -->
       {#if $selectedDashboardMenu === dashboardMenuList.PORTFOLIO}
-      <Portfolio rows={Array.isArray(data.portfolioData) ? data.portfolioData : [data.portfolioData]} />
-  
+      <Portfolio rows={Array.isArray(data.portfolios) ? data.portfolios : [data.portfolios]} />
       {:else if $selectedDashboardMenu === dashboardMenuList.SECURITY}
-        <Security rows={Array.isArray(data.securityData) ? data.securityData : [data.securityData]} />
+        <Security rows={Array.isArray(data.security) ? data.security : [data.security]} />
+        {:else if $selectedDashboardMenu === dashboardMenuList.TRANSACTION}
+        <Transaction rows={Array.isArray(data.transactions) ? data.transactions : [data.transactions]} />
       {/if}
     </div>
   </div>

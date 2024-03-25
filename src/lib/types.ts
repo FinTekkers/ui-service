@@ -29,13 +29,10 @@ export type dashboardMenuItemType = {
 export type dahsboardMenuDataType = [string, dashboardMenuItemType]
 
 export interface dashboardMenuType {
-    // home:dashboardMenuItemType,
-    // dashboard:dashboardMenuItemType,
     portfolio:dashboardMenuItemType,
     transaction:dashboardMenuItemType,
     position:dashboardMenuItemType,
     security:dashboardMenuItemType,
-    // account:dashboardMenuItemType
 }
 
 
