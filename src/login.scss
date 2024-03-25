@@ -67,19 +67,22 @@
   justify-content: space-between;
   align-items: flex-start;
   flex-direction: column;
-  @extend .glass_background;
   opacity: 80%;
 
   .logo {
-    color: $white;
+    color: $primary-color;
   }
 
   p {
     width: 70%;
+    color: $primary-color;
+
   }
 
   button{
     font-weight: bold;
+    color: $primary-color;
+
   }
 }
 }
@@ -188,22 +191,45 @@
 
 
   @media screen and (max-width: $breakingpoint_mobile) {
+  .login-container-parent {
+    .login_container{
+      width: 90vw;
 
-      .login_container{
-        width: 90vw !important;
+    .form_container {
+      .sign_up_fields{
+        label{
+          input{
+            font-size: .8rem;
+          height: 3rem;
+
+          }
+
+        }
       }
 
+    }
+    }
+
+  }
+
+      .loginpage_bgc_overlay{
+         .login_container{
+              .branding-form{
+               width: 100%;
+               height: 100%;
+               left: 0;
+            }
+         }
+      } 
       .sign_in_fields{
         input{
           font-size: .8rem;
+
         }
       }
 
-      .sign_up_fields{
-        input{
-          font-size: .8rem;
-        }
-      }
+
+    
 
         form{
                 
@@ -225,14 +251,34 @@
       }
 
       .branding-image{
-        width: 35vw;
+        width: 100%;
+        height: 8vh;
+        position: absolute;
+        background: none;
+        bottom: -12.5%;
+        border: solid 1px $bordercoltransp;
+        padding: 0;
+        margin: 0;
+
+        .branding-image-overlay{
+         background:none;
+         width:100vw;
+         margin:0;
+         display: flex;
+         position: relative;
+
 
         .logo{
           width: 30vw;
           position: absolute;
-          left: 0%;
-          text-align: center;
+          top: 25%;
+          left: 2.5%;
+          transition: color .5s ease-in-out;
+          cursor: pointer;
 
+          &:hover{
+            color: $primary-color;
+          }
         }
 
         p{
@@ -242,9 +288,20 @@
         button{
           width: 30vw;
           position: absolute;
-          left: -5%;
-          bottom: 10%;
+          top: 25%;
+          right:2.5%;
+          text-align: right;
+          transition: all .5s ease-in-out;
+
+          &:hover{
+            color: $primary-color;
+          }
         }
+        }
+        
+
+
+       
       }
 
       .google_OAuth{
@@ -254,6 +311,7 @@
           font-size: .8rem;
         }
       }
+
   }
 
 

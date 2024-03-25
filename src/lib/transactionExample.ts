@@ -4,7 +4,8 @@ import * as ts from '@fintekkers/ledger-models/node/wrappers/services/transactio
 import * as datetime from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import * as positionFilter from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import type Transaction from '@fintekkers/ledger-models/node/wrappers/models/transaction/transaction';
-import { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
+import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+const { FieldProto } = pkg;
 
 const transactionService = new ts.TransactionService();
 const now = datetime.ZonedDateTime.now();
