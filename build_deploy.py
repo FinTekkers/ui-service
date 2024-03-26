@@ -44,10 +44,10 @@ def deploy_code_to_instance(instance_id: str) -> bool:
     commands = [
         # "sudo su",
         "sudo yum install git -y",
-        'sudo yum groupinstall "Development Tools"',  # Required to install g++ which is required by some npm packages. This step will take a while
+        'sudo yum groupinstall "Development Tools" -y',  # Required to install g++ which is required by some npm packages. This step will take a while
         "sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash",
         "source ~/.bashrc",
-        "nvm install 21.6.1",
+        "nvm install 21.6.1",  # Forcing 21.6.1, note its used in the links below
         # install make to be able to install npm packages
         "sudo yum install make -y",  ##Required sudo
         # test node is installed
@@ -59,18 +59,18 @@ def deploy_code_to_instance(instance_id: str) -> bool:
         "npm i -g pm2",
         "sudo ln -s /home/ec2-user/.nvm/versions/node/v21.6.1/bin/pm2 /usr/bin/pm2",
         # Clone code
-        "git clone https://github.com/FinTekkers/ui-service",
-        "chmod 777 ui-service",
-        "cd ui-service",
+        "git clone https://github.com/FinTekkers/ui-service && sleep 10",
+        "chmod 777 /home/ec2-user/ui-service",
         "pwd",
-        "npm install",
+        "pwd",
+        "cd /home/ec2-user/ui-service;npm install",
         # Build the production server, the variables are required to build
-        "sudo GOOGLE_CLIENT_ID=MISSING GOOGLE_CLIENT_SECRET=MISSING npm run build",
+        "cd /home/ec2-user/ui-service;GOOGLE_CLIENT_ID=MISSING GOOGLE_CLIENT_SECRET=MISSING npm run build",
         # Set the port to be 443. Note this is running HTTP server but running on HTTPS port.
         # The load balancer on AWS will add the encryption/certificate termination and forward
         # to this port. We could expose to port 80, but the broker is already using that port
         # Run the production server
-        "sudo PORT=443 ORIGIN=* pm2 start ui-service/build/index.js",
+        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=* pm2 start "npm run preview"',  # Needs sudo to expose host
     ]
 
     ssh_connect_with_retry(ssh, ip_address, 0)
