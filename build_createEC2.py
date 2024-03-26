@@ -18,7 +18,7 @@ ec2_client: client = get_ec2_client()
 
 # Step 2: Launch an EC2 instance
 image_id = "ami-0d8f91fa8ecdc3b58"  # Linux Amazon 2023
-instance_type = "t4g.small"
+instance_type = "t4g.medium"
 
 # SSH security group
 ssh_security_group_id = get_security_group_id("fintekkers-ec2-ssh")
