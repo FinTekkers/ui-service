@@ -49,7 +49,7 @@
 
   .dashboard-container {
     background-color: white;
-    @include flex(column, center, center, 0);
+    // @include flex(column, center, center, 0);
 
     .dashboard-menu {
       width: 98%;

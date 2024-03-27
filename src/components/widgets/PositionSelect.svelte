@@ -1,84 +1,113 @@
 <!-- components/widgets/PositionSelect.svelte -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
+  import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
 
-  export let positions: any[]; // Define a prop to receive positions data
+  export let positions: any[]; 
 
-  const dispatch = createEventDispatcher();
-
-  let selectedField: any;
-  let selectedMeasure: any;
+  let selectedFields: FieldProto[] = [];
+  let selectedMeasures: MeasureProto[] = [];
 
   // Function to handle fetching position data
   const fetchPositionData = () => {
-    // Check if both field and measure are selected
-    if (selectedField && selectedMeasure) {
-      // Dispatch an event with selected field and measure
-      dispatch("fetch", { field: selectedField, measure: selectedMeasure });
+    // Check if both fields and measures are selected
+    if (selectedFields.length > 0 && selectedMeasures.length > 0) {
+
     } else {
-      console.error("Please select both field and measure.");
+      console.error("Please select both fields and measures.");
       // You can handle the error or provide feedback to the user here
     }
   };
 
-  function formatDollar(number: number) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(number);
+  // Function to toggle selection of a field
+  function toggleSelectedField(key: string) {
+    if (selectedFields.includes(key)) {
+      selectedFields = selectedFields.filter((field) => field !== key);
+    } else {
+      selectedFields = [...selectedFields, key];
+    }
   }
 
-  function formatDate(dateString: string) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US");
+  // Function to toggle selection of a measure
+  function toggleSelectedMeasure(key: string) {
+    if (selectedMeasures.includes(key)) {
+      selectedMeasures = selectedMeasures.filter((measure) => measure !== key);
+    } else {
+      selectedMeasures = [...selectedMeasures, key];
+    }
   }
 </script>
 
-<div class="position-select-container">
-  <select class="text-black px-4" bind:value={selectedField}>
-    {#each positions as position}
-      <option>{formatDate(position.fields["30"])}</option>
-    {/each}
-  </select>
-  <select class="text-black w-36" bind:value={selectedMeasure}>
-    {#each positions as position}
-      <option>{formatDollar(position.measures["1"])}</option>
-    {/each}
-  </select>
-  <button on:click={fetchPositionData} class="py-2 px-6 text-white border border-gray-500 position-button"
-    >Fetch position</button
-  >
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div class="position-select-container flex flex-col sm:flex-row gap-3">
+    <div class="text-black">
+      <h4>Fields:</h4>
+      <div class="h-48 overflow-auto w-[300px]">
+        {#each Object.entries(FieldProto) as [key, value]}
+          <label>
+            <input
+              type="checkbox"
+              checked={selectedFields.includes(key)}
+              on:change={() => toggleSelectedField(key)}
+            />
+            {key}
+          </label>
+        {/each}
+      </div>
+    </div>
+    <div class="text-black">
+      <h4>Measures:</h4>
+      {#each Object.entries(MeasureProto) as [key, value]}
+        <label>
+          <input
+            type="checkbox"
+            checked={selectedMeasures.includes(key)}
+            on:change={() => toggleSelectedMeasure(key)}
+          />
+          {key}
+        </label>
+      {/each}
+    </div>
+  </div>
 </div>
+
+<button
+  on:click={fetchPositionData}
+  class="py-2 px-6 text-white border border-gray-500 position-button"
+  >Fetch position</button
+>
 
 <style lang="scss">
   @import "../../style.scss";
   .position-select-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 400px;
-    margin: 0 auto;
+    margin: 10px;
   }
 
-  select {
-    width: 100%;
+  h4 {
+    margin: 10px 0;
+  }
+
+  input[type="checkbox"] {
+    margin-right: 0.5rem;
+  }
+
+  .selected-item {
     padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
     border-radius: 4px;
-    background-color: #f9f9f9;
-    transition: border-color 0.3s ease;
   }
 
-  select:focus {
-    outline: none;
-    border-color: #007bff;
-  }
-
-  option {
-    padding: 0.5rem;
-  }
   .position-button {
     background: $primary-color;
+    padding: 10px 20px;
+    margin: 0 10px;
+    border-radius: 10px;
+  }
+
+  .selections {
+    margin: 10px;
+  }
+
+  .cancel {
+    padding: 2px 10px;
   }
 </style>
