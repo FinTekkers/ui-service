@@ -3,7 +3,6 @@ import { FetchPortfolio } from "$lib/portfolios"
 import { FetchSecurity} from "$lib/security"
 import { FetchPosition } from "$lib/positions";
 
-
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
   const transactions = await FetchTransaction();

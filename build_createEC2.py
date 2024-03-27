@@ -17,8 +17,9 @@ key_pair_name = "fintekkers-test-ec2"
 ec2_client: client = get_ec2_client()
 
 # Step 2: Launch an EC2 instance
-image_id = "ami-0440d3b780d96b29d"  # Linux Amazon 2023
-instance_type = "t2.nano"
+
+image_id = "ami-0d8f91fa8ecdc3b58"  # Linux Amazon 2023
+instance_type = "t4g.small"
 
 # SSH security group
 ssh_security_group_id = get_security_group_id("fintekkers-ec2-ssh")

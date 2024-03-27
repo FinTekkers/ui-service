@@ -1,4 +1,5 @@
-import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+const { FieldProto } = pkg;
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
