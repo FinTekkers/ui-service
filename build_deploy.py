@@ -1,4 +1,14 @@
+from time import sleep
 import boto3
+from fintekkers.devops.aws_account_setup import (
+    get_ec2_client,
+    get_elb_client,
+    get_load_balancer_arn,
+    get_target_group_arn,
+    get_security_group_id,
+)
+
+from build_createEC2 import DEFAULT_PORT, get_running_instance_ids
 
 # get your instance ID from AWS dashboard
 # instance_id = "i-07afe20ed103e6f14"
@@ -82,13 +92,50 @@ def deploy_code_to_instance(instance_id: str) -> bool:
     return True
 
 
+def teardown_old_ec2s(old_instance_ids):
+    if old_instance_ids:
+        # TODO: Deregister them first.
+
+        stop_response = get_ec2_client().stop_instances(InstanceIds=old_instance_ids)
+        stopping_instances = stop_response["StoppingInstances"]
+        print(
+            "Stopping instances:",
+            [instance["InstanceId"] for instance in stopping_instances],
+        )
+    else:
+        print("No instances to stop.")
+
+
+def await_new_instance_on_target_group(new_instance_id):
+    for i in range(
+        10
+    ):  # Currently the health check needs 5 consecutive seccesses to add to the load balancer (could swap this to read from AWS)
+        target_group_arn = get_target_group_arn(DEFAULT_PORT)
+        instances_ids = get_running_instance_ids(target_group_arn)
+
+        if new_instance_id in instances_ids:
+            # Meaning, the web server is healthy and serving traffic
+            return
+        else:
+            sleep(
+                30
+            )  # Currently the web health check has an interval of 30 seconds (could swap this out to read that setting from AWS)
+
+    raise Exception("New instance id is not registered with the load balancer")
+
+
 if __name__ == "__main__":
     from build_createEC2 import create_instance
 
-    instance_id = create_instance()
-    result = deploy_code_to_instance(instance_id)
+    instance_id_map: map = create_instance()
+
+    new_instance_id = instance_id_map["new_instance"]
+    old_instance_ids = instance_id_map["old_instances"]
+    result = deploy_code_to_instance(new_instance_id)
 
     if result:
-        print("Deployed successfully")
+        print("Deployed successfully. Tearing down old instances")
+        await_new_instance_on_target_group(new_instance_id)
+        teardown_old_ec2s(old_instance_ids)
     else:
         print("Deployment failed")
