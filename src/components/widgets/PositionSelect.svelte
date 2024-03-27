@@ -5,8 +5,8 @@
 
   export let positions: any[]; 
 
-  let selectedFields: FieldProto[] = [];
-  let selectedMeasures: MeasureProto[] = [];
+  let selectedFields: any[] = [];
+  let selectedMeasures: any[] = [];
 
   // Function to handle fetching position data
   const fetchPositionData = () => {
