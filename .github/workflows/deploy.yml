@@ -32,7 +32,7 @@ jobs:
     - name: Setup server keypair
       run: | 
         mkdir ~/.aws
-        echo -n $AWS_SERVER_KEYPAIR_BASE64 | base64 -d -o ~/.aws/fintekkers-test-ec2.pem
+        echo -n $AWS_SERVER_KEYPAIR_BASE64 | base64 --decode > ~/.aws/fintekkers-test-ec2.pem
       env:
         AWS_SERVER_KEYPAIR_BASE64: ${{ secrets.AWS_SERVER_KEYPAIR_BASE64 }}   
     - name: Run the script
