@@ -39,5 +39,4 @@ jobs:
       run: python build_deploy.py
     - name: Delete server keypair
       run: | 
-        mkdir ~/.aws
         rm -f ~/.aws/fintekkers-test-ec2.pem
