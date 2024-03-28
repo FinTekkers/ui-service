@@ -14,7 +14,7 @@ defaults:
     # working-directory: ledger-models-python
 
 jobs:
-  publish-pypi:
+  publish-website-to-aws:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
