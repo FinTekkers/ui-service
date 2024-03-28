@@ -75,12 +75,12 @@ def deploy_code_to_instance(instance_id: str) -> bool:
         "pwd",
         "cd /home/ec2-user/ui-service;npm install",
         # Build the production server, the variables are required to build
-        "cd /home/ec2-user/ui-service;GOOGLE_CLIENT_ID=MISSING GOOGLE_CLIENT_SECRET=MISSING npm run build",
+        #TEMP HACK TODO TODO TODO ###############"cd /home/ec2-user/ui-service;GOOGLE_CLIENT_ID=MISSING GOOGLE_CLIENT_SECRET=MISSING npm run build",
         # Set the port to be 443. Note this is running HTTP server but running on HTTPS port.
         # The load balancer on AWS will add the encryption/certificate termination and forward
         # to this port. We could expose to port 80, but the broker is already using that port
         # Run the production server
-        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=* pm2 start "npm run preview"',  # Needs sudo to expose host
+        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=* pm2 start "npm run dev"',  # Needs sudo to expose host; currently running dev because the build fails... unsure why!!!
     ]
 
     ssh_connect_with_retry(ssh, ip_address, 0)
