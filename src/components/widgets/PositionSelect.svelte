@@ -10,26 +10,19 @@
   let selectedFields: any[] = [];
   let selectedMeasures: any[] = [];
 
-  // Function to handle fetching position data
   const fetchPositionData = async () => {
-    // Check if both fields and measures are selected
     if (selectedFields.length > 0 && selectedMeasures.length > 0) {
       try {
-        // Call the FetchPosition function and pass selectedFields and selectedMeasures
         const positionsData = await FetchPosition(selectedFields, selectedMeasures);
         console.log('Position data:', positionsData);
-        // Further processing...
       } catch (error) {
         console.error('Error fetching position data:', error);
-        // Handle error...
       }
     } else {
       console.error('Please select both fields and measures.');
-      // Handle error or provide feedback to the user...
     }
   };
 
-  // Function to toggle selection of a field
   function toggleSelectedField(key: string) {
     if (selectedFields.includes(key)) {
       selectedFields = selectedFields.filter((field) => field !== key);
@@ -38,7 +31,6 @@
     }
   }
 
-  // Function to toggle selection of a measure
   function toggleSelectedMeasure(key: string) {
     if (selectedMeasures.includes(key)) {
       selectedMeasures = selectedMeasures.filter((measure) => measure !== key);
