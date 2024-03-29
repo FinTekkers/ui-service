@@ -18,14 +18,14 @@ interface PositionData {
     measures: MeasureValue;
 }
 
-export async function FetchPosition(): Promise<PositionData[]> {
+export async function FetchPosition(selectedFields: string[], selectedMeasures: string[]): Promise<PositionData[]> {
     const positionService = new ps.PositionService();
     const filter = new positionFilter.PositionFilter();
     filter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
 
     const request = new QueryPositionRequestProto()
-        .setFieldsList([FieldProto.TRADE_DATE])
-        .setMeasuresList([MeasureProto.DIRECTED_QUANTITY]);
+        .setFieldsList(selectedFields.map(field => FieldProto[field as keyof typeof FieldProto]))
+        .setMeasuresList(selectedMeasures.map(measure => MeasureProto[measure as keyof typeof MeasureProto]));
 
     try {
         const results: Position[] = await positionService.search(request);
@@ -44,8 +44,6 @@ export async function FetchPosition(): Promise<PositionData[]> {
 
             return { fields, measures };
         });
-
-        // console.log(positionsData);
 
         return positionsData;
     } catch (error) {
