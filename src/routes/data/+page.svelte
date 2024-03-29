@@ -9,7 +9,7 @@
   import { selectedDashboardMenu } from "../../store/store";
   export let data: import("./$types").PageData;
 
-  console.log(data.positions)
+  // console.log(data.positions)
   selectedDashboardMenu.set(dashboardMenuList.PORTFOLIO);
 
   // Function to handle menu selection
@@ -39,7 +39,7 @@
           : [data.transactions]}
       />
     {:else if $selectedDashboardMenu === dashboardMenuList.POSITION}
-      <PositionSelect positions={data.positions} />
+      <PositionSelect />
     {/if}
   </div>
 </div>

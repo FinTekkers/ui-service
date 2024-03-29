@@ -1,21 +1,31 @@
 <!-- components/widgets/PositionSelect.svelte -->
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+  import { FetchPosition } from "$lib/positions";
 
-  export let positions: any[]; 
+  let positions: any[];
 
   let selectedFields: any[] = [];
   let selectedMeasures: any[] = [];
 
   // Function to handle fetching position data
-  const fetchPositionData = () => {
+  const fetchPositionData = async () => {
     // Check if both fields and measures are selected
     if (selectedFields.length > 0 && selectedMeasures.length > 0) {
-
+      try {
+        // Call the FetchPosition function and pass selectedFields and selectedMeasures
+        const positionsData = await FetchPosition(selectedFields, selectedMeasures);
+        console.log('Position data:', positionsData);
+        // Further processing...
+      } catch (error) {
+        console.error('Error fetching position data:', error);
+        // Handle error...
+      }
     } else {
-      console.error("Please select both fields and measures.");
-      // You can handle the error or provide feedback to the user here
+      console.error('Please select both fields and measures.');
+      // Handle error or provide feedback to the user...
     }
   };
 
@@ -81,6 +91,9 @@
   @import "../../style.scss";
   .position-select-container {
     margin: 10px;
+    // gap: 1rem;
+    // width: 1000px;
+    // margin: 20px auto;
   }
 
   h4 {
@@ -104,6 +117,7 @@
   }
 
   .selections {
+    // padding: 0 40px;
     margin: 10px;
   }
 
