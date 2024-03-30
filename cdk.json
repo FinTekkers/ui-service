@@ -1,3 +1,0 @@
-{
-  "app": "npx vite-node infra/deploy.ts"
-}
