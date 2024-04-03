@@ -7,6 +7,7 @@
   import DashboardSidebar from "../../components/DashboardSideBar.svelte";
   import { dashboardMenuList } from "$lib/Util";
   import { selectedDashboardMenu } from "../../store/store";
+  import Position from "../../components/widgets/PositionGrid.svelte";
   export let data: import("./$types").PageData;
 
   console.log(data.positions)
@@ -40,6 +41,9 @@
       />
     {:else if $selectedDashboardMenu === dashboardMenuList.POSITION}
       <PositionSelect />
+      <Position positions={Array.isArray(data.positions)
+        ? data.positions
+        : [data.positions]} />
     {/if}
   </div>
 </div>

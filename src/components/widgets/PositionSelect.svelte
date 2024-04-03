@@ -3,13 +3,11 @@
   import { createEventDispatcher } from "svelte";
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-  // import { FetchPosition } from "$lib/positions";
 
   let positions: any[];
-  let response: any = null;
 
-  let selectedFields: any[] = [];
-  let selectedMeasures: any[] = [];
+  export let selectedFields: any[] = [];
+  export let selectedMeasures: any[] = [];
 
   function toggleSelectedField(key: string) {
     if (selectedFields.includes(key)) {
@@ -26,21 +24,9 @@
       selectedMeasures = [...selectedMeasures, key];
     }
   }
-
-  // async function fetchPositions() {
-  //   const requestData = {
-  //     fields: selectedFields,
-  //     measures: selectedMeasures
-  //   };
-  //   try {
-  //     response = await FetchPosition(requestData);
-  //   } catch (error) {
-  //     console.error("Error fetching positions:", error);
-  //   }
-  // }
 </script>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
   <div class="position-select-container flex flex-col sm:flex-row gap-3">
     <div class="text-black">
       <h4>Fields:</h4>
@@ -73,10 +59,10 @@
   </div>
 </div>
 
-<button
+<!-- <button
   class="py-2 px-6 text-white border border-gray-500 position-button"
   >Fetch position</button
->
+> -->
 
 <style lang="scss">
   @import "../../style.scss";
