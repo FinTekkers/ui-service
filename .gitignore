@@ -8,6 +8,9 @@ build/
 .vscode
 .idea
 
+#can be created by build scripts
+__pycache__/
+
 #Mac related folders
 .DS_Store
 
