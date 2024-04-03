@@ -1,53 +1,41 @@
-import * as ps from '@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService';
+//Models
 import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
 import * as positionFilter from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
-import { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
-import { QueryPositionRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_request_pb';
 import { MeasureProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
+import { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 
-interface FieldValue {
-    [key: string]: any;
-}
+//Requests & Services
+import * as ps from '@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService';
+import { QueryPositionRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_request_pb';
 
-interface MeasureValue {
-    [key: string]: any;
-}
 
-interface PositionData {
-    fields: FieldValue;
-    measures: MeasureValue;
-}
-
-export async function FetchPosition(selectedFields: string[], selectedMeasures: string[]): Promise<PositionData[]> {
+export async function FetchPosition(requestData: any): Promise<any> {
     const positionService = new ps.PositionService();
     const filter = new positionFilter.PositionFilter();
     filter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
-
     const request = new QueryPositionRequestProto()
-        .setFieldsList(selectedFields.map(field => FieldProto[field as keyof typeof FieldProto]))
-        .setMeasuresList(selectedMeasures.map(measure => MeasureProto[measure as keyof typeof MeasureProto]));
+        .setFieldsList(requestData.fields)
+        .setMeasuresList(requestData.measures);
 
     try {
-        const results: Position[] = await positionService.search(request);
-
-        const positionsData: PositionData[] = results.map(element => {
-            const fields: FieldValue = {};
-            const measures: MeasureValue = {};
+        const results = await positionService.search(request);
+        const processedResults = results.map(element => {
+            const processedElement: any = {};
 
             for (let field of element.getFields()) {
-                fields[field.getField()] = element.getFieldValue(field.getField());
+                processedElement[field.getField()] = element.getFieldValue(field.getField());
             }
 
-            for (let field of element.getMeasures()) {
-                measures[field.getMeasure()] = element.getMeasureValue(field.getMeasure());
+            for (let measure of element.getMeasures()) {
+                processedElement[measure.getMeasure()] = element.getMeasureValue(measure.getMeasure());
             }
 
-            return { fields, measures };
+            return processedElement;
         });
 
-        return positionsData;
+        return processedResults;
     } catch (error) {
-        console.error('Error fetching position data:', error);
+        console.error("Error fetching positions:", error);
         throw error;
     }
 }

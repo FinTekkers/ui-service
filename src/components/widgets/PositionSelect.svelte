@@ -3,25 +3,13 @@
   import { createEventDispatcher } from "svelte";
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-  import { FetchPosition } from "$lib/positions";
+  // import { FetchPosition } from "$lib/positions";
 
   let positions: any[];
+  let response: any = null;
 
   let selectedFields: any[] = [];
   let selectedMeasures: any[] = [];
-
-  const fetchPositionData = async () => {
-    if (selectedFields.length > 0 && selectedMeasures.length > 0) {
-      try {
-        const positionsData = await FetchPosition(selectedFields, selectedMeasures);
-        console.log('Position data:', positionsData);
-      } catch (error) {
-        console.error('Error fetching position data:', error);
-      }
-    } else {
-      console.error('Please select both fields and measures.');
-    }
-  };
 
   function toggleSelectedField(key: string) {
     if (selectedFields.includes(key)) {
@@ -38,6 +26,18 @@
       selectedMeasures = [...selectedMeasures, key];
     }
   }
+
+  // async function fetchPositions() {
+  //   const requestData = {
+  //     fields: selectedFields,
+  //     measures: selectedMeasures
+  //   };
+  //   try {
+  //     response = await FetchPosition(requestData);
+  //   } catch (error) {
+  //     console.error("Error fetching positions:", error);
+  //   }
+  // }
 </script>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -74,7 +74,6 @@
 </div>
 
 <button
-  on:click={fetchPositionData}
   class="py-2 px-6 text-white border border-gray-500 position-button"
   >Fetch position</button
 >
