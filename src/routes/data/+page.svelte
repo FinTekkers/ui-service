@@ -10,7 +10,7 @@
   import Position from "../../components/widgets/PositionGrid.svelte";
   export let data: import("./$types").PageData;
 
-  console.log(data.positions)
+  // console.log(data.positions)
   selectedDashboardMenu.set(dashboardMenuList.PORTFOLIO);
 
   // Function to handle menu selection
