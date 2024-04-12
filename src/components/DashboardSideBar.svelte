@@ -6,6 +6,7 @@
       import type { dashboardMenuList } from "$lib/Util";
   import {goto} from "$lib/helper";
   import {dashboardMenuData} from '$lib/uidata';
+  import { page } from "$app/stores";
 
 
   //  this function is to ensure accessibility
@@ -15,23 +16,24 @@
 
 
 </script>
-<div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
+<!-- <div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar"> -->
 
-{#each Object.entries(dashboardMenuData) as [_menukey, menuValue] }
+<!-- {#each Object.entries(dashboardMenuData) as [_menukey, menuValue] } -->
   
-  <div class="p-2 user-menu cursor-pointer"
-    on:keydown={()=>handleKeyDown('PORTFOLIO')}
-    on:click={() => selectedDashboardMenuUpdater(menuValue.location)}
-  >
-     <Icon
-      icon={menuValue.iconName}
-      class="user-menu-icon"
-      style={menuValue.style}
-    />
-    <span>{menuValue.menuName}</span>
-  </div>
+<div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
+  {#each Object.entries(dashboardMenuData) as [_menukey, menuValue] }
+    <a href="{menuValue.url}" class="p-2 user-menu cursor-pointer" on:keydown={()=>handleKeyDown('PORTFOLIO')}>
+      <Icon
+        icon={menuValue.iconName}
+        class="user-menu-icon"
+        style={menuValue.style}
+      />
+      <span>{menuValue.menuName}</span>
+    </a>
+  {/each}
+</div>
 
-{/each}
+<!-- {/each} -->
 
   <!-- <div
     class=" user-menu-logout user-menu cursor-pointer"
@@ -49,7 +51,7 @@
     />
     <span>Logout</span>
   </div> -->
-</div>
+<!-- </div> -->
 
 <style lang="scss">
   @import "../style.scss";
