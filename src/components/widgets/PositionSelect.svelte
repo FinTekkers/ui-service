@@ -3,7 +3,7 @@
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
 
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
   import { goto } from "$lib/helper";
 
   const dispatch = createEventDispatcher();
@@ -29,11 +29,14 @@
     }
   }
 
-
   function fetchPositions() {
-    const selectedFieldsString = selectedFields.join(',');
-    const selectedMeasuresString = selectedMeasures.join(',');
-    goto(`/positions?fields=${selectedFieldsString}&measures=${selectedMeasuresString}`);
+    const selectedFieldsString = selectedFields.join(",");
+    const selectedMeasuresString = selectedMeasures.join(",");
+
+    goto(
+      `/data/positions?fields=${selectedFieldsString}&measures=${selectedMeasuresString}`
+    );
+    
   }
 </script>
 
@@ -72,8 +75,7 @@
 
 <button
   class="py-2 px-6 text-white border border-gray-500 position-button"
-  on:click={fetchPositions}
-  >Fetch position</button
+  on:click={fetchPositions}>Fetch position</button
 >
 
 <style lang="scss">

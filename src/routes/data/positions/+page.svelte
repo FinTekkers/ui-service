@@ -3,6 +3,7 @@
   import Position from "../../../components/widgets/PositionGrid.svelte";
   import PositionSelect from "../../../components/widgets/PositionSelect.svelte";
   export let data: import("./$types").PageData;
+  console.log(data.positions)
 </script>
 
 {@debug}
@@ -11,11 +12,6 @@
   <DashboardSideBar />
   <div class="h-full w-screen dashboard-container">
     <PositionSelect />
-    <Position
-      positions={Array.isArray(data.positions)
-        ? data.positions
-        : [data.positions]}
-    />
   </div>
 </div>
 
