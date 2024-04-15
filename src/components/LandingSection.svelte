@@ -35,6 +35,7 @@
             <button class="button try-now-button" on:click={() => goto("/data/portfolios")}
                 >Explore Data</button
             >
+            
         </div>
         <div class="landing-image">
         <img src={computerImage} alt="computer-vector" />
