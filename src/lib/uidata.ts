@@ -203,6 +203,7 @@ export const dashboardMenuData:dashboardMenuType= {
         navigateTo: "PORTFOLIO",
         style:"p-2 user-menu cursor-pointer",
         iconName: "solar:graph-new-bold",
+        url: "portfolios",
         menuName:"Portfolio"
     },
 
@@ -211,6 +212,7 @@ export const dashboardMenuData:dashboardMenuType= {
         navigateTo: "SECURITY",
         style:"p-2 user-menu cursor-pointer",
         iconName: "solar:folder-security-bold",
+        url: "securities",
         menuName:"Security"
     },
 
@@ -219,6 +221,7 @@ export const dashboardMenuData:dashboardMenuType= {
         navigateTo: "TRANSACTION",
         style:"p-2 user-menu cursor-pointer",
         iconName: "tabler:transaction-dollar",
+        url: "transactions",
         menuName:"Transaction"
     },
 
@@ -227,6 +230,7 @@ export const dashboardMenuData:dashboardMenuType= {
         navigateTo: "POSITION",
         style:"p-2 user-menu cursor-pointer",
         iconName: "solar:folder-security-bold",
+        url: "positions",
         menuName:"Position"
     },
 }
