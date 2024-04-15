@@ -32,7 +32,9 @@
                 on:click={() => customBooleanStoreUpdater(booleanKeys.IS_FEATURE_ACTIVE)}
                 disabled>Explore Product</button
             >
-           
+            <button class="button try-now-button" on:click={() => goto("/data/portfolios")}
+                >Explore Data</button
+            >
         </div>
         <div class="landing-image">
         <img src={computerImage} alt="computer-vector" />
@@ -110,7 +112,7 @@
             }
 
             .landing-cta-buttons {
-                grid-area:5/2/5/7;
+                grid-area: 5/2/9/9;
     
 
                 button {
@@ -122,8 +124,7 @@
                      &:nth-child(1) {
                         background-color: $success;
                         color: $black;
-                        margin-right: 1em;
-
+                        // margin-right: 0.1em;
                     }
 
                     &:nth-child(2) {
