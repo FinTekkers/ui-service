@@ -7,15 +7,27 @@
   import {goto} from "$lib/helper";
   import {dashboardMenuData} from '$lib/uidata';
 
+  export let data;
 
   //  this function is to ensure accessibility
   const handleKeyDown:(key:keyof typeof dashboardMenuList)=>void = (dashboardMenuKey: keyof typeof dashboardMenuList)=>{
       selectedDashboardMenuUpdater(dashboardMenuKey)
   }
 
+  const {userData:{user:{name}}} = data;
+
 
 </script>
 <div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
+
+<div class="person-logged-info">
+   <Icon
+      icon="octicon:feed-person-16"
+      class="user-menu-icon"
+      style='width:25px; height:25px; color:red'
+    />
+    <span style='color:red'>Hello {name}</span>
+</div>
 
 {#each Object.entries(dashboardMenuData) as [_menukey, menuValue] }
   
@@ -33,8 +45,19 @@
 
 {/each}
 
+<form   method="post" action="?/logout">
+      <label class=" user-menu-logout user-menu cursor-pointer" for="logout">
+                <Icon
+                  icon="solar:logout-3-bold"
+                  class="user-menu-icon"
+                  style="width: 20px; height: 20px;"
+                />
+                <button type="submit">Logout</button>
+      </label>
+</form>
+
   <!-- <div
-    class=" user-menu-logout user-menu cursor-pointer"
+   
     on:keydown={()=>handleKeyDown("LOGOUT")}
     on:click={() => {
         goto("/");
@@ -65,6 +88,12 @@
     align-items: center;
     justify-items: start;
     padding-top: 2em;
+
+      .person-logged-info{
+   @include flex(row,center,center, 1em);
+   margin:0 auto;
+  }
+
     
 
           .user-menu {
@@ -93,6 +122,7 @@
   .dashboard-sidebar{
     display: flex;
     align-items: center;
+
 
    .user-menu-logout{
     padding: 0;

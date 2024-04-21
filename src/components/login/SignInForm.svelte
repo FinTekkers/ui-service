@@ -1,48 +1,91 @@
 <script lang="ts">
-    // external imports
+  // external imports
   import Icon from "@iconify/svelte";
-   //  internal imports  
+  // internal imports  
   import {booleanStore, customBooleanStoreUpdater} from '../../store/store';
   import { booleanKeys } from "$lib/Util";
   import type {formError} from '$lib/types';
   import Google_OAuth from '../custom_components/Google_OAuth.svelte';
+  import { toast } from 'svelte-sonner';
+  import { superForm } from 'sveltekit-superforms/client';
   export let data: App.PageData;
   export let form:formError;
 
-    const displayError = (fieldName: string) => {
 
+type FormError = {
+    [fieldName: string]: string[];
+};
+
+// Assuming formError is of type FormError
+const displayError = (fieldName: string) => {
     if (form?.formError) {
-        const errors = Array.from(form.formError);
-        return errors.includes(fieldName);
+        console.log('there is an error', form);
+        const errors: string[] = (form.formError as unknown as Record<string, string[]>)[fieldName] || [];
+        return errors.length > 0;
     }
     return false;
 };
+
+
+
+
+
+
+// const flash = form?.flash; // Assign form.flash to a variable
+//   if (flash) {
+//       const { type, message } = flash; // Destructure only if form.flash is defined
+//       // Now you can use type and message
+//       if(type === 'error'){
+//         toast.error(message)
+//       }
+//    }
+
+
+
+	// const { enhance, form, errors, message } = superForm(form, {
+	// 	resetForm: true,
+	// 	taintedMessage: null,
+
+	// 	onUpdated: () => {
+	// 		if (!$message) return;
+
+	// 		const { alertType, alertText } = $message;
+
+	// 		if (alertType === 'error') {
+	// 			toast.error(alertText);
+	// 		}
+	// 	}
+	// });
+
+
+
 </script>
 
 
 <div class="sign_in_fields">
-                      <label for="Email">
+                      <label for="email">
                         <span class="email_span_text">Email address:</span>
                         <input
                           class="rounded-md { "border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
                           type="text"
-                          name="Email"
+                          name="email"
                           value={form?.email ?? ''}
                           
                         />
                             {#if displayError('email')}
+                                 <!-- {toast.error('⚠️ Enter email')} -->
                                 <div class="error_message">
                                      <p class='form_error'>⚠️ Enter email</p>
                                 </div>    
                             {/if}   
                       </label>
 
-                      <label for="Password" class="passwordField">
+                      <label for="password" class="passwordField">
                         <span class="password_span_text">Password:</span>
                         <input
                           class="rounded-md {"border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
                           type={$booleanStore.IS_PASSWORD_VISIBLE ? "text" : "password"}
-                          name="Password"
+                          name="password"
                           value={form?.password ?? ''}
                         />
 
