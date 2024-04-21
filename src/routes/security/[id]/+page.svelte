@@ -7,7 +7,5 @@
         Welcome to nested route
         <div>{$page.params.id}</div>
         <div>{JSON.stringify(data.nums)} </div>
-        
-            
     </div>
 </body>

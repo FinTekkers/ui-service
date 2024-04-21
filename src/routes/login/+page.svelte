@@ -1,4 +1,3 @@
-
 <script lang="ts">
   import LoginBrandPage from "../../components/login/LoginBrandPage.svelte";
   import SignInForm from "../../components/login/SignInForm.svelte";
@@ -30,12 +29,8 @@
 
 </div>
 
-<style >
+<style>
   @import "../../style.scss";
   @import "../../login.scss";
-
-
-
-
 
 </style>

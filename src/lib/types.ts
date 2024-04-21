@@ -25,7 +25,8 @@ export type dashboardMenuItemType = {
     navigateTo: keyof typeof dashboardMenuList,
     style:string,
     iconName: string,
-    menuName:string
+    menuName:string,
+    url: string
 }
 
 export type dahsboardMenuDataType = [string, dashboardMenuItemType]

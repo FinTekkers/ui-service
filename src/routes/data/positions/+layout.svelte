@@ -7,7 +7,7 @@
 
 
 <style lang="scss">
-  @import "../../style.scss";
+  @import "../../../style.scss";
 
   .main_ui_menu{
     width: 100vw;
