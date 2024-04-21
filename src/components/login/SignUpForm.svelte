@@ -5,6 +5,9 @@ import Icon from "@iconify/svelte";
 import { customBooleanStoreUpdater, booleanStore} from '../../store/store';
 import {booleanKeys} from '$lib/Util';
 import type { formError } from "$lib/types";
+import { toast } from 'svelte-sonner';
+import { superForm } from 'sveltekit-superforms/client';
+
 
 export let form:formError;
 export let data: App.PageData;
@@ -20,7 +23,19 @@ const displayError = (fieldName: string) => {
         return false;
 };
 
-console.log('testing here', form)
+
+// const flash = form?.flash; // Assign form.flash to a variable
+//   if (flash) {
+//       const { type, message } = flash; // Destructure only if form.flash is defined
+//       // Now you can use type and message
+//       if(type === 'error'){
+//         toast.error(message)
+//       }
+//    }
+
+
+
+
 
 </script>
 
