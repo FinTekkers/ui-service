@@ -7,8 +7,51 @@ import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portf
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 const { FieldProto } = pkg;
 
+
+// *****
+
+import { deleteSessionCookie } from '$lib/database/authUtils.server';
+import { lucia } from '$lib/database/luciaAuth.server';
+import { redirect } from "@sveltejs/kit";
+
 /** @type {import('./$types').PageServerLoad} */
-export async function load() {
+const loadUserSession = async(user:any)=>{
+// **********session data handling function
+         if(!user){
+            console.log('you must be logged in')
+            throw redirect(303,"/login")     
+         }
+   
+        return {
+          user
+        };
+}
+
+
+export const actions = {
+
+  logout: async({ cookies, locals })=>{
+          if (!locals.session?.id) return;
+
+              await lucia.invalidateSession(locals.session.id);
+
+              await deleteSessionCookie(lucia, cookies);
+
+              throw redirect(303, "/login");
+  }
+
+}
+
+/** @type {import('./$types').PageServerLoad} */
+export async function load({locals:{user}}) {
+
+  // *** session user data
+  const userData = await loadUserSession(user);
+ 
+
+
+  // ***API code below
+
   const now = dt.ZonedDateTime.now();
 
   const portfolioService = new PortfolioService();
@@ -37,5 +80,5 @@ export async function load() {
       };
     });
 
-  return { portfolioData };
+  return { portfolioData, userData };
 }
