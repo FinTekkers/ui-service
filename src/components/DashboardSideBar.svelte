@@ -6,6 +6,7 @@
       import type { dashboardMenuList } from "$lib/Util";
   import {goto} from "$lib/helper";
   import {dashboardMenuData} from '$lib/uidata';
+  import { page } from "$app/stores";
 
   export let data;
 
@@ -43,7 +44,7 @@
     <span>{menuValue.menuName}</span>
   </div>
 
-{/each}
+<!-- {/each} -->
 
 <form   method="post" action="?/logout">
       <label class=" user-menu-logout user-menu cursor-pointer" for="logout">
@@ -72,7 +73,7 @@
     />
     <span>Logout</span>
   </div> -->
-</div>
+<!-- </div> -->
 
 <style lang="scss">
   @import "../style.scss";
