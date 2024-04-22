@@ -2,16 +2,8 @@
 <script lang="ts">
   import LoginBrandPage from "../../components/login/LoginBrandPage.svelte";
   import SignUpForm from "../../components/login/SignUpForm.svelte";
-  import {goto} from "$lib/helper";
-  import {booleanStore} from '../../store/store';
-  import {booleanKeys} from "$lib/Util"
   export let data:App.PageData;
   export let form:App.Error;
-
-
-  $:isSignInOrSignUp = $booleanStore[booleanKeys.IS_SIGN_IN_OR_SIGN_UP]
-
- 
 
 
 
