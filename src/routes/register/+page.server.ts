@@ -1,13 +1,21 @@
 import {  redirect } from "@sveltejs/kit";
 import * as Yup from 'yup';
-import { isValidationError } from "$lib/helper.js";
-import {OAuth2Client} from 'google-auth-library'
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "$env/static/private";
+import { superValidate } from 'sveltekit-superforms/server';
+import { lucia } from '$lib/database/luciaAuth.server';
+import { generateId } from 'lucia';
+import { Argon2id } from 'oslo/password';
+import { createAndSetSession } from '$lib/database/authUtils.server';
+import { checkIfEmailExists, insertNewUser } from '$lib/database/databaseUtils.server';
+import {yup} from 'sveltekit-superforms/adapters'
+
+
+const  DASHBOARD_ROUTE  = "/portfolios"
+
 
 const signUpSchema = Yup.object({
     email:Yup.string().email().required('email'),
     password:Yup.string().required('password'),
-    confirmpassword:Yup.string().required('confirmpassword'),
+    confirmpassword:Yup.string(),
     firstname: Yup.string(),
     lastname: Yup.string()
 })
@@ -15,75 +23,51 @@ const signUpSchema = Yup.object({
 type fieldInput = FormDataEntryValue | null;
 
 
-let firstname: fieldInput,
-    lastname: fieldInput,
-    email: fieldInput,
-    password: fieldInput,
-    confirmpassword: fieldInput;
-
 export const actions = {
-
-    register: async({request}:{request:Request})=>{
-         let formError = null;
-         let isValid = null;
-     
-         try{
-            const data = await request.formData();
-            console.log('the form data check', data)
-            firstname = data.get('firstname');
-            lastname = data.get('lastname');
-            email = data.get('email');
-            password = data.get('password');
-            confirmpassword = data.get('confirmpassword');
-
-            
-        
-           isValid = await signUpSchema.validate({ firstname,lastname,email, password, confirmpassword}, { abortEarly: false });
-
-
-        }catch(validationError){
-                console.log('validation errors', validationError)
-
-             if (isValidationError(validationError)) {
-                const validationErrors = validationError.inner.map((error: { message: string }) => error.message);
-                formError = validationErrors;
-            }
-        }
-
-          // Perform redirection outside the try...catch block if validation succeeded
-        if (!formError) {
-            throw redirect(303, "/login");
-        }
-
-        // Return formError if there are any validation errors
-        return { formError,email,password, confirmpassword, firstname, lastname };
-    },
-
-    OAuth2:async({request})=>{
-        const url = new URL(request.url);
-        const code = url.searchParams.get('code');   
-
-        
-        const redirectURL = 'http://localhost:5173/portfolios';
-        const oAuth2client = new OAuth2Client(
-            GOOGLE_CLIENT_ID,
-            GOOGLE_CLIENT_SECRET,
-            redirectURL
-            )
-
-        const authorizeUrl = oAuth2client.generateAuthUrl({
-            access_type:'offline',
-            scope: "https://www.googleapis.com/auth/userinfo.profile openid",
-            prompt:'consent'
-            })
        
+     register: async ({request, cookies}:{request:Request}) => {
 
-        throw redirect(302, authorizeUrl)
+        const form = await superValidate(request, yup(signUpSchema))
+        let formError = null;
+        let message = null;
+        
+        if (form.valid === false) {
+             message = 'form is invalid'
+            formError = {message, error:form.errors}
+            return { formError, message };
+		}
 
-    }
+        try{
+            const isEmailAlreadyRegistered = await checkIfEmailExists(form.data.email);
+
+            if (isEmailAlreadyRegistered === true) {
+                console.log('email already exist')
+                return
+			}
+
+            const userId = generateId(15);
+			const hashedPassword = await new Argon2id().hash(form.data.password);
+
+            await insertNewUser({
+				id: userId,
+				firstname: form.data.firstname,
+				lastname: form.data.lastname,
+                confirmpassword: form.data.confirmpassword,
+				email: form.data.email,
+				password: hashedPassword
+			});
+
+            await createAndSetSession(lucia, userId, cookies);
 
 
-    
+        }catch(err){
+           console.log('something went wrong when registering')
+           console.log(err)
+        }
+
+        throw redirect(303, DASHBOARD_ROUTE);
+
+	}
 };
 
 
