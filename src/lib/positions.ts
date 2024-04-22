@@ -7,7 +7,6 @@ export async function FetchPosition(requestData: { fields: FieldProto[], measure
     const positionService = new ps.PositionService();
     
     // Assuming there's no need for the positionFilter for now
-
     const request = new QueryPositionRequestProto()
         .setFieldsList(requestData.fields)
         .setMeasuresList(requestData.measures);
