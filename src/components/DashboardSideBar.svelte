@@ -9,13 +9,19 @@
   import { page } from "$app/stores";
 
   export let data;
+  let userInfo:string;
 
   //  this function is to ensure accessibility
   const handleKeyDown:(key:keyof typeof dashboardMenuList)=>void = (dashboardMenuKey: keyof typeof dashboardMenuList)=>{
       selectedDashboardMenuUpdater(dashboardMenuKey)
   }
 
-  const {userData:{user:{name}}} = data;
+  if (data){
+      const {userData:{user:{name}}} = data;
+      userInfo = name;
+  }
+
+
 
 
 </script>
@@ -27,7 +33,7 @@
       class="user-menu-icon"
       style='width:25px; height:25px; color:red'
     />
-    <span style='color:red'>Hello {name}</span>
+    <span style='color:red'>Hello {userInfo}</span>
 </div>
 
 {#each Object.entries(dashboardMenuData) as [_menukey, menuValue] }
@@ -44,7 +50,7 @@
     <span>{menuValue.menuName}</span>
   </div>
 
-<!-- {/each} -->
+{/each}
 
 <form   method="post" action="?/logout">
       <label class=" user-menu-logout user-menu cursor-pointer" for="logout">
@@ -57,23 +63,7 @@
       </label>
 </form>
 
-  <!-- <div
-   
-    on:keydown={()=>handleKeyDown("LOGOUT")}
-    on:click={() => {
-        goto("/");
-      
-      selectedDashboardMenuUpdater(dashboardMenuList.LOGOUT);
-    }}
-  >
-    <Icon
-      icon="solar:logout-3-bold"
-      class="user-menu-icon"
-      style="width: 20px; height: 20px;"
-    />
-    <span>Logout</span>
-  </div> -->
-<!-- </div> -->
+</div>
 
 <style lang="scss">
   @import "../style.scss";

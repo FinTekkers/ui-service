@@ -16,23 +16,6 @@
               {console.log('waiting for onboarding component')}
           {/if}
 
-          <!-- {#if $selectedDashboardMenu == dashboardMenuList.HOME}
-              <div class="dashboard-menu">Home
-                  <a href="/security/1" >→✅</a>
-              </div>
-          {:else if $selectedDashboardMenu == dashboardMenuList.DASHBOARD}
-              <div class="dashboard-menu">Dashboard
-                 <a href="/security/2" >→✅</a>
-              </div>
-          {:else if $selectedDashboardMenu == dashboardMenuList.PORTFOLIO}
-              <PortfolioGrid rows={data.portfolioData} />
-          {:else if $selectedDashboardMenu == dashboardMenuList.ACCOUNT}
-              <div class="dashboard-menu">Account 
-                 <a href="/security/2" >→✅</a>
-              </div>
-          {:else if $selectedDashboardMenu == dashboardMenuList.LOGOUT}
-              <div class="dashboard-menu">Goodbye</div>
-          {/if} -->
 </div>
 
 <style lang="scss">
