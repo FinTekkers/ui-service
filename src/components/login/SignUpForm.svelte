@@ -24,18 +24,6 @@ const displayError = (fieldName: string) => {
 };
 
 
-// const flash = form?.flash; // Assign form.flash to a variable
-//   if (flash) {
-//       const { type, message } = flash; // Destructure only if form.flash is defined
-//       // Now you can use type and message
-//       if(type === 'error'){
-//         toast.error(message)
-//       }
-//    }
-
-
-
-
 
 </script>
 
