@@ -26,38 +26,6 @@ const displayError = (fieldName: string) => {
 };
 
 
-
-
-
-
-// const flash = form?.flash; // Assign form.flash to a variable
-//   if (flash) {
-//       const { type, message } = flash; // Destructure only if form.flash is defined
-//       // Now you can use type and message
-//       if(type === 'error'){
-//         toast.error(message)
-//       }
-//    }
-
-
-
-	// const { enhance, form, errors, message } = superForm(form, {
-	// 	resetForm: true,
-	// 	taintedMessage: null,
-
-	// 	onUpdated: () => {
-	// 		if (!$message) return;
-
-	// 		const { alertType, alertText } = $message;
-
-	// 		if (alertType === 'error') {
-	// 			toast.error(alertText);
-	// 		}
-	// 	}
-	// });
-
-
-
 </script>
 
 <div class="sign_in_fields">
@@ -71,7 +39,6 @@ const displayError = (fieldName: string) => {
                           
                         />
                             {#if displayError('email')}
-                                 <!-- {toast.error('⚠️ Enter email')} -->
                                 <div class="error_message">
                                      <p class='form_error'>⚠️ Enter email</p>
                                 </div>    
