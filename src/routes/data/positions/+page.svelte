@@ -3,7 +3,22 @@
   import Position from "../../../components/widgets/PositionGrid.svelte";
   import PositionSelect from "../../../components/widgets/PositionSelect.svelte";
   export let data: import("./$types").PageData;
-  console.log(data.positions)
+
+  // Split fields and measures into arrays
+  const fieldMeasure = data.fieldMeasure;
+  // Split fields and measures into arrays if fieldMeasure is defined
+  const fields = fieldMeasure?.fields.split(",") ?? [];
+  const measures = fieldMeasure?.measures.split(",") ?? [];
+
+  console.log({fields, measures})
+
+  // Check if requestData is available
+  const hasRequestedData = data && data.requestData;
+
+  // Log requestData if available
+  if (hasRequestedData) {
+    console.log(data.requestData);
+  }
 </script>
 
 {@debug}
@@ -12,6 +27,15 @@
   <DashboardSideBar />
   <div class="h-full w-screen dashboard-container">
     <PositionSelect />
+
+    {#if hasRequestedData}
+      <Position
+        positions={Array.isArray(data.positions)
+          ? data.positions
+          : [data.positions]}
+        requestData={data.requestData}
+      />
+    {/if}
   </div>
 </div>
 

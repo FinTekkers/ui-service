@@ -56,6 +56,8 @@ export async function load({ request }) {
     return { positions: [] }; // Return an empty array or appropriate value
   }
 
+  const fieldMeasure = { fields, measures }
+
   console.log({ fields, measures });
   
   // Function to strip quotation marks
@@ -88,5 +90,5 @@ export async function load({ request }) {
   const requestData = { fields: mappedFields, measures: mappedMeasures };
   console.log({ requestData })
   const positions = await FetchPosition(requestData);
-  return { positions };
+  return { positions, requestData, fieldMeasure };
 }
