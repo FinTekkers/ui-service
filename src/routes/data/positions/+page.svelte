@@ -10,7 +10,7 @@
   const fields = fieldMeasure?.fields.split(",") ?? [];
   const measures = fieldMeasure?.measures.split(",") ?? [];
 
-  console.log({fields, measures})
+  console.log({ fields, measures });
 
   // Check if requestData is available
   const hasRequestedData = data && data.requestData;
@@ -34,6 +34,7 @@
           ? data.positions
           : [data.positions]}
         requestData={data.requestData}
+        metadata={data.metadata}
       />
     {/if}
   </div>
