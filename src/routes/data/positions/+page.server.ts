@@ -49,7 +49,7 @@ export async function load({ request }) {
   const searchParams = new URLSearchParams(request.url.split('?')[1]);
   const fields = searchParams.get('fields');
   const measures = searchParams.get('measures');
-  
+
   // If either fields or measures is missing, return early
   if (!fields || !measures) {
     console.log('Fields or measures missing. No request will be made.');
@@ -59,13 +59,13 @@ export async function load({ request }) {
   const fieldMeasure = { fields, measures }
 
   console.log({ fields, measures });
-  
+
   // Function to strip quotation marks
   const stripQuotes = (str: string) => str.replace(/^"(.*)"$/, '$1');
 
   const userFields = stripQuotes(fields).split(',');
   const userMeasures = stripQuotes(measures).split(',');
-  
+
   // Map user fields and measures to their respective Protos
   const mappedFields = userFields.map(field => {
     const fieldName = field as keyof typeof fieldLookup;
@@ -75,7 +75,7 @@ export async function load({ request }) {
       throw new Error(`Invalid field: ${field}`);
     }
   });
-  
+
 
   const mappedMeasures = userMeasures.map(measure => {
     const measureName = measure as keyof typeof measureLookup;
@@ -85,10 +85,12 @@ export async function load({ request }) {
       throw new Error(`Invalid measure: ${measure}`);
     }
   });
-  
+
 
   const requestData = { fields: mappedFields, measures: mappedMeasures };
   console.log({ requestData })
   const positions = await FetchPosition(requestData);
-  return { positions, requestData, fieldMeasure };
+
+  const metadata = { 'fields': userFields, 'measures': userMeasures };
+  return { positions, requestData, fieldMeasure, metadata };
 }
