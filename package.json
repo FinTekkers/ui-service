@@ -21,7 +21,7 @@
 	"dependencies": {
 		"@auth/core": "^0.27.0",
 		"@auth/sveltekit": "^0.13.0",
-		"@fintekkers/ledger-models": "^0.1.79",
+		"@fintekkers/ledger-models": "^0.1.81",
 		"@lucia-auth/adapter-drizzle": "^1.0.7",
 		"aws-cdk-lib": "^2.124.0",
 		"aws-serverless-express": "^3.4.0",
