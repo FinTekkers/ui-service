@@ -6,7 +6,7 @@
       import type { dashboardMenuList } from "$lib/Util";
   import {goto} from "$lib/helper";
   import {dashboardMenuData} from '$lib/uidata';
-  import { page } from "$app/stores";
+  // import { page } from "$app/stores";
 
   export let data;
   let userInfo:string;
