@@ -30,13 +30,48 @@
   }
 
   function fetchPositions() {
+    saveSelectedValues();
+
     const selectedFieldsString = selectedFields.join(",");
     const selectedMeasuresString = selectedMeasures.join(",");
 
     goto(
       `/data/positions?fields=${selectedFieldsString}&measures=${selectedMeasuresString}`
     );
-    
+  }
+
+  // Add this function to load selected values from local storage
+  function loadSelectedValues() {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedFieldsFromUrl = urlParams.get("fields");
+      const selectedMeasuresFromUrl = urlParams.get("measures");
+
+      if (selectedFieldsFromUrl) {
+        selectedFields = selectedFieldsFromUrl.split(",");
+      }
+
+      if (selectedMeasuresFromUrl) {
+        selectedMeasures = selectedMeasuresFromUrl.split(",");
+      }
+    }
+  }
+
+  function saveSelectedValues() {
+    if (typeof window !== "undefined" && window.localStorage) {
+      window.localStorage.setItem("selectedFields", selectedFields.join(","));
+      window.localStorage.setItem(
+        "selectedMeasures",
+        selectedMeasures.join(",")
+      );
+    }
+  }
+  // Call loadSelectedValues on component mount
+  loadSelectedValues();
+
+  // Call saveSelectedValues whenever selected values change
+  $: {
+    saveSelectedValues();
   }
 </script>
 
