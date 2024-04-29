@@ -20,7 +20,6 @@
       selectedFields = [...selectedFields, key];
     }
   }
-
   function toggleSelectedMeasure(key: string) {
     if (selectedMeasures.includes(key)) {
       selectedMeasures = selectedMeasures.filter((measure) => measure !== key);
