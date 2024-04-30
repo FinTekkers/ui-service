@@ -2,13 +2,7 @@
 <script lang="ts">
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-
-  import { createEventDispatcher } from "svelte";
   import { goto } from "$lib/helper";
-
-  const dispatch = createEventDispatcher();
-
-  let positions: any[];
 
   export let selectedFields: any[] = [];
   export let selectedMeasures: any[] = [];
@@ -20,6 +14,7 @@
       selectedFields = [...selectedFields, key];
     }
   }
+
   function toggleSelectedMeasure(key: string) {
     if (selectedMeasures.includes(key)) {
       selectedMeasures = selectedMeasures.filter((measure) => measure !== key);
@@ -35,8 +30,26 @@
     goto(
       `/data/positions?fields=${selectedFieldsString}&measures=${selectedMeasuresString}`
     );
-    
   }
+
+  // Add this function to load selected values from local storage
+  function loadSelectedValues() {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedFieldsFromUrl = urlParams.get("fields");
+      const selectedMeasuresFromUrl = urlParams.get("measures");
+
+      if (selectedFieldsFromUrl) {
+        selectedFields = selectedFieldsFromUrl.split(",");
+      }
+
+      if (selectedMeasuresFromUrl) {
+        selectedMeasures = selectedMeasuresFromUrl.split(",");
+      }
+    }
+  }
+  // Call loadSelectedValues on component mount
+  loadSelectedValues();
 </script>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
