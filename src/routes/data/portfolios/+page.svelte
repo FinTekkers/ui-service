@@ -2,6 +2,7 @@
   import DashboardSideBar from "../../../components/DashboardSideBar.svelte";
   import Portfolio from "../../../components/widgets/PortfolioGrid.svelte";
   export let data: import("./$types").PageData;
+  console.log({data})
 </script>
 
 {@debug}
