@@ -24,7 +24,7 @@
 {@debug}
 
 <div class="w-screen h-full flex">
-  <DashboardSideBar />
+  <DashboardSideBar data={data} />
   <div class="h-full w-screen dashboard-container">
     <PositionSelect />
 
