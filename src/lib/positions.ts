@@ -12,27 +12,8 @@ import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/pri
 import Portfolio from '@fintekkers/ledger-models/node/wrappers/models/portfolio/portfolio';
 import { TenorProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/tenor_pb';
 import { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
-
-function getDisplayValue(value: any): String {
-    if (value instanceof String)
-        return value;
-    if (value instanceof Security) {
-        value: Security;
-        let securityID = value.getSecurityID()
-        return securityID.getIdentifierType() + ":" + securityID.getIdentifierValue();
-        // } if (value instanceof PriceProto) {
-        //     let securityProto = value.getSecurity();
-        //     let security = new Security(securityProto);
-        //     let securityDescription = security.getSecurityID().getIdentifierValue();
-        //     return securityDescription + ":" + value.getPrice()?.getArbitraryPrecisionValue();
-    }
-    if (value instanceof Portfolio) {
-        return value.getPortfolioName();
-    } if (value instanceof TenorProto) {
-        return value.getTenorType() + ":" + value.getTermValue();
-    }
-    return value.toString();
-}
+import { Any } from 'google-protobuf/google/protobuf/any_pb';
+import { unpack } from '@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util';
 
 export async function FetchPosition(requestData: { fields: FieldProto[], measures: MeasureProto[] }): Promise<any> {
     const positionService = new ps.PositionService();
@@ -62,8 +43,7 @@ function elementsToReturn(results: Position[]) {
         const processedElement: any = {};
 
         for (let field of element.getFields()) {
-            let value = element.getFieldValue(field.getField());
-            processedElement[field.getField()] = getDisplayValue(value);
+            processedElement[field.getField()] = element.getFieldDisplay(field);
         }
 
         for (let measure of element.getMeasures()) {
