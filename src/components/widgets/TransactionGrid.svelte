@@ -9,7 +9,7 @@
   }>;
 </script>
 
-<div class="portfolio_container container mx-auto shadow px-10 py-7">
+<div class="portfolio_container mx-auto shadow px-10 py-7">
   <h2 class="text-3xl font-extrabold my-3">Transactions</h2>
   <table class="min-w-full text-left table-fixed">
     <thead class="border-b border-slate-400">
@@ -48,7 +48,7 @@
   @import "../../style.scss";
   .portfolio_container {
     height: 100%;
-    width: 82vw;
+    width: 100%;
     background-color: $primary-color; /* assuming $primary-color is a dark color */
     overflow: auto;
     padding: 28px 40px;

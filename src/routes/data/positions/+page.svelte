@@ -23,9 +23,9 @@
 
 {@debug}
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar data={data} />
-  <div class="h-full w-screen dashboard-container">
+<div class="w-full h-full flex">
+  <DashboardSideBar {data} />
+  <div class="h-full w-full dashboard-container">
     <PositionSelect />
 
     {#if hasRequestedData}
@@ -46,6 +46,7 @@
   .dashboard-container {
     background-color: white;
     // @include flex(column, center, center, 0);
+    width: 100%;
 
     .dashboard-menu {
       width: 98%;

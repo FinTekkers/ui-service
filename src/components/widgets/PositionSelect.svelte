@@ -60,7 +60,7 @@
   }
 </script>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+<div class="position-grid gap-4 mb-4 ml-6">
   <div class="position-select-container flex flex-col sm:flex-row gap-3">
     <div class="text-black">
       <h4>Fields:</h4>
@@ -100,8 +100,11 @@
 
 <style lang="scss">
   @import "../../style.scss";
+  .position-grid {
+    margin: 10px 40px;
+  }
   .position-select-container {
-    margin: 10px;
+    // margin: 10px 40px;
     // gap: 1rem;
     // width: 1000px;
     // margin: 20px auto;
@@ -128,16 +131,7 @@
   .position-button {
     background: $primary-color;
     padding: 10px 20px;
-    margin: 0 10px;
+    margin: 0 40px;
     border-radius: 10px;
-  }
-
-  .selections {
-    // padding: 0 40px;
-    margin: 10px;
-  }
-
-  .cancel {
-    padding: 2px 10px;
   }
 </style>

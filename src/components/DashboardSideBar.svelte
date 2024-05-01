@@ -18,13 +18,25 @@
     selectedDashboardMenuUpdater(dashboardMenuKey);
   };
 
+  let showSidebar = true;
+
+  const toggleSidebar = () => {
+    console.log("clicked");
+    showSidebar = !showSidebar;
+  };
+
   // if (data){
   //     const {userData:{user:{name}}} = data;
   //     userInfo = name;
   // }
 </script>
 
-<div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
+<div class="relative">
+<div
+  class={`${
+    showSidebar ? "show" : "hide"
+  } w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar`}
+>
   <div class="person-logged-info">
     <Icon
       icon="octicon:feed-person-16"
@@ -62,14 +74,33 @@
     </label>
   </form>
 </div>
+<button on:click={toggleSidebar} class="text-black absolute top-[5px] right-[-2em]">
+  <Icon
+    icon={showSidebar ? "mdi:hamburger-open" : "mdi:hamburger-close"}
+    class="user-menu-icon"
+    style="width:30px; height:30px; color:white; background: #0c3a46; borderRadius: 20px;"
+  />
+</button>
+</div>
+
+
 
 <style lang="scss">
   @import "../style.scss";
+  .dashboard-sidebar.hide {
+    // width: 0;
+    display: none;
+  }
 
+  .dashboard-sidebar.show {
+    // width: 20vw;
+    width: 20vw;
+  }
   .dashboard-sidebar {
     background-color: $tealwhite;
     box-shadow: 2px 2px 10px rgba(206, 206, 206, 0.034);
     width: 20vw;
+    height: 100%;
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: repeat(5, 50px);
@@ -77,6 +108,7 @@
     align-items: center;
     justify-items: start;
     padding-top: 2em;
+    transition: width 0.5s;
 
     .person-logged-info {
       @include flex(row, center, center, 1em);

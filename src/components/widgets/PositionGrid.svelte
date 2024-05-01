@@ -29,49 +29,51 @@
   }
 </script>
 
-<div class="portfolio_container container mx-auto shadow px-10 py-7 my-4">
+<div class="portfolio_container shadow px-10 py-7 my-4">
   <h2 class="text-3xl font-extrabold my-3">Positions</h2>
-  <table class="min-w-full text-left table-fixed">
-    <thead class="border-b border-slate-400">
-      <tr>
-        {#each fields as field}
-          <th class="text-semibold text-lg px-4 py-2 table-width capitalize"
-            >{formatName(field)}</th
-          >
-        {/each}
-        {#each measures as measure}
-          <th class="text-semibold text-lg px-4 py-2 table-width"
-            >{formatName(measure)}</th
-          >
-        {/each}
-      </tr>
-    </thead>
-    <tbody>
-      {#each positions as position}
-        <tr class="table-row border-b border-slate-400">
-          {#each requestData.fields as field}
-            <td class="table-cell px-4 py-2">
-              {formatDate(position[field])}
-            </td>
+  <div class="table-container">
+    <table class="min-w-full text-left table-fixed">
+      <thead class="border-b border-slate-400">
+        <tr>
+          {#each fields as field}
+            <th class="text-semibold text-lg px-4 py-2 table-width capitalize"
+              >{formatName(field)}</th
+            >
           {/each}
-          {#each requestData.measures as measure}
-            <td class="table-cell px-4 py-2">
-              {formatAmount(position[measure])}
-            </td>
+          {#each measures as measure}
+            <th class="text-semibold text-lg px-4 py-2 table-width"
+              >{formatName(measure)}</th
+            >
           {/each}
         </tr>
-      {/each}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {#each positions as position}
+          <tr class="table-row border-b border-slate-400">
+            {#each requestData.fields as field}
+              <td class="table-cell px-4 py-2">
+                {formatDate(position[field])}
+              </td>
+            {/each}
+            {#each requestData.measures as measure}
+              <td class="table-cell px-4 py-2">
+                {formatAmount(position[measure])}
+              </td>
+            {/each}
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <style lang="scss">
   @import "../../style.scss";
   .portfolio_container {
     height: 100%;
-    width: 82vw;
-    background-color: $primary-color; /* assuming $primary-color is a dark color */
-    overflow: auto;
+    width: 100%;
+    background-color: #1b6f85;
+    overflow-x: auto;
     margin: 15px auto;
     padding: 28px 40px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* added shadow */
@@ -79,6 +81,15 @@
 
   table {
     border-collapse: collapse;
+    width: 100%;
+  }
+
+  .table-fixed {
+    overflow-x: auto;
+  }
+
+  .table-container {
+    overflow-x: auto;
     width: 100%;
   }
 
@@ -95,7 +106,7 @@
   }
 
   tr:hover {
-    background-color: $bgc-color; /* assuming $bgc-color is a light color */
+    background-color: #0c3a46;
     cursor: pointer;
   }
 
@@ -143,5 +154,12 @@
 
   .table-cell {
     padding: 10px;
+  }
+
+  @media screen and (max-width: $breakingpoint_medium) {
+    .table-container {
+      overflow-x: auto;
+      width: 200vh;
+    }
   }
 </style>
