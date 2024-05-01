@@ -2,13 +2,7 @@
 <script lang="ts">
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-
-  import { createEventDispatcher } from "svelte";
   import { goto } from "$lib/helper";
-
-  const dispatch = createEventDispatcher();
-
-  let positions: any[];
 
   export let selectedFields: any[] = [];
   export let selectedMeasures: any[] = [];
@@ -30,7 +24,6 @@
   }
 
   function fetchPositions() {
-    saveSelectedValues();
 
     const selectedFieldsString = selectedFields.join(",");
     const selectedMeasuresString = selectedMeasures.join(",");
@@ -56,23 +49,8 @@
       }
     }
   }
-
-  function saveSelectedValues() {
-    if (typeof window !== "undefined" && window.localStorage) {
-      window.localStorage.setItem("selectedFields", selectedFields.join(","));
-      window.localStorage.setItem(
-        "selectedMeasures",
-        selectedMeasures.join(",")
-      );
-    }
-  }
   // Call loadSelectedValues on component mount
   loadSelectedValues();
-
-  // Call saveSelectedValues whenever selected values change
-  $: {
-    saveSelectedValues();
-  }
 </script>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
