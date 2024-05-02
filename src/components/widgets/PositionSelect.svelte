@@ -51,6 +51,13 @@
   }
   // Call loadSelectedValues on component mount
   loadSelectedValues();
+
+  function formatName(fieldName: string) {
+    return fieldName
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
 </script>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -65,7 +72,7 @@
               checked={selectedFields.includes(key)}
               on:change={() => toggleSelectedField(key)}
             />
-            {key}
+            {formatName(key)}
           </label>
         {/each}
       </div>
@@ -79,7 +86,7 @@
             checked={selectedMeasures.includes(key)}
             on:change={() => toggleSelectedMeasure(key)}
           />
-          {key}
+          {formatName(key)}
         </label>
       {/each}
     </div>
@@ -98,6 +105,11 @@
     // gap: 1rem;
     // width: 1000px;
     // margin: 20px auto;
+  }
+
+  label {
+    font-size: 20px;
+    font-weight: 300;
   }
 
   h4 {
