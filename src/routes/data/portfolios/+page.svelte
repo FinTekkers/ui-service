@@ -2,12 +2,13 @@
   import DashboardSideBar from "../../../components/DashboardSideBar.svelte";
   import Portfolio from "../../../components/widgets/PortfolioGrid.svelte";
   export let data: import("./$types").PageData;
+  console.log({data})
 </script>
 
 {@debug}
 
 <div class="w-screen h-full flex">
-  <DashboardSideBar />
+  <DashboardSideBar data={data} />
   
   <Portfolio
         rows={Array.isArray(data.portfolios)

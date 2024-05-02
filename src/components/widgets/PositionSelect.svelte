@@ -24,6 +24,7 @@
   }
 
   function fetchPositions() {
+
     const selectedFieldsString = selectedFields.join(",");
     const selectedMeasuresString = selectedMeasures.join(",");
 
