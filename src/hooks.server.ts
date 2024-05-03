@@ -41,9 +41,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 		throw redirect(303, DASHBOARD_ROUTE);
 	}
 
-	// Persist the user and session information in the event locals for use within endpoint handlers and page components
-   
+	// Protect the /data/portfolios route
+    // if (event.url.pathname.includes('/data/portfolios') && !session) {
+	// 	console.log('something fishy')
+	// 	alert('not authorised')
+    //     return redirect(303, '/login'); // Redirect to login page if not authenticated
+    // }
 
+	// Persist the user and session information in the event locals for use within endpoint handlers and page components
 	event.locals.user = user;
 	event.locals.session = session;
 
