@@ -123,7 +123,7 @@ const displayError = (fieldName: string) => {
                                     icon="flat-color-icons:google"
                                     style="width: 25px; height: 25px;"
                                 />
-                                <span>Continue with Google</span>
+                                <a href="/oauth/google">Continue with Google</a>
                         </button>
 
                      </div>
