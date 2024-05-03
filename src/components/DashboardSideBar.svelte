@@ -39,7 +39,7 @@
 {#each Object.entries(dashboardMenuData) as [_menukey, menuValue] }
   
   <div class="p-2 user-menu cursor-pointer"
-    on:keydown={()=>handleKeyDown('PORTFOLIO')}
+    on:keydown={()=> handleKeyDown('PORTFOLIO')}
     on:click={() => selectedDashboardMenuUpdater(menuValue.location)}
   >
      <Icon

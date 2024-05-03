@@ -45,6 +45,9 @@ export const actions = {
 /** @type {import('./$types').PageServerLoad} */
 export async function load({locals:{user}}) {
 
+console.log('tracking data',user)
+
+
   // *** session user data
   const userData = await loadUserSession(user);
  

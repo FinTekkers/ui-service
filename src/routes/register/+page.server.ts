@@ -1,5 +1,5 @@
 import {  redirect } from "@sveltejs/kit";
-import * as Yup from 'yup';
+import * as Yup from 'yup'; 
 import { superValidate } from 'sveltekit-superforms/server';
 import { lucia } from '$lib/database/luciaAuth.server';
 import { generateId } from 'lucia';
@@ -49,13 +49,14 @@ export const actions = {
 			const hashedPassword = await new Argon2id().hash(form.data.password);
 
             await insertNewUser({
-				id: userId,
-				firstname: form.data.firstname,
-				lastname: form.data.lastname,
+                id: userId,
+                firstname: form.data.firstname,
+                lastname: form.data.lastname,
                 confirmpassword: form.data.confirmpassword,
-				email: form.data.email,
-				password: hashedPassword
-			});
+                email: form.data.email,
+                password: hashedPassword,
+                authMethods: []
+            });
 
             await createAndSetSession(lucia, userId, cookies);
 
