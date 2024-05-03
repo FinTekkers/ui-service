@@ -7,7 +7,7 @@
 {@debug}
 
 <div class="w-screen h-full flex">
-  <DashboardSideBar />
+  <DashboardSideBar data={data} />
   
   <Transaction
         rows={Array.isArray(data.transactions)

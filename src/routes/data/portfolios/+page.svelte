@@ -12,7 +12,7 @@ import { redirect } from '@sveltejs/kit';
 {@debug}
 
 <div class="w-screen h-full flex">
-  <DashboardSideBar />
+  <DashboardSideBar data={data} />
   
   <Portfolio
         rows={Array.isArray(data.portfolios)

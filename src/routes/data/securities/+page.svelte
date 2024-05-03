@@ -8,7 +8,7 @@
 {@debug}
 
 <div class="w-screen h-full flex">
-  <DashboardSideBar />
+  <DashboardSideBar data={data} />
   
   <Security
         rows={Array.isArray(data.security) ? data.security : [data.security]}
