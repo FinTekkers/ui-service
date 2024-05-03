@@ -2,13 +2,7 @@
 <script lang="ts">
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-
-  import { createEventDispatcher } from "svelte";
   import { goto } from "$lib/helper";
-
-  const dispatch = createEventDispatcher();
-
-  let positions: any[];
 
   export let selectedFields: any[] = [];
   export let selectedMeasures: any[] = [];
@@ -30,13 +24,39 @@
   }
 
   function fetchPositions() {
+
     const selectedFieldsString = selectedFields.join(",");
     const selectedMeasuresString = selectedMeasures.join(",");
 
     goto(
       `/data/positions?fields=${selectedFieldsString}&measures=${selectedMeasuresString}`
     );
-    
+  }
+
+  // Add this function to load selected values from local storage
+  function loadSelectedValues() {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedFieldsFromUrl = urlParams.get("fields");
+      const selectedMeasuresFromUrl = urlParams.get("measures");
+
+      if (selectedFieldsFromUrl) {
+        selectedFields = selectedFieldsFromUrl.split(",");
+      }
+
+      if (selectedMeasuresFromUrl) {
+        selectedMeasures = selectedMeasuresFromUrl.split(",");
+      }
+    }
+  }
+  // Call loadSelectedValues on component mount
+  loadSelectedValues();
+
+  function formatName(fieldName: string) {
+    return fieldName
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   }
 </script>
 
@@ -52,7 +72,7 @@
               checked={selectedFields.includes(key)}
               on:change={() => toggleSelectedField(key)}
             />
-            {key}
+            {formatName(key)}
           </label>
         {/each}
       </div>
@@ -66,7 +86,7 @@
             checked={selectedMeasures.includes(key)}
             on:change={() => toggleSelectedMeasure(key)}
           />
-          {key}
+          {formatName(key)}
         </label>
       {/each}
     </div>
@@ -85,6 +105,11 @@
     // gap: 1rem;
     // width: 1000px;
     // margin: 20px auto;
+  }
+
+  label {
+    font-size: 20px;
+    font-weight: 300;
   }
 
   h4 {
