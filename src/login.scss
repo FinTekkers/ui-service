@@ -256,7 +256,7 @@
         position: absolute;
         background: none;
         bottom: -12.5%;
-        border: solid 1px $bordercoltransp;
+        border: solid 1px rgba(255, 255, 255, 0.209);
         padding: 0;
         margin: 0;
 
@@ -275,6 +275,7 @@
           left: 2.5%;
           transition: color .5s ease-in-out;
           cursor: pointer;
+          color: $white;
 
           &:hover{
             color: $primary-color;
@@ -292,6 +293,7 @@
           right:2.5%;
           text-align: right;
           transition: all .5s ease-in-out;
+          color: $white;
 
           &:hover{
             color: $primary-color;

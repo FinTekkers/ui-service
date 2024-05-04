@@ -7,12 +7,27 @@ import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portf
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import { FetchPortfolio } from "$lib/portfolios";
 import { FetchTransaction } from "$lib/transactions";
+import { redirect } from "@sveltejs/kit";
 const { FieldProto } = pkg;
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load() {
+const loadUserSession = async(user:any)=>{
+// **********session data handling function
+         if(!user){
+            console.log('you must be logged in')
+            throw redirect(303,"/login")     
+         }
+        return {
+          user
+        };
+}
+
+
+/** @type {import('./$types').PageServerLoad} */
+export async function load({locals:{user}}) {
   const transactions = await FetchTransaction();
+  const userData = await loadUserSession(user);
+  
 
-
-  return { transactions };
+  return { transactions, userData };
 }
