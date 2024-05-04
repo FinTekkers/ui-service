@@ -38,6 +38,7 @@ export async function FetchPosition(requestData: { fields: FieldProto[], measure
         throw error;
     }
 }
+
 function elementsToReturn(results: Position[]) {
     return results.map(element => {
         const processedElement: any = {};
@@ -53,4 +54,3 @@ function elementsToReturn(results: Position[]) {
         return processedElement;
     });
 }
-
