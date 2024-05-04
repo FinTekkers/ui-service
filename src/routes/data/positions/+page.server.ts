@@ -1,6 +1,8 @@
 import { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 import { MeasureProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
 import { FetchPosition } from "$lib/positions";
+import { redirect } from "@sveltejs/kit";
+
 
 const fieldLookup = {
   ID: FieldProto.ID,
@@ -44,11 +46,29 @@ const measureLookup = {
   YIELD_TO_MATURITY: MeasureProto.YIELD_TO_MATURITY,
 };
 
+
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ request }) {
+const loadUserSession = async(user:any)=>{
+// **********session data handling function
+         if(!user){
+            console.log('you must be logged in')
+            throw redirect(303,"/login")     
+         }
+        return {
+          user
+        };
+}
+
+
+/** @type {import('./$types').PageServerLoad} */
+export async function load({locals:{user}, request }) {
   const searchParams = new URLSearchParams(request.url.split('?')[1]);
   const fields = searchParams.get('fields');
   const measures = searchParams.get('measures');
+
+  // session user
+  const userData = await loadUserSession(user);
+
 
   // If either fields or measures is missing, return early
   if (!fields || !measures) {
@@ -92,5 +112,5 @@ export async function load({ request }) {
   const positions = await FetchPosition(requestData);
 
   const metadata = { 'fields': userFields, 'measures': userMeasures };
-  return { positions, requestData, fieldMeasure, metadata };
+  return { positions, requestData, fieldMeasure, metadata, userData };
 }

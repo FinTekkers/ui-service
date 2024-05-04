@@ -197,29 +197,33 @@ TODO - Need to write the Java server script
     }
 }]
 
+const commonIconStyle = "width: 25px; height: 25px;"
+
 export const dashboardMenuData:dashboardMenuType= {
     portfolio:{
         location: "PORTFOLIO",
         navigateTo: "PORTFOLIO",
-        style:"p-2 user-menu cursor-pointer",
-        iconName: "solar:graph-new-bold",
+        style:commonIconStyle,
+        iconName: "bytesize:portfolio",
         url: "portfolios",
         menuName:"Portfolio"
     },
 
+
     security:{
         location: "SECURITY",
         navigateTo: "SECURITY",
-        style:"p-2 user-menu cursor-pointer",
-        iconName: "solar:folder-security-bold",
+        style:commonIconStyle,
+        iconName: "solar:folder-security-broken",
         url: "securities",
         menuName:"Security"
     },
 
+
     transaction:{
         location: "TRANSACTION",
         navigateTo: "TRANSACTION",
-        style:"p-2 user-menu cursor-pointer",
+        style:commonIconStyle,
         iconName: "tabler:transaction-dollar",
         url: "transactions",
         menuName:"Transaction"
@@ -228,8 +232,8 @@ export const dashboardMenuData:dashboardMenuType= {
     position:{
         location: "POSITION",
         navigateTo: "POSITION",
-        style:"p-2 user-menu cursor-pointer",
-        iconName: "solar:folder-security-bold",
+        style:commonIconStyle,
+        iconName:"iconoir:position",
         url: "positions",
         menuName:"Position"
     },

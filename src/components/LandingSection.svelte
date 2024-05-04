@@ -113,7 +113,12 @@
             }
 
             .landing-cta-buttons {
-                grid-area: 5/2/9/9;
+  
+                grid-area: 5/2/6/9;
+                display: grid;
+                grid-template-columns: repeat(3,1fr);
+                grid-template-rows: 8vh auto;
+                gap: 1em;
     
 
                 button {
@@ -211,6 +216,8 @@
                 .landing-cta-buttons {
                     grid-area: 5/1/5/-1;
                     text-align: center;
+                    
+                    
                 }
 
                 .landing-image{
@@ -260,17 +267,20 @@
                
 
                 .landing-cta-buttons {
+                margin-top: 2em;
                   @include flex(column,center, center,0em);
-                grid-area:6/1/6/-1;
+                  grid-area:5/1/6/-1;
+                  display: grid;
+                  grid-template-columns: 1fr;
+                  gap: 1em;
+                  justify-items: center;
 
 
                     button {
                         width: 50%;
 
                         &:nth-child(1) {
-                            order: 2;
-                            margin-bottom: 1em;
-                            margin-right: 0;
+                            order: 0;
                         }
                     }
                 }
