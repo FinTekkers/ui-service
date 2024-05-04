@@ -67,7 +67,7 @@ export async function load({ locals: { user }, request }) {
   const measures = searchParams.get('measures');
 
   const positionViewEnumValue = PositionViewProto[positionView as keyof typeof PositionViewProto];
-  const positionTypeEnumValue = PositionTypeProto[positionView as keyof typeof PositionTypeProto];
+  const positionTypeEnumValue = PositionTypeProto[positionType as keyof typeof PositionTypeProto];
 
   if (!positionView || !positionType || !fields || !measures) {
     console.log('Required parameters missing. No request will be made.');
