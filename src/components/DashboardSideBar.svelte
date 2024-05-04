@@ -45,7 +45,8 @@
 
   <div class="dashboard_user_menu_options">
     {#each Object.entries(dashboardMenuData) as [_menukey, menuValue]}
-      <div
+      <a
+        href={menuValue.url}
         class="p-2 user-menu cursor-pointer"
         on:keydown={() => handleKeyDown("PORTFOLIO")}
         on:click={() => selectedDashboardMenuUpdater(menuValue.location)}
@@ -56,7 +57,7 @@
           style={menuValue.style}
         />
         <span>{menuValue.menuName}</span>
-      </div>
+      </a>
     {/each}
   </div>
 
