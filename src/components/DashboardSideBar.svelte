@@ -1,83 +1,83 @@
 <script lang="ts">
-
   // external exports
   import Icon from "@iconify/svelte";
 
   // internal exports
-  import {selectedDashboardMenuUpdater} from "../store/store";
+  import { selectedDashboardMenuUpdater } from "../store/store";
   import type { dashboardMenuList } from "$lib/Util";
-  import {dashboardMenuData} from '$lib/uidata';
+  import { dashboardMenuData } from "$lib/uidata";
   export let data;
 
   // user_session_info_variable
-  let userInfo:string;
+  let userInfo: string;
 
   //  this function is to ensure accessibility
-  const handleKeyDown:(key:keyof typeof dashboardMenuList)=>void = (dashboardMenuKey: keyof typeof dashboardMenuList)=>{
-     console.log(dashboardMenuKey)
-  }
+  const handleKeyDown: (key: keyof typeof dashboardMenuList) => void = (
+    dashboardMenuKey: keyof typeof dashboardMenuList
+  ) => {
+    console.log(dashboardMenuKey);
+  };
 
-  if (data){
+  if (data) {
+    try {
       // if session, extract user info
-      const {userData:{user:{name}}} = data;
+      const {
+        userData: {
+          user: { name },
+        },
+      } = data;
       userInfo = name;
+    } catch (err: any) {
+      console.log("Swallowing error (likely due to 'reading: 'user'': " + err);
+    }
   }
-
-
-
-
 </script>
 
 <div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
-
-<div class=" dashboard_menu_icon user-menu cursor-pointer">
-   <Icon
+  <div class=" dashboard_menu_icon user-menu cursor-pointer">
+    <Icon
       icon="octicon:feed-person-16"
       class="user-menu-icon"
-      style='width:25px; height:25px; color:#7cd2ba'
+      style="width:25px; height:25px; color:#7cd2ba"
     />
-    <span style='color:#7cd2ba'>Hi {userInfo}</span>
-</div>
+    <span style="color:#7cd2ba">Hi {userInfo}</span>
+  </div>
 
-<div class="dashboard_user_menu_options">
-  {#each Object.entries(dashboardMenuData) as [_menukey, menuValue] }
-    
-    <div class="p-2 user-menu cursor-pointer"
-      on:keydown={()=> handleKeyDown('PORTFOLIO')}
-      on:click={() =>  selectedDashboardMenuUpdater(menuValue.location)}
-    >
-       <Icon
-        icon={menuValue.iconName}
-        class="user-menu-icon"
-        style={menuValue.style}
-      />
-      <span>{menuValue.menuName}</span>
-    </div>
-  
-  {/each}
+  <div class="dashboard_user_menu_options">
+    {#each Object.entries(dashboardMenuData) as [_menukey, menuValue]}
+      <div
+        class="p-2 user-menu cursor-pointer"
+        on:keydown={() => handleKeyDown("PORTFOLIO")}
+        on:click={() => selectedDashboardMenuUpdater(menuValue.location)}
+      >
+        <Icon
+          icon={menuValue.iconName}
+          class="user-menu-icon"
+          style={menuValue.style}
+        />
+        <span>{menuValue.menuName}</span>
+      </div>
+    {/each}
+  </div>
 
-</div>
-
-
-<form   method="post" action="?/logout">
-      <label class=" user-menu-logout cursor-pointer" for="logout">    
-                <button type="submit">
-                  <Icon
-                  icon="ri:logout-circle-line"
-                  class="user-menu-icon"
-                  style="width: 25px; height: 25px;"
-                />
-                </button>
-                <span>Log out</span>
-      </label>
-</form>
-
+  <form method="post" action="?/logout">
+    <label class=" user-menu-logout cursor-pointer" for="logout">
+      <button type="submit">
+        <Icon
+          icon="ri:logout-circle-line"
+          class="user-menu-icon"
+          style="width: 25px; height: 25px;"
+        />
+      </button>
+      <span>Log out</span>
+    </label>
+  </form>
 </div>
 
 <style lang="scss">
   @import "../style.scss";
 
-.dashboard-sidebar {
+  .dashboard-sidebar {
     background-color: $tealwhite;
     width: 25vw;
     display: flex;
@@ -85,104 +85,90 @@
     align-items: center;
     padding-top: 2em;
 
-
-    .dashboard_user_menu_options{
+    .dashboard_user_menu_options {
       display: grid;
       grid-template-columns: 1fr;
-      grid-template-rows: repeat(5,1fr);
+      grid-template-rows: repeat(5, 1fr);
       height: 50vh;
       width: 100%;
       justify-items: center;
     }
 
-    
-
-          .user-menu {
-            color: $primary-color;
-            @include flex(row,flex-start, center, 1em);
-            width: 50%;
-            margin: 0;
-            transition: all .5s ease;
-
-            &:hover{
-              color: $primary-button;
-            }
-
-          }
-
-          form{
-            width: 50%;
-
-            .user-menu-logout {
-              color: $primary-color;
-              @include flex(row,flex-start, center, 1em);  
-            }
-          }
-
-
-          .user-menu-icon {
-            vertical-align: baseline;
-          }
-  }
-
-@media screen and (max-width: $breakingpoint_medium){
-  .dashboard-sidebar{
-    width: 35vw;
-  }
-}
-
-@media screen and (max-width: $breakingpoint_mobile){
-
-  .dashboard-sidebar{
-    display: flex;
-    align-items: center;
-
-    .dashboard_menu_icon{
-      justify-content: center;
-
-    }
-
-    .dashboard_user_menu_options{
+    .user-menu {
+      color: $primary-color;
+      @include flex(row, flex-start, center, 1em);
+      width: 50%;
       margin: 0;
+      transition: all 0.5s ease;
 
-
-      .user-menu{
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr;
-      justify-items: center;
-  
+      &:hover {
+        color: $primary-button;
       }
     }
 
+    form {
+      width: 50%;
 
-form{
-   width: 100%;
+      .user-menu-logout {
+        color: $primary-color;
+        @include flex(row, flex-start, center, 1em);
+      }
+    }
 
-   span{
-    display: none;
-   }
-
-  .user-menu-logout{
-   padding: 0;
-   display: flex;
-   justify-content: center;
-   gap: 0;
-
-   
+    .user-menu-icon {
+      vertical-align: baseline;
+    }
   }
 
-}
+  @media screen and (max-width: $breakingpoint_medium) {
+    .dashboard-sidebar {
+      width: 35vw;
+    }
+  }
 
-    div{
-      width: 100%;
-      margin-right: 1em;
+  @media screen and (max-width: $breakingpoint_mobile) {
+    .dashboard-sidebar {
+      display: flex;
+      align-items: center;
 
-      :is(span){
-        display: none;
+      .dashboard_menu_icon {
+        justify-content: center;
+      }
+
+      .dashboard_user_menu_options {
+        margin: 0;
+
+        .user-menu {
+          width: 100%;
+          display: grid;
+          grid-template-columns: 1fr;
+          justify-items: center;
+        }
+      }
+
+      form {
+        width: 100%;
+
+        span {
+          display: none;
+        }
+
+        .user-menu-logout {
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          gap: 0;
+        }
+      }
+
+      div {
+        width: 100%;
+        margin-right: 1em;
+
+        :is(span) {
+          display: none;
+        }
       }
     }
   }
-  
-}
 </style>
