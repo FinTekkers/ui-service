@@ -1,8 +1,8 @@
-import { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
-import { MeasureProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
+import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
 import { FetchPosition } from "$lib/positions";
 import { redirect } from "@sveltejs/kit";
-
+import { PositionTypeProto, PositionViewProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb";
 
 const fieldLookup = {
   ID: FieldProto.ID,
@@ -46,48 +46,55 @@ const measureLookup = {
   YIELD_TO_MATURITY: MeasureProto.YIELD_TO_MATURITY,
 };
 
+/** @type {import('./$types').PageServerLoad} */
+const loadUserSession = async (user: any) => {
+  // **********session data handling function
+  if (!user) {
+    console.log("you must be logged in");
+    throw redirect(303, "/login");
+  }
+  return {
+    user,
+  };
+};
 
 /** @type {import('./$types').PageServerLoad} */
-const loadUserSession = async(user:any)=>{
-// **********session data handling function
-         if(!user){
-            console.log('you must be logged in')
-            throw redirect(303,"/login")     
-         }
-        return {
-          user
-        };
-}
-
-
-/** @type {import('./$types').PageServerLoad} */
-export async function load({locals:{user}, request }) {
-  const searchParams = new URLSearchParams(request.url.split('?')[1]);
+export async function load({ locals: { user }, request }) {
+  const searchParams = new URLSearchParams(request.url.split("?")[1]);
+  const positionView = searchParams.get('positionView');
+  const positionType = searchParams.get('positionType');
   const fields = searchParams.get('fields');
   const measures = searchParams.get('measures');
+
+  const positionViewEnumValue = PositionViewProto[positionView as keyof typeof PositionViewProto];
+  const positionTypeEnumValue = PositionTypeProto[positionView as keyof typeof PositionTypeProto];
+
+  if (!positionView || !positionType || !fields || !measures) {
+    console.log('Required parameters missing. No request will be made.');
+    return { positions: [] }; // Return an empty array or appropriate value
+  }
 
   // session user
   const userData = await loadUserSession(user);
 
-
   // If either fields or measures is missing, return early
   if (!fields || !measures) {
-    console.log('Fields or measures missing. No request will be made.');
+    console.log("Fields or measures missing. No request will be made.");
     return { positions: [] }; // Return an empty array or appropriate value
   }
 
-  const fieldMeasure = { fields, measures }
+  const fieldMeasure = { fields, measures };
 
   console.log({ fields, measures });
 
   // Function to strip quotation marks
-  const stripQuotes = (str: string) => str.replace(/^"(.*)"$/, '$1');
+  const stripQuotes = (str: string) => str.replace(/^"(.*)"$/, "$1");
 
-  const userFields = stripQuotes(fields).split(',');
-  const userMeasures = stripQuotes(measures).split(',');
+  const userFields = stripQuotes(fields).split(",");
+  const userMeasures = stripQuotes(measures).split(",");
 
   // Map user fields and measures to their respective Protos
-  const mappedFields = userFields.map(field => {
+  const mappedFields = userFields.map((field) => {
     const fieldName = field as keyof typeof fieldLookup;
     if (fieldLookup[fieldName]) {
       return fieldLookup[fieldName];
@@ -96,8 +103,7 @@ export async function load({locals:{user}, request }) {
     }
   });
 
-
-  const mappedMeasures = userMeasures.map(measure => {
+  const mappedMeasures = userMeasures.map((measure) => {
     const measureName = measure as keyof typeof measureLookup;
     if (measureLookup[measureName]) {
       return measureLookup[measureName];
@@ -106,11 +112,10 @@ export async function load({locals:{user}, request }) {
     }
   });
 
-
   const requestData = { fields: mappedFields, measures: mappedMeasures };
-  console.log({ requestData })
-  const positions = await FetchPosition(requestData);
+  console.log({ requestData });
+  const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue);
 
-  const metadata = { 'fields': userFields, 'measures': userMeasures };
+  const metadata = { fields: userFields, measures: userMeasures };
   return { positions, requestData, fieldMeasure, metadata, userData };
 }

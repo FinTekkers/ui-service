@@ -2,10 +2,46 @@
 <script lang="ts">
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+  import {
+    PositionTypeProto,
+    PositionViewProto,
+  } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb";
+
   import { goto } from "$lib/helper";
+  import { onMount } from "svelte";
+
+  let isCheckboxChecked = false;
+
+  let isPositionTypeSelected = false;
+  let isPositionViewSelected = false;
 
   export let selectedFields: any[] = [];
   export let selectedMeasures: any[] = [];
+  export let selectedPositionType = "";
+  export let selectedPositionView = "";
+
+  // Function to update the disabled state of the button based on validation conditions
+  function updateButtonState() {
+    const isAnyCheckboxChecked =
+      selectedFields.length > 0 && selectedMeasures.length > 0;
+    isCheckboxChecked = isAnyCheckboxChecked;
+    isPositionTypeSelected = selectedPositionType !== "";
+    isPositionViewSelected = selectedPositionView !== "";
+  }
+
+  function toggleSelectedPositionType(e: Event) {
+    const target = e.target;
+    if (target instanceof HTMLSelectElement) {
+      selectedPositionType = target.value;
+    }
+  }
+
+  function toggleSelectedPositionView(e: Event) {
+    const target = e.target;
+    if (target instanceof HTMLSelectElement) {
+      selectedPositionView = target.value;
+    }
+  }
 
   function toggleSelectedField(key: string) {
     if (selectedFields.includes(key)) {
@@ -24,12 +60,11 @@
   }
 
   function fetchPositions() {
-
     const selectedFieldsString = selectedFields.join(",");
     const selectedMeasuresString = selectedMeasures.join(",");
 
     goto(
-      `/data/positions?fields=${selectedFieldsString}&measures=${selectedMeasuresString}`
+      `/data/positions?positionView=${selectedPositionView}&positionType=${selectedPositionType}&fields=${selectedFieldsString}&measures=${selectedMeasuresString}`
     );
   }
 
@@ -39,6 +74,8 @@
       const urlParams = new URLSearchParams(window.location.search);
       const selectedFieldsFromUrl = urlParams.get("fields");
       const selectedMeasuresFromUrl = urlParams.get("measures");
+      const selectedPositionTypeFromUrl = urlParams.get("positionType");
+      const selectedPositionViewFromUrl = urlParams.get("positionView");
 
       if (selectedFieldsFromUrl) {
         selectedFields = selectedFieldsFromUrl.split(",");
@@ -46,6 +83,14 @@
 
       if (selectedMeasuresFromUrl) {
         selectedMeasures = selectedMeasuresFromUrl.split(",");
+      }
+
+      if (selectedPositionTypeFromUrl) {
+        selectedPositionType = selectedPositionTypeFromUrl;
+      }
+
+      if (selectedPositionViewFromUrl) {
+        selectedPositionView = selectedPositionViewFromUrl;
       }
     }
   }
@@ -58,9 +103,21 @@
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
   }
+
+  // Call updateButtonState on component mount and whenever any relevant data changes
+  onMount(updateButtonState);
+  $: updateButtonState();
+
+  // Reactive declaration to update button state whenever relevant data changes
+  $: {
+    isCheckboxChecked =
+      selectedFields.length > 0 && selectedMeasures.length > 0;
+    isPositionTypeSelected = selectedPositionType !== "";
+    isPositionViewSelected = selectedPositionView !== "";
+  }
 </script>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+<div class="position-grid gap-4 mb-4 ml-6">
   <div class="position-select-container flex flex-col sm:flex-row gap-3">
     <div class="text-black">
       <h4>Fields:</h4>
@@ -90,18 +147,57 @@
         </label>
       {/each}
     </div>
+    <div class="text-black">
+      <h4>Position Type:</h4>
+      <select
+        class=""
+        on:change={(e) => toggleSelectedPositionType(e)}
+        value={selectedPositionType}
+      >
+        <option selected disabled value="">Select position type</option>
+        {#each Object.entries(PositionTypeProto) as [key, value]}
+          <option value={key}>{formatName(key)}</option>
+        {/each}
+      </select>
+    </div>
+    <div class="text-black">
+      <h4>Position View:</h4>
+      <select
+        class=""
+        on:change={(e) => toggleSelectedPositionView(e)}
+        value={selectedPositionView}
+      >
+        <option selected disabled value="">Select position view</option>
+        {#each Object.entries(PositionViewProto) as [key, value]}
+          <option value={key}>{formatName(key)}</option>
+        {/each}
+      </select>
+    </div>
   </div>
 </div>
 
 <button
   class="py-2 px-6 text-white border border-gray-500 position-button"
-  on:click={fetchPositions}>Fetch position</button
+  on:click={fetchPositions}
+  disabled={!isCheckboxChecked ||
+    !isPositionTypeSelected ||
+    !isPositionViewSelected}>Fetch position</button
 >
 
 <style lang="scss">
   @import "../../style.scss";
+  .position-grid {
+    margin: 10px 40px;
+  }
+
+  select {
+    padding: 10px;
+    border: 1px solid gray;
+    cursor: pointer;
+    border-radius: 10px;
+  }
   .position-select-container {
-    margin: 10px;
+    // margin: 10px 40px;
     // gap: 1rem;
     // width: 1000px;
     // margin: 20px auto;
@@ -128,16 +224,7 @@
   .position-button {
     background: $primary-color;
     padding: 10px 20px;
-    margin: 0 10px;
+    margin: 0 40px;
     border-radius: 10px;
-  }
-
-  .selections {
-    // padding: 0 40px;
-    margin: 10px;
-  }
-
-  .cancel {
-    padding: 2px 10px;
   }
 </style>

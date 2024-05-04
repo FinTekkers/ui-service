@@ -4,23 +4,23 @@ import type { MeasureProto } from '@fintekkers/ledger-models/node/fintekkers/mod
 import type { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 import { QueryPositionRequest } from '@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
-import { PositionTypeProto, PositionViewProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb';
+import type { PositionTypeProto, PositionViewProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import { string } from 'yup';
 import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
 import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/price/price_pb';
 import Portfolio from '@fintekkers/ledger-models/node/wrappers/models/portfolio/portfolio';
 import { TenorProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/tenor_pb';
-import { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
+import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
 import { Any } from 'google-protobuf/google/protobuf/any_pb';
 import { unpack } from '@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util';
 
-export async function FetchPosition(requestData: { fields: FieldProto[], measures: MeasureProto[] }): Promise<any> {
+export async function FetchPosition(requestData: { fields: FieldProto[], measures: MeasureProto[] }, positionViewEnumValue: PositionViewProto, positionTypeEnumValue: PositionTypeProto): Promise<any> {
     const positionService = new ps.PositionService();
 
     // Assuming there's no need for the positionFilter for now
     const request = new QueryPositionRequest(
-        new PositionFilter(), PositionTypeProto.TRANSACTION, PositionViewProto.DEFAULT_VIEW,
+        new PositionFilter(), positionTypeEnumValue, positionViewEnumValue,
         requestData.fields, requestData.measures, ZonedDateTime.now()
     );
 
