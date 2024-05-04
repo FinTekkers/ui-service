@@ -1,8 +1,10 @@
 #Svelte kit build files
 build/
-
 .svelte-kit/
+
+#Development files
 .env
+users_database.db
 
 #IDE related folders
 .vscode
