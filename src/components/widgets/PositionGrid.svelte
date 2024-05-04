@@ -65,7 +65,7 @@
 	@import "../../style.scss";
 	.portfolio_container {
 		height: 100%;
-		width: 82vw;
+		width: 100%;
 		background-color: $primary-color; /* assuming $primary-color is a dark color */
 		overflow: auto;
 		margin: 15px auto;
