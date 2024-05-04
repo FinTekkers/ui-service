@@ -188,6 +188,7 @@
   @import "../../style.scss";
   .position-grid {
     margin: 10px 40px;
+    width: 100%;
   }
 
   select {
