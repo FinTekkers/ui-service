@@ -13,6 +13,11 @@ from build_createEC2 import DEFAULT_PORT, get_running_instance_ids
 # get your instance ID from AWS dashboard
 # instance_id = "i-07afe20ed103e6f14"
 
+import os
+
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
 
 def deploy_code_to_instance(instance_id: str) -> bool:
     ec2 = boto3.resource("ec2", region_name="us-east-1")
@@ -80,7 +85,11 @@ def deploy_code_to_instance(instance_id: str) -> bool:
         # The load balancer on AWS will add the encryption/certificate termination and forward
         # to this port. We could expose to port 80, but the broker is already using that port
         # Run the production server
-        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=* pm2 start "GOOGLE_CLIENT_ID=290113601275-gpvi7fd8o9c5ijna6olbondgr3mu83qt.apps.googleusercontent.com GOOGLE_CLIENT_SECRET=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 npm run dev"',  # Needs sudo to expose host; currently running dev because the build fails... unsure why!!!
+        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=* pm2 start "GOOGLE_CLIENT_ID='
+        + GOOGLE_CLIENT_ID
+        + " GOOGLE_CLIENT_SECRET="
+        + GOOGLE_CLIENT_SECRET
+        + ' npm run dev"',  # Needs sudo to expose host; currently running dev because the build fails... unsure why!!!
     ]
 
     ssh_connect_with_retry(ssh, ip_address, 0)

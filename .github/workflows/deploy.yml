@@ -36,7 +36,10 @@ jobs:
       env:
         AWS_SERVER_KEYPAIR_BASE64: ${{ secrets.AWS_SERVER_KEYPAIR_BASE64 }}   
     - name: Run the script
-      run: python build_deploy.py
+      run: python build_deploy.py 
+      env:
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
     - name: Delete server keypair
       run: | 
         rm -f ~/.aws/fintekkers-test-ec2.pem
