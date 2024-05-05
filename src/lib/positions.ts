@@ -1,22 +1,21 @@
-import * as ps from '@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService';
-import { QueryPositionRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_request_pb';
+//Models
+import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
+import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
+
+//Services
+import { PositionService } from '@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService';
+
+//Requests
+import { QueryPositionRequest } from '@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest';
+
+//Types
+import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
 import type { MeasureProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
 import type { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
-import { QueryPositionRequest } from '@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest';
-import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import type { PositionTypeProto, PositionViewProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb';
-import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
-import { string } from 'yup';
-import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
-import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/price/price_pb';
-import Portfolio from '@fintekkers/ledger-models/node/wrappers/models/portfolio/portfolio';
-import { TenorProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/tenor_pb';
-import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
-import { Any } from 'google-protobuf/google/protobuf/any_pb';
-import { unpack } from '@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util';
 
 export async function FetchPosition(requestData: { fields: FieldProto[], measures: MeasureProto[] }, positionViewEnumValue: PositionViewProto, positionTypeEnumValue: PositionTypeProto): Promise<any> {
-    const positionService = new ps.PositionService();
+    const positionService = new PositionService();
 
     // Assuming there's no need for the positionFilter for now
     const request = new QueryPositionRequest(

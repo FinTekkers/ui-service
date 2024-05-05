@@ -13,6 +13,11 @@ from build_createEC2 import DEFAULT_PORT, get_running_instance_ids
 # get your instance ID from AWS dashboard
 # instance_id = "i-07afe20ed103e6f14"
 
+import os
+
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
 
 def deploy_code_to_instance(instance_id: str) -> bool:
     ec2 = boto3.resource("ec2", region_name="us-east-1")
@@ -75,12 +80,16 @@ def deploy_code_to_instance(instance_id: str) -> bool:
         "pwd",
         "cd /home/ec2-user/ui-service;npm install",
         # Build the production server, the variables are required to build
-        #TEMP HACK TODO TODO TODO ###############"cd /home/ec2-user/ui-service;GOOGLE_CLIENT_ID=MISSING GOOGLE_CLIENT_SECRET=MISSING npm run build",
+        # TEMP HACK TODO TODO TODO ###############"cd /home/ec2-user/ui-service;GOOGLE_CLIENT_ID=MISSING GOOGLE_CLIENT_SECRET=MISSING npm run build",
         # Set the port to be 443. Note this is running HTTP server but running on HTTPS port.
         # The load balancer on AWS will add the encryption/certificate termination and forward
         # to this port. We could expose to port 80, but the broker is already using that port
         # Run the production server
-        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=* pm2 start "npm run dev"',  # Needs sudo to expose host; currently running dev because the build fails... unsure why!!!
+        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=* pm2 start "GOOGLE_CLIENT_ID='
+        + GOOGLE_CLIENT_ID
+        + " GOOGLE_CLIENT_SECRET="
+        + GOOGLE_CLIENT_SECRET
+        + ' npm run dev"',  # Needs sudo to expose host; currently running dev because the build fails... unsure why!!!
     ]
 
     ssh_connect_with_retry(ssh, ip_address, 0)
@@ -124,6 +133,20 @@ def await_new_instance_on_target_group(new_instance_id):
     raise Exception("New instance id is not registered with the load balancer")
 
 
+def register_new_instange_to_load_balancer(new_instance_id):
+    target_group_arn = get_target_group_arn(DEFAULT_PORT)
+
+    # Register the instance
+    register_response = get_elb_client().register_targets(
+        TargetGroupArn=target_group_arn,
+        Targets=[
+            {
+                "Id": new_instance_id,
+            },
+        ],
+    )
+
+
 if __name__ == "__main__":
     from build_createEC2 import create_instance
 
@@ -135,6 +158,8 @@ if __name__ == "__main__":
 
     if result:
         print("Deployed successfully. Tearing down old instances")
+        #  Register the EC2 instance with the Load Balancer, then teardown old EC2 versions
+        register_new_instange_to_load_balancer(new_instance_id)
         await_new_instance_on_target_group(new_instance_id)
         teardown_old_ec2s(old_instance_ids)
     else:

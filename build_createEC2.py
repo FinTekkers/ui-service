@@ -1,7 +1,6 @@
 from fintekkers.devops.aws_account_setup import (
     get_ec2_client,
     get_elb_client,
-    get_load_balancer_arn,
     get_target_group_arn,
     get_security_group_id,
 )
@@ -93,16 +92,6 @@ def create_instance() -> map:
 
     # Call the wait function
     wait_for_instance_running(instance_id)
-
-    # Register the instance
-    register_response = get_elb_client().register_targets(
-        TargetGroupArn=target_group_arn,
-        Targets=[
-            {
-                "Id": instance_id,
-            },
-        ],
-    )
 
     return {"new_instance": instance_id, "old_instances": instance_ids}
 
