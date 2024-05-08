@@ -11,6 +11,27 @@
   // user_session_info_variable
   let userInfo: string;
 
+  let sidebarExpanded = true; // Variable to track sidebar state
+
+  const toggleSidebar = () => {
+    sidebarExpanded = !sidebarExpanded; // Toggle sidebar state
+    const spans = document.querySelectorAll('.dashboard-sidebar span') as NodeListOf<HTMLElement>;
+    spans.forEach((span: HTMLElement) => {
+      span.style.display = sidebarExpanded ? 'inline' : 'none';
+    });
+
+    const sidebar = document.querySelector('.dashboard-sidebar');
+    if (sidebar instanceof HTMLElement) {
+      sidebar.style.width = sidebarExpanded ? '25vw' : '70px';
+    }
+
+    // Change icon based on sidebar state
+    const icon = document.querySelector('.sidebar-toggle-icon');
+    if (icon instanceof HTMLElement) {
+      icon.setAttribute('icon', sidebarExpanded ? 'mdi:hamburger-close' : 'mdi:hamburger-open');
+    }
+  };
+
   //  this function is to ensure accessibility
   const handleKeyDown: (key: keyof typeof dashboardMenuList) => void = (
     dashboardMenuKey: keyof typeof dashboardMenuList
@@ -33,7 +54,17 @@
   }
 </script>
 
-<div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
+<div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar relative">
+  <button
+    type="button"
+    on:click={toggleSidebar}
+    class="absolute top-0 right-[-30px] text-black"
+    ><Icon
+      icon={sidebarExpanded ? "mdi:hamburger-open" : "mdi:hamburger-close"}
+      class="user-menu-icon"
+      style="width:30px; height:30px; color:#000000"
+    /></button
+  >
   <div class=" dashboard_menu_icon user-menu cursor-pointer">
     <Icon
       icon="octicon:feed-person-16"
@@ -85,6 +116,7 @@
     justify-content: flex-start;
     align-items: center;
     padding-top: 2em;
+    transition: width 0.5s ease;
 
     .dashboard_user_menu_options {
       display: grid;
