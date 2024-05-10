@@ -24,7 +24,7 @@
 	}
 </script>
 
-<div class="portfolio_container container mx-auto shadow px-10 py-7 my-4">
+<div class="portfolio_container mx-auto shadow px-10 py-7 my-4">
 	<h2 class="text-3xl font-extrabold my-3">Positions</h2>
 	<table class="min-w-full text-left table-fixed">
 		<thead class="border-b border-slate-400">
