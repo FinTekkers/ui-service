@@ -1,5 +1,6 @@
 <!-- components/widgets/PositionSelect.svelte -->
 <script lang="ts">
+  import MultiSelect from 'svelte-multiselect';
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
   import {
@@ -121,31 +122,21 @@
   <div class="position-select-container flex flex-col sm:flex-row gap-3">
     <div class="text-black">
       <h4>Fields:</h4>
-      <div class="h-48 overflow-auto w-[300px]">
-        {#each Object.entries(FieldProto) as [key, value]}
-          <label>
-            <input
-              type="checkbox"
-              checked={selectedFields.includes(key)}
-              on:change={() => toggleSelectedField(key)}
-            />
-            {formatName(key)}
-          </label>
-        {/each}
-      </div>
+      <MultiSelect
+        id="fields-multiselect"
+        options={Object.keys(FieldProto)}
+        placeholder="Select fields..."
+        bind:selected={selectedFields}
+      />
     </div>
     <div class="text-black">
       <h4>Measures:</h4>
-      {#each Object.entries(MeasureProto) as [key, value]}
-        <label>
-          <input
-            type="checkbox"
-            checked={selectedMeasures.includes(key)}
-            on:change={() => toggleSelectedMeasure(key)}
-          />
-          {formatName(key)}
-        </label>
-      {/each}
+      <MultiSelect
+        id="measures-multiselect"
+        options={Object.keys(MeasureProto)}
+        placeholder="Select measures..."
+        bind:selected={selectedMeasures}
+      />
     </div>
     <div class="text-black">
       <h4>Position Type:</h4>
@@ -197,9 +188,9 @@
   }
 
   select {
-    padding: 10px;
+    padding: 5px;
     width: 200px;
-    border: 1px solid gray;
+    // border: 1px solid gray;
     cursor: pointer;
     border-radius: 10px;
   }
