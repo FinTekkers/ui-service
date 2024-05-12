@@ -25,7 +25,7 @@
 
 <div class="w-screen h-full flex">
   <DashboardSideBar data={data} />
-  <div class="h-full w-screen dashboard-container overflow-y-auto">
+  <div class="h-full w-screen dashboard-container">
     <PositionSelect />
 
     {#if hasRequestedData}
