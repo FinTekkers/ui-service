@@ -156,10 +156,13 @@
       >
         <option selected disabled value="">Select position type</option>
         {#each Object.entries(PositionTypeProto) as [key, value]}
-          <option value={key}>{formatName(key)}</option>
+          {#if key !== "UNKNOWN_POSITION_TYPE"}
+            <option value={key}>{formatName(key)}</option>
+          {/if}
         {/each}
       </select>
     </div>
+
     <div class="text-black">
       <h4>Position View:</h4>
       <select
@@ -169,7 +172,9 @@
       >
         <option selected disabled value="">Select position view</option>
         {#each Object.entries(PositionViewProto) as [key, value]}
-          <option value={key}>{formatName(key)}</option>
+          {#if key !== "UNKNOWN_POSITION_VIEW"}
+            <option value={key}>{formatName(key)}</option>
+          {/if}
         {/each}
       </select>
     </div>
@@ -193,6 +198,7 @@
 
   select {
     padding: 10px;
+    width: 200px;
     border: 1px solid gray;
     cursor: pointer;
     border-radius: 10px;
