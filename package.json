@@ -23,6 +23,8 @@
 		"@auth/sveltekit": "^0.13.0",
 		"@fintekkers/ledger-models": "^0.1.85",
 		"@lucia-auth/adapter-drizzle": "^1.0.7",
+		"ag-grid-community": "^30.2.1",
+		"ag-grid-svelte": "^0.3.0",
 		"aws-cdk-lib": "^2.124.0",
 		"aws-serverless-express": "^3.4.0",
 		"better-sqlite3": "^9.4.5",

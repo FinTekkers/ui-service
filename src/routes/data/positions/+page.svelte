@@ -2,40 +2,43 @@
   import DashboardSideBar from "../../../components/DashboardSideBar.svelte";
   import Position from "../../../components/widgets/PositionGrid.svelte";
   import PositionSelect from "../../../components/widgets/PositionSelect.svelte";
+  import PositionTable from "../../../components/widgets/PositionTable.svelte";
   export let data: import("./$types").PageData;
+  // console.log({data});
+  
 
   // Split fields and measures into arrays
   const fieldMeasure = data.fieldMeasure;
-  // Split fields and measures into arrays if fieldMeasure is defined
-  const fields = fieldMeasure?.fields.split(",") ?? [];
+  const rows = fieldMeasure?.rows.split(",") ?? [];
+  const columns = fieldMeasure?.columns.split(",") ?? [];
   const measures = fieldMeasure?.measures.split(",") ?? [];
 
-  console.log({ fields, measures });
-
-  // Check if requestData is available
   const hasRequestedData = data && data.requestData;
 
-  // Log requestData if available
+  // if (hasRequestedData) {
+  //   console.log(data.requestData);
+  // }
+
+  let columnDefs = [];
+
   if (hasRequestedData) {
-    console.log(data.requestData);
+    columnDefs = [
+      ...rows.map((row) => ({ headerName: row, field: row })),
+      ...columns.map((column) => ({ headerName: column, field: column })),
+      ...measures.map((measure) => ({ headerName: measure, field: measure })),
+    ];
   }
 </script>
 
 {@debug}
 
 <div class="w-screen h-full flex">
-  <DashboardSideBar data={data} />
+  <DashboardSideBar {data} />
   <div class="h-full w-screen dashboard-container">
     <PositionSelect />
 
     {#if hasRequestedData}
-      <Position
-        positions={Array.isArray(data.positions)
-          ? data.positions
-          : [data.positions]}
-        requestData={data.requestData}
-        metadata={data.metadata}
-      />
+      <PositionTable rowData={data.positions} {columnDefs} />
     {/if}
   </div>
 </div>

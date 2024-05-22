@@ -48,9 +48,8 @@ const measureLookup = {
 
 /** @type {import('./$types').PageServerLoad} */
 const loadUserSession = async (user: any) => {
-  // **********session data handling function
   if (!user) {
-    console.log("you must be logged in");
+    console.log("You must be logged in");
     throw redirect(303, "/login");
   }
   return {
@@ -63,38 +62,31 @@ export async function load({ locals: { user }, request }) {
   const searchParams = new URLSearchParams(request.url.split("?")[1]);
   const positionView = searchParams.get('positionView');
   const positionType = searchParams.get('positionType');
-  const fields = searchParams.get('fields');
+  const rows = searchParams.get('rows');
+  const columns = searchParams.get('columns');
   const measures = searchParams.get('measures');
 
   const positionViewEnumValue = PositionViewProto[positionView as keyof typeof PositionViewProto];
   const positionTypeEnumValue = PositionTypeProto[positionType as keyof typeof PositionTypeProto];
 
-  if (!positionView || !positionType || !fields || !measures) {
+  if (!positionView || !positionType || !rows || !columns || !measures) {
     console.log('Required parameters missing. No request will be made.');
-    return { positions: [] }; // Return an empty array or appropriate value
+    return { positions: [] };
   }
 
-  // session user
   const userData = await loadUserSession(user);
 
-  // If either fields or measures is missing, return early
-  if (!fields || !measures) {
-    console.log("Fields or measures missing. No request will be made.");
-    return { positions: [] }; // Return an empty array or appropriate value
-  }
-
-  const fieldMeasure = { fields, measures };
-
-  console.log({ fields, measures });
-
-  // Function to strip quotation marks
   const stripQuotes = (str: string) => str.replace(/^"(.*)"$/, "$1");
 
-  const userFields = stripQuotes(fields).split(",");
+  const userRows = stripQuotes(rows).split(",");
+  const userColumns = stripQuotes(columns).split(",");
   const userMeasures = stripQuotes(measures).split(",");
 
-  // Map user fields and measures to their respective Protos
-  const mappedFields = userFields.map((field) => {
+  const combinedFields = [...userRows, ...userColumns];
+
+  const fieldMeasure = { rows, columns, measures };
+
+  const mappedFields = combinedFields.map((field) => {
     const fieldName = field as keyof typeof fieldLookup;
     if (fieldLookup[fieldName]) {
       return fieldLookup[fieldName];
@@ -113,9 +105,9 @@ export async function load({ locals: { user }, request }) {
   });
 
   const requestData = { fields: mappedFields, measures: mappedMeasures };
-  console.log({ requestData });
+  // console.log({ requestData });
   const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue);
 
-  const metadata = { fields: userFields, measures: userMeasures };
-  return { positions, requestData, fieldMeasure, metadata, userData };
+  const metadata = { rows: userRows, columns: userColumns, measures: userMeasures };
+  return { positions, requestData,fieldMeasure, metadata, userData };
 }
