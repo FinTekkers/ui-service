@@ -1,32 +1,49 @@
 <script lang="ts">
   import DashboardSideBar from "../../../components/DashboardSideBar.svelte";
-  import Position from "../../../components/widgets/PositionGrid.svelte";
   import PositionSelect from "../../../components/widgets/PositionSelect.svelte";
   import PositionTable from "../../../components/widgets/PositionTable.svelte";
   export let data: import("./$types").PageData;
-  // console.log({data});
-  
-
-  // Split fields and measures into arrays
-  const fieldMeasure = data.fieldMeasure;
-  const rows = fieldMeasure?.rows.split(",") ?? [];
-  const columns = fieldMeasure?.columns.split(",") ?? [];
-  const measures = fieldMeasure?.measures.split(",") ?? [];
+  console.log(data.fieldMeasure);
+  console.log(data.requestData);
 
   const hasRequestedData = data && data.requestData;
 
-  // if (hasRequestedData) {
-  //   console.log(data.requestData);
-  // }
-
-  let columnDefs = [];
+  let columnDefs: { headerName: string; field: string; }[] = [];
+  let filteredRowData: any[] = [];
+  let includeZeroValues = true;
 
   if (hasRequestedData) {
-    columnDefs = [
-      ...rows.map((row) => ({ headerName: row, field: row })),
-      ...columns.map((column) => ({ headerName: column, field: column })),
-      ...measures.map((measure) => ({ headerName: measure, field: measure })),
+    const { rows, columns, measures } = data.fieldMeasure;
+    const { fields, measures: measureKeys } = data.requestData;
+
+    // Create a combined array of fields and measures with their respective labels
+    const combinedFields = [
+      ...fields.map((field: { toString: () => any; }, index: number) => ({
+        headerName: index < rows.split(',').length ? rows.split(',')[index] : columns.split(',')[index - rows.split(',').length],
+        field: field.toString()
+      })),
+      ...measureKeys.map((measure: { toString: () => any; }, index: string | number) => ({
+        headerName: measures.split(',')[index],
+        field: measure.toString()
+      }))
     ];
+
+    columnDefs = combinedFields;
+
+    // Initial filtering of row data
+    filteredRowData = data.positions;
+    if (!includeZeroValues) {
+      filteredRowData = filteredRowData.filter(position => position['1'] !== 0);
+    }
+  }
+
+  function toggleZeroValues() {
+    includeZeroValues = !includeZeroValues;
+    if (includeZeroValues) {
+      filteredRowData = data.positions;
+    } else {
+      filteredRowData = data.positions.filter((position: { [x: string]: number; }) => position['1'] !== 0);
+    }
   }
 </script>
 
@@ -36,9 +53,13 @@
   <DashboardSideBar {data} />
   <div class="h-full w-screen dashboard-container">
     <PositionSelect />
+    <div class="zero-checkbox">
+      <input type="checkbox" id="zeroValues" on:change={toggleZeroValues} />
+      <label for="zeroValues" class="text-black">Ignore Zero Values</label>
+    </div>
 
     {#if hasRequestedData}
-      <PositionTable rowData={data.positions} {columnDefs} />
+      <PositionTable rowData={filteredRowData} {columnDefs} />
     {/if}
   </div>
 </div>
@@ -48,7 +69,6 @@
 
   .dashboard-container {
     background-color: white;
-    // @include flex(column, center, center, 0);
 
     .dashboard-menu {
       width: 98%;
@@ -58,5 +78,14 @@
       background-color: $tealblack;
       color: $primary-color;
     }
+  }
+
+  .zero-checkbox{
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 10px;
+    margin: 0 30px;
+    padding: 10px 0;
   }
 </style>

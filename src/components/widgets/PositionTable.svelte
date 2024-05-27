@@ -6,7 +6,7 @@
   export let rowData: any[] = [];
   export let columnDefs: any[] = [];
 
-  console.log({rowData, columnDefs});
+  // console.log({rowData, columnDefs});
   
   let defaultColDef = {
     sortable: true,
