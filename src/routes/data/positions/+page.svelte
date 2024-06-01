@@ -3,12 +3,10 @@
   import PositionSelect from "../../../components/widgets/PositionSelect.svelte";
   import PositionTable from "../../../components/widgets/PositionTable.svelte";
   export let data: import("./$types").PageData;
-  console.log(data.fieldMeasure);
-  console.log(data.requestData);
 
   const hasRequestedData = data && data.requestData;
 
-  let columnDefs: { headerName: string; field: string; }[] = [];
+  let columnDefs: { headerName: string; field: string }[] = [];
   let filteredRowData: any[] = [];
   let includeZeroValues = true;
 
@@ -18,14 +16,24 @@
 
     // Create a combined array of fields and measures with their respective labels
     const combinedFields = [
-      ...fields.map((field: { toString: () => any; }, index: number) => ({
-        headerName: index < rows.split(',').length ? rows.split(',')[index] : columns.split(',')[index - rows.split(',').length],
-        field: field.toString()
+      ...fields.map((field: { toString: () => any }, index: number) => ({
+        headerName:
+          index < rows.split(",").length
+            ? rows.split(",")[index]
+            : columns.split(",")[index - rows.split(",").length],
+        field: field.toString(),
+        enablePivot: true,
+        rowGroup: index < rows.split(",").length, // Group rows
+        pivot: index >= rows.split(",").length // Pivot columns
       })),
-      ...measureKeys.map((measure: { toString: () => any; }, index: string | number) => ({
-        headerName: measures.split(',')[index],
-        field: measure.toString()
-      }))
+      ...measureKeys.map(
+        (measure: { toString: () => any }, index: string | number) => ({
+          headerName: measures.split(",")[index],
+          field: measure.toString(),
+          enablePivot: true,
+          aggFunc: "sum",
+        })
+      ),
     ];
 
     columnDefs = combinedFields;
@@ -33,7 +41,9 @@
     // Initial filtering of row data
     filteredRowData = data.positions;
     if (!includeZeroValues) {
-      filteredRowData = filteredRowData.filter(position => position['1'] !== 0);
+      filteredRowData = filteredRowData.filter(
+        (position) => position["1"] !== 0 // Adjust field name
+      );
     }
   }
 
@@ -42,7 +52,9 @@
     if (includeZeroValues) {
       filteredRowData = data.positions;
     } else {
-      filteredRowData = data.positions.filter((position: { [x: string]: number; }) => position['1'] !== 0);
+      filteredRowData = data.positions.filter(
+        (position: { [x: string]: number }) => position["1"] !== 0 // Adjust field name
+      );
     }
   }
 </script>
@@ -59,7 +71,12 @@
     </div>
 
     {#if hasRequestedData}
-      <PositionTable rowData={filteredRowData} {columnDefs} />
+      <PositionTable rowData={filteredRowData} {columnDefs} loading={false} />
+      <div>
+        <h3>Debug Info</h3>
+        <pre>{JSON.stringify(columnDefs, null, 2)}</pre>
+        <pre>{JSON.stringify(filteredRowData, null, 2)}</pre>
+      </div>
     {/if}
   </div>
 </div>
@@ -80,7 +97,7 @@
     }
   }
 
-  .zero-checkbox{
+  .zero-checkbox {
     display: flex;
     align-items: center;
     justify-content: start;

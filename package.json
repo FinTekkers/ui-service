@@ -19,6 +19,7 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
+		"@ag-grid-enterprise/all-modules": "^27.3.0",
 		"@auth/core": "^0.27.0",
 		"@auth/sveltekit": "^0.13.0",
 		"@fintekkers/ledger-models": "^0.1.85",
