@@ -2,38 +2,29 @@
   import MultiSelect from "svelte-multiselect";
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
-  import {
-    PositionTypeProto,
-    PositionViewProto,
-  } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb";
+  import { PositionTypeProto, PositionViewProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb";
 
   import { goto } from "$lib/helper";
   import { onMount } from "svelte";
 
   let isCheckboxChecked = false;
-
   let isPositionTypeSelected = false;
   let isPositionViewSelected = false;
 
-  export let selectedFields: string[] = [];
+  export let selectedRows: string[] = [];
+  export let selectedColumns: string[] = [];
   export let selectedMeasures: string[] = [];
   export let selectedPositionType: string[] = [];
   export let selectedPositionView: string[] = [];
-  let isButtonDisabled = false; // Define isButtonDisabled variable
+  let isButtonDisabled = false;
 
-  // Function to update the disabled state of the button based on validation conditions
   function updateButtonState() {
-    isCheckboxChecked =
-      selectedFields.length > 0 && selectedMeasures.length > 0;
+    isCheckboxChecked = selectedRows.length > 0 && selectedColumns.length > 0;
     isPositionTypeSelected = selectedPositionType.length > 0;
     isPositionViewSelected = selectedPositionView.length > 0;
-
-    // Disable button if any of the multiselects are empty or have less than one selected item
-    isButtonDisabled =
-      !isCheckboxChecked || !isPositionTypeSelected || !isPositionViewSelected;
+    isButtonDisabled = !isCheckboxChecked || !isPositionTypeSelected || !isPositionViewSelected;
   }
 
-  // Function to format names for display
   function formatName(name: string) {
     return name
       .split("_")
@@ -41,35 +32,38 @@
       .join(" ");
   }
 
-  // Function to unformat names for URL parameters
   function unformatName(name: string) {
     return name.toUpperCase().replace(/\s+/g, "_");
   }
 
   function fetchPositions() {
-    const selectedFieldsString = selectedFields.map(unformatName).join(",");
+    const selectedRowsString = selectedRows.map(unformatName).join(",");
+    const selectedColumnsString = selectedColumns.map(unformatName).join(",");
     const selectedMeasuresString = selectedMeasures.map(unformatName).join(",");
 
-    // Unformat selected position view and type
     const unformattedPositionView = selectedPositionView.map(unformatName);
     const unformattedPositionType = selectedPositionType.map(unformatName);
 
     goto(
-      `/data/positions?positionView=${unformattedPositionView}&positionType=${unformattedPositionType}&fields=${selectedFieldsString}&measures=${selectedMeasuresString}`
+      `/data/positions?positionView=${unformattedPositionView}&positionType=${unformattedPositionType}&rows=${selectedRowsString}&columns=${selectedColumnsString}&measures=${selectedMeasuresString}`
     );
   }
 
-  // Add this function to load selected values from local storage
   function loadSelectedValues() {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
-      const selectedFieldsFromUrl = urlParams.get("fields");
+      const selectedRowsFromUrl = urlParams.get("rows");
+      const selectedColumnsFromUrl = urlParams.get("columns");
       const selectedMeasuresFromUrl = urlParams.get("measures");
       const selectedPositionTypeFromUrl = urlParams.get("positionType");
       const selectedPositionViewFromUrl = urlParams.get("positionView");
 
-      if (selectedFieldsFromUrl) {
-        selectedFields = selectedFieldsFromUrl.split(",").map(formatName);
+      if (selectedRowsFromUrl) {
+        selectedRows = selectedRowsFromUrl.split(",").map(formatName);
+      }
+
+      if (selectedColumnsFromUrl) {
+        selectedColumns = selectedColumnsFromUrl.split(",").map(formatName);
       }
 
       if (selectedMeasuresFromUrl) {
@@ -86,26 +80,32 @@
     }
   }
 
-  // Call loadSelectedValues on component mount
   loadSelectedValues();
 
-  // Call updateButtonState on component mount and whenever any relevant data changes
   onMount(updateButtonState);
   $: updateButtonState();
 
-  // Reactive declaration to update button state whenever relevant data changes
-  $: isButtonDisabled
+  $: isButtonDisabled;
 </script>
 
 <div class="position-grid gap-4 mb-4 ml-6">
   <div class="position-select-container flex flex-col sm:flex-row gap-3">
     <div class="text-black">
-      <h4>Fields:</h4>
+      <h4>Rows: </h4>
       <MultiSelect
-        id="fields-multiselect"
+        id="rows-multiselect"
         options={Object.keys(FieldProto).map(formatName)}
-        placeholder="Select fields..."
-        bind:selected={selectedFields}
+        placeholder="Select rows..."
+        bind:selected={selectedRows}
+      />
+    </div>
+    <div class="text-black">
+      <h4>Columns:</h4>
+      <MultiSelect
+        id="columns-multiselect"
+        options={Object.keys(FieldProto).map(formatName)}
+        placeholder="Select columns..."
+        bind:selected={selectedColumns}
       />
     </div>
     <div class="text-black">
@@ -162,15 +162,10 @@
   select {
     padding: 5px;
     width: 200px;
-    // border: 1px solid gray;
     cursor: pointer;
     border-radius: 10px;
   }
   .position-select-container {
-    // margin: 10px 40px;
-    // gap: 1rem;
-    // width: 1000px;
-    // margin: 20px auto;
   }
 
   label {
