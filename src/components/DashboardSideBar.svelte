@@ -10,6 +10,9 @@
 
   // user_session_info_variable
   let userInfo: string;
+  let userAvatar:string;
+  let userId:string;
+  let apikeydata:string;
 
   let sidebarExpanded = true; // Variable to track sidebar state
 
@@ -39,15 +42,43 @@
     console.log(dashboardMenuKey);
   };
 
+const generateApiKey = async () => {
+    try {
+        const usageLimit = 100; // Example value, adjust as needed
+        const response = await fetch('/api/api-key', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId, usageLimit }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to generate API key');
+        }
+
+        const data = await response.json();
+        apikeydata = await data.apiKey;
+    } catch (error) {
+        console.error('Error generating API key:', error);
+    }
+};
+
+
+
   if (data) {
     try {
       // if session, extract user info
       const {
         userData: {
-          user: { name },
+          user: { name, avatarUrl, id },
         },
       } = data;
       userInfo = name;
+      userAvatar = avatarUrl;
+      userId = id
+
+
     } catch (err: any) {
       console.log("Swallowing error (likely due to 'reading: 'user'': " + err);
     }
@@ -66,12 +97,19 @@
     /></button
   >
   <div class=" dashboard_menu_icon user-menu cursor-pointer">
-    <Icon
-      icon="octicon:feed-person-16"
-      class="user-menu-icon"
-      style="width:25px; height:25px; color:#7cd2ba"
-    />
+
+    <!-- svelte-ignore a11y-missing-attribute -->
+    <img style="width: 50px; height:50px" src={userAvatar} />
     <span style="color:#7cd2ba">Hi {userInfo}</span>
+  </div>
+
+  <div class="api_key_button">
+    <button style="color: red;" on:click={()=>generateApiKey()}>get Api Key</button>
+    {#if apikeydata}
+    <p style="color:red;">{apikeydata}</p>
+    {:else}
+    <p></p>
+    {/if}
   </div>
 
   <div class="dashboard_user_menu_options">

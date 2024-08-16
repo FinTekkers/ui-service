@@ -50,7 +50,7 @@ export async function load({locals:{user}}) {
   // *** session user data
   const userData = await loadUserSession(user);
  
-
+ console.log('checking user', userData)
 
   // ***API code below
 

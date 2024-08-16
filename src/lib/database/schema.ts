@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { datetime } from 'drizzle-orm/mysql-core';
 import { integer, sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core';
 
 export const usersTable = sqliteTable('users', {
@@ -49,6 +50,19 @@ export const usersSessionsTable = sqliteTable('users_sessions', {
 		.references(() => usersTable.id),
 
 	expiresAt: integer('expires_at').notNull()
+});
+
+
+export const apiKeysTable = sqliteTable('api_keys', {
+  id: integer('id').primaryKey(),
+
+  user_id: text('user_id').notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+
+  key: text('key').unique().notNull(),
+
+  usage_limit: integer('usage_limit').default(10),
+
+
 });
 
 export type UserInsertSchema = typeof usersTable.$inferInsert;
