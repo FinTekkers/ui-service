@@ -1,3 +1,11 @@
+CREATE TABLE `api_keys` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`key` text NOT NULL,
+	`usage_limit` integer DEFAULT 10,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `oauth_accounts` (
 	`user_id` text NOT NULL,
 	`provider_id` text NOT NULL,
@@ -26,4 +34,5 @@ CREATE TABLE `users` (
 	`created_at` text DEFAULT CURRENT_TIMESTAMP
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `api_keys_key_unique` ON `api_keys` (`key`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);
