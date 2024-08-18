@@ -8,7 +8,7 @@ from fintekkers.devops.aws_account_setup import (
     get_security_group_id,
 )
 
-from build_createEC2 import DEFAULT_PORT, get_running_instance_ids
+from fintekkers.devops.create_instance import DEFAULT_PORT, get_running_instance_ids
 
 # get your instance ID from AWS dashboard
 # instance_id = "i-07afe20ed103e6f14"
@@ -148,8 +148,6 @@ def register_new_instange_to_load_balancer(new_instance_id):
 
 
 if __name__ == "__main__":
-    from build_createEC2 import create_instance
-
     instance_id_map: map = create_instance()
 
     new_instance_id = instance_id_map["new_instance"]
