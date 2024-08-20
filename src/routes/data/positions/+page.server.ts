@@ -4,6 +4,10 @@ import { FetchPosition } from "$lib/positions";
 import { redirect } from "@sveltejs/kit";
 import { PositionTypeProto, PositionViewProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb";
 
+//**session info */
+import { deleteSessionCookie } from '$lib/database/authUtils.server';
+import { lucia } from '$lib/database/luciaAuth.server';
+
 const fieldLookup = {
   ID: FieldProto.ID,
   AS_OF: FieldProto.AS_OF,
@@ -57,6 +61,22 @@ const loadUserSession = async (user: any) => {
     user,
   };
 };
+
+
+export const actions = {
+
+  logout: async({ cookies, locals })=>{
+          if (!locals.session?.id) return;
+
+              await lucia.invalidateSession(locals.session.id);
+
+              await deleteSessionCookie(lucia, cookies);
+
+              throw redirect(303, "/login");
+  }
+
+}
+
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals: { user }, request }) {

@@ -19,9 +19,9 @@
 		<tbody>
 			{#each rows as row}
 				<tr class="table-row border-b border-slate-400">
-					<td class="table-cell px-4 py-2">{row.portfolioName}</td>
-					<td class="table-cell px-4 py-2">{row.portfolioId}</td>
-					<td class="table-cell px-4 py-2">{row.portfolioAsOf}</td>
+					<td class="table-cell px-4 py-2">{row?.portfolioName}</td>
+					<td class="table-cell px-4 py-2">{row?.portfolioId}</td>
+					<td class="table-cell px-4 py-2">{row?.portfolioAsOf}</td>
 				</tr>
 			{/each}
 		</tbody>
