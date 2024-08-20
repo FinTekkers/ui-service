@@ -8,6 +8,9 @@ import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field
 import { FetchPortfolio } from "$lib/portfolios";
 import { FetchTransaction } from "$lib/transactions";
 import { redirect } from "@sveltejs/kit";
+//**session info */
+import { deleteSessionCookie } from '$lib/database/authUtils.server';
+import { lucia } from '$lib/database/luciaAuth.server';
 const { FieldProto } = pkg;
 
 /** @type {import('./$types').PageServerLoad} */
@@ -20,6 +23,20 @@ const loadUserSession = async(user:any)=>{
         return {
           user
         };
+}
+
+export const actions = {
+
+  logout: async({ cookies, locals })=>{
+          if (!locals.session?.id) return;
+
+              await lucia.invalidateSession(locals.session.id);
+
+              await deleteSessionCookie(lucia, cookies);
+
+              throw redirect(303, "/login");
+  }
+
 }
 
 

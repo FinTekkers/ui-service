@@ -2,7 +2,9 @@
   import DashboardSideBar from "../../../components/DashboardSideBar.svelte";
   import Portfolio from "../../../components/widgets/PortfolioGrid.svelte";
   export let data: import("./$types").PageData;
-import { redirect } from '@sveltejs/kit';
+
+
+  console.log('here is the data', data)
 
   
 
@@ -13,10 +15,9 @@ import { redirect } from '@sveltejs/kit';
 
 <div class="w-screen h-full flex">
   <DashboardSideBar data={data} />
-  
   <Portfolio
-        rows={Array.isArray(data.portfolios)
-          ? data.portfolios
-          : [data.portfolios]}
+        rows={Array.isArray(data.portfolioData)
+          ? data.portfolioData
+          : [data.portfolioData]}
       />
 </div>

@@ -9,7 +9,7 @@ import { checkIfEmailExists, insertNewUser } from '$lib/database/databaseUtils.s
 import {yup} from 'sveltekit-superforms/adapters'
 
 
-const  DASHBOARD_ROUTE  = "/portfolios"
+const  DASHBOARD_ROUTE  = "/data/portfolios"
 
 
 const signUpSchema = Yup.object({
