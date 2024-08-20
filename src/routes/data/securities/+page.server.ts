@@ -1,4 +1,9 @@
 import { redirect } from "@sveltejs/kit";
+import { FetchSecurity } from "$lib/security";
+//**session info */
+import { deleteSessionCookie } from '$lib/database/authUtils.server';
+import { lucia } from '$lib/database/luciaAuth.server';
+
 
 //Requests & Services
 
@@ -14,7 +19,20 @@ const loadUserSession = async(user:any)=>{
         };
 }
 
-import { FetchSecurity } from "$lib/security";
+
+export const actions = {
+
+  logout: async({ cookies, locals })=>{
+          if (!locals.session?.id) return;
+
+              await lucia.invalidateSession(locals.session.id);
+
+              await deleteSessionCookie(lucia, cookies);
+
+              throw redirect(303, "/login");
+  }
+
+}
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({locals:{user}}) {

@@ -18,7 +18,7 @@ const signInSchema = Yup.object({
 })
 
 
-const DASHBOARD_ROUTE = "/portfolios"
+const DASHBOARD_ROUTE = "/data/portfolios"
 const LOGIN_ROUTE = "/login"
 
 type fieldInput = FormDataEntryValue | null;

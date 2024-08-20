@@ -4,7 +4,7 @@ import { deleteSessionCookie } from '$lib/database/authUtils.server';
 import { lucia } from '$lib/database/luciaAuth.server';
 
 const AUTH_ROUTES = "/login"
-const DASHBOARD_ROUTE = "/portfolios"
+const DASHBOARD_ROUTE = "data/portfolios"
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// Retrieve the session ID from the browser's cookies

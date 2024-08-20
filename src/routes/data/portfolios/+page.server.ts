@@ -1,4 +1,3 @@
-import { redirect } from "@sveltejs/kit";
 //Requests & Services
 import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";
 import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
@@ -9,6 +8,9 @@ import { FetchPortfolio } from "$lib/portfolios";
 const { FieldProto } = pkg;
 
 //**session info */
+import { deleteSessionCookie } from '$lib/database/authUtils.server';
+import { lucia } from '$lib/database/luciaAuth.server';
+import { redirect } from "@sveltejs/kit";
 
 
 /** @type {import('./$types').PageServerLoad} */
@@ -24,14 +26,57 @@ const loadUserSession = async(user:any)=>{
 }
 
 
+export const actions = {
+
+  logout: async({ cookies, locals })=>{
+          if (!locals.session?.id) return;
+
+              await lucia.invalidateSession(locals.session.id);
+
+              await deleteSessionCookie(lucia, cookies);
+
+              throw redirect(303, "/login");
+  }
+
+}
+
+
+
 /** @type {import('./$types').PageServerLoad} */
 export async function load({locals:{user}}) {
 
    const userData = await loadUserSession(user);
 
 
-  const portfolios = await FetchPortfolio("Federal Reserve SOMA Holdings");
 
+    // ***API code below
+  const now = dt.ZonedDateTime.now();
 
-  return { portfolios, userData };
+  const portfolioService = new PortfolioService();
+
+  const filter: PositionFilter = new PositionFilter();
+  filter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, "Federal Reserve SOMA Holdings");
+
+  const portfolioData = portfolioService
+    .searchPortfolio(now.toProto(), filter)
+    .then((portfolios: Portfolio[]) => {
+      console.log("Portfolios found: " + portfolios.length);
+
+      const results = portfolios.map(portfolio => {
+        return {
+          portfolioName: portfolio.getPortfolioName(),
+          portfolioAsOf: portfolio.getAsOf().toString(),
+          portfolioId: portfolio.getID().toString()
+        };
+      });
+
+      return results;
+    })
+    .catch((err: Error) => {
+      return {
+        portfolioName: "Error: " + err.message, portfolioAsOf: "", portfolioId: ""
+      };
+    });
+
+  return {portfolioData, userData };
 }
