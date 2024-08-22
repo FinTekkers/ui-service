@@ -23,6 +23,10 @@ for (const key in process.env) {
 	}
 }
 
+if (process.env.HOSTNAME && process.env.HOSTNAME.includes('.ec2.internal')) {
+	googleRedirectUrl = `https://www.fintekkers.org:443/oauth/google/callback`;
+}
+
 export const githubOauth = new GitHub(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET);
 export const googleOauth = new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, googleRedirectUrl);
 
