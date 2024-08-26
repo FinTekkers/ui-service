@@ -31,6 +31,13 @@ if (process.env.HOSTNAME && process.env.HOSTNAME.includes('.ec2.internal')) {
 	console.log("HOSTNAME environment variable found. Callback URL: "+ googleRedirectUrl);
 }
 
+if (process.env.PWD && process.env.PWD.includes('ec2-user')) {
+	googleRedirectUrl = `https://www.fintekkers.org:443/oauth/google/callback`;
+	console.log("Running in an EC2 user folder. Callback URL: "+ googleRedirectUrl);
+}
+
+
+pm_cwd
 
 console.log("Callback URL: "+ googleRedirectUrl);
 
