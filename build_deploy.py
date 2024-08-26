@@ -1,3 +1,16 @@
+import os
+
+os.environ['FINTEKKERS_DEFAULT_PORT'] = "443"
+DEFAULT_PORT = os.environ['FINTEKKERS_DEFAULT_PORT']
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
+if GOOGLE_CLIENT_ID is None:
+    GOOGLE_CLIENT_ID="290113601275-gpvi7fd8o9c5ijna6olbondgr3mu83qt.apps.googleusercontent.com"
+
+if GOOGLE_CLIENT_SECRET is None:
+    GOOGLE_CLIENT_SECRET="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"
+
 from time import sleep
 import boto3
 from fintekkers.devops.aws_account_setup import (
@@ -8,16 +21,7 @@ from fintekkers.devops.aws_account_setup import (
     get_security_group_id,
 )
 
-from fintekkers.devops.create_instance import DEFAULT_PORT, get_running_instance_ids
-
-# get your instance ID from AWS dashboard
-# instance_id = "i-07afe20ed103e6f14"
-
-import os
-
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-
+from fintekkers.devops.build_createEC2 import create_instance, get_running_instance_ids
 
 def deploy_code_to_instance(instance_id: str) -> bool:
     ec2 = boto3.resource("ec2", region_name="us-east-1")

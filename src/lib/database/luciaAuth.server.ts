@@ -17,15 +17,22 @@ const dbAdapter = new DrizzleSQLiteAdapter(database, usersSessionsTable, usersTa
 
 let googleRedirectUrl = `http://localhost:443/oauth/google/callback`;
 
+console.log(process.env);
+
 for (const key in process.env) {
 	if (key.startsWith('AWS')) {
 		googleRedirectUrl = `https://www.fintekkers.org:443/oauth/google/callback`;
+		console.log("AWS environment variable found. Callback URL: "+ googleRedirectUrl);
 	}
 }
 
 if (process.env.HOSTNAME && process.env.HOSTNAME.includes('.ec2.internal')) {
 	googleRedirectUrl = `https://www.fintekkers.org:443/oauth/google/callback`;
+	console.log("HOSTNAME environment variable found. Callback URL: "+ googleRedirectUrl);
 }
+
+
+console.log("Callback URL: "+ googleRedirectUrl);
 
 export const githubOauth = new GitHub(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET);
 export const googleOauth = new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, googleRedirectUrl);
