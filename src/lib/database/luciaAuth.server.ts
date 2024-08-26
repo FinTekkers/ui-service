@@ -35,7 +35,6 @@ if (process.env.PWD && process.env.PWD.includes('ec2-user')) {
 	googleRedirectUrl = `https://www.fintekkers.org:443/oauth/google/callback`;
 	console.log("Running in an EC2 user folder. Callback URL: "+ googleRedirectUrl);
 }
-:\async
 console.log("Callback URL: "+ googleRedirectUrl);
 
 export const githubOauth = new GitHub(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET);
