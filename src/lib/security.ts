@@ -7,9 +7,9 @@ import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/dateti
 
 interface securityData {
   cusip: string;
-  issueDate: Date;
+  issueDate: string;
   outstandingAmount: string;
-  maturityDate: Date;
+  maturityDate: string;
 }
 
 /**
@@ -63,11 +63,15 @@ export async function FetchSecurity(
             const id = security.getSecurityID()
               ? security.getSecurityID().getIdentifierValue()
               : security.getID().toString();
+
+            const issueDate = security.getIssueDate().toISOString().slice(0, 10).replace(/-/g, '/');
+            const maturityDate = security.getMaturityDate().toISOString().slice(0, 10).replace(/-/g, '/');
+
             const result = {
               cusip: id,
-              issueDate: security.getIssueDate(),
-              outstandingAmount: postAuctionQuantity,
-              maturityDate: security.getMaturityDate(),
+              issueDate: issueDate,
+              outstandingAmount: postAuctionQuantity.toString(),
+              maturityDate: maturityDate,
             };
             acc.push(result);
           }
