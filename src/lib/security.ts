@@ -2,7 +2,6 @@ import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field
 import {PositionFilter} from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import {SecurityService} from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import {ProtoSerializationUtil} from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
-import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 
 const { FieldProto } = pkg;
 
