@@ -1,15 +1,15 @@
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+import {PositionFilter} from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
+import {SecurityService} from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
+import {ProtoSerializationUtil} from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
+
 const { FieldProto } = pkg;
-import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
-import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
-import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 
 interface securityData {
   cusip: string;
-  issueDate: Date;
+  issueDate: string;
   outstandingAmount: string;
-  maturityDate: Date;
+  maturityDate: string;
 }
 
 /**
@@ -23,7 +23,6 @@ export async function FetchSecurity(
   assetClass: string,
   issuerName: string
 ): Promise<securityData[]> {
-  const now = dt.ZonedDateTime.now();
   const securityService = new SecurityService();
 
   const filterSecurity = new PositionFilter();
@@ -34,49 +33,52 @@ export async function FetchSecurity(
     const securities = await securityService.searchSecurityAsOfNow(
       filterSecurity
     );
-    const securityResults = securities.reduce(
-      (acc: securityData[], security) => {
-        const issuanceList = security.proto.getIssuanceInfoList();
-        const issuance =
-          issuanceList && issuanceList.length > 0 ? issuanceList[0] : null;
+    return securities.reduce(
+        (acc: securityData[], security) => {
+          const issuanceList = security.proto.getIssuanceInfoList();
+          const issuance =
+              issuanceList && issuanceList.length > 0 ? issuanceList[0] : null;
 
-        if (issuance) {
-          if (
-            !issuance.getPostAuctionOutstandingQuantity() &&
-            security.getMaturityDate().getFullYear() > 2009
-          ) {
-            // Log if no post-auction outstanding quantity and maturity date is after 2009
-            console.log(
-              `Security issued with CUSIP ${security
-                .getSecurityID()
-                .getIdentifierValue()} has no post-auction outstanding quantity.`
-            );
-          } else if (
-            !issuance.getPostAuctionOutstandingQuantity() &&
-            security.getMaturityDate().getFullYear() <= 2009
-          ) {
-            // Ignore if no post-auction outstanding quantity and maturity date is on or before 2009
-          } else {
-            const postAuctionQuantity = ProtoSerializationUtil.deserialize(
-              issuance.getPostAuctionOutstandingQuantity()
-            );
-            const id = security.getSecurityID()
-              ? security.getSecurityID().getIdentifierValue()
-              : security.getID().toString();
-            const result = {
-              cusip: id,
-              issueDate: security.getIssueDate(),
-              outstandingAmount: postAuctionQuantity,
-              maturityDate: security.getMaturityDate(),
-            };
-            acc.push(result);
+          if (issuance) {
+            if (
+                !issuance.getPostAuctionOutstandingQuantity() &&
+                security.getMaturityDate().getFullYear() > 2009
+            ) {
+              // Log if no post-auction outstanding quantity and maturity date is after 2009
+              console.log(
+                  `Security issued with CUSIP ${security
+                      .getSecurityID()
+                      .getIdentifierValue()} has no post-auction outstanding quantity.`
+              );
+            } else if (
+                !issuance.getPostAuctionOutstandingQuantity() &&
+                security.getMaturityDate().getFullYear() <= 2009
+            ) {
+              // Ignore if no post-auction outstanding quantity and maturity date is on or before 2009
+            } else {
+              const postAuctionQuantity = ProtoSerializationUtil.deserialize(
+                  issuance.getPostAuctionOutstandingQuantity()
+              );
+              const id = security.getSecurityID()
+                  ? security.getSecurityID().getIdentifierValue()
+                  : security.getID().toString();
+
+              const issueDate = security.getIssueDate().toISOString().slice(0, 10).replace(/-/g, '/');
+              const maturityDate = security.getMaturityDate().toISOString().slice(0, 10).replace(/-/g, '/');
+
+              const result = {
+                cusip: id,
+                issueDate: issueDate,
+                outstandingAmount: postAuctionQuantity.toString(),
+                maturityDate: maturityDate,
+              };
+              acc.push(result);
+            }
           }
-        }
-        return acc;
-      },
-      []
+          return acc;
+        },
+        []
     );
-    return securityResults;
   } catch (error: any) {
     console.error("Error fetching security data:", error.message);
     return [];
