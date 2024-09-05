@@ -12,7 +12,7 @@
   .main_ui_menu{
     width: 100vw;
     height: 100vh;
-    max-height: 100vh !important;
+    max-height: 100vh;
     overflow: hidden;
   }
 
