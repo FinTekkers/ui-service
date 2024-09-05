@@ -8,6 +8,8 @@ import { PositionTypeProto, PositionViewProto } from "@fintekkers/ledger-models/
 import { deleteSessionCookie } from '$lib/database/authUtils.server';
 import { lucia } from '$lib/database/luciaAuth.server';
 
+
+
 const fieldLookup = {
   ID: FieldProto.ID,
   AS_OF: FieldProto.AS_OF,
@@ -53,12 +55,13 @@ const measureLookup = {
 /** @type {import('./$types').PageServerLoad} */
 const loadUserSession = async (user: any) => {
   // **********session data handling function
+  console.log('what does the user contains', user)
   if (!user) {
     console.log("you must be logged in");
     throw redirect(303, "/login");
   }
   return {
-    user,
+    user
   };
 };
 
@@ -89,13 +92,18 @@ export async function load({ locals: { user }, request }) {
   const positionViewEnumValue = PositionViewProto[positionView as keyof typeof PositionViewProto];
   const positionTypeEnumValue = PositionTypeProto[positionType as keyof typeof PositionTypeProto];
 
+  const userData = await loadUserSession(user);
+  console.log('testing user data', userData)
+
+
+
   if (!positionView || !positionType || !fields || !measures) {
     console.log('Required parameters missing. No request will be made.');
-    return { positions: [] }; // Return an empty array or appropriate value
+    return { positions: [], userData }; // Return an empty array or appropriate value
   }
 
   // session user
-  const userData = await loadUserSession(user);
+
 
   // If either fields or measures is missing, return early
   if (!fields || !measures) {
@@ -105,7 +113,6 @@ export async function load({ locals: { user }, request }) {
 
   const fieldMeasure = { fields, measures };
 
-  console.log({ fields, measures });
 
   // Function to strip quotation marks
   const stripQuotes = (str: string) => str.replace(/^"(.*)"$/, "$1");
