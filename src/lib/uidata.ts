@@ -1,4 +1,4 @@
-import type { userArchetypes, NavbarURL, FooterSection, codeBlockData } from "./types";
+import type { userArchetypes, NavbarURL, FooterSection, codeBlockData, pageTitles } from "./types";
 import type { installCodeLangType,dashboardMenuType } from "./types";
 
 
@@ -238,4 +238,9 @@ export const dashboardMenuData:dashboardMenuType= {
         url: "positions",
         menuName:"Position"
     },
+}
+
+export const PageTitles: pageTitles ={
+ contact:'Contact us',
+ 
 }

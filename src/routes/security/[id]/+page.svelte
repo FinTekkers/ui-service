@@ -2,6 +2,11 @@
     import {page} from "$app/stores"
     export let data;
 </script>
+
+<svelte:head>
+  <title>{'Dashboard Security'}</title>
+</svelte:head>
+
 <body>
     <div>
         Welcome to nested route
