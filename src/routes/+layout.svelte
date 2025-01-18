@@ -13,7 +13,13 @@
   // form data
   export let data;
   export let form;
+
+  export let title = "Fintekkers: Fintech's Infrastructure";
 </script>
+
+<svelte:head>
+  <title>{title}</title>
+</svelte:head>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <AppShell>

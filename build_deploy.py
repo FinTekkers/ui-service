@@ -1,7 +1,7 @@
 import os
 
 os.environ['FINTEKKERS_DEFAULT_PORT'] = "443"
-DEFAULT_PORT = "443"
+DEFAULT_PORT = 443
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
@@ -10,6 +10,8 @@ if GOOGLE_CLIENT_ID is None:
 
 if GOOGLE_CLIENT_SECRET is None:
     GOOGLE_CLIENT_SECRET="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"
+
+SERVER_NAME = "web-server"
 
 from time import sleep
 import boto3
@@ -152,7 +154,7 @@ def register_new_instange_to_load_balancer(new_instance_id):
 
 
 if __name__ == "__main__":
-    instance_id_map: map = create_instance()
+    instance_id_map: map = create_instance(SERVER_NAME)
 
     new_instance_id = instance_id_map["new_instance"]
     old_instance_ids = instance_id_map["old_instances"]
