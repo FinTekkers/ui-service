@@ -3,6 +3,9 @@
 import type { formError } from '$lib/types';
 import { writable} from "svelte/store";
 
+export let data;
+
+
 /** @type {import('./$types').ActionData} */
 export let form: formError;
 
@@ -44,9 +47,11 @@ const handleClear = ()=>{
     form = {}
 }
 
-
-
 </script>
+
+<svelte:head>
+  <title>{'Contact us'}</title>
+</svelte:head>
 
 
         <div class="contact-us">

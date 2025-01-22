@@ -10,6 +10,10 @@
   const fields = fieldMeasure?.fields.split(",") ?? [];
   const measures = fieldMeasure?.measures.split(",") ?? [];
 
+
+  console.log('here is the data', data)
+
+
   console.log({ fields, measures });
 
   // Check if requestData is available
@@ -25,6 +29,7 @@
 
 <div class="w-screen h-full flex">
   <DashboardSideBar data={data} />
+  
   <div class="h-full w-screen dashboard-container">
     <PositionSelect />
 
