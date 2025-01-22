@@ -1,6 +1,10 @@
 <script lang="ts">
 </script>
 
+<svelte:head>
+  <title>{'Dashboard Portfolio'}</title>
+</svelte:head>
+
 <div class="main_ui_menu grow">
   <slot />
 </div>
@@ -12,7 +16,7 @@
   .main_ui_menu{
     width: 100vw;
     height: 100vh;
-    max-height: 100vh !important;
+    max-height: 100vh;
     overflow: hidden;
   }
 

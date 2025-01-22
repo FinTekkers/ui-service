@@ -6,6 +6,10 @@ export type booleanStoreType = {
 
 export type portfolioStoreType = any;
 
+export type pageTitles = {
+  [page:string]: string;
+}
+
 export type formError = {
   [x: string]: any;
   message?:string,

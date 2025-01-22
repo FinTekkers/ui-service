@@ -1,4 +1,4 @@
-import type { userArchetypes, NavbarURL, FooterSection, codeBlockData } from "./types";
+import type { userArchetypes, NavbarURL, FooterSection, codeBlockData, pageTitles } from "./types";
 import type { installCodeLangType,dashboardMenuType } from "./types";
 
 
@@ -204,17 +204,18 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "PORTFOLIO",
         navigateTo: "PORTFOLIO",
         style:commonIconStyle,
-        iconName: "bytesize:portfolio",
+        iconName: "mage:folder-2",
         url: "portfolios",
         menuName:"Portfolio"
     },
+
 
 
     security:{
         location: "SECURITY",
         navigateTo: "SECURITY",
         style:commonIconStyle,
-        iconName: "solar:folder-security-broken",
+        iconName: "hugeicons:web-security",
         url: "securities",
         menuName:"Security"
     },
@@ -224,7 +225,7 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "TRANSACTION",
         navigateTo: "TRANSACTION",
         style:commonIconStyle,
-        iconName: "tabler:transaction-dollar",
+        iconName: "mdi:briefcase-transfer-outline",
         url: "transactions",
         menuName:"Transaction"
     },
@@ -233,8 +234,13 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "POSITION",
         navigateTo: "POSITION",
         style:commonIconStyle,
-        iconName:"iconoir:position",
+        iconName:"material-symbols-light:position-top-right-outline",
         url: "positions",
         menuName:"Position"
     },
+}
+
+export const PageTitles: pageTitles ={
+ contact:'Contact us',
+ 
 }

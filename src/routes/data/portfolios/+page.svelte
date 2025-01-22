@@ -4,7 +4,6 @@
   export let data: import("./$types").PageData;
 
 
-  console.log('here is the data', data)
 
   
 
