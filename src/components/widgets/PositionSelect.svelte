@@ -1,13 +1,14 @@
 <script lang="ts">
   import MultiSelect from "svelte-multiselect";
-  import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
+
   import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
   const { FieldProto } = pkg;
 
-  import {
-    PositionTypeProto,
-    PositionViewProto,
-  } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb";
+  import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
+  const { MeasureProto } = measure_pkg;
+
+  import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
+  const { PositionTypeProto, PositionViewProto } = position_pkg;
 
   import { goto } from "$lib/helper";
   import { onMount } from "svelte";
