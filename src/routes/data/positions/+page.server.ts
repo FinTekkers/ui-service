@@ -1,4 +1,5 @@
-import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
+const { FieldProto } = pkg;
 import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
 import { FetchPosition } from "$lib/positions";
 import { redirect } from "@sveltejs/kit";
@@ -68,14 +69,14 @@ const loadUserSession = async (user: any) => {
 
 export const actions = {
 
-  logout: async({ cookies, locals })=>{
-          if (!locals.session?.id) return;
+  logout: async ({ cookies, locals }) => {
+    if (!locals.session?.id) return;
 
-              await lucia.invalidateSession(locals.session.id);
+    await lucia.invalidateSession(locals.session.id);
 
-              await deleteSessionCookie(lucia, cookies);
+    await deleteSessionCookie(lucia, cookies);
 
-              throw redirect(303, "/login");
+    throw redirect(303, "/login");
   }
 
 }
