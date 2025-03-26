@@ -4,11 +4,9 @@ import { DrizzleSQLiteAdapter } from '@lucia-auth/adapter-drizzle';
 import { Lucia } from 'lucia';
 
 import { database } from './database.server';
-import { GitHub, Google } from 'arctic';
+import { Google } from 'arctic';
 import { usersSessionsTable, usersTable } from './schema';
 import {
-	GITHUB_CLIENT_ID,
-	GITHUB_CLIENT_SECRET,
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET
 } from '$env/static/private';
@@ -22,22 +20,21 @@ console.log(process.env);
 for (const key in process.env) {
 	if (key.startsWith('AWS')) {
 		googleRedirectUrl = `https://www.fintekkers.org:443/oauth/google/callback`;
-		console.log("AWS environment variable found. Callback URL: "+ googleRedirectUrl);
+		console.log("AWS environment variable found. Callback URL: " + googleRedirectUrl);
 	}
 }
 
 if (process.env.HOSTNAME && process.env.HOSTNAME.includes('.ec2.internal')) {
 	googleRedirectUrl = `https://www.fintekkers.org:443/oauth/google/callback`;
-	console.log("HOSTNAME environment variable found. Callback URL: "+ googleRedirectUrl);
+	console.log("HOSTNAME environment variable found. Callback URL: " + googleRedirectUrl);
 }
 
 if (process.env.PWD && process.env.PWD.includes('ec2-user')) {
 	googleRedirectUrl = `https://www.fintekkers.org:443/oauth/google/callback`;
-	console.log("Running in an EC2 user folder. Callback URL: "+ googleRedirectUrl);
+	console.log("Running in an EC2 user folder. Callback URL: " + googleRedirectUrl);
 }
-console.log("Callback URL: "+ googleRedirectUrl);
+console.log("Callback URL: " + googleRedirectUrl);
 
-export const githubOauth = new GitHub(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET);
 export const googleOauth = new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, googleRedirectUrl);
 
 export const lucia = new Lucia(dbAdapter, {
