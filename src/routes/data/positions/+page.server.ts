@@ -1,15 +1,18 @@
 import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 const { FieldProto } = pkg;
-import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
+
+import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
+const { MeasureProto } = measure_pkg;
+
+import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
+const { PositionTypeProto, PositionViewProto } = position_pkg;
+
 import { FetchPosition } from "$lib/positions";
 import { redirect } from "@sveltejs/kit";
-import { PositionTypeProto, PositionViewProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb";
 
 //**session info */
 import { deleteSessionCookie } from '$lib/database/authUtils.server';
 import { lucia } from '$lib/database/luciaAuth.server';
-
-
 
 const fieldLookup = {
   ID: FieldProto.ID,
