@@ -1,7 +1,9 @@
 <script lang="ts">
   import MultiSelect from "svelte-multiselect";
   import { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
-  import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+  import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
+  const { FieldProto } = pkg;
+
   import {
     PositionTypeProto,
     PositionViewProto,
@@ -77,11 +79,15 @@
       }
 
       if (selectedPositionTypeFromUrl) {
-        selectedPositionType = selectedPositionTypeFromUrl.split(",").map(formatName);
+        selectedPositionType = selectedPositionTypeFromUrl
+          .split(",")
+          .map(formatName);
       }
 
       if (selectedPositionViewFromUrl) {
-        selectedPositionView = selectedPositionViewFromUrl.split(",").map(formatName);
+        selectedPositionView = selectedPositionViewFromUrl
+          .split(",")
+          .map(formatName);
       }
     }
   }
@@ -94,7 +100,7 @@
   $: updateButtonState();
 
   // Reactive declaration to update button state whenever relevant data changes
-  $: isButtonDisabled
+  $: isButtonDisabled;
 </script>
 
 <div class="position-grid gap-4 mb-4 ml-6">
