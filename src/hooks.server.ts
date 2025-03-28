@@ -1,56 +1,48 @@
-import { redirect, type Handle } from '@sveltejs/kit';
+import { validateSessionToken, setSessionTokenCookie, deleteSessionTokenCookie } from "$lib/server/session";
+import { sequence } from "@sveltejs/kit/hooks";
 
-import { deleteSessionCookie } from '$lib/database/authUtils.server';
-import { lucia } from '$lib/database/luciaAuth.server';
+import type { Handle } from "@sveltejs/kit";
 
-const AUTH_ROUTES = "/login"
-const DASHBOARD_ROUTE = "data/portfolios"
+// const bucket = new TokenBucket<string>(100, 1);
 
-export const handle: Handle = async ({ event, resolve }) => {
-	// Retrieve the session ID from the browser's cookies
-	const sessionId = event.cookies.get(lucia.sessionCookieName);
+// const rateLimitHandle: Handle = async ({ event, resolve }) => {
+// 	// Note: Assumes X-Forwarded-For will always be defined.
+// 	const clientIP = event.request.headers.get("X-Forwarded-For");
+// 	if (clientIP === null) {
+// 		return resolve(event);
+// 	}
+// 	let cost: number;
+// 	if (event.request.method === "GET" || event.request.method === "OPTIONS") {
+// 		cost = 1;
+// 	} else {
+// 		cost = 3;
+// 	}
+// 	if (!bucket.consume(clientIP, cost)) {
+// 		return new Response("Too many requests", {
+// 			status: 429
+// 		});
+// 	}
+// 	return resolve(event);
+// };
 
-	// If there's no session ID, set both user and session to null and resolve the request
-	if (!sessionId) {
+const authHandle: Handle = async ({ event, resolve }) => {
+	const token = event.cookies.get("session") ?? null;
+	if (token === null) {
 		event.locals.user = null;
 		event.locals.session = null;
 		return resolve(event);
 	}
 
-	// Attempt to validate the session using the retrieved session ID
-	const { session, user } = await lucia.validateSession(sessionId);
-
-	// If the session is newly created (due to session expiration extension), generate a new session cookie
-	if (session?.fresh) {
-		const sessionCookie = lucia.createSessionCookie(session.id);
-
-		// Set the new session cookie in the browser
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
+	const { session, user } = validateSessionToken(token);
+	if (session !== null) {
+		setSessionTokenCookie(event, token, session.expiresAt);
+	} else {
+		deleteSessionTokenCookie(event);
 	}
 
-	// If the session is invalid, generate a blank session cookie to remove the existing session cookie from the browser
-	if (!session) {
-		await deleteSessionCookie(lucia, event.cookies);
-	}
-
-	// If a user is logged in and attempts to access the login or register page, redirect them to the dashboard
-	if (session && AUTH_ROUTES.includes(event.url.pathname)) {
-		throw redirect(303, DASHBOARD_ROUTE);
-	}
-
-	// Protect the /data/portfolios route
-    // if (event.url.pathname.includes('/data/portfolios') && !session) {
-	// 	console.log('something fishy')
-	// 	alert('not authorised')
-    //     return redirect(303, '/login'); // Redirect to login page if not authenticated
-    // }
-
-	// Persist the user and session information in the event locals for use within endpoint handlers and page components
-	event.locals.user = user;
 	event.locals.session = session;
-
+	event.locals.user = user;
 	return resolve(event);
 };
+
+export const handle = authHandle;

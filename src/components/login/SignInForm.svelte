@@ -6,8 +6,6 @@
   import {booleanStore, customBooleanStoreUpdater} from '../../store/store';
   import { booleanKeys } from "$lib/Util";
   import type {formError} from '$lib/types';
-  import {goto} from "$lib/helper";
-  import Google_OAuth from '../custom_components/Google_OAuth.svelte';
   export let data: App.PageData;
   export let form:formError;
 
@@ -109,7 +107,7 @@ const displayError = (fieldName: string) => {
       class="font-bold py-2 px-4 rounded focus:outline-none focus:border-green-500 hover:border-green-500 focus:ring-green-500 focus:ring-1"
     >
       <Icon icon="flat-color-icons:google" style="width: 25px; height: 25px;" />
-      <a href="/oauth/google">Continue with Google</a>
+      <a href="/login/google">Continue with Google</a>
     </button>
   </div>
 </div>

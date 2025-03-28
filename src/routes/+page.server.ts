@@ -53,19 +53,19 @@ export async function load() {
         !issuance.getPostAuctionOutstandingQuantity() &&
         security.getMaturityDate().getFullYear() > 2009
       ) {
-        console.log(
-          "Issed with %s, issuance: %s",
-          security.getSecurityID().getIdentifierValue(),
-          issuance
-        );
+        // console.log(
+        //   "Issued with %s, issuance: %s",
+        //   security.getSecurityID().getIdentifierValue(),
+        //   issuance
+        // );
       } else if (
         !issuance.getPostAuctionOutstandingQuantity() &&
         security.getMaturityDate().getFullYear() <= 2009
       ) {
         //Swallow this data gap. It's old and we don't mind
       } else {
-        let postAuctionQuantity: number = ProtoSerializationUtil.deserialize(
-          issuance.getPostAuctionOutstandingQuantity()
+        let postAuctionQuantity: number = <number>ProtoSerializationUtil.deserialize(
+            issuance.getPostAuctionOutstandingQuantity()
         );
         let id: string = security.getSecurityID()
           ? security.getSecurityID().getIdentifierValue()

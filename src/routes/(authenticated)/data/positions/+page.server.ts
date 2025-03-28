@@ -1,18 +1,13 @@
-import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
+import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 const { FieldProto } = pkg;
 
-import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
+import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 const { MeasureProto } = measure_pkg;
 
-import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
-const { PositionTypeProto, PositionViewProto } = position_pkg;
-
 import { FetchPosition } from "$lib/positions";
-import { redirect } from "@sveltejs/kit";
 
-//**session info */
-import { deleteSessionCookie } from '$lib/database/authUtils.server';
-import { lucia } from '$lib/database/luciaAuth.server';
+import position_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js';
+const { PositionViewProto, PositionTypeProto } = position_pkg;
 
 const fieldLookup = {
   ID: FieldProto.ID,
@@ -56,37 +51,8 @@ const measureLookup = {
   YIELD_TO_MATURITY: MeasureProto.YIELD_TO_MATURITY,
 };
 
-/** @type {import('./$types').PageServerLoad} */
-const loadUserSession = async (user: any) => {
-  // **********session data handling function
-  console.log('what does the user contains', user)
-  if (!user) {
-    console.log("you must be logged in");
-    throw redirect(303, "/login");
-  }
-  return {
-    user
-  };
-};
-
-
-export const actions = {
-
-  logout: async ({ cookies, locals }) => {
-    if (!locals.session?.id) return;
-
-    await lucia.invalidateSession(locals.session.id);
-
-    await deleteSessionCookie(lucia, cookies);
-
-    throw redirect(303, "/login");
-  }
-
-}
-
-
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ locals: { user }, request }) {
+/** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
+export async function load({ locals, request }) {
   const searchParams = new URLSearchParams(request.url.split("?")[1]);
   const positionView = searchParams.get('positionView');
   const positionType = searchParams.get('positionType');
@@ -96,18 +62,10 @@ export async function load({ locals: { user }, request }) {
   const positionViewEnumValue = PositionViewProto[positionView as keyof typeof PositionViewProto];
   const positionTypeEnumValue = PositionTypeProto[positionType as keyof typeof PositionTypeProto];
 
-  const userData = await loadUserSession(user);
-  console.log('testing user data', userData)
-
-
-
   if (!positionView || !positionType || !fields || !measures) {
     console.log('Required parameters missing. No request will be made.');
-    return { positions: [], userData }; // Return an empty array or appropriate value
+    return { positions: [] }; // Return an empty array or appropriate value
   }
-
-  // session user
-
 
   // If either fields or measures is missing, return early
   if (!fields || !measures) {
@@ -117,6 +75,7 @@ export async function load({ locals: { user }, request }) {
 
   const fieldMeasure = { fields, measures };
 
+  console.log({ fields, measures });
 
   // Function to strip quotation marks
   const stripQuotes = (str: string) => str.replace(/^"(.*)"$/, "$1");
@@ -148,5 +107,10 @@ export async function load({ locals: { user }, request }) {
   const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue);
 
   const metadata = { fields: userFields, measures: userMeasures };
-  return { positions, requestData, fieldMeasure, metadata, userData };
+  return {
+    positions: positions,
+    requestData: requestData,
+    fieldMeasure: fieldMeasure,
+    metadata: metadata,
+    user: locals.user };
 }
