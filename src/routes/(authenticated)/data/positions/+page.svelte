@@ -1,8 +1,8 @@
 <script lang="ts">
-  import DashboardSideBar from "../../../components/DashboardSideBar.svelte";
-  import Position from "../../../components/widgets/PositionGrid.svelte";
-  import PositionSelect from "../../../components/widgets/PositionSelect.svelte";
-  export let data: import("./$types").PageData;
+  import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
+  import Position from "../../../../components/widgets/PositionGrid.svelte";
+  import PositionSelect from "../../../../components/widgets/PositionSelect.svelte";
+  export let data: import("../../../../../.svelte-kit/types/src/routes").PageData;
 
   // Split fields and measures into arrays
   const fieldMeasure = data.fieldMeasure;
@@ -46,7 +46,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../../style.scss";
+  @import "../../../../style";
 
   .dashboard-container {
     background-color: white;

@@ -22,18 +22,14 @@ const DASHBOARD_ROUTE = "/data/portfolios"
 const LOGIN_ROUTE = "/login"
 
 type fieldInput = FormDataEntryValue | null;
-
-
 let email:fieldInput, password:fieldInput;
 
 export const actions = {
-
    login: async ({ request,locals, url, cookies }:{ request: Request, url:URL,locals:any, cookies:any }) => {
 		const form = await superValidate(request, yup(signInSchema))
         let formError = null;
         let message = null;
 
-    
 		if (form.valid === false) {
             message = 'form is invalid'
             formError = {message, error:form.errors}
@@ -41,7 +37,6 @@ export const actions = {
 		}
 
         try{
-
              email = form.data.email;
              password = form.data.password;
              await signInSchema.validate({ email, password }, { abortEarly: false });
@@ -54,47 +49,28 @@ export const actions = {
 			.from(usersTable)
 			.where(eq(usersTable.email, form.data.email));
 
-		if (existingUser === undefined) {
-            console.log('email not registered')
-            return
-		}
+			if (existingUser === undefined) {
+				console.log('email not registered')
+				return
+			}
 
-		const validPassword = await new Argon2id().verify(
-			existingUser.password,
-			form.data.password
-		);
+			const validPassword = await new Argon2id().verify(
+				existingUser.password,
+				form.data.password
+			);
 
-		if (!validPassword) {
-            console.log('invalid password')
-            return
-		}
+			if (!validPassword) {
+				console.log('invalid password')
+				return
+			}
 
-		await createAndSetSession(lucia, existingUser.id, cookies);
-
-
+			await createAndSetSession(lucia, existingUser.id, cookies);
         }catch(err){
             console.log(err)
         }
 
-	
-
         throw redirect(303, DASHBOARD_ROUTE);
-
-	},
-
-
-
-    logout: async ({ cookies, locals }) => {
-		if (!locals.session?.id) return;
-
-		await lucia.invalidateSession(locals.session.id);
-
-		await deleteSessionCookie(lucia, cookies);
-
-		throw redirect(303, LOGIN_ROUTE);
-	},
-    
-
+	}
 };
 
 

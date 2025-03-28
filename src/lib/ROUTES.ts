@@ -21,8 +21,6 @@ const PAGES = {
  * SERVERS
  */
 const SERVERS = {
-  "GET /auth/oauth/github": `/auth/oauth/github`,
-  "GET /auth/oauth/github/callback": `/auth/oauth/github/callback`,
   "GET oauth/google": `oauth/google`,
   "GET oauth/google/callback": `oauth/google/callback`
 }
@@ -42,52 +40,12 @@ const ACTIONS = {
   "deleteAllUsers /dashboard": `/dashboard?/deleteAllUsers`
 }
 
-/**
- * LINKS
- */
-const LINKS = {
-  
-}
-
-/**
- * Append search params to a string
- */
-const appendSp = (sp?: Record<string, string | number | undefined>, prefix: '?' | '&' = '?') => {
-  if (sp === undefined) return ''
-  const mapping = Object.entries(sp)
-    .filter(c => c[1] !== undefined)
-    .map(c => [c[0], String(c[1])])
-
-  const formated = new URLSearchParams(mapping).toString()
-  if (formated) {
-    return `${prefix}${formated}`
-  }
-  return ''
-}
-
-/**
- * get the current search params
- * 
- * Could be use like this:
- * ```
- * route("/cities", { page: 2 }, { ...currentSP() })
- * ```
- */ 
-export const currentSp = () => {
-  const params = new URLSearchParams(window.location.search)
-  const record: Record<string, string> = {}
-  for (const [key, value] of params.entries()) {
-    record[key] = value
-  }
-  return record
-}
-
 // route function helpers
 type NonFunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
 type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
 type FunctionParams<T> = T extends (...args: infer P) => any ? P : never
 
-const AllObjs = { ...PAGES, ...ACTIONS, ...SERVERS, ...LINKS }
+const AllObjs = { ...PAGES, ...ACTIONS, ...SERVERS }
 type AllTypes = typeof AllObjs
 
 /**
@@ -107,27 +65,4 @@ export function route<T extends keyof AllTypes>(key: T, ...params: any[]): strin
   } else {
     return AllObjs[key] as string
   }
-}
-
-/**
-* Add this type as a generic of the vite plugin `kitRoutes<KIT_ROUTES>`.
-* 
-* Full example:
-* ```ts
-* import type { KIT_ROUTES } from './ROUTES'
-* import { kitRoutes } from 'vite-plugin-kit-routes'
-* 
-* kitRoutes<KIT_ROUTES>({
-*  PAGES: {
-*    // here, key of object will be typed!
-*  }
-* })
-* ```
-*/
-export type KIT_ROUTES = { 
-  PAGES: { '/': never, '/auth/email-verification': never, '/auth/login': never, '/auth/register': never, '/auth/reset-password': never, '/dashboard': never }
-  SERVERS: { 'GET /auth/oauth/github': never, 'GET /auth/oauth/github/callback': never, 'GET oauth/google': never, 'GET oauth/google/callback': never }
-  ACTIONS: { 'verifyCode /auth/email-verification': never, 'sendNewCode /auth/email-verification': never, 'logInUser /auth/login': never, 'sendPasswordResetEmail /auth/login': never, 'registerUser /auth/register': never, 'resetPassword /auth/reset-password': never, 'logout /dashboard': never, 'changePassword /dashboard': never, 'deleteAllUsers /dashboard': never }
-  LINKS: Record<string, never>
-  Params: Record<string, never>
 }
