@@ -1,11 +1,8 @@
 <script lang="ts">
   // internal imports
-import { booleanStore} from '../../store/store';
-import { page } from '$app/stores';  
-import {booleanKeys} from "$lib/Util";
+import { page } from '$app/stores';
 import {goto} from '$lib/helper';
 
-$:isSignInOrSignUp = $booleanStore[booleanKeys.IS_SIGN_IN_OR_SIGN_UP]
 </script>
 
 <div class="branding-image p-2 rounded-xl">
@@ -14,12 +11,9 @@ $:isSignInOrSignUp = $booleanStore[booleanKeys.IS_SIGN_IN_OR_SIGN_UP]
           >
             <h1 class="logo" on:keydown={()=>'x'} on:click={()=>  goto("/")}>FINTEKKERS</h1>
             <p>
-              Thousands of Lorem ipsum dolor sit amet consectetur adipisicing
-              elit. Fugit, fugiat ullam?
+              You need to sign-up or sign-in to see data. Don't worry,
+                this is free, for now!
             </p>
-            {#if isSignInOrSignUp}
-            <button >→ Sign Up</button>
-            {:else}
             <button type="button" on:click={()=>{
               if($page.url.pathname === "/register"){
                 goto("/login")
@@ -34,7 +28,6 @@ $:isSignInOrSignUp = $booleanStore[booleanKeys.IS_SIGN_IN_OR_SIGN_UP]
                     Sign up
                    {/if}
             </button>
-            {/if}
           </div>
 </div>
 

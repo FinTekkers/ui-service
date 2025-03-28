@@ -1,6 +1,5 @@
-// See https://kit.svelte.dev/docs/types#app
-// for information about these interfaces
-// and what to do when importing types
+import type { User } from "$lib/server/user";
+import type { Session } from "$lib/server/session";
 
 declare namespace App {
 
@@ -12,15 +11,16 @@ declare namespace App {
       }
 
       interface Locals{
-        	user: import('lucia').User | null;
-		    	session: import('lucia').Session | null;
+          user: User | null;
+          session: Session | null;
       }
 
       interface PageData{
         pageMetaTags?: MetaTagsProps;
-		   	isUserLoggedIn?: boolean;
+        isUserLoggedIn?: boolean;
         form?:any;
-		  	flash?: { type: 'success' | 'error'; message: string };
+        flash?: { type: 'success' | 'error'; message: string };
+          user?: User | null;
       }
 
 }
