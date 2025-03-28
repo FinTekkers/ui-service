@@ -32,9 +32,6 @@ export type dashboardMenuItemType = {
     menuName:string,
     url: string
 }
-
-export type dahsboardMenuDataType = [string, dashboardMenuItemType]
-
 export interface dashboardMenuType {
     portfolio:dashboardMenuItemType,
     transaction:dashboardMenuItemType,
@@ -81,35 +78,4 @@ export interface installCodeLangType {
 
 export interface codeBlockData{
   codeLanguage:codeBlockContent;
-  
-}
-
-export type EnterKeyHintType =
-	| 'search'
-	| 'enter'
-	| 'done'
-	| 'go'
-	| 'next'
-	| 'previous'
-	| 'send'
-	| null
-	| undefined;
-
-// Type for prettifying an object type
-export type PrettifyType<T> = {
-	[K in keyof T]: T[K];
-} & Record<string, never>;
-
-export type AlertMessageType = {
-	alertType: 'success' | 'error' | 'warning' | 'info';
-	alertText: string;
-};
-
-export interface UserFormData {
-    email: string;
-    password: string;
-    confirmpassword: string;
-    firstname?: string;
-    lastname?: string;
-    [key: string]: string | undefined;
 }

@@ -23,26 +23,6 @@ export const customBooleanStoreUpdater: (key: booleanKeys) => void = (key: boole
   }
 }
 
-// store importing the api content to populate the dashboards #number of calls, #keys, etc.;
-export const portfolioStore = writable<portfolioStoreType>([]);
-
-export const portfolioStoreUpdater = async (data: App.PageData) => {
-  try {
-    const portfolioData = await data;
-    if (portfolioData !== null || undefined) {
-      portfolioStore.update((store) => {
-        store = portfolioData;
-        return store;
-      });
-    }
-  } catch (error) {
-    if (error) {
-      console.log("Something went wrong - portfolio update 🛑");
-      console.log(error);
-    }
-  }
-};
-
 export const selectedDashboardMenu = writable<string>("home");
 
 export const selectedDashboardMenuUpdater = (item: string) => {

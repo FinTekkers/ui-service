@@ -45,11 +45,11 @@ export async function FetchSecurity(
                 security.getMaturityDate().getFullYear() > 2009
             ) {
               // Log if no post-auction outstanding quantity and maturity date is after 2009
-              console.log(
-                  `Security issued with CUSIP ${security
-                      .getSecurityID()
-                      .getIdentifierValue()} has no post-auction outstanding quantity.`
-              );
+              // console.log(
+              //     `Security issued with CUSIP ${security
+              //         .getSecurityID()
+              //         .getIdentifierValue()} has no post-auction outstanding quantity.`
+              // );
             } else if (
                 !issuance.getPostAuctionOutstandingQuantity() &&
                 security.getMaturityDate().getFullYear() <= 2009
