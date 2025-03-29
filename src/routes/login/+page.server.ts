@@ -8,18 +8,13 @@ import { database } from '$lib/database/database.server';
 import { lucia } from '$lib/database/luciaAuth.server';
 import { usersTable } from '$lib/database/schema';
 import {yup} from 'sveltekit-superforms/adapters'
-// import { deleteSessionCookie } from '$lib/database/authUtils.server';
-
-
 
 const signInSchema = Yup.object({
     email:Yup.string().email().required('email'),
     password:Yup.string().required('password')
 })
 
-
 const DASHBOARD_ROUTE = "/data/portfolios"
-const LOGIN_ROUTE = "/login"
 
 type fieldInput = FormDataEntryValue | null;
 let email:fieldInput, password:fieldInput;
