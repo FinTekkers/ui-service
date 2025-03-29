@@ -12,9 +12,3 @@ export enum booleanKeys{
   IS_PASSWORD_VISIBLE = "IS_PASSWORD_VISIBLE",
   IS_FEATURE_ACTIVE = "IS_FEATURE_ACTIVE",
 }
-
-// Define enum for MeasureProto
-export enum MeasureProto {
-  DIRECTED_QUANTITY = 1,
-  // Add more measures as needed
-}
