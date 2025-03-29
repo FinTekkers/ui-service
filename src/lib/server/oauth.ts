@@ -21,19 +21,19 @@ function getCallbackUrl() {
     if (process.env.HOSTNAME && process.env.HOSTNAME.includes('.ec2.internal')) {
         callbackUrl = aws_callback_url;
         console.log("HOSTNAME environment variable found. Callback URL: " + callbackUrl);
-    }
-
-    for (const key in process.env) {
-        if (key.startsWith('AWS')) {
-            callbackUrl = aws_callback_url;
-            console.log("AWS environment variable found. Callback URL: " + callbackUrl);
+    } else  if (process.env.PWD && process.env.PWD.includes('ec2-user')) {
+        callbackUrl = aws_callback_url;
+        console.log("Running in an EC2 user folder. Callback URL: " + aws_callback_url);
+    } else {
+        for (const key in process.env) {
+            if (key.startsWith('AWS')) {
+                callbackUrl = aws_callback_url;
+                console.log("AWS environment variable found. Callback URL: " + callbackUrl);
+            }
         }
     }
 
-    if (process.env.PWD && process.env.PWD.includes('ec2-user')) {
-        callbackUrl = aws_callback_url;
-        console.log("Running in an EC2 user folder. Callback URL: " + aws_callback_url);
-    }
+
     return callbackUrl;
 }
 
