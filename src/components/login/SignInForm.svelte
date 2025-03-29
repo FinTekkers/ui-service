@@ -1,18 +1,12 @@
 <script lang="ts">
-  // external imports
-  // external imports
-  import Icon from "@iconify/svelte";
-  // internal imports  
-  import {booleanStore, customBooleanStoreUpdater} from '../../store/store';
-  import { booleanKeys } from "$lib/Util";
-  import type {formError} from '$lib/types';
-  export let data: App.PageData;
-  export let form:formError;
-
-
-type FormError = {
-    [fieldName: string]: string[];
-};
+// external imports
+import Icon from "@iconify/svelte";
+// internal imports
+import {booleanStore, customBooleanStoreUpdater} from '../../store/store';
+import { booleanKeys } from "$lib/Util";
+import type {formError} from '$lib/types';
+export let data: App.PageData;
+export let form:formError;
 
 // Assuming formError is of type FormError
 const displayError = (fieldName: string) => {
@@ -23,35 +17,33 @@ const displayError = (fieldName: string) => {
     }
     return false;
 };
-
-
 </script>
 
 <div class="sign_in_fields">
-                      <label for="email">
-                        <span class="email_span_text">Email address:</span>
-                        <input
-                          class="rounded-md { "border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
-                          type="text"
-                          name="email"
-                          value={form?.email ?? ''}
-                          
-                        />
-                            {#if displayError('email')}
-                                <div class="error_message">
-                                     <p class='form_error'>⚠️ Enter email</p>
-                                </div>    
-                            {/if}   
-                      </label>
+  <label for="email">
+    <span class="email_span_text">Email address:</span>
+    <input
+      class="rounded-md { "border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
+      type="text"
+      name="email"
+      value={form?.email ?? ''}
 
-                      <label for="password" class="passwordField">
-                        <span class="password_span_text">Password:</span>
-                        <input
-                          class="rounded-md {"border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
-                          type={$booleanStore.IS_PASSWORD_VISIBLE ? "text" : "password"}
-                          name="password"
-                          value={form?.password ?? ''}
-                        />
+    />
+        {#if displayError('email')}
+            <div class="error_message">
+                 <p class='form_error'>⚠️ Enter email</p>
+            </div>
+        {/if}
+  </label>
+
+  <label for="password" class="passwordField">
+    <span class="password_span_text">Password:</span>
+    <input
+      class="rounded-md {"border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
+      type={$booleanStore.IS_PASSWORD_VISIBLE ? "text" : "password"}
+      name="password"
+      value={form?.password ?? ''}
+    />
 
     {#if $booleanStore.IS_PASSWORD_VISIBLE}
       <span
