@@ -8,7 +8,7 @@ import { database } from '$lib/database/database.server';
 import { lucia } from '$lib/database/luciaAuth.server';
 import { usersTable } from '$lib/database/schema';
 import {yup} from 'sveltekit-superforms/adapters'
-import { deleteSessionCookie } from '$lib/database/authUtils.server';
+// import { deleteSessionCookie } from '$lib/database/authUtils.server';
 
 
 
@@ -26,7 +26,8 @@ let email:fieldInput, password:fieldInput;
 
 export const actions = {
    login: async ({ request,locals, url, cookies }:{ request: Request, url:URL,locals:any, cookies:any }) => {
-		const form = await superValidate(request, yup(signInSchema))
+	   console.log("Logging in user with user/password combo");
+	   const form = await superValidate(request, yup(signInSchema))
         let formError = null;
         let message = null;
 

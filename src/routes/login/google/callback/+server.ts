@@ -22,13 +22,28 @@ export async function GET(event: RequestEvent): Promise<Response> {
 		state=${state}
 	`);
 
-	if (storedState === null || codeVerifier === null || code === null || state === null) {
-		return new Response("Please restart the process.", {
+	if (storedState === null || codeVerifier === null) {
+		return new Response(`Expected non-null cookies: 
+		storedState=${storedState}
+		codeVerifier=${codeVerifier}
+		`, {
+			status: 400
+		});
+	}
+
+	if (code === null || state === null) {
+		return new Response(`Missing URL paramaters; 
+			code=${code}
+			state=${state}
+		`, {
 			status: 400
 		});
 	}
 	if (storedState !== state) {
-		return new Response("Please restart the process.", {
+		return new Response(`Stored cookie does not match the callback:
+			google_oauth_state=${storedState}
+			state=${state}
+		`, {
 			status: 400
 		});
 	}
@@ -37,7 +52,8 @@ export async function GET(event: RequestEvent): Promise<Response> {
 	try {
 		tokens = await google.validateAuthorizationCode(code, codeVerifier);
 	} catch (e) {
-		return new Response("Please restart the process.", {
+		return new Response(`Error validating the auth code: message: ${e}
+		`, {
 			status: 400
 		});
 	}
