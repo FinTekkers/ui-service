@@ -1,17 +1,11 @@
 //Requests & Services
-import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";
+import {PortfolioService} from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";
 import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
-import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
+import {PositionFilter} from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portfolio/portfolio";
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
-import { FetchPortfolio } from "$lib/portfolios";
+
 const { FieldProto } = pkg;
-
-//**session info */
-import { deleteSessionCookie } from '$lib/database/authUtils.server';
-import { lucia } from '$lib/database/luciaAuth.server';
-import { redirect } from "@sveltejs/kit";
-
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({locals}) {
@@ -28,15 +22,13 @@ export async function load({locals}) {
     .then((portfolios: Portfolio[]) => {
       console.log("Portfolios found: " + portfolios.length);
 
-      const results = portfolios.map(portfolio => {
-        return {
-          portfolioName: portfolio.getPortfolioName(),
-          portfolioAsOf: portfolio.getAsOf().toString(),
-          portfolioId: portfolio.getID().toString()
-        };
+      return portfolios.map(portfolio => {
+          return {
+              portfolioName: portfolio.getPortfolioName(),
+              portfolioAsOf: portfolio.getAsOf().toString(),
+              portfolioId: portfolio.getID().toString()
+          };
       });
-
-      return results;
     })
     .catch((err: Error) => {
       return {

@@ -78,12 +78,13 @@
     {/each}
   </div>
 
-  <form method="post" action="/logout">
-    <button type="submit" class="user-menu-logout cursor-pointer">
-      <Icon icon="ri:logout-circle-line" class="user-menu-icon" style="width: 25px; height: 25px;" />
-      <span>Log out</span>
-    </button>
-  </form>
+
+  <div class="dashboard_user_menu_options">
+    <a href="/logout"
+       class="p-2 user-menu cursor-pointer">
+      Log out
+    </a>
+  </div>
 </div>
 
 <style lang="scss">

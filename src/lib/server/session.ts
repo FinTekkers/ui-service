@@ -54,6 +54,8 @@ export function invalidateUserSessions(userId: number): void {
 }
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date): void {
+    console.log("Setting session cookie with token: "+ token);
+
     event.cookies.set("session", token, {
         httpOnly: true,
         path: "/",
@@ -64,6 +66,7 @@ export function setSessionTokenCookie(event: RequestEvent, token: string, expire
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent): void {
+    console.log("Deleting session cookie");
     event.cookies.set("session", "", {
         httpOnly: true,
         path: "/",
