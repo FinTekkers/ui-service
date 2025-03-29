@@ -5,6 +5,9 @@ build/
 #Development files
 .env
 users_database.db
+#Used when hosting the server locally behind a proxy
+key.pem
+cert.pem
 
 #IDE related folders
 .vscode
