@@ -24,25 +24,45 @@ import type { Handle } from "@sveltejs/kit";
 // 	}
 // 	return resolve(event);
 // };
+// hooks.server.ts
+export const handle = async ({ event, resolve }) => {
+	const sessionCookie = event.cookies.get('session');
 
-const authHandle: Handle = async ({ event, resolve }) => {
-	const token = event.cookies.get("session") ?? null;
-	if (token === null) {
-		event.locals.user = null;
-		event.locals.session = null;
-		return resolve(event);
-	}
+	if (sessionCookie) {
 
-	const { session, user } = validateSessionToken(token);
-	if (session !== null) {
-		setSessionTokenCookie(event, token, session.expiresAt);
+		const { session, user } = validateSessionToken(sessionCookie);
+		if (session !== null) {
+			setSessionTokenCookie(event, sessionCookie, session.expiresAt);
+		} else {
+			deleteSessionTokenCookie(event);
+		}
+		event.locals.user = user;
 	} else {
-		deleteSessionTokenCookie(event);
+		event.locals.user = null;
 	}
 
-	event.locals.session = session;
-	event.locals.user = user;
 	return resolve(event);
 };
-
-export const handle = authHandle;
+//
+// const authHandle: Handle = async ({ event, resolve }) => {
+// 	const token = event.cookies.get("session") ?? null;
+// 	if (token === null) {
+// 		console.log("No token; invalidating user/session");
+// 		event.locals.user = null;
+// 		event.locals.session = null;
+// 		return resolve(event);
+// 	}
+//
+// 	const { session, user } = validateSessionToken(token);
+// 	if (session !== null) {
+// 		setSessionTokenCookie(event, token, session.expiresAt);
+// 	} else {
+// 		deleteSessionTokenCookie(event);
+// 	}
+//
+// 	event.locals.session = session;
+// 	event.locals.user = user;
+// 	return resolve(event);
+// };
+//
+// export const handle = authHandle;
