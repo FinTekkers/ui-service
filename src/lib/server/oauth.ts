@@ -1,8 +1,21 @@
 import { Google } from "arctic";
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "$env/static/private";
 
+/**
+ * You can override this to https when you're running 'npm run dev'
+ * AND hosting the server behind a proxy that provides https.
+ *
+ * This should be refactored to have dynamic behavior. This confused me
+ * a bunch. Without this you might see cross-origin posting errors
+ */
+let protocol_override:any = undefined;// = "https";
+
 function getCallbackUrl() {
-    let callbackUrl = "http://localhost:5173/login/google/callback";
+    let protocol = import.meta.env.PROD ? "https" : "http";
+    protocol = protocol_override ? protocol_override : protocol;
+
+    console.log(`Using ${protocol}`);
+    let callbackUrl = `${protocol}://localhost:443/login/google/callback`;
     let aws_callback_url = `https://www.fintekkers.org:443/login/google/callback`;
 
     if (process.env.HOSTNAME && process.env.HOSTNAME.includes('.ec2.internal')) {
