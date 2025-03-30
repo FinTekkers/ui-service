@@ -4,17 +4,21 @@
   // internal imports
   export let iconName:string;
   export let iconCss:string = "width: 25px; height: 25px;";
+  export let href: string | null = null; // Optional href
 
 </script>
 
-
-<div class="custom-icon">
-   <Icon
-          icon={iconName}
-          style={iconCss}
-        />
-<slot /> 
-</div>
+{#if href}
+    <a href={href} class="custom-icon">
+        <Icon icon={iconName} style={iconCss} />
+        <slot />
+    </a>
+{:else}
+    <div class="custom-icon">
+        <Icon icon={iconName} style={iconCss} />
+        <slot />
+    </div>
+{/if}
 
 <style lang="scss">
     @import "../../style.scss";

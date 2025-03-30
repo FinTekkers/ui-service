@@ -8,8 +8,7 @@ export let data;
 
 /** @type {import('./$types').ActionData} */
 export let form: formError;
-
-
+let showSuccess = form?.success;
 
 let focusedElement: string | null = null;
 let inputValue: { [key: string]: string } = {};
@@ -52,6 +51,12 @@ const handleClear = ()=>{
 <svelte:head>
   <title>{'Contact us'}</title>
 </svelte:head>
+
+{#if showSuccess}
+    <div class="form_success">
+        <p>✅ Your message was sent successfully. Thank you!</p>
+    </div>
+{/if}
 
 
         <div class="contact-us">
@@ -125,6 +130,15 @@ const handleClear = ()=>{
 
 <style lang="scss">
 @import "../../style.scss";
+.form_success {
+  grid-column: 1 / -1;
+  color: $success; // or any green tone
+  background: rgba(0, 128, 0, 0.1);
+  padding: 1em;
+  border-radius: $bd-radius;
+  margin-bottom: 1em;
+  font-weight: bold;
+}
 
 .contact-us{
     padding: 1em;

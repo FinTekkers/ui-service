@@ -16,21 +16,21 @@ export const userArchetypeData: userArchetypes[] = [{
 }]
 
 export const sideBarURLText:NavbarURL[] = [{
-    url:'#todo_link_to_repl_when_complete',
-    text:'Get Started',
+    url:'data/portfolios',
+    text:'Look at data now',
     id:'get-started',
-    icon:'streamline:startup'
+    icon:'mdi:ray-start-arrow'
   },{
     url:'https://github.com/FinTekkers/ledger-models',
     text:'Docs',
     id:'documentation',
-    icon:'solar:document-outline'
+    icon:'mdi:file-document-multiple-outline'
   } 
   ,{
     url:'#',
     text:'Pricing (free for now)',
     id:'pricing',
-    icon:'arcticons:priceconverter'
+    icon:'mdi:money-off'
    
   }]
 
@@ -204,7 +204,7 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "PORTFOLIO",
         navigateTo: "PORTFOLIO",
         style:commonIconStyle,
-        iconName: "mage:folder-2",
+        iconName: "mdi:briefcase-eye-outline",
         url: "portfolios",
         menuName:"Portfolio"
     },
@@ -215,7 +215,7 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "SECURITY",
         navigateTo: "SECURITY",
         style:commonIconStyle,
-        iconName: "hugeicons:web-security",
+        iconName: "mdi:camera-document",
         url: "securities",
         menuName:"Security"
     },
@@ -234,7 +234,7 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "POSITION",
         navigateTo: "POSITION",
         style:commonIconStyle,
-        iconName:"material-symbols-light:position-top-right-outline",
+        iconName:"mdi:table-add",
         url: "positions",
         menuName:"Position"
     },

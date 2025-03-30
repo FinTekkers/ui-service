@@ -6,6 +6,7 @@
   import { selectedDashboardMenuUpdater } from "../store/store";
   import type { dashboardMenuList } from "$lib/Util";
   import { dashboardMenuData } from "$lib/uidata";
+  import IconLink from "./custom_components/IconLink.svelte";
 
   export let data;
   console.log(`User: ${data.user}`);
@@ -42,7 +43,7 @@
 
 </script>
 
-<div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar relative">
+<div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
   <button
     type="button"
     on:click={toggleSidebar}
@@ -78,12 +79,8 @@
     {/each}
   </div>
 
-
-  <div class="dashboard_user_menu_options">
-    <a href="/logout"
-       class="p-2 user-menu cursor-pointer">
-      Log out
-    </a>
+  <div class="dashboard_user_menu_options p-2 user-menu cursor-pointer">
+    <IconLink href="/logout" iconName="mdi:logout">Logout</IconLink>
   </div>
 </div>
 
@@ -119,19 +116,6 @@
         color: $primary-button;
       }
     }
-
-    form {
-      width: 50%;
-
-      .user-menu-logout {
-        color: $primary-color;
-        @include flex(row, flex-start, center, 1em);
-      }
-    }
-
-    .user-menu-icon {
-      vertical-align: baseline;
-    }
   }
 
   @media screen and (max-width: $breakingpoint_medium) {
@@ -157,30 +141,6 @@
           display: grid;
           grid-template-columns: 1fr;
           justify-items: center;
-        }
-      }
-
-      form {
-        width: 100%;
-
-        span {
-          display: none;
-        }
-
-        .user-menu-logout {
-          padding: 0;
-          display: flex;
-          justify-content: center;
-          gap: 0;
-        }
-      }
-
-      div {
-        width: 100%;
-        margin-right: 1em;
-
-        :is(span) {
-          display: none;
         }
       }
     }
