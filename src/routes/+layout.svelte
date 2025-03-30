@@ -15,6 +15,13 @@
   export let form;
 
   export let title = "Fintekkers: Fintech's Infrastructure";
+
+
+  import { addCollection } from '@iconify/svelte';
+  import mdiIcons from '@iconify-json/mdi/icons.json';
+  import phIcons from "@iconify-json/ph/icons.json";
+  addCollection(mdiIcons);
+  addCollection(phIcons);
 </script>
 
 <svelte:head>

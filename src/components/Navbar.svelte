@@ -1,33 +1,27 @@
 <script lang="ts">
 import IconLink from "./custom_components/IconLink.svelte";
- import { goto } from "$app/navigation";
 import {sideBarURLText} from '../lib/uidata'
-
-
 
 </script>
     <div class="navigation_bar">
-      <div class="logo" on:keydown={()=>('x')} on:click={() => goto("/")}>
-        <IconLink iconName='carbon:finance'>
-           Fintekkers
+        <div class="logo">
+        <IconLink iconName="mdi:finance" href="/">
+            Fintekkers
         </IconLink>
-      </div>
+            </div>
       <div class="navigation_links">
         <ul>
            {#each sideBarURLText as urlText}
-           
-           <li>
-            <IconLink iconName={urlText.icon} />
-            <a href={urlText.url}>{urlText.text}</a>
-           </li>
+               <li>
+                <IconLink iconName={urlText.icon} />
+                <a href={urlText.url}>{urlText.text}</a>
+               </li>
            {/each}
         </ul>
       </div>
-      <div class="contact" on:keydown={()=>('x')} on:click={()=>goto("/contactus")}>
-        <IconLink iconName='bytesize:mail'>
-          Contact Us
-        </IconLink>
-      </div>
+    <IconLink iconName='mdi:alternate-email'  href="/contactus">
+      Contact Us
+    </IconLink>
     </div>
 
 

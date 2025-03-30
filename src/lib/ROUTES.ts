@@ -45,7 +45,7 @@ type NonFunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? never : K }[
 type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
 type FunctionParams<T> = T extends (...args: infer P) => any ? P : never
 
-const AllObjs = { ...PAGES, /*...ACTIONS, ...SERVERS */}
+const AllObjs = { /*...PAGES,*/ /*...ACTIONS, ...SERVERS */}
 type AllTypes = typeof AllObjs
 
 /**
