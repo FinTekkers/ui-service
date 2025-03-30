@@ -10,7 +10,7 @@
     >
         <div class="feature-headline">
             <Icon
-                icon="icon-park-outline:speed"
+                icon="mdi:car-speed-limiter"
                 style="width: 25px; height: 25px;"
             />
             <h2>Fast</h2>
@@ -26,11 +26,12 @@
         use:reveal={{ transition: "fly", y: 20, delay: 20 }}
     >
         <div class="feature-headline">
-            <Icon
-                icon="game-icons:flexible-lamp"
-                style="width: 25px; height: 25px;"
-            />
+
+            <Icon icon="mdi:rocket-launch" style="width: 25px; height: 25px;" />
+
             <h2>Convenient</h2>
+
+
         </div>
         <p>
             Our platform is built on top of open-source models (<a
@@ -46,7 +47,7 @@
         use:reveal={{ transition: "fly", y: 30, delay: 30 }}
     >
         <div class="feature-headline">
-            <Icon icon="octicon:goal-24" style="width: 25px; height: 25px;" />
+            <Icon icon="mdi:target-arrow" style="width: 25px; height: 25px;" />
             <h2>Flexible</h2>
         </div>
 
