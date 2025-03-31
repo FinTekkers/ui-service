@@ -2,16 +2,15 @@
   import MultiSelect from "svelte-multiselect";
 
   import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
+  import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
+  import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
+  import {onMount} from "svelte";
+
   const { FieldProto } = pkg;
 
-  import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
   const { MeasureProto } = measure_pkg;
 
-  import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
   const { PositionTypeProto, PositionViewProto } = position_pkg;
-
-  import { goto } from "$lib/helper";
-  import { onMount } from "svelte";
 
   let isCheckboxChecked = false;
 
@@ -57,9 +56,7 @@
     const unformattedPositionView = selectedPositionView.map(unformatName);
     const unformattedPositionType = selectedPositionType.map(unformatName);
 
-    goto(
-      `/data/positions?positionView=${unformattedPositionView}&positionType=${unformattedPositionType}&fields=${selectedFieldsString}&measures=${selectedMeasuresString}`
-    );
+    window.location.href = `/data/positions?positionView=${unformattedPositionView}&positionType=${unformattedPositionType}&fields=${selectedFieldsString}&measures=${selectedMeasuresString}`;
   }
 
   // Add this function to load selected values from local storage
@@ -173,12 +170,12 @@
     cursor: pointer;
     border-radius: 10px;
   }
-  .position-select-container {
-    // margin: 10px 40px;
-    // gap: 1rem;
-    // width: 1000px;
-    // margin: 20px auto;
-  }
+  //.position-select-container {
+  //  // margin: 10px 40px;
+  //  // gap: 1rem;
+  //  // width: 1000px;
+  //  // margin: 20px auto;
+  //}
 
   label {
     font-size: 20px;

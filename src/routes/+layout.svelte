@@ -8,7 +8,7 @@
   import { AppShell } from "@skeletonlabs/skeleton";
   // internal imports
   import Navbar from "../components/Navbar.svelte";
-  import SideBarNav from "../components/SideBarNav.svelte";
+  import SidebarNav from "../components/SidebarNav.svelte";
 
   // form data
   export let data;
@@ -30,7 +30,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <AppShell>
-  <SideBarNav />
+  <SidebarNav />
   <Navbar />
 
   <slot />
