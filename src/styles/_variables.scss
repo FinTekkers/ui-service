@@ -1,0 +1,23 @@
+$bgc-color: #0c3a46;
+$primary-color: #1b6f85;
+$primary-button: #258ea8;
+$border-color: #164e63;
+
+$success: #7cd2ba;
+$error: #c43d5a;
+$white: whitesmoke;
+$grey: #86929c;
+$ltgrey: #a0adb7;
+
+$bd-radius: 6px;
+
+$breakingpoint_medium: 1200px;
+$breakingpoint_mobile: 600px;
+
+@mixin flex($fd, $jc, $ai, $gap) {
+  display: flex;
+  flex-direction: $fd;
+  justify-content: $jc;
+  align-items: $ai;
+  gap: $gap;
+}
