@@ -4,11 +4,11 @@
     import Icon from "@iconify/svelte";
     import { reveal } from "svelte-reveal";
 // internal imports
-    import { goto } from "../lib/helper";
+//     import { goto } from "../lib/helper";
     import computerImage from '../static/images/stock.png';
-    import {
-        customBooleanStoreUpdater,
-    } from "../store/store";
+    // import {
+    //     customBooleanStoreUpdater,
+    // } from "../store/store";
     import {booleanKeys} from '$lib/Util'
 
 </script>
@@ -24,18 +24,9 @@
             plumbing while you focus on your competitive advantage, your ideas.
         </p>
         <div class="landing-cta-buttons">
-             <button class="button try-now-button" on:click={() => goto("/login")}
-                >Try Now</button
-            >
-            <button
-                class="button explore-product-button"
-                on:click={() => customBooleanStoreUpdater(booleanKeys.IS_FEATURE_ACTIVE)}
-                disabled>Explore Product</button
-            >
-            <button class="button try-now-button" on:click={() => goto("/data/portfolios")}
-                >Explore Data</button
-            >
-            
+            <a class="button try-now-button" href="/login">Try Now</a>
+            <a class="button explore-product-button" href="/data/portfolios">Explore Product</a>
+            <a class="button try-now-button" href="/data/portfolios">Explore Data</a>
         </div>
         <div class="landing-image">
         <img src={computerImage} alt="computer-vector" />

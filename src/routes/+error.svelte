@@ -12,7 +12,7 @@
 			never existed.
 		</p>
 
-		<button on:click={()=>goto("/")} class="w-fit">Go Back</button>
+		<a href="/" class="w-fit">Home</a>
 	{:else}
 		<h1>{$page.status}: {$page.error?.message}</h1>
 	{/if}

@@ -3,26 +3,27 @@ import IconLink from "./custom_components/IconLink.svelte";
 import {sideBarURLText} from '../lib/uidata'
 
 </script>
-    <div class="navigation_bar">
-        <div class="logo">
-        <IconLink iconName="mdi:finance" href="/">
-            Fintekkers
-        </IconLink>
-            </div>
-      <div class="navigation_links">
-        <ul>
-           {#each sideBarURLText as urlText}
-               <li>
-                <IconLink iconName={urlText.icon} />
-                <a href={urlText.url}>{urlText.text}</a>
-               </li>
-           {/each}
-        </ul>
-      </div>
-    <IconLink iconName='mdi:alternate-email'  href="/contactus">
-      Contact Us
+
+<div class="navigation_bar">
+    <div class="logo">
+    <IconLink iconName="mdi:finance" href="/">
+        Fintekkers
     </IconLink>
-    </div>
+        </div>
+  <div class="navigation_links">
+    <ul>
+       {#each sideBarURLText as urlText}
+           <li>
+            <IconLink iconName={urlText.icon} />
+            <a href={urlText.url}>{urlText.text}</a>
+           </li>
+       {/each}
+    </ul>
+  </div>
+<IconLink iconName='mdi:alternate-email'  href="/contactus">
+  Contact Us
+</IconLink>
+</div>
 
 
 

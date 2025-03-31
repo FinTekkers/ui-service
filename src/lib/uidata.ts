@@ -26,13 +26,13 @@ export const sideBarURLText:NavbarURL[] = [{
     id:'documentation',
     icon:'mdi:file-document-multiple-outline'
   } 
-  ,{
+  /*,{
     url:'#',
     text:'Pricing (free for now)',
     id:'pricing',
     icon:'mdi:money-off'
    
-  }]
+  }*/]
 
 export const footerURLText:FooterSection[]=[
  {
