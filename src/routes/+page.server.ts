@@ -29,6 +29,7 @@ export const actions = {
 
 export async function load() {
   const securityService = new SecurityService();
+  let results = [];
 
   const positionFilter = new PositionFilter();
   positionFilter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
@@ -37,49 +38,52 @@ export async function load() {
     "US Government"
   );
 
-  var securities = await securityService.searchSecurityAsOfNow(positionFilter);
-  let results = [];
+  try {
+    var securities = await securityService.searchSecurityAsOfNow(positionFilter);
 
-  //Map results into list of maps -> Date, Amount
-  for (let index in securities) {
-    let security: Security = securities[index];
+    //Map results into list of maps -> Date, Amount
+    for (let index in securities) {
+      let security: Security = securities[index];
 
-    let issuanceList = security.proto.getIssuanceInfoList();
-    let issuance =
-      issuanceList && issuanceList.length > 0 ? issuanceList[0] : null;
+      let issuanceList = security.proto.getIssuanceInfoList();
+      let issuance =
+        issuanceList && issuanceList.length > 0 ? issuanceList[0] : null;
 
-    if (issuance) {
-      if (
-        !issuance.getPostAuctionOutstandingQuantity() &&
-        security.getMaturityDate().getFullYear() > 2009
-      ) {
-        // console.log(
-        //   "Issued with %s, issuance: %s",
-        //   security.getSecurityID().getIdentifierValue(),
-        //   issuance
-        // );
-      } else if (
-        !issuance.getPostAuctionOutstandingQuantity() &&
-        security.getMaturityDate().getFullYear() <= 2009
-      ) {
-        //Swallow this data gap. It's old and we don't mind
-      } else {
-        let postAuctionQuantity: number = <number>ProtoSerializationUtil.deserialize(
+      if (issuance) {
+        if (
+          !issuance.getPostAuctionOutstandingQuantity() &&
+          security.getMaturityDate().getFullYear() > 2009
+        ) {
+          // console.log(
+          //   "Issued with %s, issuance: %s",
+          //   security.getSecurityID().getIdentifierValue(),
+          //   issuance
+          // );
+        } else if (
+          !issuance.getPostAuctionOutstandingQuantity() &&
+          security.getMaturityDate().getFullYear() <= 2009
+        ) {
+          //Swallow this data gap. It's old and we don't mind
+        } else {
+          let postAuctionQuantity: number = <number>ProtoSerializationUtil.deserialize(
             issuance.getPostAuctionOutstandingQuantity()
-        );
-        let id: string = security.getSecurityID()
-          ? security.getSecurityID().getIdentifierValue()
-          : security.getID().toString();
+          );
+          let id: string = security.getSecurityID()
+            ? security.getSecurityID().getIdentifierValue()
+            : security.getID().toString();
 
-        let result = {
-          cusip: id,
-          issueDate: security.getIssueDate(),
-          outstandingAmount: postAuctionQuantity,
-          maturityDate: security.getMaturityDate(),
-        };
-        results.push(result);
+          let result = {
+            cusip: id,
+            issueDate: security.getIssueDate(),
+            outstandingAmount: postAuctionQuantity,
+            maturityDate: security.getMaturityDate(),
+          };
+          results.push(result);
+        }
       }
     }
+  } catch (error) {
+    console.log('Could not fetch security data', error)
   }
 
   return { results };
