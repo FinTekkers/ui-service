@@ -21,6 +21,17 @@
   if (hasRequestedData) {
     console.log(data.requestData);
   }
+
+  // Function to handle sort changes and update URL
+  function handleSortChange(sortBy: string, sortDirection: 'asc' | 'desc') {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('sortBy', sortBy);
+      url.searchParams.set('sortDirection', sortDirection);
+      // Update URL without page reload (client-side sorting)
+      window.history.pushState({}, '', url.toString());
+    }
+  }
 </script>
 
 {@debug}
@@ -38,6 +49,7 @@
           : [data.positions]}
         requestData={data.requestData}
         metadata={data.metadata}
+        onSortChange={handleSortChange}
       />
     {/if}
   </div>

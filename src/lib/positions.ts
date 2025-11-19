@@ -14,7 +14,7 @@ import type { MeasureProto } from '@fintekkers/ledger-models/node/fintekkers/mod
 import type { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 import type { PositionTypeProto, PositionViewProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb';
 
-export async function FetchPosition(requestData: { fields: FieldProto[], measures: MeasureProto[] }, positionViewEnumValue: PositionViewProto, positionTypeEnumValue: PositionTypeProto): Promise<any> {
+export async function FetchPosition(requestData: { fields: FieldProto[], measures: MeasureProto[] }, positionViewEnumValue: PositionViewProto, positionTypeEnumValue: PositionTypeProto, sortBy?: FieldProto, sortDirection: 'asc' | 'desc' = 'asc'): Promise<any> {
     const positionService = new PositionService();
 
     // Assuming there's no need for the positionFilter for now
@@ -24,7 +24,52 @@ export async function FetchPosition(requestData: { fields: FieldProto[], measure
     );
 
     try {
-        const results = await positionService.search(request);
+        const results: Position[] = await positionService.search(request);
+        
+        // Sort results if sortBy field is provided
+        if (sortBy) {
+            results.sort((a, b) => {
+                try {
+                    const valueA = a.getFieldValue(sortBy);
+                    const valueB = b.getFieldValue(sortBy);
+                    
+                    // Handle null/undefined values
+                    if (valueA == null && valueB == null) return 0;
+                    if (valueA == null) return 1;
+                    if (valueB == null) return -1;
+                    
+                    let comparison = 0;
+                    
+                    // If values are dates or LocalDate objects, compare them
+                    if (valueA instanceof Date && valueB instanceof Date) {
+                        comparison = valueA.getTime() - valueB.getTime();
+                    }
+                    // If values have toEpochSecond method (LocalDate/ZonedDateTime)
+                    else if (typeof valueA.toEpochSecond === 'function' && typeof valueB.toEpochSecond === 'function') {
+                        comparison = valueA.toEpochSecond() - valueB.toEpochSecond();
+                    }
+                    // Try numeric comparison
+                    else {
+                        const numA = Number(valueA);
+                        const numB = Number(valueB);
+                        if (!isNaN(numA) && !isNaN(numB)) {
+                            comparison = numA - numB;
+                        } else {
+                            // Fall back to string comparison
+                            comparison = String(valueA).localeCompare(String(valueB));
+                        }
+                    }
+                    
+                    // Reverse comparison if descending
+                    return sortDirection === 'desc' ? -comparison : comparison;
+                } catch (error) {
+                    // If getFieldValue fails, don't sort
+                    console.warn('Error getting field value for sorting:', error);
+                    return 0;
+                }
+            });
+        }
+        
         const processedResults = elementsToReturn(results);
         return processedResults;
     } catch (error) {

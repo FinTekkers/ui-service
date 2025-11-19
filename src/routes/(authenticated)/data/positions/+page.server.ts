@@ -1,5 +1,6 @@
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 const { FieldProto } = pkg;
+import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 const { MeasureProto } = measure_pkg;
@@ -58,7 +59,9 @@ export async function load({ locals, request }) {
   const positionType = searchParams.get('positionType');
   const fields = searchParams.get('fields');
   const measures = searchParams.get('measures');
+  // Sort is now handled client-side, but we keep these for backward compatibility
   const sortBy = searchParams.get('sortBy');
+  const sortDirection = searchParams.get('sortDirection') || 'asc';
 
   const positionViewEnumValue = PositionViewProto[positionView as keyof typeof PositionViewProto];
   const positionTypeEnumValue = PositionTypeProto[positionType as keyof typeof PositionTypeProto];
@@ -105,7 +108,26 @@ export async function load({ locals, request }) {
 
   const requestData = { fields: mappedFields, measures: mappedMeasures };
   console.log({ requestData });
-  const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue, sortBy);
+
+  // Sort is now handled client-side, but we optionally support server-side sorting for backward compatibility
+  let mappedSortBy: FieldProtoType | undefined = undefined;
+  let validSortDirection: 'asc' | 'desc' = 'asc';
+
+  if (sortBy) {
+    // Map sortBy field (take first field if comma-separated, since only one field is allowed)
+    const sortByField = stripQuotes(sortBy).split(",")[0].trim();
+    const sortByFieldName = sortByField as keyof typeof fieldLookup;
+    mappedSortBy = fieldLookup[sortByFieldName];
+
+    if (!mappedSortBy) {
+      throw new Error(`Invalid sort field: ${sortByField}`);
+    }
+
+    // Validate sort direction
+    validSortDirection = sortDirection === 'desc' ? 'desc' : 'asc';
+  }
+
+  const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue, mappedSortBy, validSortDirection);
 
   const metadata = { fields: userFields, measures: userMeasures };
   return {
