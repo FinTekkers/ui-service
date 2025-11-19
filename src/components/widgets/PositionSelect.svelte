@@ -5,7 +5,6 @@
   import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
   import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
   import { onMount } from "svelte";
-  import { Field } from "@fintekkers/ledger-models/node/wrappers/models/position/field";
 
   const { FieldProto } = pkg;
 
@@ -22,7 +21,6 @@
   export let selectedMeasures: string[] = [];
   export let selectedPositionType: string[] = [];
   export let selectedPositionView: string[] = [];
-  export let selectedSortBy: string[] = [];
 
   let isButtonDisabled = false; // Define isButtonDisabled variable
 
@@ -70,10 +68,6 @@
       const selectedMeasuresFromUrl = urlParams.get("measures");
       const selectedPositionTypeFromUrl = urlParams.get("positionType");
       const selectedPositionViewFromUrl = urlParams.get("positionView");
-      const selectedSortByFromUrl = urlParams
-        .get("sortBy")
-        ?.split(",")
-        .map(formatName);
 
       if (selectedFieldsFromUrl) {
         selectedFields = selectedFieldsFromUrl.split(",").map(formatName);
@@ -93,10 +87,6 @@
         selectedPositionView = selectedPositionViewFromUrl
           .split(",")
           .map(formatName);
-      }
-
-      if (selectedSortByFromUrl) {
-        selectedSortBy = selectedSortByFromUrl;
       }
     }
   }
@@ -155,16 +145,6 @@
         placeholder="Select position view..."
         bind:selected={selectedPositionView}
         maxSelect={1}
-      />
-    </div>
-
-    <div class="text-black">
-      <h4>Sort by:</h4>
-      <MultiSelect
-        id="fields-multiselect"
-        options={[FieldProto.TRADE_DATE]}
-        placeholder="Select fields..."
-        bind:selected={selectedSortBy}
       />
     </div>
   </div>
