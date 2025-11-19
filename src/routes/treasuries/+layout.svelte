@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>{"Dashboard Positions"}</title>
+  <title>{"Dashboard Securities"}</title>
 </svelte:head>
 
 <div class="main_ui_menu grow">
@@ -10,5 +10,5 @@
 </div>
 
 <style lang="scss">
-  @import "../../../../styles/layout";
+  @import "../../styles/layout";
 </style>

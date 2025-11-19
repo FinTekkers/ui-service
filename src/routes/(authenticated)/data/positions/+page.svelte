@@ -2,7 +2,7 @@
   import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
   import Position from "../../../../components/widgets/PositionGrid.svelte";
   import PositionSelect from "../../../../components/widgets/PositionSelect.svelte";
-  export let data: import("../../../../../.svelte-kit/types/src/routes").PageData;
+  export let data: import("./$types").PageData;
 
   // Split fields and measures into arrays
   const fieldMeasure = data.fieldMeasure;
@@ -10,9 +10,7 @@
   const fields = fieldMeasure?.fields.split(",") ?? [];
   const measures = fieldMeasure?.measures.split(",") ?? [];
 
-
-  console.log('here is the data', data)
-
+  console.log("here is the data", data);
 
   console.log({ fields, measures });
 
@@ -28,8 +26,8 @@
 {@debug}
 
 <div class="w-screen h-full flex">
-  <DashboardSideBar data={data} />
-  
+  <DashboardSideBar {data} />
+
   <div class="h-full w-screen dashboard-container">
     <PositionSelect />
 
