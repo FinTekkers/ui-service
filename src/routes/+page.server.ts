@@ -52,16 +52,11 @@ export async function load() {
       if (issuance) {
         if (
           !issuance.getPostAuctionOutstandingQuantity() &&
-          security.getMaturityDate().getFullYear() > 2009
+          security.getMaturityDate().toDate().getFullYear() > 2009
         ) {
-          // console.log(
-          //   "Issued with %s, issuance: %s",
-          //   security.getSecurityID().getIdentifierValue(),
-          //   issuance
-          // );
         } else if (
           !issuance.getPostAuctionOutstandingQuantity() &&
-          security.getMaturityDate().getFullYear() <= 2009
+          security.getMaturityDate().toDate().getFullYear() <= 2009
         ) {
           //Swallow this data gap. It's old and we don't mind
         } else {
@@ -74,9 +69,9 @@ export async function load() {
 
           let result = {
             cusip: id,
-            issueDate: security.getIssueDate(),
+            issueDate: security.getIssueDate().toDate(),
             outstandingAmount: postAuctionQuantity,
-            maturityDate: security.getMaturityDate(),
+            maturityDate: security.getMaturityDate().toDate(),
           };
           results.push(result);
         }

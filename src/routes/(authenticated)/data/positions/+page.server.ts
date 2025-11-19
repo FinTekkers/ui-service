@@ -58,6 +58,7 @@ export async function load({ locals, request }) {
   const positionType = searchParams.get('positionType');
   const fields = searchParams.get('fields');
   const measures = searchParams.get('measures');
+  const sortBy = searchParams.get('sortBy');
 
   const positionViewEnumValue = PositionViewProto[positionView as keyof typeof PositionViewProto];
   const positionTypeEnumValue = PositionTypeProto[positionType as keyof typeof PositionTypeProto];
@@ -104,7 +105,7 @@ export async function load({ locals, request }) {
 
   const requestData = { fields: mappedFields, measures: mappedMeasures };
   console.log({ requestData });
-  const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue);
+  const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue, sortBy);
 
   const metadata = { fields: userFields, measures: userMeasures };
   return {
@@ -112,5 +113,6 @@ export async function load({ locals, request }) {
     requestData: requestData,
     fieldMeasure: fieldMeasure,
     metadata: metadata,
-    user: locals.user };
+    user: locals.user
+  };
 }

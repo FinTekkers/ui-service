@@ -1,23 +1,16 @@
 <script lang="ts">
   import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
   import Portfolio from "../../../../components/widgets/PortfolioGrid.svelte";
-  export let data: import("../../../../../.svelte-kit/types/src/routes").PageData;
-
-
-  // console.log('here is the data', data)
-
-  
-
-
+  export let data: import("./$types").PageData;
 </script>
 
 {@debug}
 
 <div class="w-screen h-full flex">
-  <DashboardSideBar data={data} />
+  <DashboardSideBar {data} />
   <Portfolio
-        rows={Array.isArray(data.portfolioData)
-          ? data.portfolioData
-          : [data.portfolioData]}
-      />
+    rows={Array.isArray(data.portfolioData)
+      ? data.portfolioData
+      : [data.portfolioData]}
+  />
 </div>
