@@ -8,6 +8,7 @@
 
 <div class="w-screen h-full flex">
   <DashboardSideBar {data} />
+
   <Portfolio
     rows={Array.isArray(data.portfolioData)
       ? data.portfolioData
