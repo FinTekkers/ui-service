@@ -6,7 +6,6 @@
   import { selectedDashboardMenuUpdater } from "../store/store";
   import type { dashboardMenuList } from "$lib/Util";
   import { dashboardMenuData } from "$lib/uidata";
-  import IconLink from "./custom_components/IconLink.svelte";
 
   export let data;
   console.log(`User: ${data.user}`);
@@ -17,20 +16,25 @@
 
   const toggleSidebar = () => {
     sidebarExpanded = !sidebarExpanded; // Toggle sidebar state
-    const spans = document.querySelectorAll('.dashboard-sidebar span') as NodeListOf<HTMLElement>;
+    const spans = document.querySelectorAll(
+      ".dashboard-sidebar span"
+    ) as NodeListOf<HTMLElement>;
     spans.forEach((span: HTMLElement) => {
-      span.style.display = sidebarExpanded ? 'inline' : 'none';
+      span.style.display = sidebarExpanded ? "inline" : "none";
     });
 
-    const sidebar = document.querySelector('.dashboard-sidebar');
+    const sidebar = document.querySelector(".dashboard-sidebar");
     if (sidebar instanceof HTMLElement) {
-      sidebar.style.width = sidebarExpanded ? '25vw' : '70px';
+      sidebar.style.width = sidebarExpanded ? "25vw" : "70px";
     }
 
     // Change icon based on sidebar state
-    const icon = document.querySelector('.sidebar-toggle-icon');
+    const icon = document.querySelector(".sidebar-toggle-icon");
     if (icon instanceof HTMLElement) {
-      icon.setAttribute('icon', sidebarExpanded ? 'mdi:hamburger-close' : 'mdi:hamburger-open');
+      icon.setAttribute(
+        "icon",
+        sidebarExpanded ? "mdi:hamburger-close" : "mdi:hamburger-open"
+      );
     }
   };
 
@@ -40,7 +44,6 @@
   ) => {
     console.log(dashboardMenuKey);
   };
-
 </script>
 
 <div class="w-1/4 p-5 flex flex-col gap-20 relative dashboard-sidebar">
@@ -55,7 +58,6 @@
     /></button
   >
   <div class=" dashboard_menu_icon user-menu cursor-pointer">
-
     <!-- svelte-ignore a11y-missing-attribute -->
     <img style="width: 50px; height:50px" src={userAvatar} />
     <span style="color:#7cd2ba">Hi {userInfo}</span>
@@ -79,8 +81,15 @@
     {/each}
   </div>
 
-  <div class="dashboard_user_menu_options p-2 user-menu cursor-pointer">
-    <IconLink href="/logout" iconName="mdi:logout">Logout</IconLink>
+  <div class="dashboard_user_menu_options">
+    <a href="/logout" class="p-2 user-menu cursor-pointer">
+      <Icon
+        icon="mdi:logout"
+        class="user-menu-icon"
+        style="width: 25px; height: 25px;"
+      />
+      <span>Logout</span>
+    </a>
   </div>
 </div>
 
