@@ -13,7 +13,7 @@ export async function load({ locals }) {
   // oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
   //TODO: How do to range filters?
-  filter.addFilter(FieldProto.TRADE_DATE, PositionFilterOperator.MORE_THAN, oneWeekAgo);
+  filter.addFilter(FieldProto.ISSUE_DATE, PositionFilterOperator.MORE_THAN, oneWeekAgo);
   // filter.addFilter(FieldProto.TRADE_DATE, PositionFilterOperator.LESS_THAN, new Date());
 
   const transactions = await FetchTransactionWithFilter(filter);

@@ -11,35 +11,51 @@ import { QueryPositionRequest } from '@fintekkers/ledger-models/node/wrappers/re
 //Types
 import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
 import type { MeasureProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
-import type { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 import type { PositionTypeProto, PositionViewProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb';
 
-export async function FetchPosition(requestData: { fields: FieldProto[], measures: MeasureProto[] }, positionViewEnumValue: PositionViewProto, positionTypeEnumValue: PositionTypeProto, sortBy?: FieldProto, sortDirection: 'asc' | 'desc' = 'asc'): Promise<any> {
+// Import FieldProto as both type and value
+import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+const { FieldProto } = pkg;
+import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
+import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
+import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
+import { pack } from '@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util';
+import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
+
+export async function FetchPosition(requestData: { fields: FieldProtoType[], measures: MeasureProto[] }, positionViewEnumValue: PositionViewProto, positionTypeEnumValue: PositionTypeProto, sortBy?: FieldProtoType, sortDirection: 'asc' | 'desc' = 'asc', cusip?: string): Promise<any> {
     const positionService = new PositionService();
 
-    // Assuming there's no need for the positionFilter for now
+    // Create position filter and add CUSIP filter if provided
+    const positionFilter = new PositionFilter();
+    if (cusip && cusip.trim() !== "") {
+        //TODO: add constructor for this
+        let identifierProto = new IdentifierProto().setIdentifierType(IdentifierTypeProto.CUSIP).setIdentifierValue(cusip.trim());
+        let identifier = new Identifier(identifierProto);
+        positionFilter.addObjectFilter(FieldProto.IDENTIFIER, identifier);
+    }
+
     const request = new QueryPositionRequest(
-        new PositionFilter(), positionTypeEnumValue, positionViewEnumValue,
+        positionFilter, positionTypeEnumValue, positionViewEnumValue,
         requestData.fields, requestData.measures, ZonedDateTime.now()
     );
 
     try {
         const results: Position[] = await positionService.search(request);
-        
+
         // Sort results if sortBy field is provided
         if (sortBy) {
             results.sort((a, b) => {
                 try {
                     const valueA = a.getFieldValue(sortBy);
                     const valueB = b.getFieldValue(sortBy);
-                    
+
                     // Handle null/undefined values
                     if (valueA == null && valueB == null) return 0;
                     if (valueA == null) return 1;
                     if (valueB == null) return -1;
-                    
+
                     let comparison = 0;
-                    
+
                     // If values are dates or LocalDate objects, compare them
                     if (valueA instanceof Date && valueB instanceof Date) {
                         comparison = valueA.getTime() - valueB.getTime();
@@ -59,7 +75,7 @@ export async function FetchPosition(requestData: { fields: FieldProto[], measure
                             comparison = String(valueA).localeCompare(String(valueB));
                         }
                     }
-                    
+
                     // Reverse comparison if descending
                     return sortDirection === 'desc' ? -comparison : comparison;
                 } catch (error) {
@@ -69,7 +85,7 @@ export async function FetchPosition(requestData: { fields: FieldProto[], measure
                 }
             });
         }
-        
+
         const processedResults = elementsToReturn(results);
         return processedResults;
     } catch (error) {

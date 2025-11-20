@@ -14,6 +14,7 @@ interface TransactionData {
   transactionId: string;
   transactionSettlementDate: string;
   transactionIssuerName: string;
+  transactionIssueDate: string;
   transactionQuantity: string;
   transactionProductType: string;
   transactionTenor: string;
@@ -45,6 +46,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         transactionId: security.getSecurityID().getIdentifierValue().toString(),
         transactionSettlementDate: element.getSettlementDate().toString(),
         transactionIssuerName: element.getIssuerName().toString(),
+        transactionIssueDate: security.getIssueDate().toString(),
         transactionQuantity: element.getQuantity().toString(),
         transactionProductType: security.getProductType(),
         transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
