@@ -22,6 +22,8 @@
   export let selectedPositionType: string[] = [];
   export let selectedPositionView: string[] = [];
 
+  let cusipInput: string = "";
+
   let isButtonDisabled = false; // Define isButtonDisabled variable
 
   // Function to update the disabled state of the button based on validation conditions
@@ -57,7 +59,14 @@
     const unformattedPositionView = selectedPositionView.map(unformatName);
     const unformattedPositionType = selectedPositionType.map(unformatName);
 
-    window.location.href = `/data/positions?positionView=${unformattedPositionView}&positionType=${unformattedPositionType}&fields=${selectedFieldsString}&measures=${selectedMeasuresString}`;
+    let url = `/data/positions?positionView=${unformattedPositionView}&positionType=${unformattedPositionType}&fields=${selectedFieldsString}&measures=${selectedMeasuresString}`;
+
+    // Add CUSIP to URL if provided
+    if (cusipInput && cusipInput.trim() !== "") {
+      url += `&cusip=${encodeURIComponent(cusipInput.trim())}`;
+    }
+
+    window.location.href = url;
   }
 
   // Add this function to load selected values from local storage
@@ -68,6 +77,7 @@
       const selectedMeasuresFromUrl = urlParams.get("measures");
       const selectedPositionTypeFromUrl = urlParams.get("positionType");
       const selectedPositionViewFromUrl = urlParams.get("positionView");
+      const cusipFromUrl = urlParams.get("cusip");
 
       if (selectedFieldsFromUrl) {
         selectedFields = selectedFieldsFromUrl.split(",").map(formatName);
@@ -87,6 +97,10 @@
         selectedPositionView = selectedPositionViewFromUrl
           .split(",")
           .map(formatName);
+      }
+
+      if (cusipFromUrl) {
+        cusipInput = cusipFromUrl;
       }
     }
   }
@@ -147,6 +161,16 @@
         maxSelect={1}
       />
     </div>
+    <div class="text-black">
+      <h4>CUSIP (Optional):</h4>
+      <input
+        type="text"
+        id="cusip-input"
+        placeholder="Enter CUSIP..."
+        bind:value={cusipInput}
+        class="cusip-input"
+      />
+    </div>
   </div>
 </div>
 
@@ -169,5 +193,13 @@
     padding: 10px 20px;
     margin: 0 40px;
     border-radius: 10px;
+  }
+
+  .cusip-input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 14px;
   }
 </style>

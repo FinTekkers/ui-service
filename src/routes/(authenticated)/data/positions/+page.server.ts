@@ -59,6 +59,7 @@ export async function load({ locals, request }) {
   const positionType = searchParams.get('positionType');
   const fields = searchParams.get('fields');
   const measures = searchParams.get('measures');
+  const cusip = searchParams.get('cusip');
   // Sort is now handled client-side, but we keep these for backward compatibility
   const sortBy = searchParams.get('sortBy');
   const sortDirection = searchParams.get('sortDirection') || 'asc';
@@ -127,7 +128,7 @@ export async function load({ locals, request }) {
     validSortDirection = sortDirection === 'desc' ? 'desc' : 'asc';
   }
 
-  const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue, mappedSortBy, validSortDirection);
+  const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue, mappedSortBy, validSortDirection, cusip || undefined);
 
   const metadata = { fields: userFields, measures: userMeasures };
   return {
