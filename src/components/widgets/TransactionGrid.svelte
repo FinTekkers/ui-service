@@ -16,7 +16,7 @@
         <th class="text-semibold text-lg px-4 py-2 w-1/4"> ID </th>
         <th class="text-semibold text-lg px-4 py-2 w-1/4">Issuer Name</th>
         <th class="text-semibold text-lg px-4 py-2 w-1/4">Maturity Date</th>
-        <th class="text-semibold text-lg px-4 py-2 w-1/4">Term</th>
+        <th class="text-semibold text-lg px-4 py-2 w-1/4">Tenor</th>
         <th class="text-semibold text-lg px-4 py-2 w-1/4">Coupon Frequency</th>
         <th class="text-semibold text-lg px-4 py-2 w-1/4">Coupon Type</th>
         <th class="text-semibold text-lg px-4 py-2 w-1/4">Coupon Rate</th>
@@ -33,7 +33,7 @@
           <td class="table-cell px-4 py-2">{row.transactionId}</td>
           <td class="table-cell px-4 py-2">{row.transactionIssuerName}</td>
           <td class="table-cell px-4 py-2">{row.transactionMaturityDate}</td>
-          <td class="table-cell px-4 py-2">{row.transactionTerm}</td>
+          <td class="table-cell px-4 py-2">{row.transactionTenor}</td>
           <td class="table-cell px-4 py-2">{row.transactionCouponFrequency}</td>
           <td class="table-cell px-4 py-2">{row.transactionCouponType}</td>
           <td class="table-cell px-4 py-2">{row.transactionCouponRate}</td>

@@ -102,7 +102,7 @@
   $: isButtonDisabled;
 </script>
 
-<div class="position-grid gap-4 mb-4 ml-6">
+<div class="my-2.5 mx-10 w-full gap-4">
   <div class="position-select-container flex flex-col sm:flex-row gap-3">
     <div class="text-black">
       <h4>Fields:</h4>
@@ -151,7 +151,7 @@
 </div>
 
 <button
-  class="py-2 px-6 text-white border border-gray-500 position-button"
+  class="text-white border border-gray-500 position-button"
   on:click={fetchPositions}
 >
   Fetch position
@@ -159,41 +159,9 @@
 
 <style lang="scss">
   @import "../../style.scss";
-  .position-grid {
-    margin: 10px 40px;
-    width: 100%;
-  }
-
-  select {
-    padding: 5px;
-    width: 200px;
-    // border: 1px solid gray;
-    cursor: pointer;
-    border-radius: 10px;
-  }
-  //.position-select-container {
-  //  // margin: 10px 40px;
-  //  // gap: 1rem;
-  //  // width: 1000px;
-  //  // margin: 20px auto;
-  //}
-
-  label {
-    font-size: 20px;
-    font-weight: 300;
-  }
 
   h4 {
     margin: 10px 0;
-  }
-
-  input[type="checkbox"] {
-    margin-right: 0.5rem;
-  }
-
-  .selected-item {
-    padding: 0.5rem;
-    border-radius: 4px;
   }
 
   .position-button {
