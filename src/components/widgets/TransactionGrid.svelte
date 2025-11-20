@@ -1,13 +1,19 @@
 <script lang="ts">
   import type { TransactionData } from "$lib/transactions";
   import { formatAmount } from "$lib/formatUtils";
+  import {
+    sortData,
+    getSortIndicator,
+    handleSortClick,
+    type SortDirection,
+  } from "$lib/sortUtils";
 
   export let rows: TransactionData[];
   export let titleOverride: string | undefined = undefined;
 
-  // Sort state
+  // Sort state - using universal sort utilities
   let sortField: keyof TransactionData | null = null;
-  let sortDirection: "asc" | "desc" = "asc";
+  let sortDirection: SortDirection = "asc";
 
   // Column definitions with their corresponding TransactionData keys
   const columns: Array<{ label: string; key: keyof TransactionData }> = [
@@ -26,61 +32,17 @@
     { label: "Settlement Date", key: "transactionSettlementDate" },
   ];
 
-  // Sorted rows (reactive)
-  $: sortedRows = sortTransactions(rows, sortField, sortDirection);
+  // Sorted rows (reactive) - using universal sort utility
+  $: sortedRows = sortData(rows, sortField, sortDirection);
 
   function handleHeaderClick(fieldKey: keyof TransactionData) {
-    if (sortField === fieldKey) {
-      // Toggle direction if clicking the same column
-      sortDirection = sortDirection === "asc" ? "desc" : "asc";
-    } else {
-      // New column, start with ascending
-      sortField = fieldKey;
-      sortDirection = "asc";
-    }
+    const newSort = handleSortClick(sortField, fieldKey, sortDirection);
+    sortField = newSort.sortField;
+    sortDirection = newSort.sortDirection;
   }
 
-  function sortTransactions(
-    transactions: TransactionData[],
-    sortField: keyof TransactionData | null,
-    sortDirection: "asc" | "desc"
-  ): TransactionData[] {
-    if (sortField === null) {
-      return transactions;
-    }
-
-    const sorted = [...transactions].sort((a, b) => {
-      const valueA = a[sortField];
-      const valueB = b[sortField];
-
-      // Handle null/undefined values
-      if (valueA == null && valueB == null) return 0;
-      if (valueA == null) return 1;
-      if (valueB == null) return -1;
-
-      let comparison = 0;
-
-      // Try numeric comparison first (for quantity and coupon rate)
-      const numA = Number(valueA);
-      const numB = Number(valueB);
-      if (!isNaN(numA) && !isNaN(numB)) {
-        comparison = numA - numB;
-      } else {
-        // Fall back to string comparison
-        comparison = String(valueA).localeCompare(String(valueB));
-      }
-
-      return sortDirection === "desc" ? -comparison : comparison;
-    });
-
-    return sorted;
-  }
-
-  function getSortIndicator(fieldKey: keyof TransactionData): string {
-    if (sortField === fieldKey) {
-      return sortDirection === "asc" ? "↑" : "↓";
-    }
-    return "";
+  function getSortIndicatorForColumn(fieldKey: keyof TransactionData): string {
+    return getSortIndicator(sortField, fieldKey, sortDirection);
   }
 </script>
 
@@ -102,7 +64,7 @@
                 e.key === "Enter" && handleHeaderClick(column.key)}
             >
               {column.label}
-              {getSortIndicator(column.key)}
+              {getSortIndicatorForColumn(column.key)}
             </th>
           {/each}
         </tr>
