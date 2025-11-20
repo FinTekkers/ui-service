@@ -16,7 +16,7 @@ interface TransactionData {
   transactionIssuerName: string;
   transactionQuantity: string;
   transactionProductType: string;
-  transactionTerm: string;
+  transactionTenor: string;
   transactionCouponFrequency: string;
   transactionCouponRate: string;
   transactionCouponType: string;
@@ -49,7 +49,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         transactionProductType: security.getProductType(),
         transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
-        transactionTerm: bondSecurity?.getTenor().getTenorDescription() ?? '',
+        transactionTenor: bondSecurity?.getTenor().getTenorDescription() ?? '',
         transactionCouponFrequency: bondSecurity?.getCouponFrequency()?.toString() ?? '',
         transactionMaturityDate: security.getMaturityDate().toString(),
         transactionTradeDate: element.getTradeDate().toString(),
