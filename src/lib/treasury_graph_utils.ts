@@ -6,21 +6,29 @@ import type { TreasuryTransaction } from './treasury_positions';
  */
 export function groupByDateAndCategory(
   transactions: TreasuryTransaction[],
-  categoryField: 'TRANSACTION_TYPE' | 'PRODUCT_TYPE' | 'ADJUSTED_TERM'
+  category:
+    | 'TRANSACTION_TYPE'
+    | 'PRODUCT_TYPE'
+    | 'ADJUSTED_TENOR'
+    | ((txn: TreasuryTransaction) => string)
 ): Map<string, Map<string, number>> {
   const grouped = new Map<string, Map<string, number>>();
 
   for (const txn of transactions) {
     const dateKey = txn.TRADE_DATE.toISOString().split('T')[0]; // YYYY-MM-DD
-    const category = String(txn[categoryField] || '');
+    const categoryValue =
+      typeof category === 'function'
+        ? category(txn)
+        : String((txn as any)[category] || '');
+    const categoryKey = String(categoryValue || '');
 
     if (!grouped.has(dateKey)) {
       grouped.set(dateKey, new Map());
     }
 
     const categoryMap = grouped.get(dateKey)!;
-    const currentValue = categoryMap.get(category) || 0;
-    categoryMap.set(category, currentValue + txn.DIRECTED_QUANTITY);
+    const currentValue = categoryMap.get(categoryKey) || 0;
+    categoryMap.set(categoryKey, currentValue + txn.DIRECTED_QUANTITY);
   }
 
   return grouped;
@@ -111,7 +119,7 @@ export function pivotTable(
  */
 export function movingAverage(values: number[], window: number): number[] {
   const result: number[] = [];
-  
+
   for (let i = 0; i < values.length; i++) {
     if (i < window - 1) {
       result.push(NaN);
@@ -121,7 +129,7 @@ export function movingAverage(values: number[], window: number): number[] {
       result.push(sum / window);
     }
   }
-  
+
   return result;
 }
 
@@ -190,13 +198,13 @@ export function sortDates(dates: string[]): string[] {
  */
 export function getUniqueCategories(pivot: Record<string, Record<string, number>>): string[] {
   const categories = new Set<string>();
-  
+
   for (const row of Object.values(pivot)) {
     for (const category of Object.keys(row)) {
       categories.add(category);
     }
   }
-  
+
   return Array.from(categories).sort();
 }
 
@@ -207,14 +215,14 @@ export function convertToBillions(
   pivot: Record<string, Record<string, number>>
 ): Record<string, Record<string, number>> {
   const converted: Record<string, Record<string, number>> = {};
-  
+
   for (const [date, values] of Object.entries(pivot)) {
     converted[date] = {};
     for (const [category, value] of Object.entries(values)) {
       converted[date][category] = value / 1_000_000_000;
     }
   }
-  
+
   return converted;
 }
 
@@ -225,14 +233,14 @@ export function convertToTrillions(
   pivot: Record<string, Record<string, number>>
 ): Record<string, Record<string, number>> {
   const converted: Record<string, Record<string, number>> = {};
-  
+
   for (const [date, values] of Object.entries(pivot)) {
     converted[date] = {};
     for (const [category, value] of Object.entries(values)) {
       converted[date][category] = value / 1_000_000_000_000;
     }
   }
-  
+
   return converted;
 }
 
@@ -244,7 +252,7 @@ export function ensureCategories(
   categories: string[]
 ): Record<string, Record<string, number>> {
   const ensured: Record<string, Record<string, number>> = {};
-  
+
   for (const [date, values] of Object.entries(pivot)) {
     ensured[date] = { ...values };
     for (const category of categories) {
@@ -253,7 +261,7 @@ export function ensureCategories(
       }
     }
   }
-  
+
   return ensured;
 }
 
@@ -265,7 +273,7 @@ export function reorderCategories(
   categoryOrder: string[]
 ): Record<string, Record<string, number>> {
   const reordered: Record<string, Record<string, number>> = {};
-  
+
   for (const [date, values] of Object.entries(pivot)) {
     reordered[date] = {};
     // Add categories in specified order
@@ -281,7 +289,7 @@ export function reorderCategories(
       }
     }
   }
-  
+
   return reordered;
 }
 
@@ -292,16 +300,16 @@ export function combineMaturationColumns(
   pivot: Record<string, Record<string, number>>
 ): Record<string, Record<string, number>> {
   const combined: Record<string, Record<string, number>> = {};
-  
+
   for (const [date, values] of Object.entries(pivot)) {
     combined[date] = { ...values };
-    
+
     if ('MATURATION_OFFSET' in combined[date]) {
       combined[date]['MATURATION'] = (combined[date]['MATURATION'] || 0) + combined[date]['MATURATION_OFFSET'];
       delete combined[date]['MATURATION_OFFSET'];
     }
   }
-  
+
   return combined;
 }
 
@@ -313,7 +321,7 @@ export function calculateTotal(
   excludeCategories: string[] = []
 ): Record<string, number> {
   const totals: Record<string, number> = {};
-  
+
   for (const [date, values] of Object.entries(pivot)) {
     let total = 0;
     for (const [category, value] of Object.entries(values)) {
@@ -323,7 +331,7 @@ export function calculateTotal(
     }
     totals[date] = total;
   }
-  
+
   return totals;
 }
 

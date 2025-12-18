@@ -13,6 +13,8 @@ import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekker
 import { PositionTypeProto, PositionViewProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb';
 import { MeasureProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
 import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
+import { Any } from 'google-protobuf/google/protobuf/any_pb';
+import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb';
 
 // Mock the PositionService
 const mockSearch = vi.fn();
@@ -111,6 +113,44 @@ describe('treasury_positions', () => {
             expect(result.IDENTIFIER).toBe('912797LX3');
             expect(result.TRADE_DATE).toBe('2024-01-15');
             expect(result.DIRECTED_QUANTITY).toBe(1000000);
+        });
+
+        it('should prefer getFieldValue for ADJUSTED_TENOR when getFieldDisplay returns \"Tenor\"', () => {
+            const mockPosition = {
+                getFields: vi.fn(() => [
+                    { getField: vi.fn(() => FieldProto.ADJUSTED_TENOR) },
+                ]),
+                getFieldDisplay: vi.fn(() => 'Tenor'),
+                getFieldValue: vi.fn(() => '2 years'),
+                getMeasures: vi.fn(() => []),
+                getMeasureValue: vi.fn(() => 0),
+            } as unknown as Position;
+
+            const result = positionToPlainObject(mockPosition);
+            expect(result.ADJUSTED_TENOR).toBe('2 years');
+        });
+
+        it('should decode ADJUSTED_TENOR from packed Any StringValue when display is \"Tenor\"', () => {
+            const sv = new StringValue();
+            sv.setValue('2Y');
+            const anyMsg = new Any();
+            anyMsg.pack(sv.serializeBinary(), 'google.protobuf.StringValue');
+
+            const mockFieldEntry = {
+                getField: vi.fn(() => FieldProto.ADJUSTED_TENOR),
+                getFieldValuePacked: vi.fn(() => anyMsg),
+            };
+
+            const mockPosition = {
+                getFields: vi.fn(() => [mockFieldEntry]),
+                getFieldDisplay: vi.fn(() => 'Tenor'),
+                getFieldValue: vi.fn(() => undefined),
+                getMeasures: vi.fn(() => []),
+                getMeasureValue: vi.fn(() => 0),
+            } as unknown as Position;
+
+            const result = positionToPlainObject(mockPosition);
+            expect(result.ADJUSTED_TENOR).toBe('2Y');
         });
 
         it('should handle positions with multiple fields and measures', () => {

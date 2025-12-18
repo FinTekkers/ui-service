@@ -1,31 +1,31 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import type { TreasuryTransaction } from '$lib/treasury_positions';
+  import { onMount } from "svelte";
+  import type { TreasuryTransaction } from "$lib/treasury_positions";
   import {
     createActivityOverTimeGraph,
     createNetActivityOverTimeGraph,
     createCumulativePositionGraph,
     createTermActivityGraph,
     createRecentActivityGraph,
-  } from '$lib/treasury_graphs';
+  } from "$lib/treasury_graphs";
 
-  export let data: import('./$types').PageData;
+  export let data: import("./$types").PageData;
 
   let plotlyLoaded = false;
   let Plotly: any;
 
   // Graph container IDs
   const graphIds = {
-    activity: 'activity-over-time',
-    netActivity: 'net-activity-over-time',
-    cumulative: 'cumulative-position',
-    term: 'term-activity',
-    recent: 'recent-activity'
+    activity: "activity-over-time",
+    netActivity: "net-activity-over-time",
+    cumulative: "cumulative-position",
+    term: "term-activity",
+    recent: "recent-activity",
   };
 
   onMount(async () => {
     // Load Plotly dynamically
-    Plotly = await import('plotly.js-dist');
+    Plotly = await import("plotly.js-dist");
     plotlyLoaded = true;
 
     // Render all graphs
@@ -42,41 +42,60 @@
     // Render Activity Over Time
     try {
       const activityGraph = createActivityOverTimeGraph(transactions);
-      Plotly.newPlot(graphIds.activity, activityGraph.data, activityGraph.layout, { responsive: true });
+      Plotly.newPlot(
+        graphIds.activity,
+        activityGraph.data,
+        activityGraph.layout,
+        { responsive: true }
+      );
     } catch (error) {
-      console.error('Error rendering activity over time graph:', error);
+      console.error("Error rendering activity over time graph:", error);
     }
 
     // Render Net Activity Over Time
     try {
       const netActivityGraph = createNetActivityOverTimeGraph(transactions);
-      Plotly.newPlot(graphIds.netActivity, netActivityGraph.data, netActivityGraph.layout, { responsive: true });
+      Plotly.newPlot(
+        graphIds.netActivity,
+        netActivityGraph.data,
+        netActivityGraph.layout,
+        { responsive: true }
+      );
     } catch (error) {
-      console.error('Error rendering net activity over time graph:', error);
+      console.error("Error rendering net activity over time graph:", error);
     }
 
     // Render Cumulative Position
     try {
       const cumulativeGraph = createCumulativePositionGraph(transactions);
-      Plotly.newPlot(graphIds.cumulative, cumulativeGraph.data, cumulativeGraph.layout, { responsive: true });
+      Plotly.newPlot(
+        graphIds.cumulative,
+        cumulativeGraph.data,
+        cumulativeGraph.layout,
+        { responsive: true }
+      );
     } catch (error) {
-      console.error('Error rendering cumulative position graph:', error);
+      console.error("Error rendering cumulative position graph:", error);
     }
 
     // Render Term Activity
     try {
       const termGraph = createTermActivityGraph(transactions);
-      Plotly.newPlot(graphIds.term, termGraph.data, termGraph.layout, { responsive: true });
+      Plotly.newPlot(graphIds.term, termGraph.data, termGraph.layout, {
+        responsive: true,
+      });
     } catch (error) {
-      console.error('Error rendering term activity graph:', error);
+      console.error("Error rendering term activity graph:", error);
     }
 
     // Render Recent Activity (without Treasury yield for now)
     try {
       const recentGraph = createRecentActivityGraph(transactions);
-      Plotly.newPlot(graphIds.recent, recentGraph.data, recentGraph.layout, { responsive: true });
+      Plotly.newPlot(graphIds.recent, recentGraph.data, recentGraph.layout, {
+        responsive: true,
+      });
     } catch (error) {
-      console.error('Error rendering recent activity graph:', error);
+      console.error("Error rendering recent activity graph:", error);
     }
   }
 
@@ -88,7 +107,7 @@
 
 <div class="treasuries-graphs-container">
   <h1 class="page-title">Treasury Position Analytics</h1>
-  
+
   {#if !data.transactions || data.transactions.length === 0}
     <div class="no-data">
       <p>No treasury transaction data available.</p>
@@ -99,31 +118,31 @@
         <!-- Activity Over Time -->
         <div class="graph-card">
           <h2>Activity Over Time</h2>
-          <div id={graphIds.activity} class="plot-container"></div>
+          <div id={graphIds.activity} class="plot-container" />
         </div>
 
         <!-- Net Activity Over Time -->
         <div class="graph-card">
           <h2>Net Activity Over Time</h2>
-          <div id={graphIds.netActivity} class="plot-container"></div>
+          <div id={graphIds.netActivity} class="plot-container" />
         </div>
 
         <!-- Cumulative Position -->
         <div class="graph-card">
           <h2>Cumulative Position by Product Type</h2>
-          <div id={graphIds.cumulative} class="plot-container"></div>
+          <div id={graphIds.cumulative} class="plot-container" />
         </div>
 
         <!-- Term Activity -->
         <div class="graph-card">
           <h2>Activity by Term Category</h2>
-          <div id={graphIds.term} class="plot-container"></div>
+          <div id={graphIds.term} class="plot-container" />
         </div>
 
         <!-- Recent Activity -->
         <div class="graph-card full-width">
           <h2>Recent Activity with Moving Average</h2>
-          <div id={graphIds.recent} class="plot-container"></div>
+          <div id={graphIds.recent} class="plot-container" />
         </div>
       </div>
     </div>
@@ -283,4 +302,3 @@
     }
   }
 </style>
-

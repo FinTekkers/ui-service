@@ -22,6 +22,11 @@ import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field
 const { FieldProto } = pkg;
 import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
+import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb';
+import { Any } from 'google-protobuf/google/protobuf/any_pb';
+import { TenorProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/tenor_pb';
+import { TenorTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/tenor_type_pb';
+import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
 
 // Constants
 const PORTFOLIO_NAME = "Federal Reserve SOMA Holdings";
@@ -100,10 +105,115 @@ export function createPortfolioFilter(): PositionFilter {
 export function positionToPlainObject(position: Position): Record<string, any> {
     const result: Record<string, any> = {};
 
+    function anyValueToU8(anyMsg: Any): Uint8Array | undefined {
+        const u8 = (anyMsg as any).getValue_asU8?.();
+        if (u8) return u8 as Uint8Array;
+
+        const v = (anyMsg as any).getValue?.();
+        if (!v) return undefined;
+
+        // google-protobuf may represent bytes as base64 string
+        if (typeof v === 'string') {
+            try {
+                return Uint8Array.from(Buffer.from(v, 'base64'));
+            } catch {
+                return undefined;
+            }
+        }
+        return v as Uint8Array;
+    }
+
+    function extractAdjustedTenor(raw: any, display: any): string | undefined {
+        // If display is already a meaningful tenor, keep it
+        if (typeof display === 'string') {
+            const d = display.trim();
+            if (d && d.toLowerCase() !== 'tenor') return d;
+        }
+
+        if (raw == null) return undefined;
+        if (typeof raw === 'string') return raw;
+
+        // Common wrapper patterns
+        if (typeof raw.getTenorDescription === 'function') return raw.getTenorDescription();
+        if (typeof raw.getDescription === 'function') return raw.getDescription();
+        if (typeof raw.name === 'function') return raw.name();
+
+        // Fallback to toString if it's informative
+        if (typeof raw.toString === 'function') {
+            const s = String(raw.toString());
+            if (s && s !== '[object Object]') return s;
+        }
+
+        // Some wrappers keep the proto under `.proto`
+        if (raw.proto && typeof raw.proto.toString === 'function') {
+            const s = String(raw.proto.toString());
+            if (s && s !== '[object Object]') return s;
+        }
+
+        return undefined;
+    }
+
     // Extract fields - use field name as key (matching Python pattern)
     for (const field of position.getFields()) {
         const fieldName = getFieldName(field.getField());
-        result[fieldName] = position.getFieldDisplay(field);
+        const displayValue = position.getFieldDisplay(field);
+
+        // ADJUSTED_TENOR comes back as the literal string "Tenor" via getFieldDisplay() in this environment.
+        // Use the packed StringValue (and/or getFieldValue) to extract the actual tenor.
+        if (fieldName === 'ADJUSTED_TENOR') {
+            // Prefer reading the packed StringValue directly (ProtoSerializationUtil currently uses StringValue.toString()).
+            let packedValue: string | undefined = undefined;
+            try {
+                const packedAny = field.getFieldValuePacked?.() as Any | undefined;
+                if (packedAny) {
+                    const typeUrl = (packedAny as any).getTypeUrl?.() as string | undefined;
+                    const bytes = anyValueToU8(packedAny);
+                    if (bytes) {
+                        // If the Any says it's a StringValue, decode as StringValue
+                        if (!typeUrl || typeUrl === 'type.googleapis.com/google.protobuf.StringValue') {
+                            const sv = StringValue.deserializeBinary(bytes);
+                            const v = sv.getValue();
+                            if (v && v.trim().length > 0) packedValue = v;
+                        }
+
+                        // Some deployments may pack TenorProto here; decode and format it
+                        if (!packedValue && typeUrl && typeUrl.toLowerCase().includes('tenor')) {
+                            const tp = TenorProto.deserializeBinary(bytes);
+                            const termValue = tp.getTermValue();
+                            const tenorType = tp.getTenorType();
+                            // Prefer wrapper formatting if possible
+                            try {
+                                const t = termValue && termValue.length > 0
+                                    ? new Tenor(tenorType as TenorTypeProto, termValue)
+                                    : new Tenor(tenorType as TenorTypeProto);
+                                packedValue = t.toString();
+                            } catch {
+                                packedValue = termValue || undefined;
+                            }
+                        }
+
+                        // As a last resort, try decoding as StringValue anyway (even if typeUrl is missing/mis-set)
+                        if (!packedValue) {
+                            const sv = StringValue.deserializeBinary(bytes);
+                            const v = sv.getValue();
+                            if (v && v.trim().length > 0) packedValue = v;
+                        }
+                    }
+                }
+            } catch {
+                // ignore and fall back
+            }
+
+            const rawValue = (position as any).getFieldValue
+                ? (position as any).getFieldValue(field.getField())
+                : undefined;
+            result[fieldName] =
+                (packedValue && packedValue.trim() !== 'Tenor' ? packedValue : undefined) ??
+                extractAdjustedTenor(rawValue, displayValue) ??
+                displayValue;
+        } else {
+            result[fieldName] = displayValue;
+        }
     }
 
     // Extract measures - use measure name as key
@@ -238,6 +348,8 @@ export async function getTreasuryTransactions(
         FieldProto.MATURITY_DATE,
         FieldProto.ISSUE_DATE,
         FieldProto.PRODUCT_TYPE,
+        // Add TENOR for diagnostics / cross-checking when ADJUSTED_TENOR is mis-populated upstream
+        FieldProto.TENOR,
         FieldProto.ADJUSTED_TENOR,
     ];
 
