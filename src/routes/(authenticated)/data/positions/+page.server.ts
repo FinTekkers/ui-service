@@ -60,6 +60,9 @@ export async function load({ locals, request }) {
   const fields = searchParams.get('fields');
   const measures = searchParams.get('measures');
   const cusip = searchParams.get('cusip');
+  const tradeDate = searchParams.get('tradeDate');
+  const tradeDateOperator = searchParams.get('tradeDateOperator');
+  const assetClass = searchParams.get('assetClass');
   // Sort is now handled client-side, but we keep these for backward compatibility
   const sortBy = searchParams.get('sortBy');
   const sortDirection = searchParams.get('sortDirection') || 'asc';
@@ -128,7 +131,17 @@ export async function load({ locals, request }) {
     validSortDirection = sortDirection === 'desc' ? 'desc' : 'asc';
   }
 
-  const positions = await FetchPosition(requestData, positionViewEnumValue, positionTypeEnumValue, mappedSortBy, validSortDirection, cusip || undefined);
+  const positions = await FetchPosition(
+    requestData,
+    positionViewEnumValue,
+    positionTypeEnumValue,
+    mappedSortBy,
+    validSortDirection,
+    cusip || undefined,
+    tradeDate || undefined,
+    tradeDateOperator === 'greater_than' ? 'greater_than' : tradeDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
+    assetClass || undefined
+  );
 
   const metadata = { fields: userFields, measures: userMeasures };
   return {

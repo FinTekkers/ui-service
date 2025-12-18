@@ -21,8 +21,19 @@ import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/model
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { pack } from '@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
+import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
 
-export async function FetchPosition(requestData: { fields: FieldProtoType[], measures: MeasureProto[] }, positionViewEnumValue: PositionViewProto, positionTypeEnumValue: PositionTypeProto, sortBy?: FieldProtoType, sortDirection: 'asc' | 'desc' = 'asc', cusip?: string): Promise<any> {
+export async function FetchPosition(
+    requestData: { fields: FieldProtoType[], measures: MeasureProto[] },
+    positionViewEnumValue: PositionViewProto,
+    positionTypeEnumValue: PositionTypeProto,
+    sortBy?: FieldProtoType,
+    sortDirection: 'asc' | 'desc' = 'asc',
+    cusip?: string,
+    tradeDate?: string,
+    tradeDateOperator?: 'greater_than' | 'lesser_than',
+    assetClass?: string
+): Promise<any> {
     const positionService = new PositionService();
 
     // Create position filter and add CUSIP filter if provided
@@ -32,6 +43,20 @@ export async function FetchPosition(requestData: { fields: FieldProtoType[], mea
         let identifierProto = new IdentifierProto().setIdentifierType(IdentifierTypeProto.CUSIP).setIdentifierValue(cusip.trim());
         let identifier = new Identifier(identifierProto);
         positionFilter.addObjectFilter(FieldProto.IDENTIFIER, identifier);
+    }
+
+    // Add TRADE_DATE filter if provided
+    if (tradeDate && tradeDate.trim() !== "" && tradeDateOperator) {
+        const tradeDateObj = new Date(tradeDate);
+        const operator = tradeDateOperator === 'greater_than'
+            ? PositionFilterOperator.MORE_THAN
+            : PositionFilterOperator.LESS_THAN;
+        positionFilter.addFilter(FieldProto.TRADE_DATE, operator, tradeDateObj);
+    }
+
+    // Add ASSET_CLASS filter if provided
+    if (assetClass && assetClass.trim() !== "") {
+        positionFilter.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass.trim());
     }
 
     const request = new QueryPositionRequest(

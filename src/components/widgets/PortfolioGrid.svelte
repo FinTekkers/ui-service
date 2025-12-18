@@ -41,46 +41,55 @@
 
 <div class="portfolio_container mx-auto shadow px-10 py-7">
 	<h2 class="text-3xl font-extrabold my-3">Portfolios</h2>
-	<table class="min-w-full text-left table-fixed">
-		<thead class="border-b border-slate-400">
-			<tr>
-				{#each columns as column}
-					<th
-						class="text-semibold text-lg px-4 py-2 w-1/4 sortable-header"
-						role="button"
-						tabindex="0"
-						on:click={() => handleHeaderClick(column.key)}
-						on:keydown={(e) =>
-							e.key === "Enter" && handleHeaderClick(column.key)}
-					>
-						{column.label}
-						{getSortIndicatorForColumn(column.key)}
-					</th>
-				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each sortedRows as row}
-				<tr class="table-row border-b border-slate-400">
+	<div class="table-wrapper">
+		<table class="text-left">
+			<thead class="border-b border-slate-400">
+				<tr>
 					{#each columns as column}
-						<td class="table-cell px-4 py-2">{row[column.key]}</td>
+						<th
+							class="text-semibold text-lg px-4 py-2 sortable-header"
+							role="button"
+							tabindex="0"
+							on:click={() => handleHeaderClick(column.key)}
+							on:keydown={(e) =>
+								e.key === "Enter" && handleHeaderClick(column.key)}
+						>
+							{column.label}
+							{getSortIndicatorForColumn(column.key)}
+						</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#each sortedRows as row}
+					<tr class="table-row border-b border-slate-400">
+						{#each columns as column}
+							<td class="table-cell px-4 py-2">{row[column.key]}</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 </div>
 
 <style lang="scss">
 	@import "../../styles/grid-table";
 
-	// Keep only component-specific overrides if needed
-	.portfolio_container {
-		margin: 15px auto;
-		background-color: white !important;
-		border: none !important;
-		outline: none !important;
-		box-shadow: none !important;
+	.table-wrapper {
+		overflow-x: auto;
+		width: 100%;
+	}
+
+	table {
+		width: max-content;
+		min-width: 100%;
+	}
+
+	th,
+	td {
+		white-space: nowrap;
+		min-width: 120px;
 	}
 
 	.sortable-header {

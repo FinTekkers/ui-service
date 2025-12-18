@@ -109,64 +109,77 @@
 
 <div class="portfolio_container mx-auto shadow px-10 py-7 my-4">
 	<h2 class="text-3xl font-extrabold my-3">Positions</h2>
-	<table class="min-w-full text-left table-fixed">
-		<thead class="border-b border-slate-400">
-			<tr>
-				{#each fields as field, fieldIndex}
-					<th
-						class="text-semibold text-lg px-4 py-2 table-width capitalize sortable-header"
-						role="button"
-						tabindex="0"
-						on:click={() => handleHeaderClick(fieldIndex, true)}
-						on:keydown={(e) =>
-							e.key === "Enter" &&
-							handleHeaderClick(fieldIndex, true)}
-					>
-						{formatName(field)}
-						{getSortIndicatorForColumn(fieldIndex, true)}
-					</th>
-				{/each}
-				{#each measures as measure, measureIndex}
-					<th
-						class="text-semibold text-lg px-4 py-2 table-width sortable-header"
-						role="button"
-						tabindex="0"
-						on:click={() => handleHeaderClick(measureIndex, false)}
-						on:keydown={(e) =>
-							e.key === "Enter" &&
-							handleHeaderClick(measureIndex, false)}
-					>
-						{formatName(measure)}
-						{getSortIndicatorForColumn(measureIndex, false)}
-					</th>
-				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each sortedPositions as position}
-				<tr class="table-row border-b border-slate-400">
-					{#each requestData.fields as field}
-						<td class="table-cell px-4 py-2">
-							{position[field]}
-						</td>
+	<div class="table-wrapper">
+		<table class="text-left">
+			<thead class="border-b border-slate-400">
+				<tr>
+					{#each fields as field, fieldIndex}
+						<th
+							class="text-semibold text-lg px-4 py-2 table-width capitalize sortable-header"
+							role="button"
+							tabindex="0"
+							on:click={() => handleHeaderClick(fieldIndex, true)}
+							on:keydown={(e) =>
+								e.key === "Enter" &&
+								handleHeaderClick(fieldIndex, true)}
+						>
+							{formatName(field)}
+							{getSortIndicatorForColumn(fieldIndex, true)}
+						</th>
 					{/each}
-					{#each requestData.measures as measure}
-						<td class="table-cell px-4 py-2">
-							{formatAmount(position[measure])}
-						</td>
+					{#each measures as measure, measureIndex}
+						<th
+							class="text-semibold text-lg px-4 py-2 table-width sortable-header"
+							role="button"
+							tabindex="0"
+							on:click={() => handleHeaderClick(measureIndex, false)}
+							on:keydown={(e) =>
+								e.key === "Enter" &&
+								handleHeaderClick(measureIndex, false)}
+						>
+							{formatName(measure)}
+							{getSortIndicatorForColumn(measureIndex, false)}
+						</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#each sortedPositions as position}
+					<tr class="table-row border-b border-slate-400">
+						{#each requestData.fields as field}
+							<td class="table-cell px-4 py-2">
+								{position[field]}
+							</td>
+						{/each}
+						{#each requestData.measures as measure}
+							<td class="table-cell px-4 py-2">
+								{formatAmount(position[measure])}
+							</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 </div>
 
 <style lang="scss">
 	@import "../../styles/grid-table";
 
-	// Keep only component-specific overrides if needed
-	.portfolio_container {
-		margin: 15px auto; // PositionGrid-specific override
+	.table-wrapper {
+		overflow-x: auto;
+		width: 100%;
+	}
+
+	table {
+		width: max-content;
+		min-width: 100%;
+	}
+
+	th,
+	td {
+		white-space: nowrap;
+		min-width: 120px;
 	}
 
 	.sortable-header {

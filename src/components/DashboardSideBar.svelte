@@ -50,7 +50,7 @@
   <button
     type="button"
     on:click={toggleSidebar}
-    class="absolute top-0 right-[-30px] text-black"
+    class="absolute top-2 right-2 text-black"
     ><Icon
       icon={sidebarExpanded ? "mdi:hamburger-open" : "mdi:hamburger-close"}
       class="user-menu-icon"
