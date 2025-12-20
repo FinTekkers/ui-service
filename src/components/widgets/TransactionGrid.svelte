@@ -35,6 +35,11 @@
   // Sorted rows (reactive) - using universal sort utility
   $: sortedRows = sortData(rows, sortField, sortDirection);
 
+  // Calculate total directed quantity
+  $: totalQuantity = rows.reduce((sum, row) => {
+    return sum + parseFloat(row.transactionQuantity || '0');
+  }, 0);
+
   function handleHeaderClick(fieldKey: keyof TransactionData) {
     const newSort = handleSortClick(sortField, fieldKey, sortDirection);
     sortField = newSort.sortField;
@@ -84,6 +89,21 @@
           </tr>
         {/each}
       </tbody>
+      <tfoot>
+        <tr class="summary-row border-t-2 border-slate-600">
+          {#each columns as column}
+            <td class="table-cell px-4 py-2 font-bold">
+              {#if column.key === "transactionId"}
+                Total
+              {:else if column.key === "transactionQuantity"}
+                {formatAmount(totalQuantity.toString())}
+              {:else}
+                &nbsp;
+              {/if}
+            </td>
+          {/each}
+        </tr>
+      </tfoot>
     </table>
   </div>
 </div>
@@ -120,5 +140,9 @@
       outline: 2px solid #3b82f6;
       outline-offset: -2px;
     }
+  }
+
+  .summary-row {
+    background-color: rgba(0, 0, 0, 0.05);
   }
 </style>
