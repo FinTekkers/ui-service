@@ -9,13 +9,13 @@ export function groupByDateAndCategory(
   category:
     | 'TRANSACTION_TYPE'
     | 'PRODUCT_TYPE'
-    | 'ADJUSTED_TENOR'
+    | 'TENOR'
     | ((txn: TreasuryTransaction) => string)
 ): Map<string, Map<string, number>> {
   const grouped = new Map<string, Map<string, number>>();
 
   for (const txn of transactions) {
-    const dateKey = txn.TRADE_DATE.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateKey = txn.TRADE_DATE; // YYYY-MM-DD
     const categoryValue =
       typeof category === 'function'
         ? category(txn)

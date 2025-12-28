@@ -66,11 +66,11 @@ function getMeasureName(measureEnum: number): string {
 export interface TreasuryTransaction {
     IDENTIFIER: string;
     TRANSACTION_TYPE: string;
-    TRADE_DATE: Date;
-    MATURITY_DATE?: Date | string;
-    ISSUE_DATE?: Date | string;
+    TRADE_DATE: string;
+    MATURITY_DATE: string;
+    ISSUE_DATE: string;
     PRODUCT_TYPE?: string;
-    ADJUSTED_TENOR?: string;
+    TENOR?: string;
     DIRECTED_QUANTITY: number;
 }
 
@@ -105,115 +105,25 @@ export function createPortfolioFilter(): PositionFilter {
 export function positionToPlainObject(position: Position): Record<string, any> {
     const result: Record<string, any> = {};
 
-    function anyValueToU8(anyMsg: Any): Uint8Array | undefined {
-        const u8 = (anyMsg as any).getValue_asU8?.();
-        if (u8) return u8 as Uint8Array;
-
-        const v = (anyMsg as any).getValue?.();
-        if (!v) return undefined;
-
-        // google-protobuf may represent bytes as base64 string
-        if (typeof v === 'string') {
-            try {
-                return Uint8Array.from(Buffer.from(v, 'base64'));
-            } catch {
-                return undefined;
-            }
-        }
-        return v as Uint8Array;
-    }
-
-    function extractAdjustedTenor(raw: any, display: any): string | undefined {
-        // If display is already a meaningful tenor, keep it
-        if (typeof display === 'string') {
-            const d = display.trim();
-            if (d && d.toLowerCase() !== 'tenor') return d;
-        }
-
-        if (raw == null) return undefined;
-        if (typeof raw === 'string') return raw;
-
-        // Common wrapper patterns
-        if (typeof raw.getTenorDescription === 'function') return raw.getTenorDescription();
-        if (typeof raw.getDescription === 'function') return raw.getDescription();
-        if (typeof raw.name === 'function') return raw.name();
-
-        // Fallback to toString if it's informative
-        if (typeof raw.toString === 'function') {
-            const s = String(raw.toString());
-            if (s && s !== '[object Object]') return s;
-        }
-
-        // Some wrappers keep the proto under `.proto`
-        if (raw.proto && typeof raw.proto.toString === 'function') {
-            const s = String(raw.proto.toString());
-            if (s && s !== '[object Object]') return s;
-        }
-
-        return undefined;
-    }
-
     // Extract fields - use field name as key (matching Python pattern)
     for (const field of position.getFields()) {
         const fieldName = getFieldName(field.getField());
-        const displayValue = position.getFieldDisplay(field);
-
-        // ADJUSTED_TENOR comes back as the literal string "Tenor" via getFieldDisplay() in this environment.
-        // Use the packed StringValue (and/or getFieldValue) to extract the actual tenor.
-        if (fieldName === 'ADJUSTED_TENOR') {
-            // Prefer reading the packed StringValue directly (ProtoSerializationUtil currently uses StringValue.toString()).
-            let packedValue: string | undefined = undefined;
+        let displayValue: any;
+        try {
+            displayValue = position.getFieldDisplay(field);
+        } catch (error) {
+            // Handle cases where getFieldDisplay fails (e.g., malformed TENOR descriptions)
+            console.warn(`Error getting field display for ${fieldName}:`, error);
+            // Try to get raw value as fallback
             try {
-                const packedAny = field.getFieldValuePacked?.() as Any | undefined;
-                if (packedAny) {
-                    const typeUrl = (packedAny as any).getTypeUrl?.() as string | undefined;
-                    const bytes = anyValueToU8(packedAny);
-                    if (bytes) {
-                        // If the Any says it's a StringValue, decode as StringValue
-                        if (!typeUrl || typeUrl === 'type.googleapis.com/google.protobuf.StringValue') {
-                            const sv = StringValue.deserializeBinary(bytes);
-                            const v = sv.getValue();
-                            if (v && v.trim().length > 0) packedValue = v;
-                        }
-
-                        // Some deployments may pack TenorProto here; decode and format it
-                        if (!packedValue && typeUrl && typeUrl.toLowerCase().includes('tenor')) {
-                            const tp = TenorProto.deserializeBinary(bytes);
-                            const termValue = tp.getTermValue();
-                            const tenorType = tp.getTenorType();
-                            // Prefer wrapper formatting if possible
-                            try {
-                                const t = termValue && termValue.length > 0
-                                    ? new Tenor(tenorType as TenorTypeProto, termValue)
-                                    : new Tenor(tenorType as TenorTypeProto);
-                                packedValue = t.toString();
-                            } catch {
-                                packedValue = termValue || undefined;
-                            }
-                        }
-
-                        // As a last resort, try decoding as StringValue anyway (even if typeUrl is missing/mis-set)
-                        if (!packedValue) {
-                            const sv = StringValue.deserializeBinary(bytes);
-                            const v = sv.getValue();
-                            if (v && v.trim().length > 0) packedValue = v;
-                        }
-                    }
-                }
+                const rawValue = (position as any).getFieldValue?.(field.getField());
+                displayValue = rawValue?.toString() || '';
             } catch {
-                // ignore and fall back
+                displayValue = '';
             }
-
-            const rawValue = (position as any).getFieldValue
-                ? (position as any).getFieldValue(field.getField())
-                : undefined;
-            result[fieldName] =
-                (packedValue && packedValue.trim() !== 'Tenor' ? packedValue : undefined) ??
-                extractAdjustedTenor(rawValue, displayValue) ??
-                displayValue;
-        } else {
-            result[fieldName] = displayValue;
         }
+
+        result[fieldName] = displayValue;
     }
 
     // Extract measures - use measure name as key
@@ -249,70 +159,94 @@ export function processTransactionData(
             // Extract values using field names (matching Python output format)
             const identifier = String(obj.IDENTIFIER || '');
             const transactionType = String(obj.TRANSACTION_TYPE || '');
-            const tradeDateStr = obj.TRADE_DATE || '';
+            const tradeDateStr = obj.TRADE_DATE;
             const maturityDate = obj.MATURITY_DATE;
             const issueDate = obj.ISSUE_DATE;
             const productType = obj.PRODUCT_TYPE;
-            const adjustedTenor = obj.ADJUSTED_TENOR;
+            const adjustedTenor = obj.TENOR;
             const directedQuantity = Number(obj.DIRECTED_QUANTITY || 0);
 
             // Parse trade date
-            let tradeDate: Date;
-            if (tradeDateStr instanceof Date) {
-                tradeDate = tradeDateStr;
-            } else if (typeof tradeDateStr === 'string') {
-                // Parse date string, handling ISO format and other formats
-                // Use Date constructor which handles ISO 8601 format
-                const parsed = new Date(tradeDateStr);
-                // Check if date is valid
-                if (isNaN(parsed.getTime())) {
-                    // Try alternative parsing if ISO format fails
-                    tradeDate = new Date();
-                } else {
-                    tradeDate = parsed;
-                }
-            } else {
-                // Try to get date from position object if available
-                tradeDate = new Date();
-            }
+            // let tradeDate: Date;
+            // if (tradeDateStr instanceof Date) {
+            //     tradeDate = tradeDateStr;
+            // } else if (typeof tradeDateStr === 'string') {
+            //     // Parse date string, handling ISO format (YYYY-MM-DD) and other formats
+            //     // For ISO date strings (YYYY-MM-DD), parse as local date to avoid timezone issues
+            //     const isoDateMatch = tradeDateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            //     if (isoDateMatch) {
+            //         // Parse as local date (YYYY-MM-DD format)
+            //         const year = parseInt(isoDateMatch[1], 10);
+            //         const month = parseInt(isoDateMatch[2], 10) - 1; // Month is 0-indexed
+            //         const day = parseInt(isoDateMatch[3], 10);
+            //         tradeDate = new Date(year, month, day);
+            //     } else {
+            //         // Use Date constructor for other formats (handles ISO 8601 with time, etc.)
+            //         const parsed = new Date(tradeDateStr);
+            //         // Check if date is valid
+            //         if (isNaN(parsed.getTime())) {
+            //             // Try alternative parsing if ISO format fails
+            //             tradeDate = new Date();
+            //         } else {
+            //             tradeDate = parsed;
+            //         }
+            //     }
+            // } else {
+            //     // Try to get date from position object if available
+            //     tradeDate = new Date();
+            // }
 
-            // Parse optional dates
-            let parsedMaturityDate: Date | string | undefined;
-            if (maturityDate) {
-                if (maturityDate instanceof Date) {
-                    parsedMaturityDate = maturityDate;
-                } else if (typeof maturityDate === 'string') {
-                    parsedMaturityDate = new Date(maturityDate);
-                } else {
-                    parsedMaturityDate = maturityDate;
-                }
-            }
+            // // Parse optional dates
+            // let parsedMaturityDate: Date | string | undefined;
+            // if (maturityDate) {
+            //     if (maturityDate instanceof Date) {
+            //         parsedMaturityDate = maturityDate;
+            //     } else if (typeof maturityDate === 'string') {
+            //         // For ISO date strings (YYYY-MM-DD), parse as local date to avoid timezone issues
+            //         const isoDateMatch = maturityDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            //         if (isoDateMatch) {
+            //             const year = parseInt(isoDateMatch[1], 10);
+            //             const month = parseInt(isoDateMatch[2], 10) - 1; // Month is 0-indexed
+            //             const day = parseInt(isoDateMatch[3], 10);
+            //             parsedMaturityDate = new Date(year, month, day);
+            //         } else {
+            //             parsedMaturityDate = new Date(maturityDate);
+            //         }
+            //     } else {
+            //         parsedMaturityDate = maturityDate;
+            //     }
+            // }
 
-            let parsedIssueDate: Date | string | undefined;
-            if (issueDate) {
-                if (issueDate instanceof Date) {
-                    parsedIssueDate = issueDate;
-                } else if (typeof issueDate === 'string') {
-                    parsedIssueDate = new Date(issueDate);
-                } else {
-                    parsedIssueDate = issueDate;
-                }
-            }
+            // let parsedIssueDate: Date | string | undefined;
+            // if (issueDate) {
+            //     if (issueDate instanceof Date) {
+            //         parsedIssueDate = issueDate;
+            //     } else if (typeof issueDate === 'string') {
+            //         // For ISO date strings (YYYY-MM-DD), parse as local date to avoid timezone issues
+            //         const isoDateMatch = issueDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            //         if (isoDateMatch) {
+            //             const year = parseInt(isoDateMatch[1], 10);
+            //             const month = parseInt(isoDateMatch[2], 10) - 1; // Month is 0-indexed
+            //             const day = parseInt(isoDateMatch[3], 10);
+            //             parsedIssueDate = new Date(year, month, day);
+            //         } else {
+            //             parsedIssueDate = new Date(issueDate);
+            //         }
+            //     } else {
+            //         parsedIssueDate = issueDate;
+            //     }
+            // }
 
             return {
                 IDENTIFIER: String(identifier),
                 TRANSACTION_TYPE: String(transactionType),
-                TRADE_DATE: tradeDate,
-                MATURITY_DATE: parsedMaturityDate,
-                ISSUE_DATE: parsedIssueDate,
+                TRADE_DATE: tradeDateStr,
+                MATURITY_DATE: maturityDate,
+                ISSUE_DATE: issueDate,
                 PRODUCT_TYPE: productType ? String(productType) : undefined,
-                ADJUSTED_TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
+                TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
                 DIRECTED_QUANTITY: Number(directedQuantity),
             };
-        })
-        .sort((a, b) => {
-            // Sort by trade date (ascending)
-            return a.TRADE_DATE.getTime() - b.TRADE_DATE.getTime();
         });
 
     return transactions;
@@ -348,9 +282,7 @@ export async function getTreasuryTransactions(
         FieldProto.MATURITY_DATE,
         FieldProto.ISSUE_DATE,
         FieldProto.PRODUCT_TYPE,
-        // Add TENOR for diagnostics / cross-checking when ADJUSTED_TENOR is mis-populated upstream
         FieldProto.TENOR,
-        FieldProto.ADJUSTED_TENOR,
     ];
 
     const measures: MeasureProtoType[] = [MeasureProto.DIRECTED_QUANTITY];

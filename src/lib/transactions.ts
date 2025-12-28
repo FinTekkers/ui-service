@@ -10,6 +10,35 @@ const { FieldProto } = pkg;
 const transactionService = new ts.TransactionService();
 const now = datetime.ZonedDateTime.now();
 
+/**
+ * Formats a date object to ISO date string (YYYY-MM-DD)
+ */
+function formatDateToISO(date: any): string {
+  if (!date) return '';
+
+  // If it has a toDate method (like ZonedDateTime or LocalDate), use it
+  if (typeof date.toDate === 'function') {
+    const jsDate = date.toDate();
+    return jsDate.toISOString().split('T')[0];
+  }
+
+  // If it's already a Date object
+  if (date instanceof Date) {
+    return date.toISOString().split('T')[0];
+  }
+
+  // If it's a string, try to parse it
+  if (typeof date === 'string') {
+    const parsed = new Date(date);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().split('T')[0];
+    }
+  }
+
+  // Fallback to toString
+  return date.toString();
+}
+
 interface TransactionData {
   transactionId: string;
   transactionSettlementDate: string;
@@ -44,17 +73,17 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
 
       return {
         transactionId: security.getSecurityID().getIdentifierValue().toString(),
-        transactionSettlementDate: element.getSettlementDate().toString(),
+        transactionSettlementDate: formatDateToISO(element.getSettlementDate()),
         transactionIssuerName: element.getIssuerName().toString(),
-        transactionIssueDate: security.getIssueDate().toString(),
+        transactionIssueDate: formatDateToISO(security.getIssueDate()),
         transactionQuantity: element.getQuantity().toString(),
         transactionProductType: security.getProductType(),
         transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
         transactionTenor: bondSecurity?.getTenor().getTenorDescription() ?? '',
         transactionCouponFrequency: bondSecurity?.getCouponFrequency()?.toString() ?? '',
-        transactionMaturityDate: security.getMaturityDate().toString(),
-        transactionTradeDate: element.getTradeDate().toString(),
+        transactionMaturityDate: formatDateToISO(security.getMaturityDate()),
+        transactionTradeDate: formatDateToISO(element.getTradeDate()),
         transactionSide: element.getTransactionType().toString()
       };
     });
@@ -72,4 +101,5 @@ let FetchTransaction = async function FetchTransaction(): Promise<TransactionDat
   return FetchTransactionWithFilter(filter);
 };
 
-export { FetchTransactionWithFilter, FetchTransaction, TransactionData };
+export { FetchTransactionWithFilter, FetchTransaction };
+export type { TransactionData };

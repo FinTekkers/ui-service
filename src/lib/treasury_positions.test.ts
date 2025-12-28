@@ -248,7 +248,7 @@ describe('treasury_positions', () => {
             expect(result[0].TRADE_DATE).toBeInstanceOf(Date);
             // Check that the date is valid and represents January 2024
             // Note: Date parsing can vary by timezone, so we check the date string representation
-            const dateStr = result[0].TRADE_DATE.toISOString().split('T')[0];
+            const dateStr = result[0].TRADE_DATE;
             expect(dateStr).toBe('2024-01-15');
         });
 
