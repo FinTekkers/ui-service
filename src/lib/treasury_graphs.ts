@@ -374,7 +374,7 @@ export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
 
   // Group by date and derived term bucket (from TENOR)
   let grouped = groupByDateAndCategory(transactions, (txn) =>
-    tenorToTermBucket(txn.TENOR)
+    tenorToTermBucket(txn.ADJUSTED_TENORTENOR)
   );
 
   // Resample to monthly

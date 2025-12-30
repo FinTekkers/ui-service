@@ -21,7 +21,7 @@
     { label: "Issuer Name", key: "transactionIssuerName" },
     { label: "Issue Date", key: "transactionIssueDate" },
     { label: "Maturity Date", key: "transactionMaturityDate" },
-    { label: "Tenor", key: "transactionTenor" },
+    { label: "Term", key: "transactionTenor" },
     { label: "Coupon Frequency", key: "transactionCouponFrequency" },
     { label: "Coupon Type", key: "transactionCouponType" },
     { label: "Coupon Rate", key: "transactionCouponRate" },
@@ -37,7 +37,7 @@
 
   // Calculate total directed quantity
   $: totalQuantity = rows.reduce((sum, row) => {
-    return sum + parseFloat(row.transactionQuantity || '0');
+    return sum + parseFloat(row.transactionQuantity || "0");
   }, 0);
 
   function handleHeaderClick(fieldKey: keyof TransactionData) {

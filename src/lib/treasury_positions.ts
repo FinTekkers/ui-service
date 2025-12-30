@@ -70,7 +70,7 @@ export interface TreasuryTransaction {
     MATURITY_DATE: string;
     ISSUE_DATE: string;
     PRODUCT_TYPE?: string;
-    TENOR?: string;
+    ADJUSTED_TENOR?: string;
     DIRECTED_QUANTITY: number;
 }
 
@@ -163,7 +163,7 @@ export function processTransactionData(
             const maturityDate = obj.MATURITY_DATE;
             const issueDate = obj.ISSUE_DATE;
             const productType = obj.PRODUCT_TYPE;
-            const adjustedTenor = obj.TENOR;
+            const adjustedTenor = obj.ADJUSTED_TENOR;
             const directedQuantity = Number(obj.DIRECTED_QUANTITY || 0);
 
             // Parse trade date
@@ -282,7 +282,7 @@ export async function getTreasuryTransactions(
         FieldProto.MATURITY_DATE,
         FieldProto.ISSUE_DATE,
         FieldProto.PRODUCT_TYPE,
-        FieldProto.TENOR,
+        FieldProto.ADJUSTED_TENOR,
     ];
 
     const measures: MeasureProtoType[] = [MeasureProto.DIRECTED_QUANTITY];

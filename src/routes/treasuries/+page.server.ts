@@ -150,6 +150,8 @@ async function fetchTransactionsFromPositions(filter: PositionFilter): Promise<T
       const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY;
       const bondSecurity = isBond ? (security as BondSecurity) : null;
 
+      const asOfDate = new Date();
+
       // Build TransactionData
       return {
         transactionId: identifierStr,
@@ -160,7 +162,7 @@ async function fetchTransactionsFromPositions(filter: PositionFilter): Promise<T
         transactionProductType: security.getProductType() ?? '',
         transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
-        transactionTenor: bondSecurity?.getTenor().getTenorDescription() ?? '',
+        transactionTenor: bondSecurity?.getTenor(asOfDate).getTenorDescription() ?? '',
         transactionCouponFrequency: bondSecurity?.getCouponFrequency()?.toString() ?? '',
         transactionMaturityDate: security.getMaturityDate()?.toString() ?? '',
         transactionTradeDate: tradeDate,
