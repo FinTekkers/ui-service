@@ -303,78 +303,41 @@ export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
     '>10 years'
   ];
 
-  function tenorToTermBucket(tenor?: string): string {
-    if (!tenor) return '';
-
-    // If already bucketed, keep it
-    if (termCategories.includes(tenor)) return tenor;
-
-    // Normalize: strip zero-width chars, lowercase, and drop leading "P" from ISO8601 durations
-    const t = tenor
-      .replace(/[\u200B-\u200D\uFEFF]/g, '')
-      .trim()
-      .toLowerCase();
-    // Strip wrapper prefixes like "TERM:" / "TERM"
-    const withoutPrefix = t.replace(/^term\s*:\s*/i, '').replace(/^term\s+/i, '');
-    const normalized = withoutPrefix.replace(/^p/, '');
-
-    // If the value is already one of the bucket labels but with different casing/spacing, normalize it.
-    const normalizedBuckets = new Map(
-      termCategories.map((b) => [b.toLowerCase(), b] as const)
-    );
-    const directBucket = normalizedBuckets.get(normalized);
-    if (directBucket) return directBucket;
-
-    // Parse any number+unit pairs.
-    // Supports:
-    // - Compact period strings: "5y1m4w1d", "2y3m"
-    // - ISO-ish: "p2y6m"
-    // - Natural: "2 years 6 months", "18 months", "0.5 years"
-    let totalMonths = 0;
-    let found = false;
-
-    // 1) Compact period: 5y1m4w1d (no spaces)
-    const compactRe = /([\d.]+)(y|m|w|d)/g;
-    for (const match of normalized.matchAll(compactRe)) {
-      const value = Number(match[1]);
-      if (!Number.isFinite(value)) continue;
-      found = true;
-      const unit = match[2];
-      if (unit === 'y') totalMonths += value * 12;
-      else if (unit === 'm') totalMonths += value;
-      else if (unit === 'w') totalMonths += (value * 7) / 30; // approximate weeks -> months
-      else if (unit === 'd') totalMonths += value / 30; // approximate days -> months
+  function tenorToTermBucket(tenor?: { years: number; months: number }): string {
+    // Handle missing tenor
+    if (!tenor) {
+      return termCategories[0];
     }
 
-    // 2) Natural language / spaced units
-    if (!found) {
-      const spacedRe = /([\d.]+)\s*(years?|yrs?|yr|y|months?|mos?|mo|m|weeks?|w|days?|d)\b/g;
-      for (const match of normalized.matchAll(spacedRe)) {
-        const value = Number(match[1]);
-        if (!Number.isFinite(value)) continue;
-        found = true;
-        const unit = match[2];
-        if (unit.startsWith('y')) totalMonths += value * 12;
-        else if (unit.startsWith('m')) totalMonths += value;
-        else if (unit.startsWith('w')) totalMonths += (value * 7) / 30;
-        else if (unit.startsWith('d')) totalMonths += value / 30;
-      }
+    // Safely extract years and months with defaults
+    const years = tenor.years ?? 0;
+    const months = tenor.months ?? 0;
+    const totalMonths = years * 12 + months;
+
+    // Handle invalid calculations
+    if (!Number.isFinite(totalMonths) || totalMonths < 0) {
+      return termCategories[0];
     }
 
-    if (!found) return tenor; // fallback: keep raw label
-    const months = totalMonths;
-
-    if (months <= 3) return '0 - 3 months';
-    if (months > 3 && months <= 12) return '>3 months - 1 year';
-    if (months > 12 && months <= 36) return '>1 year - 3 years';
-    if (months > 36 && months <= 60) return '>3 years - 5 years';
-    if (months > 60 && months <= 120) return '>5 years - 10 years';
+    // Categorize based on total months
+    if (totalMonths <= 3) return '0 - 3 months';
+    if (totalMonths > 3 && totalMonths <= 12) return '>3 months - 1 year';
+    if (totalMonths > 12 && totalMonths <= 36) return '>1 year - 3 years';
+    if (totalMonths > 36 && totalMonths <= 60) return '>3 years - 5 years';
+    if (totalMonths > 60 && totalMonths <= 120) return '>5 years - 10 years';
     return '>10 years';
   }
 
   // Group by date and derived term bucket (from TENOR)
+  // Debug: count transactions with/without TENOR
+  const withTenor = transactions.filter(t => t.TENOR).length;
+  const withoutTenor = transactions.length - withTenor;
+  if (withoutTenor > 0) {
+    console.log(`[Term Activity Graph] ${withTenor} transactions with TENOR, ${withoutTenor} without TENOR`);
+  }
+
   let grouped = groupByDateAndCategory(transactions, (txn) =>
-    tenorToTermBucket(txn.ADJUSTED_TENORTENOR)
+    tenorToTermBucket(txn.TENOR)
   );
 
   // Resample to monthly

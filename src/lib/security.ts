@@ -5,6 +5,7 @@ import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/
 import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
+import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
 
 const { FieldProto } = pkg;
 
@@ -17,7 +18,7 @@ interface securityData {
   assetClass: string;
   productType: string;
   productClass?: string;
-  tenor?: string;
+  tenor?: Tenor;
   couponRate?: string;
   couponType?: string;
   couponFrequency?: string;
@@ -87,7 +88,7 @@ export async function FetchSecurity(
               outstandingAmount: postAuctionQuantity.toString(),
               issuerName: security.getIssuerName(),
               assetClass: security.getAssetClass(),
-              productType: security.getProductType(),
+              productType: bondSecurity?.getProductType() ?? '',
               asOf: asOfStr,
             };
 
@@ -100,7 +101,7 @@ export async function FetchSecurity(
             // Add bond-specific fields if available
             if (bondSecurity) {
               try {
-                result.tenor = bondSecurity.getTenor().getTenorDescription();
+                result.tenor = bondSecurity.getTenor();
               } catch (e) {
                 // Tenor might not be available
               }

@@ -77,7 +77,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         transactionIssuerName: element.getIssuerName().toString(),
         transactionIssueDate: formatDateToISO(security.getIssueDate()),
         transactionQuantity: element.getQuantity().toString(),
-        transactionProductType: security.getProductType(),
+        transactionProductType: bondSecurity?.getProductType() ?? '',
         transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
         transactionTenor: bondSecurity?.getTenor().getTenorDescription() ?? '',

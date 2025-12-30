@@ -15,17 +15,12 @@ const { MeasureProto } = measurePkg;
 import type { MeasureProto as MeasureProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
 import positionPkg from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js';
 const { PositionTypeProto, PositionViewProto } = positionPkg;
-import type { PositionTypeProto as PositionTypeProtoType, PositionViewProto as PositionViewProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb';
 
 // Import FieldProto as both type and value
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 const { FieldProto } = pkg;
 import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
-import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb';
-import { Any } from 'google-protobuf/google/protobuf/any_pb';
-import { TenorProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/tenor_pb';
-import { TenorTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/tenor_type_pb';
 import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
 
 // Constants
@@ -72,6 +67,10 @@ export interface TreasuryTransaction {
     PRODUCT_TYPE?: string;
     ADJUSTED_TENOR?: string;
     DIRECTED_QUANTITY: number;
+    TENOR?: {
+        years: number;
+        months: number;
+    };
 }
 
 /**
@@ -150,14 +149,17 @@ export function processTransactionData(
     const plainObjects = positions.map(positionToPlainObject);
 
     // Filter out USD identifiers and convert to TreasuryTransaction format
-    const transactions: TreasuryTransaction[] = plainObjects
-        .filter((obj) => {
+    const transactions: TreasuryTransaction[] = positions
+        .map((position, index) => {
+            const obj = plainObjects[index];
             const identifier = String(obj.IDENTIFIER || '');
-            return !identifier.includes('USD');
-        })
-        .map((obj) => {
+
+            // Filter out USD identifiers
+            if (identifier.includes('USD')) {
+                return null;
+            }
+
             // Extract values using field names (matching Python output format)
-            const identifier = String(obj.IDENTIFIER || '');
             const transactionType = String(obj.TRANSACTION_TYPE || '');
             const tradeDateStr = obj.TRADE_DATE;
             const maturityDate = obj.MATURITY_DATE;
@@ -166,76 +168,41 @@ export function processTransactionData(
             const adjustedTenor = obj.ADJUSTED_TENOR;
             const directedQuantity = Number(obj.DIRECTED_QUANTITY || 0);
 
-            // Parse trade date
-            // let tradeDate: Date;
-            // if (tradeDateStr instanceof Date) {
-            //     tradeDate = tradeDateStr;
-            // } else if (typeof tradeDateStr === 'string') {
-            //     // Parse date string, handling ISO format (YYYY-MM-DD) and other formats
-            //     // For ISO date strings (YYYY-MM-DD), parse as local date to avoid timezone issues
-            //     const isoDateMatch = tradeDateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-            //     if (isoDateMatch) {
-            //         // Parse as local date (YYYY-MM-DD format)
-            //         const year = parseInt(isoDateMatch[1], 10);
-            //         const month = parseInt(isoDateMatch[2], 10) - 1; // Month is 0-indexed
-            //         const day = parseInt(isoDateMatch[3], 10);
-            //         tradeDate = new Date(year, month, day);
-            //     } else {
-            //         // Use Date constructor for other formats (handles ISO 8601 with time, etc.)
-            //         const parsed = new Date(tradeDateStr);
-            //         // Check if date is valid
-            //         if (isNaN(parsed.getTime())) {
-            //             // Try alternative parsing if ISO format fails
-            //             tradeDate = new Date();
-            //         } else {
-            //             tradeDate = parsed;
-            //         }
-            //     }
-            // } else {
-            //     // Try to get date from position object if available
-            //     tradeDate = new Date();
-            // }
+            // Extract Tenor object directly from Position using getFieldValue and convert to plain object
+            let tenor: { years: number; months: number } | undefined;
+            try {
+                const tenorValue = position.getFieldValue(FieldProto.TENOR);
+                // Check if it's a Tenor object (has getTenor method) or is already a Tenor
+                if (tenorValue) {
+                    let tenorObj: Tenor | null = null;
+                    if (tenorValue instanceof Tenor) {
+                        tenorObj = tenorValue;
+                    } else if (typeof (tenorValue as any).getTenor === 'function') {
+                        tenorObj = tenorValue as Tenor;
+                    } else {
+                        // Try to construct Tenor from the value if it's a proto message
+                        try {
+                            tenorObj = new Tenor(tenorValue as any);
+                        } catch {
+                            // If construction fails, tenorObj remains null
+                        }
+                    }
 
-            // // Parse optional dates
-            // let parsedMaturityDate: Date | string | undefined;
-            // if (maturityDate) {
-            //     if (maturityDate instanceof Date) {
-            //         parsedMaturityDate = maturityDate;
-            //     } else if (typeof maturityDate === 'string') {
-            //         // For ISO date strings (YYYY-MM-DD), parse as local date to avoid timezone issues
-            //         const isoDateMatch = maturityDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-            //         if (isoDateMatch) {
-            //             const year = parseInt(isoDateMatch[1], 10);
-            //             const month = parseInt(isoDateMatch[2], 10) - 1; // Month is 0-indexed
-            //             const day = parseInt(isoDateMatch[3], 10);
-            //             parsedMaturityDate = new Date(year, month, day);
-            //         } else {
-            //             parsedMaturityDate = new Date(maturityDate);
-            //         }
-            //     } else {
-            //         parsedMaturityDate = maturityDate;
-            //     }
-            // }
-
-            // let parsedIssueDate: Date | string | undefined;
-            // if (issueDate) {
-            //     if (issueDate instanceof Date) {
-            //         parsedIssueDate = issueDate;
-            //     } else if (typeof issueDate === 'string') {
-            //         // For ISO date strings (YYYY-MM-DD), parse as local date to avoid timezone issues
-            //         const isoDateMatch = issueDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-            //         if (isoDateMatch) {
-            //             const year = parseInt(isoDateMatch[1], 10);
-            //             const month = parseInt(isoDateMatch[2], 10) - 1; // Month is 0-indexed
-            //             const day = parseInt(isoDateMatch[3], 10);
-            //             parsedIssueDate = new Date(year, month, day);
-            //         } else {
-            //             parsedIssueDate = new Date(issueDate);
-            //         }
-            //     } else {
-            //         parsedIssueDate = issueDate;
-            //     }
-            // }
+                    // Extract years and months from Tenor object
+                    if (tenorObj) {
+                        const tenorData = tenorObj.getTenor();
+                        if (tenorData) {
+                            tenor = {
+                                years: tenorData.years ?? 0,
+                                months: tenorData.months ?? 0
+                            };
+                        }
+                    }
+                }
+            } catch (error) {
+                // If TENOR field extraction fails, tenor remains undefined
+                // This is expected if TENOR field is not available
+            }
 
             return {
                 IDENTIFIER: String(identifier),
@@ -244,10 +211,11 @@ export function processTransactionData(
                 MATURITY_DATE: maturityDate,
                 ISSUE_DATE: issueDate,
                 PRODUCT_TYPE: productType ? String(productType) : undefined,
-                TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
+                TENOR: tenor,
                 DIRECTED_QUANTITY: Number(directedQuantity),
             };
-        });
+        })
+        .filter((txn): txn is TreasuryTransaction => txn !== null);
 
     return transactions;
 }
@@ -283,6 +251,7 @@ export async function getTreasuryTransactions(
         FieldProto.ISSUE_DATE,
         FieldProto.PRODUCT_TYPE,
         FieldProto.ADJUSTED_TENOR,
+        FieldProto.TENOR,
     ];
 
     const measures: MeasureProtoType[] = [MeasureProto.DIRECTED_QUANTITY];
