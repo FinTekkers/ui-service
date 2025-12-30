@@ -194,6 +194,39 @@ export function sortDates(dates: string[]): string[] {
 }
 
 /**
+ * Fills in missing months in a pivot table between the first and last date
+ * Missing months are filled with empty records (no categories)
+ */
+export function fillMissingMonths(
+  pivot: Record<string, Record<string, number>>
+): Record<string, Record<string, number>> {
+  const dates = sortDates(Object.keys(pivot));
+  if (dates.length === 0) return pivot;
+
+  const filled: Record<string, Record<string, number>> = { ...pivot };
+  const startDate = new Date(dates[0] + 'T00:00:00');
+  const endDate = new Date(dates[dates.length - 1] + 'T00:00:00');
+
+  // Generate all months between start and end
+  const current = new Date(startDate);
+  current.setDate(1); // Start of month
+
+  while (current <= endDate) {
+    const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-01`;
+
+    // Only add if it doesn't already exist
+    if (!(monthKey in filled)) {
+      filled[monthKey] = {};
+    }
+
+    // Move to next month
+    current.setMonth(current.getMonth() + 1);
+  }
+
+  return filled;
+}
+
+/**
  * Gets all unique categories from pivot table
  */
 export function getUniqueCategories(pivot: Record<string, Record<string, number>>): string[] {

@@ -15,6 +15,7 @@ import {
   reorderCategories,
   movingAverage,
   getUniqueCategories,
+  fillMissingMonths,
 } from './treasury_graph_utils';
 
 /**
@@ -247,6 +248,9 @@ export function createCumulativePositionGraph(transactions: TreasuryTransaction[
 
   // Convert to pivot table
   let pivot = pivotTable(grouped);
+
+  // Fill in missing months to avoid gaps in the graph
+  pivot = fillMissingMonths(pivot);
 
   const dates = sortDates(Object.keys(pivot));
 

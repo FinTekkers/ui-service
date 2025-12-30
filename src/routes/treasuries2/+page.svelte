@@ -113,37 +113,35 @@
       <p>No treasury transaction data available.</p>
     </div>
   {:else}
-    <div class="graphs-grid-wrapper">
-      <div class="graphs-grid">
-        <!-- Activity Over Time -->
-        <div class="graph-card">
-          <h2>Activity Over Time</h2>
-          <div id={graphIds.activity} class="plot-container" />
-        </div>
+    <div class="graphs-column">
+      <!-- Activity Over Time -->
+      <div class="graph-card">
+        <h2>Activity Over Time</h2>
+        <div id={graphIds.activity} class="plot-container" />
+      </div>
 
-        <!-- Net Activity Over Time -->
-        <div class="graph-card">
-          <h2>Net Activity Over Time</h2>
-          <div id={graphIds.netActivity} class="plot-container" />
-        </div>
+      <!-- Net Activity Over Time -->
+      <div class="graph-card">
+        <h2>Net Activity Over Time</h2>
+        <div id={graphIds.netActivity} class="plot-container" />
+      </div>
 
-        <!-- Cumulative Position -->
-        <div class="graph-card">
-          <h2>Cumulative Position by Product Type</h2>
-          <div id={graphIds.cumulative} class="plot-container" />
-        </div>
+      <!-- Cumulative Position -->
+      <div class="graph-card">
+        <h2>Cumulative Position by Product Type</h2>
+        <div id={graphIds.cumulative} class="plot-container" />
+      </div>
 
-        <!-- Term Activity -->
-        <div class="graph-card">
-          <h2>Activity by Term Category</h2>
-          <div id={graphIds.term} class="plot-container" />
-        </div>
+      <!-- Term Activity -->
+      <div class="graph-card">
+        <h2>Activity by Term Category</h2>
+        <div id={graphIds.term} class="plot-container" />
+      </div>
 
-        <!-- Recent Activity -->
-        <div class="graph-card full-width">
-          <h2>Recent Activity with Moving Average</h2>
-          <div id={graphIds.recent} class="plot-container" />
-        </div>
+      <!-- Recent Activity -->
+      <div class="graph-card">
+        <h2>Recent Activity with Moving Average</h2>
+        <div id={graphIds.recent} class="plot-container" />
       </div>
     </div>
   {/if}
@@ -182,20 +180,12 @@
     color: #888;
   }
 
-  .graphs-grid-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: visible;
-  }
-
-  .graphs-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(4, auto);
+  .graphs-column {
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
     margin-top: 2rem;
     width: 100%;
-    min-width: min-content;
   }
 
   .graph-card {
@@ -203,12 +193,8 @@
     border-radius: 8px;
     padding: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    min-width: 0; /* Allow grid items to shrink below content size */
+    width: 100%;
     overflow: hidden;
-  }
-
-  .graph-card.full-width {
-    grid-column: 1 / -1;
   }
 
   .graph-card h2 {
@@ -225,16 +211,24 @@
     overflow: auto;
   }
 
-  /* Tablet and smaller screens - switch to single column */
-  @media (max-width: 1024px) {
-    .graphs-grid {
-      grid-template-columns: 1fr;
-      grid-template-rows: repeat(5, auto);
-    }
+  /* Force Plotly modebar to display in a single row */
+  :global(.modebar) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    max-width: none !important;
+  }
 
-    .graph-card.full-width {
-      grid-column: 1;
-    }
+  :global(.modebar-group) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+  }
+
+  :global(.modebar-btn) {
+    flex-shrink: 0 !important;
   }
 
   /* Mobile screens */
@@ -247,7 +241,7 @@
       font-size: 2rem;
     }
 
-    .graphs-grid {
+    .graphs-column {
       gap: 1.5rem;
     }
 
@@ -275,30 +269,12 @@
       margin-bottom: 1rem;
     }
 
-    .graphs-grid {
+    .graphs-column {
       gap: 1rem;
     }
 
     .plot-container {
       min-height: 250px;
-    }
-  }
-
-  /* Large screens - allow horizontal scrolling if needed */
-  @media (min-width: 1400px) {
-    .graphs-grid {
-      grid-template-columns: repeat(2, minmax(600px, 1fr));
-    }
-  }
-
-  /* Ensure horizontal scrolling works on all screen sizes */
-  @media (min-width: 1025px) {
-    .treasuries-graphs-container {
-      overflow-x: auto;
-    }
-
-    .graphs-grid {
-      min-width: min-content;
     }
   }
 </style>
