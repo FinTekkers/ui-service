@@ -104,7 +104,7 @@ export function createPortfolioFilter(): PositionFilter {
 export function positionToPlainObject(position: Position): Record<string, any> {
     const result: Record<string, any> = {};
 
-    // Extract fields - use field name as key (matching Python pattern)
+    // TODO: We should use rich types not display types
     for (const field of position.getFields()) {
         const fieldName = getFieldName(field.getField());
         let displayValue: any;
@@ -165,44 +165,7 @@ export function processTransactionData(
             const maturityDate = obj.MATURITY_DATE;
             const issueDate = obj.ISSUE_DATE;
             const productType = obj.PRODUCT_TYPE;
-            const adjustedTenor = obj.ADJUSTED_TENOR;
             const directedQuantity = Number(obj.DIRECTED_QUANTITY || 0);
-
-            // Extract Tenor object directly from Position using getFieldValue and convert to plain object
-            let tenor: { years: number; months: number } | undefined;
-            try {
-                const tenorValue = position.getFieldValue(FieldProto.TENOR);
-                // Check if it's a Tenor object (has getTenor method) or is already a Tenor
-                if (tenorValue) {
-                    let tenorObj: Tenor | null = null;
-                    if (tenorValue instanceof Tenor) {
-                        tenorObj = tenorValue;
-                    } else if (typeof (tenorValue as any).getTenor === 'function') {
-                        tenorObj = tenorValue as Tenor;
-                    } else {
-                        // Try to construct Tenor from the value if it's a proto message
-                        try {
-                            tenorObj = new Tenor(tenorValue as any);
-                        } catch {
-                            // If construction fails, tenorObj remains null
-                        }
-                    }
-
-                    // Extract years and months from Tenor object
-                    if (tenorObj) {
-                        const tenorData = tenorObj.getTenor();
-                        if (tenorData) {
-                            tenor = {
-                                years: tenorData.years ?? 0,
-                                months: tenorData.months ?? 0
-                            };
-                        }
-                    }
-                }
-            } catch (error) {
-                // If TENOR field extraction fails, tenor remains undefined
-                // This is expected if TENOR field is not available
-            }
 
             return {
                 IDENTIFIER: String(identifier),
@@ -211,7 +174,7 @@ export function processTransactionData(
                 MATURITY_DATE: maturityDate,
                 ISSUE_DATE: issueDate,
                 PRODUCT_TYPE: productType ? String(productType) : undefined,
-                TENOR: tenor,
+                TENOR: null,
                 DIRECTED_QUANTITY: Number(directedQuantity),
             };
         })
@@ -250,8 +213,7 @@ export async function getTreasuryTransactions(
         FieldProto.MATURITY_DATE,
         FieldProto.ISSUE_DATE,
         FieldProto.PRODUCT_TYPE,
-        FieldProto.ADJUSTED_TENOR,
-        FieldProto.TENOR,
+        // FieldProto.TENOR,
     ];
 
     const measures: MeasureProtoType[] = [MeasureProto.DIRECTED_QUANTITY];

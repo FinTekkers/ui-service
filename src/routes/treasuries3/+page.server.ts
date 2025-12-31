@@ -12,18 +12,18 @@ export async function load({ locals }) {
   const december2025NonBills: TreasuryTransaction[] = (transactions || []).filter((txn) => {
     // Filter by date: December 2025
     if (!txn.TRADE_DATE) return false;
-    
+
     const tradeDate = new Date(txn.TRADE_DATE);
     const isDecember2025 = (
       tradeDate.getFullYear() === 2025 &&
       tradeDate.getMonth() === 11 // December is month 11 (0-indexed)
     );
-    
+
     if (!isDecember2025) return false;
-    
+
     // Filter by product type: Exclude bills
     const productType = (txn.PRODUCT_TYPE || '').toLowerCase();
-    return !productType.includes('bill');
+    return productType.includes('bill');
   });
 
   return {

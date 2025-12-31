@@ -3,21 +3,21 @@
 
   export let data: import("./$types").PageData;
 
-  const transactions = data.transactions as TreasuryTransaction[] || [];
+  const transactions = (data.transactions as TreasuryTransaction[]) || [];
 
   // Sorting state
   let sortColumn: string | null = null;
-  let sortDirection: 'asc' | 'desc' = 'asc';
+  let sortDirection: "asc" | "desc" = "asc";
 
   // Format date for display
   function formatDate(dateStr: string | undefined): string {
-    if (!dateStr) return 'N/A';
+    if (!dateStr) return "N/A";
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
     } catch {
       return dateStr;
@@ -26,9 +26,9 @@
 
   // Format number with commas
   function formatNumber(num: number): string {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(num);
   }
 
@@ -45,41 +45,45 @@
   // Get sortable value for a transaction
   function getSortValue(txn: TreasuryTransaction, column: string): any {
     switch (column) {
-      case 'IDENTIFIER':
-        return txn.IDENTIFIER || '';
-      case 'TRADE_DATE':
+      case "IDENTIFIER":
+        return txn.IDENTIFIER || "";
+      case "TRADE_DATE":
         return parseDate(txn.TRADE_DATE).getTime();
-      case 'TRANSACTION_TYPE':
-        return txn.TRANSACTION_TYPE || '';
-      case 'PRODUCT_TYPE':
-        return txn.PRODUCT_TYPE || '';
-      case 'ISSUE_DATE':
+      case "TRANSACTION_TYPE":
+        return txn.TRANSACTION_TYPE || "";
+      case "PRODUCT_TYPE":
+        return txn.PRODUCT_TYPE || "";
+      case "ISSUE_DATE":
         return parseDate(txn.ISSUE_DATE).getTime();
-      case 'MATURITY_DATE':
+      case "MATURITY_DATE":
         return parseDate(txn.MATURITY_DATE).getTime();
-      case 'TENOR':
+      case "TENOR":
         if (txn.TENOR) {
           return (txn.TENOR.years || 0) * 12 + (txn.TENOR.months || 0);
         }
-        return txn.ADJUSTED_TENOR || '';
-      case 'DIRECTED_QUANTITY':
+        return txn.ADJUSTED_TENOR || "";
+      case "DIRECTED_QUANTITY":
         return txn.DIRECTED_QUANTITY || 0;
       default:
-        return '';
+        return "";
     }
   }
 
   // Sort transactions
-  function sortTransactions(txns: TreasuryTransaction[], column: string, direction: 'asc' | 'desc'): TreasuryTransaction[] {
+  function sortTransactions(
+    txns: TreasuryTransaction[],
+    column: string,
+    direction: "asc" | "desc"
+  ): TreasuryTransaction[] {
     return [...txns].sort((a, b) => {
       const aVal = getSortValue(a, column);
       const bVal = getSortValue(b, column);
-      
+
       let comparison = 0;
       if (aVal < bVal) comparison = -1;
       else if (aVal > bVal) comparison = 1;
-      
-      return direction === 'asc' ? comparison : -comparison;
+
+      return direction === "asc" ? comparison : -comparison;
     });
   }
 
@@ -87,35 +91,38 @@
   function handleSort(column: string) {
     if (sortColumn === column) {
       // Toggle direction if same column
-      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      sortDirection = sortDirection === "asc" ? "desc" : "asc";
     } else {
       // New column, default to ascending
       sortColumn = column;
-      sortDirection = 'asc';
+      sortDirection = "asc";
     }
   }
 
   // Get sorted transactions
-  $: sortedTransactions = sortColumn 
+  $: sortedTransactions = sortColumn
     ? sortTransactions(transactions, sortColumn, sortDirection)
     : transactions;
 
   // Calculate grand totals
-  $: grandTotalQuantity = transactions.reduce((sum, txn) => sum + (txn.DIRECTED_QUANTITY || 0), 0);
+  $: grandTotalQuantity = transactions.reduce(
+    (sum, txn) => sum + (txn.DIRECTED_QUANTITY || 0),
+    0
+  );
   $: grandTotalPositive = transactions
-    .filter(txn => (txn.DIRECTED_QUANTITY || 0) > 0)
+    .filter((txn) => (txn.DIRECTED_QUANTITY || 0) > 0)
     .reduce((sum, txn) => sum + (txn.DIRECTED_QUANTITY || 0), 0);
   $: grandTotalNegative = transactions
-    .filter(txn => (txn.DIRECTED_QUANTITY || 0) < 0)
+    .filter((txn) => (txn.DIRECTED_QUANTITY || 0) < 0)
     .reduce((sum, txn) => sum + (txn.DIRECTED_QUANTITY || 0), 0);
 </script>
 
 <div class="treasuries-container">
-  <h1 class="page-title">Bond Activity (Excluding Bills) - December 2025</h1>
+  <h1 class="page-title">Bond Activity ( Bills) - December 2025</h1>
 
   {#if !transactions || transactions.length === 0}
     <div class="no-data">
-      <p>No bond activity (excluding bills) found for December 2025.</p>
+      <p>No bond activity ( bills) found for December 2025.</p>
     </div>
   {:else}
     <div class="stats-bar">
@@ -126,7 +133,12 @@
       <div class="stat-item">
         <span class="stat-label">Total Quantity:</span>
         <span class="stat-value">
-          {formatNumber(transactions.reduce((sum, txn) => sum + (txn.DIRECTED_QUANTITY || 0), 0))}
+          {formatNumber(
+            transactions.reduce(
+              (sum, txn) => sum + (txn.DIRECTED_QUANTITY || 0),
+              0
+            )
+          )}
         </span>
       </div>
     </div>
@@ -135,52 +147,74 @@
       <table class="bond-activity-table">
         <thead>
           <tr>
-            <th class="sortable" on:click={() => handleSort('IDENTIFIER')}>
+            <th class="sortable" on:click={() => handleSort("IDENTIFIER")}>
               Identifier
-              {#if sortColumn === 'IDENTIFIER'}
-                <span class="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {#if sortColumn === "IDENTIFIER"}
+                <span class="sort-indicator"
+                  >{sortDirection === "asc" ? "↑" : "↓"}</span
+                >
               {/if}
             </th>
-            <th class="sortable" on:click={() => handleSort('TRADE_DATE')}>
+            <th class="sortable" on:click={() => handleSort("TRADE_DATE")}>
               Trade Date
-              {#if sortColumn === 'TRADE_DATE'}
-                <span class="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {#if sortColumn === "TRADE_DATE"}
+                <span class="sort-indicator"
+                  >{sortDirection === "asc" ? "↑" : "↓"}</span
+                >
               {/if}
             </th>
-            <th class="sortable" on:click={() => handleSort('TRANSACTION_TYPE')}>
+            <th
+              class="sortable"
+              on:click={() => handleSort("TRANSACTION_TYPE")}
+            >
               Transaction Type
-              {#if sortColumn === 'TRANSACTION_TYPE'}
-                <span class="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {#if sortColumn === "TRANSACTION_TYPE"}
+                <span class="sort-indicator"
+                  >{sortDirection === "asc" ? "↑" : "↓"}</span
+                >
               {/if}
             </th>
-            <th class="sortable" on:click={() => handleSort('PRODUCT_TYPE')}>
+            <th class="sortable" on:click={() => handleSort("PRODUCT_TYPE")}>
               Product Type
-              {#if sortColumn === 'PRODUCT_TYPE'}
-                <span class="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {#if sortColumn === "PRODUCT_TYPE"}
+                <span class="sort-indicator"
+                  >{sortDirection === "asc" ? "↑" : "↓"}</span
+                >
               {/if}
             </th>
-            <th class="sortable" on:click={() => handleSort('ISSUE_DATE')}>
+            <th class="sortable" on:click={() => handleSort("ISSUE_DATE")}>
               Issue Date
-              {#if sortColumn === 'ISSUE_DATE'}
-                <span class="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {#if sortColumn === "ISSUE_DATE"}
+                <span class="sort-indicator"
+                  >{sortDirection === "asc" ? "↑" : "↓"}</span
+                >
               {/if}
             </th>
-            <th class="sortable" on:click={() => handleSort('MATURITY_DATE')}>
+            <th class="sortable" on:click={() => handleSort("MATURITY_DATE")}>
               Maturity Date
-              {#if sortColumn === 'MATURITY_DATE'}
-                <span class="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {#if sortColumn === "MATURITY_DATE"}
+                <span class="sort-indicator"
+                  >{sortDirection === "asc" ? "↑" : "↓"}</span
+                >
               {/if}
             </th>
-            <th class="sortable" on:click={() => handleSort('TENOR')}>
+            <th class="sortable" on:click={() => handleSort("TENOR")}>
               Tenor
-              {#if sortColumn === 'TENOR'}
-                <span class="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {#if sortColumn === "TENOR"}
+                <span class="sort-indicator"
+                  >{sortDirection === "asc" ? "↑" : "↓"}</span
+                >
               {/if}
             </th>
-            <th class="sortable text-right" on:click={() => handleSort('DIRECTED_QUANTITY')}>
+            <th
+              class="sortable text-right"
+              on:click={() => handleSort("DIRECTED_QUANTITY")}
+            >
               Quantity
-              {#if sortColumn === 'DIRECTED_QUANTITY'}
-                <span class="sort-indicator">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {#if sortColumn === "DIRECTED_QUANTITY"}
+                <span class="sort-indicator"
+                  >{sortDirection === "asc" ? "↑" : "↓"}</span
+                >
               {/if}
             </th>
           </tr>
@@ -191,22 +225,28 @@
               <td class="identifier">{txn.IDENTIFIER}</td>
               <td>{formatDate(txn.TRADE_DATE)}</td>
               <td>
-                <span class="transaction-type transaction-type-{txn.TRANSACTION_TYPE?.toLowerCase()}">
-                  {txn.TRANSACTION_TYPE || 'N/A'}
+                <span
+                  class="transaction-type transaction-type-{txn.TRANSACTION_TYPE?.toLowerCase()}"
+                >
+                  {txn.TRANSACTION_TYPE || "N/A"}
                 </span>
               </td>
-              <td>{txn.PRODUCT_TYPE || 'N/A'}</td>
+              <td>{txn.PRODUCT_TYPE || "N/A"}</td>
               <td>{formatDate(txn.ISSUE_DATE)}</td>
               <td>{formatDate(txn.MATURITY_DATE)}</td>
               <td>
                 {#if txn.TENOR}
-                  {txn.TENOR.years > 0 ? `${txn.TENOR.years}Y ` : ''}
-                  {txn.TENOR.months > 0 ? `${txn.TENOR.months}M` : ''}
+                  {txn.TENOR.years > 0 ? `${txn.TENOR.years}Y ` : ""}
+                  {txn.TENOR.months > 0 ? `${txn.TENOR.months}M` : ""}
                 {:else}
-                  {txn.ADJUSTED_TENOR || 'N/A'}
+                  {txn.ADJUSTED_TENOR || "N/A"}
                 {/if}
               </td>
-              <td class="text-right quantity {txn.DIRECTED_QUANTITY >= 0 ? 'positive' : 'negative'}">
+              <td
+                class="text-right quantity {txn.DIRECTED_QUANTITY >= 0
+                  ? 'positive'
+                  : 'negative'}"
+              >
                 {formatNumber(txn.DIRECTED_QUANTITY || 0)}
               </td>
             </tr>
@@ -214,7 +254,11 @@
           <!-- Grand Totals Row -->
           <tr class="totals-row">
             <td colspan="7" class="totals-label">Grand Totals</td>
-            <td class="text-right quantity {grandTotalQuantity >= 0 ? 'positive' : 'negative'}">
+            <td
+              class="text-right quantity {grandTotalQuantity >= 0
+                ? 'positive'
+                : 'negative'}"
+            >
               {formatNumber(grandTotalQuantity)}
             </td>
           </tr>
@@ -364,7 +408,7 @@
   }
 
   .identifier {
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
     color: #4a9eff;
     font-weight: 500;
   }
@@ -394,7 +438,7 @@
 
   .quantity {
     font-weight: 600;
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
   }
 
   .quantity.positive {
@@ -469,4 +513,3 @@
     }
   }
 </style>
-

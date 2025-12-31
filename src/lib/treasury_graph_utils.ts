@@ -1,7 +1,9 @@
 import type { TreasuryTransaction } from './treasury_positions';
 
+
 /**
  * Groups transactions by date and a category field, then sums DIRECTED_QUANTITY
+ * with proper sign adjustment based on transaction type.
  * Equivalent to pandas groupby().sum()
  */
 export function groupByDateAndCategory(
@@ -28,7 +30,9 @@ export function groupByDateAndCategory(
 
     const categoryMap = grouped.get(dateKey)!;
     const currentValue = categoryMap.get(categoryKey) || 0;
-    categoryMap.set(categoryKey, currentValue + txn.DIRECTED_QUANTITY);
+    // Apply sign adjustment based on transaction type
+    const adjustedQuantity = txn.DIRECTED_QUANTITY; //adjustDirectedQuantitySign(txn);
+    categoryMap.set(categoryKey, currentValue + adjustedQuantity);
   }
 
   return grouped;

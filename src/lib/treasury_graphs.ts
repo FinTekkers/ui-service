@@ -16,6 +16,7 @@ import {
   movingAverage,
   getUniqueCategories,
   fillMissingMonths,
+  // adjustDirectedQuantitySign,
 } from './treasury_graph_utils';
 
 /**
@@ -76,7 +77,7 @@ function withDarkTheme(layout: any, opts?: { legendBelow?: boolean; margin?: any
     ? {
       orientation: 'h',
       yanchor: 'top',
-      y: -0.25,
+      y: -0.75,
       xanchor: 'center',
       x: 0.5,
     }
@@ -289,53 +290,44 @@ export function createCumulativePositionGraph(transactions: TreasuryTransaction[
 
   return { data: traces, layout };
 }
+const termCategories = [
+  '0 - 3 months',
+  '>3 months - 1 year',
+  '>1 year - 3 years',
+  '>3 years - 5 years',
+  '>5 years - 10 years',
+  '>10 years'
+];
 
+function tenorToTermBucket(tenor?: { years: number; months: number }): string {
+  // Handle missing tenor
+  if (!tenor) {
+    return termCategories[0];
+  }
+
+  // Safely extract years and months with defaults
+  const years = tenor.years ?? 0;
+  const months = tenor.months ?? 0;
+  const totalMonths = years * 12 + months;
+
+  // Handle invalid calculations
+  if (!Number.isFinite(totalMonths) || totalMonths < 0) {
+    return termCategories[0];
+  }
+
+  // Categorize based on total months
+  if (totalMonths <= 3) return '0 - 3 months';
+  if (totalMonths > 3 && totalMonths <= 12) return '>3 months - 1 year';
+  if (totalMonths > 12 && totalMonths <= 36) return '>1 year - 3 years';
+  if (totalMonths > 36 && totalMonths <= 60) return '>3 years - 5 years';
+  if (totalMonths > 60 && totalMonths <= 120) return '>5 years - 10 years';
+  return '>10 years';
+}
 /**
  * Term activity - Stacked bars by term categories
  */
 export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
-  const termCategories = [
-    '0 - 3 months',
-    '>3 months - 1 year',
-    '>1 year - 3 years',
-    '>3 years - 5 years',
-    '>5 years - 10 years',
-    '>10 years'
-  ];
-
-  function tenorToTermBucket(tenor?: { years: number; months: number }): string {
-    // Handle missing tenor
-    if (!tenor) {
-      return termCategories[0];
-    }
-
-    // Safely extract years and months with defaults
-    const years = tenor.years ?? 0;
-    const months = tenor.months ?? 0;
-    const totalMonths = years * 12 + months;
-
-    // Handle invalid calculations
-    if (!Number.isFinite(totalMonths) || totalMonths < 0) {
-      return termCategories[0];
-    }
-
-    // Categorize based on total months
-    if (totalMonths <= 3) return '0 - 3 months';
-    if (totalMonths > 3 && totalMonths <= 12) return '>3 months - 1 year';
-    if (totalMonths > 12 && totalMonths <= 36) return '>1 year - 3 years';
-    if (totalMonths > 36 && totalMonths <= 60) return '>3 years - 5 years';
-    if (totalMonths > 60 && totalMonths <= 120) return '>5 years - 10 years';
-    return '>10 years';
-  }
-
   // Group by date and derived term bucket (from TENOR)
-  // Debug: count transactions with/without TENOR
-  const withTenor = transactions.filter(t => t.TENOR).length;
-  const withoutTenor = transactions.length - withTenor;
-  if (withoutTenor > 0) {
-    console.log(`[Term Activity Graph] ${withTenor} transactions with TENOR, ${withoutTenor} without TENOR`);
-  }
-
   let grouped = groupByDateAndCategory(transactions, (txn) =>
     tenorToTermBucket(txn.TENOR)
   );
@@ -347,7 +339,7 @@ export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
   let pivot = pivotTable(grouped);
 
   // Filter from September 2022
-  pivot = filterByStartDate(pivot, '2022-09-01');
+  pivot = filterByStartDate(pivot, '2023-12-01');
 
   // Ensure all term categories exist
   pivot = ensureCategories(pivot, termCategories);
@@ -385,7 +377,7 @@ export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
         orientation: 'h'
       }
     },
-    { legendBelow: true }
+    { legendBelow: true, margin: { b: 180 } } // Increase bottom margin further to accommodate lower 2-row legend
   );
 
   return { data: traces, layout };
@@ -399,8 +391,18 @@ export function createRecentActivityGraph(
   transactions: TreasuryTransaction[],
   treasuryYieldData?: { dates: string[]; values: number[] }
 ) {
+
+  // OPTION 1: Filter to only BUY transactions (purchases only)
+  // This might be what "Recent Activity" should show - only new purchases
+  // Uncomment the next line and comment out the line after if this is the case:
+  // const filteredTransactions = transactions.filter(t => (t.TRANSACTION_TYPE || '').toUpperCase() === 'BUY');
+
+  // OPTION 2: Include all transaction types (net activity)
+  // This shows net activity: BUY - SELL - MATURATION
+  const filteredTransactions = transactions;
+
   // Group by date and product type
-  let grouped = groupByDateAndCategory(transactions, 'PRODUCT_TYPE');
+  let grouped = groupByDateAndCategory(filteredTransactions, 'PRODUCT_TYPE');
 
   // Resample to monthly
   grouped = resampleMonthly(grouped);
@@ -409,7 +411,7 @@ export function createRecentActivityGraph(
   let pivot = pivotTable(grouped);
 
   // Filter from September 2022
-  pivot = filterByStartDate(pivot, '2022-09-01');
+  pivot = filterByStartDate(pivot, '2023-12-01');
 
   // Convert to billions
   pivot = convertToBillions(pivot);

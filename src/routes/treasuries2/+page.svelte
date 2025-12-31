@@ -101,6 +101,7 @@
 
   // Re-render graphs when data changes
   $: if (plotlyLoaded && data.transactions) {
+    const transactions = data.transactions as TreasuryTransaction[];
     renderAllGraphs();
   }
 </script>
