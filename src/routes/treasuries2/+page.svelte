@@ -133,11 +133,11 @@
         <div id={graphIds.cumulative} class="plot-container" />
       </div>
 
-      <!-- Term Activity -->
+      <!-- Term Activity
       <div class="graph-card">
         <h2>Activity by Term Category</h2>
         <div id={graphIds.term} class="plot-container" />
-      </div>
+      </div> -->
 
       <!-- Recent Activity -->
       <div class="graph-card">

@@ -225,13 +225,14 @@ export function createNetActivityOverTimeGraph(transactions: TreasuryTransaction
       title: 'Net Bond activity over time',
       xaxis: {
         title: 'Monthly purchases vs. maturing bonds',
-        tickangle: -45
+        tickangle: -45,
+        // standoff: 20
       },
       yaxis: {
-        title: 'Net face value (+ve = net bought, -ve net sold/matured)'
+        title: 'Net face value (+ve = QE, -ve = QT)'
       }
     },
-    { legendBelow: true }
+    // { legendBelow: true, margin: { b: 120 } }
   );
 
   return { data: [trace], layout };
@@ -300,6 +301,7 @@ const termCategories = [
 ];
 
 function tenorToTermBucket(tenor?: { years: number; months: number }): string {
+  console.log('tenor', tenor);
   // Handle missing tenor
   if (!tenor) {
     return termCategories[0];
@@ -328,8 +330,10 @@ function tenorToTermBucket(tenor?: { years: number; months: number }): string {
  */
 export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
   // Group by date and derived term bucket (from TENOR)
-  let grouped = groupByDateAndCategory(transactions, (txn) =>
-    tenorToTermBucket(txn.TENOR)
+  let grouped = groupByDateAndCategory(transactions, (txn) => {
+    console.log('txn', txn);
+    return tenorToTermBucket(txn.TENOR);
+  }
   );
 
   // Resample to monthly
@@ -464,7 +468,7 @@ export function createRecentActivityGraph(
 
   const layout: any = withDarkTheme(
     {
-      title: 'Net Bond Activity by Product Type with 10-Year Treasury Yield',
+      title: 'Net Bond Activity by Product Type',
       xaxis: { title: 'Date', tickangle: -45 },
       yaxis: {
         title: 'Directed Quantity (Billions)',

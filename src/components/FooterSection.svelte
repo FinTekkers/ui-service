@@ -1,7 +1,7 @@
 <script lang="ts">
   // external import
   import Icon from "@iconify/svelte";
-  import {footerURLText} from '../lib/uidata';
+  import { footerURLText } from "../lib/uidata";
 </script>
 
 <div class="Footer">
@@ -15,22 +15,19 @@
       </h2>
     </div>
 
-
     <div class="footer_links">
-        {#each footerURLText as footerURL}
-         <div>
-           <h1>{footerURL.title}</h1>
-           <ul>
-               {#each footerURL.links as link}
-                 <li><a href={link.url}>{link.text}</a></li>
-               {/each}
-           </ul>
-         </div>
-        {/each}
-
+      {#each footerURLText as footerURL}
+        <div>
+          <h1>{footerURL.title}</h1>
+          <ul>
+            {#each footerURL.links as link}
+              <li><a href={link.url}>{link.text}</a></li>
+            {/each}
+          </ul>
+        </div>
+      {/each}
     </div>
 
-    
     <div class="footer_social_links">
       <div class="icon" data-custom="facebook">
         <Icon
@@ -54,7 +51,7 @@
 </div>
 
 <style lang="scss">
-  @import "../style.scss";
+  @import "../styles/_shared.scss";
 
   .Footer {
     width: 100%;
@@ -68,51 +65,47 @@
     align-content: center;
 
     .footer_container {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(5,10vh);
-    height: 50vh;
-    padding: 1em;
-        justify-content: center;
-    align-items: center;
-    justify-items: center;
-    align-content: center;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(5, 10vh);
+      height: 50vh;
+      padding: 1em;
+      justify-content: center;
+      align-items: center;
+      justify-items: center;
+      align-content: center;
 
+      .footer_logo {
+        grid-area: 3/1/3/2;
 
-            .footer_logo {
-              grid-area: 3/1/3/2;
+        h2 {
+          @include flex(row, flex-start, flex-start, 0.2em);
+          font-size: 1.5rem;
+        }
+      }
 
-            
-              h2 {
-                @include flex(row, flex-start, flex-start, 0.2em);
-                font-size: 1.5rem;
+      .footer_social_links {
+        @include flex(column, space-between, flex-start, 1em);
+        grid-area: 3/6/4/-1;
 
-              }
-            }
+        .icon {
+          cursor: pointer;
+          position: relative;
 
-            .footer_social_links {
-              @include flex(column, space-between, flex-start, 1em);
-              grid-area: 3/6/4/-1;
+          &::before {
+            position: absolute;
+            left: 2vw;
+            opacity: 0;
+            content: attr(data-custom);
+            transition: all 0.5s ease;
+          }
 
-
-              .icon {
-                cursor: pointer;
-                position: relative;
-
-                &::before {
-                  position: absolute;
-                  left: 2vw;
-                  opacity: 0;
-                  content: attr(data-custom);
-                  transition: all 0.5s ease;
-                }
-
-                &:hover::before {
-                  left: 2.5vw;
-                  opacity: 1;
-                }
-              }
-            }
+          &:hover::before {
+            left: 2.5vw;
+            opacity: 1;
+          }
+        }
+      }
     }
 
     .footer_links {
@@ -121,20 +114,17 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
 
-      div:nth-child(1){
+      div:nth-child(1) {
         grid-column: 1/1;
       }
-      div:nth-child(2){
+      div:nth-child(2) {
         grid-column: 2/-1;
       }
-
 
       div:nth-child(n) {
         width: 100%;
         height: 100%;
         text-align: center;
-
-        
 
         h1 {
           margin-bottom: 1em;
@@ -145,46 +135,40 @@
         }
       }
     }
-
-  
   }
 
   @media screen and (max-width: $breakingpoint_medium) {
+    .Footer {
+      grid-template-columns: 1fr;
 
-    .Footer{
-      grid-template-columns: 1fr ;
+      .footer_container {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, 1fr);
+        gap: 1em;
 
-      .footer_container{
-      grid-template-columns: 1fr ;
-      grid-template-rows: repeat(4,1fr);
-      gap: 1em;
+        .footer_logo {
+          grid-area: 1/1/1/2;
+        }
 
-            .footer_logo {
-               grid-area: 1/1/1/2;
-             }
-
-            .footer_social_links{
-               grid-area: 4/1/4/-1;
-               width: 50vw;
-               margin: 0 auto;
-              @include flex(row, space-between, flex-start, 1em);
+        .footer_social_links {
+          grid-area: 4/1/4/-1;
+          width: 50vw;
+          margin: 0 auto;
+          @include flex(row, space-between, flex-start, 1em);
 
           .icon {
             &::before {
               display: none;
             }
           }
-            }
+        }
 
-            .footer_links{
-               grid-area: 2/1/2/-1;
-            }
-      
+        .footer_links {
+          grid-area: 2/1/2/-1;
+        }
       }
     }
-
   }
-
 
   @media screen and (max-width: $breakingpoint_mobile) {
     .Footer {
@@ -215,7 +199,6 @@
           bottom: 10%;
           width: 100%;
 
-
           .icon {
             &::before {
               display: none;
@@ -224,24 +207,20 @@
         }
       }
 
-
-      .footer_links{
-
+      .footer_links {
         div:nth-child(n) {
-        width: 100%;
-        height: 100%;
-        text-align: center;
+          width: 100%;
+          height: 100%;
+          text-align: center;
 
-        h1 {
-          margin-bottom: 1em;
+          h1 {
+            margin-bottom: 1em;
+          }
+
+          :is(ul) {
+            line-height: 2em;
+          }
         }
-
-        :is(ul) {
-          line-height: 2em;
-        }
-      }
-
-
       }
     }
   }

@@ -19,7 +19,7 @@
 </div>
 
 <style lang="scss">
-  @import "../style.scss";
+  @import "../styles/_shared.scss";
 
   .landing_page_overlay {
     height: 100vh;

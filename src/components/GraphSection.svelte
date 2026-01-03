@@ -133,7 +133,7 @@
 </div>
 
 <style lang="scss">
-  @import "../style.scss";
+  @import "../styles/_shared.scss";
   .graph {
     padding: 20px;
     background-color: $bgc-color;

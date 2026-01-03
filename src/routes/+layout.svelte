@@ -9,6 +9,7 @@
   // internal imports
   import Navbar from "../components/Navbar.svelte";
   import SidebarNav from "../components/SidebarNav.svelte";
+  import "../style.scss"; // Global styles
 
   // form data
   export let data;
@@ -16,9 +17,8 @@
 
   export let title = "Fintekkers: Fintech's Infrastructure";
 
-
-  import { addCollection } from '@iconify/svelte';
-  import mdiIcons from '@iconify-json/mdi/icons.json';
+  import { addCollection } from "@iconify/svelte";
+  import mdiIcons from "@iconify-json/mdi/icons.json";
   import phIcons from "@iconify-json/ph/icons.json";
   addCollection(mdiIcons);
   addCollection(phIcons);
@@ -37,5 +37,5 @@
 </AppShell>
 
 <style lang="scss">
-  @import "../style.scss";
+  @import "../styles/_shared.scss";
 </style>

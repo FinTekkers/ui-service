@@ -94,7 +94,7 @@
 </div>
 
 <style lang="scss">
-  @import "../style.scss";
+  @import "../styles/_shared.scss";
 
   .dashboard-sidebar {
     background-color: $tealwhite;

@@ -1,48 +1,49 @@
 <script lang="ts">
-// external imports
-import Icon from "@iconify/svelte";
-// internal imports
-import {booleanStore, customBooleanStoreUpdater} from '../../store/store';
-import { booleanKeys } from "$lib/Util";
-import type {formError} from '$lib/types';
-export let data: App.PageData;
-export let form:formError;
+  // external imports
+  import Icon from "@iconify/svelte";
+  // internal imports
+  import { booleanStore, customBooleanStoreUpdater } from "../../store/store";
+  import { booleanKeys } from "$lib/Util";
+  import type { formError } from "$lib/types";
+  export let data: App.PageData;
+  export let form: formError;
 
-// Assuming formError is of type FormError
-const displayError = (fieldName: string) => {
+  // Assuming formError is of type FormError
+  const displayError = (fieldName: string) => {
     if (form?.formError) {
-        console.log('there is an error', form);
-        const errors: string[] = (form.formError as unknown as Record<string, string[]>)[fieldName] || [];
-        return errors.length > 0;
+      console.log("there is an error", form);
+      const errors: string[] =
+        (form.formError as unknown as Record<string, string[]>)[fieldName] ||
+        [];
+      return errors.length > 0;
     }
     return false;
-};
+  };
 </script>
 
 <div class="sign_in_fields">
   <label for="email">
     <span class="email_span_text">Email address:</span>
     <input
-      class="rounded-md { "border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
+      class="rounded-md {'border-red-900'} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
       type="text"
       name="email"
-      value={form?.email ?? ''}
-
+      value={form?.email ?? ""}
     />
-        {#if displayError('email')}
-            <div class="error_message">
-                 <p class='form_error'>⚠️ Enter email</p>
-            </div>
-        {/if}
+    {#if displayError("email")}
+      <div class="error_message">
+        <p class="form_error">⚠️ Enter email</p>
+      </div>
+    {/if}
   </label>
 
   <label for="password" class="passwordField">
     <span class="password_span_text">Password:</span>
     <input
-      class="rounded-md {"border-red-900"} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
+      class="rounded-md {'border-red-900'} text-slate-400 block bg-white w-full py-2 focus:outline-none focus:border-cyan-900 focus:ring-cyan-900 focus:ring-1 sm:text-sm"
       type={$booleanStore.IS_PASSWORD_VISIBLE ? "text" : "password"}
       name="password"
-      value={form?.password ?? ''}
+      value={form?.password ?? ""}
     />
 
     {#if $booleanStore.IS_PASSWORD_VISIBLE}
@@ -105,7 +106,7 @@ const displayError = (fieldName: string) => {
 </div>
 
 <style lang="scss">
-  @import "../../style.scss";
+  @import "../../styles/_shared.scss";
 
   .sign_in_fields {
     display: grid;

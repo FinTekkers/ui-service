@@ -1,0 +1,22 @@
+@mixin flex($fd, $jc, $ai, $gap) {
+    display: flex;
+    flex-direction: $fd;
+    justify-content: $jc;
+    align-items: $ai;
+    gap: $gap;
+}
+
+@mixin button-style {
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    background-color: $primary-button;
+}
+
+@mixin glass-background {
+    border: solid 1px $grey;
+    backdrop-filter: blur(13px) saturate(180%);
+    -webkit-backdrop-filter: blur(13px) saturate(180%);
+    background-color: #0b2e367e;
+    border-radius: 12px;
+    border: 1px solid #5a96a37e;
+}

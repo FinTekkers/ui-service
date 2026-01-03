@@ -5,7 +5,7 @@ import type { TreasuryTransaction } from '$lib/treasury_positions';
 export async function load({ locals }) {
   // Filter for December 2025: get all transactions up to December 31, 2025
   // Then filter client-side for December 2025 only
-  const endDate = new Date('2025-12-31T23:59:59');
+  const endDate = new Date('2026-01-01T00:59:59');
   const transactions = await getTreasuryTransactions(endDate);
 
   // Filter for December 2025 transactions, excluding bills

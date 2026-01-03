@@ -26,7 +26,7 @@
 </div>
 
 <style lang="scss">
-    @import "../style.scss";
+    @import "../styles/_shared.scss";
 
     .video_section {
         height: 100vh;

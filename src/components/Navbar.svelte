@@ -1,45 +1,40 @@
 <script lang="ts">
-import IconLink from "./custom_components/IconLink.svelte";
-import {sideBarURLText} from '../lib/uidata'
-
+  import IconLink from "./custom_components/IconLink.svelte";
+  import { sideBarURLText } from "../lib/uidata";
 </script>
 
 <div class="navigation_bar">
-    <div class="logo">
-    <IconLink iconName="mdi:finance" href="/">
-        Fintekkers
-    </IconLink>
-        </div>
+  <div class="logo">
+    <IconLink iconName="mdi:finance" href="/">Fintekkers</IconLink>
+  </div>
   <div class="navigation_links">
     <ul>
-       {#each sideBarURLText as urlText}
-           <li>
-            <IconLink iconName={urlText.icon} />
-            <a href={urlText.url}>{urlText.text}</a>
-           </li>
-       {/each}
+      {#each sideBarURLText as urlText}
+        <li>
+          <IconLink iconName={urlText.icon} />
+          <a href={urlText.url}>{urlText.text}</a>
+        </li>
+      {/each}
     </ul>
   </div>
-<IconLink iconName='mdi:alternate-email'  href="/contactus">
-  Contact Us
-</IconLink>
+  <IconLink iconName="mdi:alternate-email" href="/contactus">
+    Contact Us
+  </IconLink>
 </div>
 
-
-
 <style lang="scss">
-    @import "../style.scss";
+  @import "../styles/_shared.scss";
 
-   .contact{
+  .contact {
     margin-right: 2em;
-   }
+  }
 
-   @media screen and (max-width: $breakingpoint_medium) {
+  @media screen and (max-width: $breakingpoint_medium) {
     .navigation_bar {
       display: none;
     }
 
-     .hamburger_nav {
+    .hamburger_nav {
       display: block;
       width: 30vw;
       height: 100%;
@@ -149,9 +144,9 @@ import {sideBarURLText} from '../lib/uidata'
     }
 
     .hidden {
-        right: -100%;
-        display: none;
-      }
+      right: -100%;
+      display: none;
+    }
 
     .show {
       right: 0%;

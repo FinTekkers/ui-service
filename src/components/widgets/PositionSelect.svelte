@@ -256,7 +256,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../style.scss";
+  @import "../../styles/_shared.scss";
 
   h4 {
     margin: 4px 0;

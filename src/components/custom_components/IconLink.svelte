@@ -1,15 +1,14 @@
-<script lang='ts'>
-  // extenral imports
-  import Icon from "@iconify/svelte";
-  // internal imports
-  export let iconName:string;
-  export let iconCss:string = "width: 25px; height: 25px;";
-  export let href: string | null = null; // Optional href
-
+<script lang="ts">
+    // extenral imports
+    import Icon from "@iconify/svelte";
+    // internal imports
+    export let iconName: string;
+    export let iconCss: string = "width: 25px; height: 25px;";
+    export let href: string | null = null; // Optional href
 </script>
 
 {#if href}
-    <a href={href} class="custom-icon">
+    <a {href} class="custom-icon">
         <Icon icon={iconName} style={iconCss} />
         <slot />
     </a>
@@ -21,9 +20,9 @@
 {/if}
 
 <style lang="scss">
-    @import "../../style.scss";
+    @import "../../styles/_shared.scss";
 
-    .custom-icon{
+    .custom-icon {
         @include flex(row, center, center, 1em);
     }
 </style>

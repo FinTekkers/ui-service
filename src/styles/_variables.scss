@@ -5,19 +5,18 @@ $border-color: #164e63;
 
 $success: #7cd2ba;
 $error: #c43d5a;
+$brightwhite: white;
 $white: whitesmoke;
+$tealwhite: #edfbfd;
+$tealblack: #edfbfd;
+$tealdarker: #7a969a;
+$black: #05192a;
 $grey: #86929c;
 $ltgrey: #a0adb7;
+$transpblack: #05192a59;
+$bordercoltransp: #164e63;
 
 $bd-radius: 6px;
 
 $breakingpoint_medium: 1200px;
 $breakingpoint_mobile: 600px;
-
-@mixin flex($fd, $jc, $ai, $gap) {
-  display: flex;
-  flex-direction: $fd;
-  justify-content: $jc;
-  align-items: $ai;
-  gap: $gap;
-}

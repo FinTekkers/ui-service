@@ -26,12 +26,9 @@
         use:reveal={{ transition: "fly", y: 20, delay: 20 }}
     >
         <div class="feature-headline">
-
             <Icon icon="mdi:rocket-launch" style="width: 25px; height: 25px;" />
 
             <h2>Convenient</h2>
-
-
         </div>
         <p>
             Our platform is built on top of open-source models (<a
@@ -61,18 +58,16 @@
 </div>
 
 <style lang="scss">
-    @import "../style.scss";
+    @import "../styles/_shared.scss";
 
     .Our-features-container {
         padding: 2em 1em;
         background-color: $primary-color;
         display: grid;
-        grid-template-columns:repeat(3, 1fr);
-        grid-template-rows: 1fr ;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: 1fr;
         justify-items: center;
         align-items: center;
-
-       
 
         .our-feature {
             @include flex(column, center, center, 1.5em);
@@ -85,7 +80,6 @@
                 @include flex(row, center, center, 0.5em);
                 position: absolute;
                 top: 7%;
-
             }
 
             &:nth-child(n) {
@@ -111,10 +105,10 @@
                 display: grid;
                 justify-items: center;
                 align-items: center;
-      
+
                 &:nth-child(n) {
-                   grid-column: 1/-1;
-                   width: 60%;
+                    grid-column: 1/-1;
+                    width: 60%;
                 }
             }
         }
