@@ -5,6 +5,7 @@ import type Transaction from "@fintekkers/ledger-models/node/wrappers/models/tra
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 const { FieldProto } = pkg;
 
 const transactionService = new ts.TransactionService();
@@ -67,7 +68,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
     });
 
     const transactionData: TransactionData[] = results.map((element) => {
-      const security = element.getSecurity();
+      const security: Security = element.getSecurity();
       const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY;
       const bondSecurity = isBond ? (security as BondSecurity) : null;
 
@@ -77,7 +78,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         transactionIssuerName: element.getIssuerName().toString(),
         transactionIssueDate: formatDateToISO(security.getIssueDate()),
         transactionQuantity: element.getQuantity().toString(),
-        transactionProductType: bondSecurity?.getProductType() ?? '',
+        transactionProductType: bondSecurity?.getProductType() ?? security.getProductType() ?? '',
         transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
         transactionTenor: bondSecurity?.getTenor().getTenorDescription() ?? '',

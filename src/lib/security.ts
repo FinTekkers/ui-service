@@ -6,6 +6,9 @@ import type Security from "@fintekkers/ledger-models/node/wrappers/models/securi
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
 import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
+import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
+import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
+import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
 
 const { FieldProto } = pkg;
 
@@ -18,7 +21,7 @@ interface securityData {
   assetClass: string;
   productType: string;
   productClass?: string;
-  tenor?: Tenor;
+  tenor?: string;
   couponRate?: string;
   couponType?: string;
   couponFrequency?: string;
@@ -78,7 +81,7 @@ export async function FetchSecurity(
             const asOfStr = security.getAsOf().toString().split(' ')[0]; // Format: "YYYY/MM/DD"
 
             // Check if it's a bond security to get additional fields
-            const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY;
+            const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY || security.proto.getSecurityType() === SecurityTypeProto.TIPS || security.proto.getSecurityType() === SecurityTypeProto.FRN;
             const bondSecurity = isBond ? (security as BondSecurity) : null;
 
             const result: securityData = {
@@ -101,7 +104,8 @@ export async function FetchSecurity(
             // Add bond-specific fields if available
             if (bondSecurity) {
               try {
-                result.tenor = bondSecurity.getTenor();
+                const tenor = bondSecurity.getTenor();
+                result.tenor = tenor?.getTenorDescription() ?? undefined;
               } catch (e) {
                 // Tenor might not be available
               }

@@ -160,6 +160,8 @@ async function fetchTransactionsFromPositions(filter: PositionFilter): Promise<T
         transactionIssueDate: security.getIssueDate()?.toString() ?? '',
         transactionQuantity: quantity?.toString() ?? '0',
         transactionProductType: bondSecurity?.getProductType() ?? '',
+        transactionProductClass: security.proto.getAssetClass() ?? '',
+        transactionSecurityType: SecurityTypeProto[security.proto.getSecurityType()] ?? security.proto.getSecurityType().toString(),
         transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
         transactionTenor: bondSecurity?.getTenor(asOfDate).getTenorDescription() ?? '',
