@@ -37,6 +37,7 @@ export interface dashboardMenuType {
     transaction:dashboardMenuItemType,
     position:dashboardMenuItemType,
     security:dashboardMenuItemType,
+    calculators:dashboardMenuItemType,
 }
 
 

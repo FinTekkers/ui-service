@@ -130,10 +130,12 @@
     height: 38px;
     box-sizing: border-box;
     background-color: white;
+    color: $black;
   }
 
   .filter-select:disabled {
     background-color: #f0f0f0;
+    color: $grey;
     cursor: not-allowed;
   }
 </style>

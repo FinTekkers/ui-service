@@ -225,7 +225,7 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "TRANSACTION",
         navigateTo: "TRANSACTION",
         style:commonIconStyle,
-        iconName: "mdi:briefcase-transfer-outline",
+        iconName: "mdi:briefcase-arrow-left-right-outline",
         url: "transactions",
         menuName:"Transaction"
     },
@@ -237,6 +237,15 @@ export const dashboardMenuData:dashboardMenuType= {
         iconName:"mdi:table-add",
         url: "positions",
         menuName:"Position"
+    },
+
+    calculators:{
+        location: "CALCULATORS",
+        navigateTo: "CALCULATORS",
+        style:commonIconStyle,
+        iconName:"mdi:calculator",
+        url: "calculators",
+        menuName:"Calculators"
     },
 }
 

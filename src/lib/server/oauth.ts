@@ -16,7 +16,7 @@ function getCallbackUrl() {
 
     console.log(`Using ${protocol}`);
     let callbackUrl = `${protocol}://localhost:443/login/google/callback`;
-    let aws_callback_url = `https://www.fintekkers.org:443/login/google/callback`;
+    let aws_callback_url = `https://www.fintekkers.org/login/google/callback`;
 
     if (process.env.HOSTNAME && process.env.HOSTNAME.includes('.ec2.internal')) {
         callbackUrl = aws_callback_url;
