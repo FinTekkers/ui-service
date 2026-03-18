@@ -9,6 +9,7 @@ import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/t
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
+import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
 
 const { FieldProto } = pkg;
 
@@ -39,13 +40,30 @@ interface securityData {
 
 export async function FetchSecurity(
   assetClass: string,
-  issuerName: string
+  issuerName: string,
+  cusip?: string,
+  issueDate?: string,
+  issueDateOperator?: 'greater_than' | 'lesser_than'
 ): Promise<securityData[]> {
   const securityService = new SecurityService();
 
   const filterSecurity = new PositionFilter();
   filterSecurity.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass);
   filterSecurity.addEqualsFilter(FieldProto.SECURITY_ISSUER_NAME, issuerName);
+
+  if (cusip && cusip.trim() !== "") {
+    const identifierProto = new IdentifierProto().setIdentifierType(IdentifierTypeProto.CUSIP).setIdentifierValue(cusip.trim());
+    const identifier = new Identifier(identifierProto);
+    filterSecurity.addObjectFilter(FieldProto.IDENTIFIER, identifier);
+  }
+
+  if (issueDate && issueDate.trim() !== "" && issueDateOperator) {
+    const issueDateObj = new Date(issueDate);
+    const operator = issueDateOperator === 'greater_than'
+      ? PositionFilterOperator.MORE_THAN
+      : PositionFilterOperator.LESS_THAN;
+    filterSecurity.addFilter(FieldProto.ISSUE_DATE, operator, issueDateObj);
+  }
 
   try {
     const securities = await securityService.searchSecurityAsOfNow(

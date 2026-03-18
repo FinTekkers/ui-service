@@ -17,7 +17,7 @@ export async function load({locals}) {
   const filter: PositionFilter = new PositionFilter();
   filter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, "Federal Reserve SOMA Holdings");
 
-  const portfolioData = portfolioService
+  const portfolioData = await portfolioService
     .searchPortfolio(now.toProto(), filter)
     .then((portfolios: Portfolio[]) => {
       console.log("Portfolios found: " + portfolios.length);

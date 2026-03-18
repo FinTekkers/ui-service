@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatAmount } from "$lib/formatUtils";
+	import { formatAmount, formatPercent } from "$lib/formatUtils";
 	import { onMount } from "svelte";
 	import {
 		sortPositions as sortPositionsUtil,
@@ -151,9 +151,13 @@
 								{position[field]}
 							</td>
 						{/each}
-						{#each requestData.measures as measure}
+						{#each requestData.measures as measure, i}
 							<td class="table-cell px-4 py-2">
-								{formatAmount(position[measure])}
+								{#if measures[i] === "CURRENT_YIELD" || measures[i] === "YIELD_TO_MATURITY"}
+									{formatPercent(position[measure])}
+								{:else}
+									{formatAmount(position[measure])}
+								{/if}
 							</td>
 						{/each}
 					</tr>

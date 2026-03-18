@@ -9,7 +9,7 @@ export async function FetchPortfolio(portfolioName: string) {
   const portfolioService = new PortfolioService();
 
   const filterPortfolio: PositionFilter = new PositionFilter();
-  filterPortfolio.addEqualsFilter(FieldProto.PORTFOLIO_NAME, portfolioName);
+  // filterPortfolio.addEqualsFilter(FieldProto.PORTFOLIO_NAME, portfolioName);
 
   try {
     const portfolios = await portfolioService.searchPortfolio(now.toProto(), filterPortfolio);

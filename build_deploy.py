@@ -6,7 +6,8 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 
-SERVER_NAME = "web-server"
+SERVICE_NAME = "fintekkers-ui-service"
+TARGET_GROUP_NAME = "fintekkers-http-web-target-group"
 
 from time import sleep
 import boto3
@@ -19,6 +20,15 @@ from fintekkers.devops.aws_account_setup import (
 )
 
 from fintekkers.devops.build_createEC2 import create_instance, get_running_instance_ids
+
+
+def get_target_group_arn_by_name(name: str) -> str:
+    elb_client = get_elb_client()
+    target_groups = elb_client.describe_target_groups()["TargetGroups"]
+    for tg in target_groups:
+        if tg["TargetGroupName"] == name:
+            return tg["TargetGroupArn"]
+    raise ValueError("No target group found with name {}".format(name))
 
 def deploy_code_to_instance(instance_id: str) -> bool:
     ec2 = boto3.resource("ec2", region_name="us-east-1")
@@ -120,7 +130,7 @@ def await_new_instance_on_target_group(new_instance_id):
     for i in range(
         10
     ):  # Currently the health check needs 5 consecutive seccesses to add to the load balancer (could swap this to read from AWS)
-        target_group_arn = get_target_group_arn(DEFAULT_PORT)
+        target_group_arn = get_target_group_arn_by_name(TARGET_GROUP_NAME)
         instances_ids = get_running_instance_ids(target_group_arn)
 
         if new_instance_id in instances_ids:
@@ -135,7 +145,7 @@ def await_new_instance_on_target_group(new_instance_id):
 
 
 def register_new_instange_to_load_balancer(new_instance_id):
-    target_group_arn = get_target_group_arn(DEFAULT_PORT)
+    target_group_arn = get_target_group_arn_by_name(TARGET_GROUP_NAME)
 
     # Register the instance
     register_response = get_elb_client().register_targets(
@@ -148,8 +158,28 @@ def register_new_instange_to_load_balancer(new_instance_id):
     )
 
 
+def teardown_instances_by_name(name: str):
+    ec2 = get_ec2_client()
+    response = ec2.describe_instances(
+        Filters=[
+            {"Name": "tag:Name", "Values": [name]},
+            {"Name": "instance-state-name", "Values": ["running", "stopped", "stopping"]},
+        ]
+    )
+    instance_ids = [
+        instance["InstanceId"]
+        for reservation in response["Reservations"]
+        for instance in reservation["Instances"]
+    ]
+    if instance_ids:
+        print("Terminating instances with name={}: {}".format(name, instance_ids))
+        ec2.terminate_instances(InstanceIds=instance_ids)
+    else:
+        print("No instances found with name={}".format(name))
+
+
 if __name__ == "__main__":
-    instance_id_map: map = create_instance(SERVER_NAME)
+    instance_id_map: map = create_instance(SERVICE_NAME)
 
     new_instance_id = instance_id_map["new_instance"]
     old_instance_ids = instance_id_map["old_instances"]
@@ -161,5 +191,6 @@ if __name__ == "__main__":
         register_new_instange_to_load_balancer(new_instance_id)
         await_new_instance_on_target_group(new_instance_id)
         teardown_old_ec2s(old_instance_ids)
+        teardown_instances_by_name("web-server")
     else:
         print("Deployment failed")
