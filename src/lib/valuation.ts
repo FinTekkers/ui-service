@@ -180,6 +180,22 @@ export async function RunValuation(inputs: BondCalculatorInputs): Promise<Valuat
 
     return result;
   } catch (error: any) {
-    return { error: error.message ?? 'Valuation failed' };
+    const rawMessage = error.details ?? error.message ?? 'Valuation failed';
+
+    // Provide user-friendly messages for known service errors
+    if (rawMessage.includes('Invalid Coupon Frequency')) {
+      return { error: 'This security has no coupon (e.g. a zero-coupon bond or FRN) and cannot be valued with this calculator.' };
+    }
+    if (rawMessage.includes('Maturity date must be in the future')) {
+      return { error: 'This security has already matured and cannot be valued.' };
+    }
+    if (rawMessage.includes('Periods to maturity must be at least 1')) {
+      return { error: 'This security matures too soon (less than one coupon period remaining).' };
+    }
+    if (rawMessage.includes('No security found')) {
+      return { error: rawMessage };
+    }
+
+    return { error: rawMessage };
   }
 }
