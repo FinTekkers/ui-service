@@ -1,4 +1,5 @@
 import { FetchSecurity } from "$lib/security";
+import { deleteSecurity } from "$lib/security-delete";
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
@@ -20,3 +21,22 @@ export async function load({ locals, request }) {
     user: locals.user
   };
 }
+
+export const actions = {
+  dryRun: async ({ request }) => {
+    const formData = await request.formData();
+    const uuidHex = formData.get('uuidHex') as string;
+    if (!uuidHex) return { deleteResult: { success: false, totalCount: 0, affectedEntities: [], warnings: [], error: 'Missing UUID' } };
+    const result = await deleteSecurity(uuidHex, true);
+    return { deleteResult: result, uuidHex };
+  },
+
+  confirmDelete: async ({ request }) => {
+    const formData = await request.formData();
+    const uuidHex = formData.get('uuidHex') as string;
+    const force = formData.get('force') === 'true';
+    if (!uuidHex) return { deleteResult: { success: false, totalCount: 0, affectedEntities: [], warnings: [], error: 'Missing UUID' } };
+    const result = await deleteSecurity(uuidHex, false, force);
+    return { deleteResult: result };
+  },
+};

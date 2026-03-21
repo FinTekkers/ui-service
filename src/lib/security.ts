@@ -13,8 +13,9 @@ import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekker
 
 const { FieldProto } = pkg;
 
-interface securityData {
+export interface securityData {
   cusip: string;
+  uuidHex?: string;
   issueDate: string;
   maturityDate: string;
   outstandingAmount: string;
@@ -29,6 +30,7 @@ interface securityData {
   faceValue?: string;
   datedDate?: string;
   asOf: string;
+  securityType?: number;
 }
 
 /**
@@ -102,8 +104,13 @@ export async function FetchSecurity(
             const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY || security.proto.getSecurityType() === SecurityTypeProto.TIPS || security.proto.getSecurityType() === SecurityTypeProto.FRN;
             const bondSecurity = isBond ? (security as BondSecurity) : null;
 
+            // Serialize UUID for delete support
+            const uuidProto = security.proto.getUuid();
+            const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
+
             const result: securityData = {
               cusip: id,
+              uuidHex,
               issueDate: issueDateStr,
               maturityDate: maturityDateStr,
               outstandingAmount: postAuctionQuantity.toString(),
@@ -111,6 +118,7 @@ export async function FetchSecurity(
               assetClass: security.getAssetClass(),
               productType: bondSecurity?.getProductType() ?? '',
               asOf: asOfStr,
+              securityType: security.proto.getSecurityType(),
             };
 
             try {

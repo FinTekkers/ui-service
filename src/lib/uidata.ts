@@ -234,7 +234,7 @@ export const dashboardMenuData:dashboardMenuType= {
         location: "POSITION",
         navigateTo: "POSITION",
         style:commonIconStyle,
-        iconName:"mdi:table-add",
+        iconName:"mdi:table-plus",
         url: "positions",
         menuName:"Position"
     },
@@ -246,6 +246,51 @@ export const dashboardMenuData:dashboardMenuType= {
         iconName:"mdi:calculator",
         url: "calculators",
         menuName:"Calculators"
+    },
+
+    prices:{
+        location: "PRICES",
+        navigateTo: "PORTFOLIO",
+        style:commonIconStyle,
+        iconName:"mdi:currency-usd",
+        url: "prices",
+        menuName:"Prices"
+    },
+
+    treasuries:{
+        location: "TREASURIES",
+        navigateTo: "PORTFOLIO",
+        style:commonIconStyle,
+        iconName:"mdi:chart-line",
+        url: "/treasury_curve",
+        menuName:"Treasuries"
+    },
+
+    curves:{
+        location: "CURVES",
+        navigateTo: "PORTFOLIO",
+        style:commonIconStyle,
+        iconName:"mdi:chart-multiple",
+        url: "curves",
+        menuName:"Curves"
+    },
+
+    cpiIndex:{
+        location: "CPI_INDEX",
+        navigateTo: "PORTFOLIO",
+        style:commonIconStyle,
+        iconName:"mdi:chart-box-outline",
+        url: "/cpi_index",
+        menuName:"CPI Index"
+    },
+
+    catalog:{
+        location: "CATALOG",
+        navigateTo: "PORTFOLIO",
+        style:commonIconStyle,
+        iconName:"mdi:book-open-page-variant-outline",
+        url: "catalog",
+        menuName:"Data Catalog"
     },
 }
 

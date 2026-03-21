@@ -3,7 +3,10 @@ import os
 os.environ['FINTEKKERS_DEFAULT_PORT'] = "443"
 DEFAULT_PORT = 443
 
-# Load .env file from the same directory as this script
+# Load .env file from the same directory as this script.
+# Note: .env has LOCAL DEV credentials by default. For production deployment,
+# set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as environment variables
+# (e.g. via GitHub Actions secrets) — they take precedence over .env values.
 _env_path = os.path.join(os.path.dirname(__file__), ".env")
 if os.path.exists(_env_path):
     with open(_env_path) as _f:
@@ -11,6 +14,9 @@ if os.path.exists(_env_path):
             _line = _line.strip()
             if _line and not _line.startswith("#") and "=" in _line:
                 _key, _, _val = _line.partition("=")
+                # Skip API_URL from .env — production uses the default (api.fintekkers.org)
+                if _key.strip() == "API_URL":
+                    continue
                 os.environ.setdefault(_key.strip(), _val.strip())
 
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")

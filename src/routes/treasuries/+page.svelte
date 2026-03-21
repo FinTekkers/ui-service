@@ -15,5 +15,6 @@
       ? data.transactions
       : [data.transactions]}
     titleOverride="Recent Fed Balance Sheet Activity"
+    showDelete={false}
   />
 </div>

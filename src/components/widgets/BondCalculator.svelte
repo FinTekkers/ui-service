@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
+  import type { CashflowEntry } from '$lib/valuation';
   export let result: import('$lib/valuation').ValuationResult | null = null;
   export let securities: { cusip: string; issuerName: string; couponRate?: string; maturityDate: string }[] = [];
 
@@ -227,6 +228,35 @@
       {/if}
     </div>
   </div>
+
+  {#if result?.cashflows && result.cashflows.length > 0}
+    <div class="cashflow-section mt-6">
+      <h3 class="text-xl font-bold mb-4">Cashflow Schedule</h3>
+      <table class="cashflow-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th class="numeric">Future Value</th>
+            <th class="numeric">Present Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each result.cashflows as cf}
+            <tr>
+              <td>{cf.date}</td>
+              <td class="numeric">{formatPrice(cf.fvAmount)}</td>
+              <td class="numeric">{formatPrice(cf.pvAmount)}</td>
+            </tr>
+          {/each}
+          <tr class="total-row">
+            <td>Total</td>
+            <td class="numeric">{formatPrice(result.cashflows.reduce((s, cf) => s + parseFloat(cf.fvAmount), 0).toString())}</td>
+            <td class="numeric">{formatPrice(result.cashflows.reduce((s, cf) => s + parseFloat(cf.pvAmount), 0).toString())}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -414,5 +444,50 @@
   .placeholder-msg {
     color: $ltgrey;
     font-size: 0.875rem;
+  }
+
+  .cashflow-section {
+    background-color: $bgc-color;
+    border-radius: $bd-radius;
+    padding: 1.5rem;
+    color: $white;
+  }
+
+  .cashflow-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 8px 10px;
+      font-size: 0.85rem;
+    }
+
+    th {
+      color: $ltgrey;
+      font-weight: 600;
+      border-bottom: 2px solid $border-color;
+      text-align: left;
+
+      &.numeric { text-align: right; }
+    }
+
+    td {
+      border-bottom: 1px solid $border-color;
+      color: $tealwhite;
+
+      &.numeric {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+    }
+
+    .total-row {
+      td {
+        font-weight: 700;
+        border-top: 2px solid $border-color;
+        border-bottom: none;
+        padding-top: 10px;
+      }
+    }
   }
 </style>

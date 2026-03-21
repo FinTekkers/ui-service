@@ -1,10 +1,13 @@
 <script lang="ts">
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   import BondCalculator from '../../../../components/widgets/BondCalculator.svelte';
+  import TipsCalculator from '../../../../components/widgets/TipsCalculator.svelte';
+  import FrnCalculator from '../../../../components/widgets/FrnCalculator.svelte';
   export let data: import('./$types').PageData;
 
-  const tabs = ['Bond Pricer'];
-  let activeTab = 'Bond Pricer';
+  const tabs = ['Bond Pricer', 'TIPS Pricer', 'FRN Pricer'];
+  const tabMap: Record<string, string> = { tips: 'TIPS Pricer', frn: 'FRN Pricer', bond: 'Bond Pricer' };
+  let activeTab = tabMap[data.activeTab] ?? 'Bond Pricer';
 </script>
 
 <div class="w-screen h-full flex">
@@ -25,7 +28,11 @@
     </div>
 
     {#if activeTab === 'Bond Pricer'}
-      <BondCalculator result={data.result} securities={data.securities} />
+      <BondCalculator result={data.result} securities={data.bondSecurities} />
+    {:else if activeTab === 'TIPS Pricer'}
+      <TipsCalculator result={data.tipsResult} securities={data.tipsSecurities} />
+    {:else if activeTab === 'FRN Pricer'}
+      <FrnCalculator result={data.frnResult} securities={data.frnSecurities} />
     {/if}
   </div>
 </div>

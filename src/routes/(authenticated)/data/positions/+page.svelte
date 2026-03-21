@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { navigating } from "$app/stores";
   import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
   import Position from "../../../../components/widgets/PositionGrid.svelte";
   import PositionSelect from "../../../../components/widgets/PositionSelect.svelte";
@@ -32,6 +33,9 @@
       window.history.pushState({}, "", url.toString());
     }
   }
+  // Check if portfolioId filter is active
+  const portfolioId = data.portfolioId ?? null;
+
   // Check if hideZeros is active
   let hideZeros = false;
   $: {
@@ -67,9 +71,26 @@
   <DashboardSideBar {data} />
 
   <div class="h-full w-full dashboard-container">
+    {#if portfolioId}
+      <div class="px-4 pt-4">
+        <a href="/data/portfolios" class="back-link">
+          &larr; Back to Portfolios
+        </a>
+      </div>
+    {/if}
+
     <PositionSelect />
 
-    {#if hasRequestedData}
+    {#if $navigating}
+      <div class="loading-container">
+        <div class="spinner" />
+        <p>Loading positions…</p>
+      </div>
+    {:else if hasRequestedData && filteredPositions.length === 0}
+      <div class="empty-state">
+        <p>No positions in this portfolio</p>
+      </div>
+    {:else if hasRequestedData}
       <Position
         positions={filteredPositions}
         requestData={data.requestData}
@@ -83,10 +104,20 @@
 <style lang="scss">
   @import "../../../../style";
 
+  .back-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: inline-block;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   .dashboard-container {
     background-color: $primary-color;
     overflow: auto;
-    // @include flex(column, center, center, 0);
 
     .dashboard-menu {
       width: 98%;
@@ -96,5 +127,39 @@
       background-color: $tealblack;
       color: $primary-color;
     }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1rem;
+    color: #94a3b8;
+  }
+
+  .spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 3px solid #334155;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1rem;
+    color: #94a3b8;
+    font-size: 1.1rem;
   }
 </style>

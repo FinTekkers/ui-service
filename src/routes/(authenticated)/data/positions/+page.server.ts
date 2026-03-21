@@ -63,6 +63,7 @@ export async function load({ locals, request }) {
   const tradeDate = searchParams.get('tradeDate');
   const tradeDateOperator = searchParams.get('tradeDateOperator');
   const assetClass = searchParams.get('assetClass');
+  const portfolioId = searchParams.get('portfolioId');
   // Sort is now handled client-side, but we keep these for backward compatibility
   const sortBy = searchParams.get('sortBy');
   const sortDirection = searchParams.get('sortDirection') || 'asc';
@@ -140,7 +141,8 @@ export async function load({ locals, request }) {
     cusip || undefined,
     tradeDate || undefined,
     tradeDateOperator === 'greater_than' ? 'greater_than' : tradeDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
-    assetClass || undefined
+    assetClass || undefined,
+    portfolioId || undefined
   );
 
   const metadata = { fields: userFields, measures: userMeasures };
@@ -149,6 +151,7 @@ export async function load({ locals, request }) {
     requestData: requestData,
     fieldMeasure: fieldMeasure,
     metadata: metadata,
+    portfolioId: portfolioId || null,
     user: locals.user
   };
 }

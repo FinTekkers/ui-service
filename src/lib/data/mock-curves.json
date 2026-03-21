@@ -1,0 +1,38 @@
+{
+  "date": "2026-03-19",
+  "note": "MOCK DATA — will be replaced with live valuation-service calls",
+  "curves": {
+    "par": [
+      {"tenor": "6M", "years": 0.5, "yield": 3.76},
+      {"tenor": "1Y", "years": 1.0, "yield": 3.73},
+      {"tenor": "2Y", "years": 2.0, "yield": 3.79},
+      {"tenor": "3Y", "years": 3.0, "yield": 3.79},
+      {"tenor": "5Y", "years": 5.0, "yield": 3.88},
+      {"tenor": "7Y", "years": 7.0, "yield": 4.06},
+      {"tenor": "10Y", "years": 10.0, "yield": 4.25},
+      {"tenor": "20Y", "years": 20.0, "yield": 4.82},
+      {"tenor": "30Y", "years": 30.0, "yield": 4.83}
+    ],
+    "spot": [
+      {"tenor": "6M", "years": 0.5, "yield": 3.760},
+      {"tenor": "1Y", "years": 1.0, "yield": 3.730},
+      {"tenor": "2Y", "years": 2.0, "yield": 3.792},
+      {"tenor": "3Y", "years": 3.0, "yield": 3.791},
+      {"tenor": "5Y", "years": 5.0, "yield": 3.889},
+      {"tenor": "7Y", "years": 7.0, "yield": 4.091},
+      {"tenor": "10Y", "years": 10.0, "yield": 4.312},
+      {"tenor": "20Y", "years": 20.0, "yield": 5.242},
+      {"tenor": "30Y", "years": 30.0, "yield": 4.856}
+    ],
+    "forward": [
+      {"tenor": "6M-1Y", "years": 1.0, "yield": 3.699},
+      {"tenor": "1Y-2Y", "years": 2.0, "yield": 3.854},
+      {"tenor": "2Y-3Y", "years": 3.0, "yield": 3.789},
+      {"tenor": "3Y-5Y", "years": 5.0, "yield": 4.036},
+      {"tenor": "5Y-7Y", "years": 7.0, "yield": 4.596},
+      {"tenor": "5Y-10Y", "years": 10.0, "yield": 4.736},
+      {"tenor": "10Y-20Y", "years": 20.0, "yield": 6.176},
+      {"tenor": "10Y-30Y", "years": 30.0, "yield": 5.128}
+    ]
+  }
+}

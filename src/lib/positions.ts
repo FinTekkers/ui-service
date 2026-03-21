@@ -32,7 +32,8 @@ export async function FetchPosition(
     cusip?: string,
     tradeDate?: string,
     tradeDateOperator?: 'greater_than' | 'lesser_than',
-    assetClass?: string
+    assetClass?: string,
+    portfolioId?: string
 ): Promise<any> {
     const positionService = new PositionService();
 
@@ -57,6 +58,11 @@ export async function FetchPosition(
     // Add ASSET_CLASS filter if provided
     if (assetClass && assetClass.trim() !== "") {
         positionFilter.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass.trim());
+    }
+
+    // Add PORTFOLIO_ID filter if provided
+    if (portfolioId && portfolioId.trim() !== "") {
+        positionFilter.addEqualsFilter(FieldProto.PORTFOLIO_ID, portfolioId.trim());
     }
 
     const request = new QueryPositionRequest(

@@ -33,7 +33,7 @@
     if (icon instanceof HTMLElement) {
       icon.setAttribute(
         "icon",
-        sidebarExpanded ? "mdi:hamburger-close" : "mdi:hamburger-open"
+        sidebarExpanded ? "mdi:menu-close" : "mdi:menu-open"
       );
     }
   };
@@ -52,7 +52,7 @@
     on:click={toggleSidebar}
     class="absolute top-2 right-2 text-black"
     ><Icon
-      icon={sidebarExpanded ? "mdi:hamburger-open" : "mdi:hamburger-close"}
+      icon={sidebarExpanded ? "mdi:menu-open" : "mdi:menu-close"}
       class="user-menu-icon"
       style="width:30px; height:30px; color:#000000"
     /></button

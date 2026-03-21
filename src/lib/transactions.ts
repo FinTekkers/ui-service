@@ -9,7 +9,6 @@ import Security from "@fintekkers/ledger-models/node/wrappers/models/security/se
 const { FieldProto } = pkg;
 
 const transactionService = new ts.TransactionService();
-const now = datetime.ZonedDateTime.now();
 
 /**
  * Formats a date object to ISO date string (YYYY-MM-DD)
@@ -42,6 +41,7 @@ function formatDateToISO(date: any): string {
 
 interface TransactionData {
   transactionId: string;
+  uuidHex?: string;
   transactionSettlementDate: string;
   transactionIssuerName: string;
   transactionIssueDate: string;
@@ -58,9 +58,11 @@ interface TransactionData {
 
 let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filter: positionFilter.PositionFilter): Promise<TransactionData[]> {
   try {
+    const now = datetime.ZonedDateTime.now();
     const results: Transaction[] = await transactionService.searchTransaction(
       now.toProto(),
-      filter
+      filter,
+      1000
     );
 
     results.sort((a, b) => {
@@ -72,8 +74,12 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
       const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY;
       const bondSecurity = isBond ? (security as BondSecurity) : null;
 
+      const txnUuid = element.proto?.getUuid?.();
+      const uuidHex = txnUuid ? Buffer.from(txnUuid.serializeBinary()).toString('hex') : undefined;
+
       return {
         transactionId: security.getSecurityID().getIdentifierValue().toString(),
+        uuidHex,
         transactionSettlementDate: formatDateToISO(element.getSettlementDate()),
         transactionIssuerName: element.getIssuerName().toString(),
         transactionIssueDate: formatDateToISO(security.getIssueDate()),
@@ -90,8 +96,9 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
     });
 
     return transactionData;
-  } catch (error) {
-    console.error("Error fetching transaction data:", error);
+  } catch (error: any) {
+    console.error("Error fetching transaction data:", error?.message ?? error);
+    if (error?.stack) console.error(error.stack);
     return [];
   }
 };

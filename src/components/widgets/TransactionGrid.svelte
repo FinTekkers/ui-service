@@ -7,9 +7,17 @@
     handleSortClick,
     type SortDirection,
   } from "$lib/sortUtils";
+  import { createEventDispatcher } from 'svelte';
 
   export let rows: TransactionData[];
   export let titleOverride: string | undefined = undefined;
+  export let showDelete: boolean = true;
+
+  const dispatch = createEventDispatcher();
+
+  function handleDeleteClick(row: TransactionData) {
+    dispatch('requestDelete', { id: row.transactionId, uuidHex: row.uuidHex });
+  }
 
   // Sort state - using universal sort utilities
   let sortField: keyof TransactionData | null = null;
@@ -59,6 +67,7 @@
     <table class="text-left">
       <thead class="border-b border-slate-400">
         <tr>
+          {#if showDelete}<th class="text-semibold text-lg px-4 py-2 action-col">Actions</th>{/if}
           {#each columns as column}
             <th
               class="text-semibold text-lg px-4 py-2 sortable-header"
@@ -77,6 +86,9 @@
       <tbody>
         {#each sortedRows as row}
           <tr class="table-row border-b border-slate-400">
+            {#if showDelete}<td class="table-cell px-4 py-2 action-col">
+              <button class="delete-btn" title="Delete {row.transactionId}" on:click|stopPropagation={() => handleDeleteClick(row)}>Delete</button>
+            </td>{/if}
             {#each columns as column}
               <td class="table-cell px-4 py-2">
                 {#if column.key === "transactionQuantity"}
@@ -91,6 +103,7 @@
       </tbody>
       <tfoot>
         <tr class="summary-row border-t-2 border-slate-600">
+          {#if showDelete}<td class="table-cell px-4 py-2 action-col">&nbsp;</td>{/if}
           {#each columns as column}
             <td class="table-cell px-4 py-2 font-bold">
               {#if column.key === "transactionId"}
@@ -144,5 +157,29 @@
 
   .summary-row {
     background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .action-col {
+    min-width: 70px !important;
+    width: 70px;
+  }
+
+  thead .action-col {
+    background-color: #0c3a46;
+  }
+
+  .delete-btn {
+    background-color: #c43d5a;
+    border: none;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+
+    &:hover { background-color: #a33049; }
   }
 </style>

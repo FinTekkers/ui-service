@@ -38,6 +38,11 @@ export interface dashboardMenuType {
     position:dashboardMenuItemType,
     security:dashboardMenuItemType,
     calculators:dashboardMenuItemType,
+    prices:dashboardMenuItemType,
+    treasuries:dashboardMenuItemType,
+    curves:dashboardMenuItemType,
+    cpiIndex:dashboardMenuItemType,
+    catalog:dashboardMenuItemType,
 }
 
 
