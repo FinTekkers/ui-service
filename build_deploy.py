@@ -196,7 +196,7 @@ def teardown_instances_by_name(name: str):
 
 
 if __name__ == "__main__":
-    instance_id_map: map = create_instance(SERVICE_NAME)
+    instance_id_map: map = create_instance()
 
     new_instance_id = instance_id_map["new_instance"]
     old_instance_ids = instance_id_map["old_instances"]
