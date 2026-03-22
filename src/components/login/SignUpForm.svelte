@@ -129,6 +129,23 @@
         {/if}
     </label>
 
+    <label for="signupcode">
+        <span class="label_span_text">sign-up code:</span>
+        <input
+            class="rounded-md sign_up_code"
+            type="text"
+            name="signupcode"
+            id="signupcode"
+            placeholder="Enter your sign-up code"
+            value=""
+        />
+        {#if displayError("signupcode")}
+            <div class="error_message">
+                <p class="form_error">Sign-up code is required</p>
+            </div>
+        {/if}
+    </label>
+
     <label for="submit">
         <button
             type="submit"
@@ -144,17 +161,16 @@
     </div>
 
     <div class="google_OAuth">
-        <button
-            type="submit"
-            formaction="?/OAuth2"
+        <a
+            href="/login/google"
             class="font-bold py-2 px-4 rounded focus:outline-none focus:border-green-500 hover:border-green-500 focus:ring-green-500 focus:ring-1"
         >
             <Icon
                 icon="flat-color-icons:google"
                 style="width: 25px; height: 25px;"
             />
-            <a href="/login/google">Continue with Google</a>
-        </button>
+            Continue with Google
+        </a>
     </div>
 </div>
 
@@ -258,14 +274,21 @@
         .google_OAuth {
             grid-area: 7/1/7/-1;
 
-            :is(button) {
+            :is(a) {
                 border: solid 2px $primary-color;
                 background-color: $white;
                 color: $primary-color;
-                @include flex(row, center, center, 1em);
+                text-decoration: none;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                gap: 1em;
                 height: 6vh;
                 width: 100%;
                 transition: all 0.5s ease;
+                border-radius: 4px;
+                font-weight: bold;
 
                 &:hover {
                     color: $white;

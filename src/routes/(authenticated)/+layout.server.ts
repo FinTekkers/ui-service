@@ -1,13 +1,9 @@
-// src/routes/(protected)/+layout.server.ts
 import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ locals, cookies }) => {
-	console.log("Locals:", JSON.stringify(locals, null, 2));
-	console.log("Session Cookie:", cookies.get("session"));
-
+export const load = async ({ locals, url }) => {
 	if (!locals.user) {
-		console.log("No user found, redirecting to login page");
-		throw redirect(302, '/login');
+		const redirectTo = encodeURIComponent(url.pathname + url.search);
+		throw redirect(302, `/login?redirectTo=${redirectTo}`);
 	}
 
 	return {

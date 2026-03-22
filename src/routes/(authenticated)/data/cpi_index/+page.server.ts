@@ -1,7 +1,7 @@
 import { PriceClient } from '@fintekkers/ledger-models/node/fintekkers/services/price-service/price_service_grpc_pb.js';
 import { QueryPriceRequestProto, PriceHorizonProto, PriceFrequencyProto } from '@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_request_pb.js';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
-import EnvConfig from '@fintekkers/ledger-models/node/wrappers/models/utils/requestcontext';
+import { getServiceConnection } from '$lib/grpc-auth';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import { FieldProto } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
@@ -31,8 +31,9 @@ export async function load() {
     request.setSearchPriceInput(filter.toProto());
 
     // Price service runs on port 8083
-    const priceURL = EnvConfig.apiURL.replace(':8082', ':8083');
-    const client = new PriceClient(priceURL, EnvConfig.apiCredentials);
+    const conn = getServiceConnection();
+    const priceURL = conn.url.replace(':8082', ':8083').replace(':80', ':8083');
+    const client = new PriceClient(priceURL, conn.credentials);
 
     const prices: CpiDataPoint[] = await new Promise((resolve, reject) => {
       const results: CpiDataPoint[] = [];

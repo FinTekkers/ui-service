@@ -42,6 +42,7 @@ export interface dashboardMenuType {
     treasuries:dashboardMenuItemType,
     curves:dashboardMenuItemType,
     cpiIndex:dashboardMenuItemType,
+    profile:dashboardMenuItemType,
     catalog:dashboardMenuItemType,
 }
 

@@ -6,7 +6,7 @@ import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/ut
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import field_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
-import EnvConfig from '@fintekkers/ledger-models/node/wrappers/models/utils/requestcontext';
+import { getServiceConnection } from '$lib/grpc-auth';
 
 const { FieldProto } = field_pkg;
 
@@ -18,12 +18,18 @@ interface PriceEntry {
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
   const searchParams = new URLSearchParams(request.url.split('?')[1]);
-  const selectedCusip = searchParams.get('cusip') ?? '';
+  let selectedCusip = searchParams.get('cusip') ?? '';
 
   // Load securities for the CUSIP dropdown
   let securities: { cusip: string; description: string; uuidHex: string }[] = [];
   try {
     const allSecs = await FetchSecurity('Fixed Income', 'US Government');
+
+    // Default to on-the-run 10Y Treasury
+    if (!selectedCusip) {
+      selectedCusip = '91282CPZ8';
+    }
+
     securities = allSecs
       .filter(s => s.uuidHex)
       .map(s => ({
@@ -68,8 +74,9 @@ export async function load({ locals, request }) {
         filter.addObjectFilter(FieldProto.SECURITY_ID, uuid);
         priceRequest.setSearchPriceInput(filter.toProto());
 
-        const priceURL = EnvConfig.apiURL.replace(':8082', ':8083');
-        const client = new PriceClient(priceURL, EnvConfig.apiCredentials);
+        const conn = getServiceConnection();
+        const priceURL = conn.url.replace(':8082', ':8083').replace(':80', ':8083');
+        const client = new PriceClient(priceURL, conn.credentials);
 
         prices = await new Promise<PriceEntry[]>((resolve, reject) => {
           const results: PriceEntry[] = [];

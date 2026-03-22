@@ -79,13 +79,15 @@
 			</thead>
 			<tbody>
 				{#each sortedRows as row}
-					<tr class="table-row border-b border-slate-400">
+					<tr class="table-row border-b border-slate-400 clickable-row">
 						<td class="table-cell px-4 py-2 action-col">
 							<button class="delete-btn" title="Delete {row.portfolioName}" on:click|stopPropagation={() => handleDeleteClick(row)}>Delete</button>
 						</td>
 						{#each columns as column}
 							<td class="table-cell px-4 py-2">
-								{row[column.key]}
+								<a href={getPositionsUrl(row.portfolioId)} class="row-link">
+									{row[column.key]}
+								</a>
 							</td>
 						{/each}
 					</tr>

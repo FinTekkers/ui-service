@@ -1,5 +1,15 @@
-import type { User } from "$lib/server/user";
+import type { User as GoogleUser } from "$lib/server/user";
 import type { Session } from "$lib/server/session";
+
+/** User authenticated via broker gRPC (email/password) */
+interface BrokerUser {
+      id: string;
+      name: string;
+      email: string;
+      apiKey: string;
+}
+
+type AppUser = GoogleUser | BrokerUser;
 
 declare namespace App {
 
@@ -11,7 +21,7 @@ declare namespace App {
       }
 
       interface Locals{
-          user: User | null;
+          user: AppUser | null;
           session: Session | null;
       }
 
@@ -20,7 +30,7 @@ declare namespace App {
         isUserLoggedIn?: boolean;
         form?:any;
         flash?: { type: 'success' | 'error'; message: string };
-          user?: User | null;
+          user?: AppUser | null;
       }
 
 }

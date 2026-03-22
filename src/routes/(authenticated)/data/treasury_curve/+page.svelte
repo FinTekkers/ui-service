@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DashboardSideBar from '../../components/DashboardSideBar.svelte';
+  import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
 
   export let data: { curveData: Array<{
     tenor: string; cusip: string; description: string;
@@ -19,7 +19,7 @@
 
   function handleDateChange() {
     if (dateInput) {
-      window.location.href = `/treasury_curve?date=${dateInput}`;
+      window.location.href = `/data/treasury_curve?date=${dateInput}`;
     }
   }
 
@@ -159,7 +159,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../styles/variables";
+  @import "../../../../styles/variables";
 
   .page-container {
     background-color: $primary-color;

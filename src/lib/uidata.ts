@@ -262,7 +262,7 @@ export const dashboardMenuData:dashboardMenuType= {
         navigateTo: "PORTFOLIO",
         style:commonIconStyle,
         iconName:"mdi:chart-line",
-        url: "/treasury_curve",
+        url: "treasury_curve",
         menuName:"Treasuries"
     },
 
@@ -280,8 +280,17 @@ export const dashboardMenuData:dashboardMenuType= {
         navigateTo: "PORTFOLIO",
         style:commonIconStyle,
         iconName:"mdi:chart-box-outline",
-        url: "/cpi_index",
+        url: "cpi_index",
         menuName:"CPI Index"
+    },
+
+    profile:{
+        location: "PROFILE",
+        navigateTo: "PORTFOLIO",
+        style:commonIconStyle,
+        iconName:"mdi:account-circle-outline",
+        url: "profile",
+        menuName:"Profile"
     },
 
     catalog:{

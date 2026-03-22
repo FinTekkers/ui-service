@@ -12,7 +12,7 @@ import { describe, expect, test } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const ROUTE_DIR = path.resolve('src/routes/cpi_index');
+const ROUTE_DIR = path.resolve('src/routes/(authenticated)/data/cpi_index');
 
 // =============================================================================
 // 1. Route file structure
@@ -26,8 +26,8 @@ describe('CPI Index page – route files', () => {
 		expect(fs.existsSync(path.join(ROUTE_DIR, '+page.server.ts'))).toBe(true);
 	});
 
-	test('+layout.svelte exists', () => {
-		expect(fs.existsSync(path.join(ROUTE_DIR, '+layout.svelte'))).toBe(true);
+	test('uses authenticated layout (no local +layout.svelte)', () => {
+		expect(fs.existsSync(path.join(ROUTE_DIR, '+layout.svelte'))).toBe(false);
 	});
 });
 
@@ -302,21 +302,19 @@ describe('CPI Index page – CSS contrast', () => {
 });
 
 // =============================================================================
-// 6. Layout verification
+// 6. Layout verification — route now lives under (authenticated)/data/
 // =============================================================================
 describe('CPI Index page – layout', () => {
-	const layoutSvelte = fs.readFileSync(path.join(ROUTE_DIR, '+layout.svelte'), 'utf-8');
+	const authLayoutServer = path.resolve('src/routes/(authenticated)/+layout.server.ts');
 
-	test('layout sets page title to "CPI-U Index"', () => {
-		expect(layoutSvelte).toContain('CPI-U Index');
+	test('authenticated layout server exists (provides auth guard)', () => {
+		expect(fs.existsSync(authLayoutServer)).toBe(true);
 	});
 
-	test('layout imports layout styles', () => {
-		expect(layoutSvelte).toContain('@import');
-	});
-
-	test('layout has slot for page content', () => {
-		expect(layoutSvelte).toContain('<slot');
+	test('authenticated layout redirects unauthenticated users', () => {
+		const content = fs.readFileSync(authLayoutServer, 'utf-8');
+		expect(content).toContain('redirect');
+		expect(content).toContain('login');
 	});
 });
 

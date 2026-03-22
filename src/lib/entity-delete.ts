@@ -3,7 +3,7 @@ import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/servic
 import { TransactionClient } from '@fintekkers/ledger-models/node/fintekkers/services/transaction-service/transaction_service_grpc_pb.js';
 import { PortfolioClient } from '@fintekkers/ledger-models/node/fintekkers/services/portfolio-service/portfolio_service_grpc_pb.js';
 import { UUIDProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js';
-import EnvConfig from '@fintekkers/ledger-models/node/wrappers/models/utils/requestcontext';
+import { getServiceConnection } from '$lib/grpc-auth';
 
 const { DeleteRequestProto, EntityTypeProto } = delete_pkg;
 
@@ -26,12 +26,11 @@ const entityTypeMap: Record<EntityType, number> = {
 };
 
 function getClient(entityType: EntityType): any {
-  const url = EnvConfig.apiURL;
-  const creds = EnvConfig.apiCredentials;
+  const conn = getServiceConnection();
   switch (entityType) {
-    case 'SECURITY': return new SecurityClient(url, creds);
-    case 'TRANSACTION': return new TransactionClient(url, creds);
-    case 'PORTFOLIO': return new PortfolioClient(url, creds);
+    case 'SECURITY': return new SecurityClient(conn.url, conn.credentials);
+    case 'TRANSACTION': return new TransactionClient(conn.url, conn.credentials);
+    case 'PORTFOLIO': return new PortfolioClient(conn.url, conn.credentials);
   }
 }
 

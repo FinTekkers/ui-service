@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DashboardSideBar from '../../components/DashboardSideBar.svelte';
+  import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
 
   export let data: { cpiData: Array<{ date: string; value: number }>; error: string | null; user?: any };
 
@@ -164,7 +164,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../styles/variables";
+  @import "../../../../styles/variables";
 
   .page-container {
     background-color: $primary-color;

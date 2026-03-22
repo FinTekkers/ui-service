@@ -1,72 +1,40 @@
-import {redirect } from "@sveltejs/kit";
+import { redirect } from "@sveltejs/kit";
 import * as Yup from 'yup';
-import { eq } from 'drizzle-orm';
-import { Argon2id } from 'oslo/password';
 import { superValidate } from 'sveltekit-superforms/server';
-import { createAndSetSession } from '$lib/database/authUtils.server';
-import { database } from '$lib/database/database.server';
-import { lucia } from '$lib/database/luciaAuth.server';
-import { usersTable } from '$lib/database/schema';
-import {yup} from 'sveltekit-superforms/adapters'
+import { yup } from 'sveltekit-superforms/adapters';
+import { brokerLogin, setApiKeyCookie } from '$lib/grpc-auth';
+
+const DASHBOARD_ROUTE = "/data/portfolios";
 
 const signInSchema = Yup.object({
-    email:Yup.string().email().required('email'),
-    password:Yup.string().required('password')
-})
-
-const DASHBOARD_ROUTE = "/data/portfolios"
-
-type fieldInput = FormDataEntryValue | null;
-let email:fieldInput, password:fieldInput;
+    email: Yup.string().email().required('Email is required'),
+    password: Yup.string().required('Password is required'),
+});
 
 export const actions = {
-   login: async ({ request,locals, url, cookies }:{ request: Request, url:URL,locals:any, cookies:any }) => {
-	   console.log("Logging in user with user/password combo");
-	   const form = await superValidate(request, yup(signInSchema))
-        let formError = null;
-        let message = null;
+    login: async ({ request, cookies, url }) => {
+        const form = await superValidate(request, yup(signInSchema));
 
-		if (form.valid === false) {
-            message = 'form is invalid'
-            formError = {message, error:form.errors}
-            return { formError, message };
-		}
-
-        try{
-             email = form.data.email;
-             password = form.data.password;
-             await signInSchema.validate({ email, password }, { abortEarly: false });
-
-            const [existingUser] = await database
-			.select({
-				id: usersTable.id,
-				password: usersTable.password
-			})
-			.from(usersTable)
-			.where(eq(usersTable.email, form.data.email));
-
-			if (existingUser === undefined) {
-				console.log('email not registered')
-				return
-			}
-
-			const validPassword = await new Argon2id().verify(
-				existingUser.password,
-				form.data.password
-			);
-
-			if (!validPassword) {
-				console.log('invalid password')
-				return
-			}
-
-			await createAndSetSession(lucia, existingUser.id, cookies);
-        }catch(err){
-            console.log(err)
+        if (!form.valid) {
+            return { formError: { message: 'Please fix the errors below' }, errors: form.errors };
         }
 
-        throw redirect(303, DASHBOARD_ROUTE);
-	}
+        const result = await brokerLogin({
+            email: form.data.email,
+            password: form.data.password,
+        });
+
+        if (!result.success) {
+            return { formError: { message: result.error ?? 'Login failed' } };
+        }
+
+        // Store API key in secure httpOnly cookie
+        if (result.apiKey) {
+            setApiKeyCookie(cookies, result.apiKey);
+        }
+
+        // Redirect to the page they were trying to access, or dashboard
+        const redirectTo = url.searchParams.get('redirectTo') ?? DASHBOARD_ROUTE;
+        throw redirect(303, redirectTo);
+    }
 };
-
-

@@ -44,6 +44,23 @@
   }
 }
 
+.form_headline {
+  color: $primary-color;
+}
+
+.form_container {
+  color: $grey;
+
+  p, a {
+    color: inherit;
+  }
+
+  a {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+}
+
 // login branding section - left side
 .branding-image {
   background-image: url("./static/images/brandimage01.jpeg");

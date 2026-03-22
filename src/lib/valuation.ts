@@ -19,6 +19,7 @@ import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/service
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import EnvConfig from '@fintekkers/ledger-models/node/wrappers/models/utils/requestcontext';
+import { getServiceConnection } from '$lib/grpc-auth';
 
 const { MeasureProto } = measure_pkg;
 const { FieldProto } = field_pkg;
@@ -254,9 +255,9 @@ export async function RunValuation(inputs: BondCalculatorInputs): Promise<Valuat
     request.setPriceInput(priceProto);
     VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
-    // The valuation service runs on port 8080 (separate from the main API on 8082)
-    const valuationURL = EnvConfig.apiURL.replace(':8082', ':8080');
-    const client = new ValuationClient(valuationURL, EnvConfig.apiCredentials);
+    const conn = getServiceConnection();
+    const valuationURL = conn.url.replace(':8082', ':8080').replace(':80', ':8080');
+    const client = new ValuationClient(valuationURL, conn.credentials);
 
     const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
       client.runValuation(request, (error, response) => {
@@ -383,8 +384,9 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs): Promise<Ti
 
     TIPS_VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
-    const valuationURL = EnvConfig.apiURL.replace(':8082', ':8080');
-    const client = new ValuationClient(valuationURL, EnvConfig.apiCredentials);
+    const conn = getServiceConnection();
+    const valuationURL = conn.url.replace(':8082', ':8080').replace(':80', ':8080');
+    const client = new ValuationClient(valuationURL, conn.credentials);
 
     const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
       client.runValuation(request, (error, response) => {
@@ -529,8 +531,9 @@ export async function RunFrnValuation(inputs: FrnCalculatorInputs): Promise<FrnV
     request.setReferenceRateInput(referenceRateProto);
     FRN_VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
-    const valuationURL = EnvConfig.apiURL.replace(':8082', ':8080');
-    const client = new ValuationClient(valuationURL, EnvConfig.apiCredentials);
+    const conn = getServiceConnection();
+    const valuationURL = conn.url.replace(':8082', ':8080').replace(':80', ':8080');
+    const client = new ValuationClient(valuationURL, conn.credentials);
 
     const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
       client.runValuation(request, (error, response) => {
