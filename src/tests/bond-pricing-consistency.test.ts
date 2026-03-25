@@ -1,18 +1,18 @@
 /**
- * Bond Pricing Consistency E2E Tests
+ * Bond Pricing Consistency tests — mocks ValuationClient so no running service needed.
  *
- * Authoritative scenarios from quant-dev (valuation-service/tests/scenarios/).
  * Tests the critical three-way invariant: PV == sum(cashflow_PVs).
- *
- * NOTE: The UI's RunValuation uses ZonedDateTime.now() (2026-03-19) as settlement,
- * not the scenario's canonical 2026-01-15. Period counts remain the same but
- * settlement is between coupon dates, so PV won't exactly equal the quoted price.
- * The two-way equality (PV == sum(CF PVs)) must always hold regardless.
- *
- * Prerequisites:
- * - valuation-service running on port 8080 (with all 3 pricing bugs fixed)
  */
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+
+vi.mock('@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js', async () => {
+	const { createValuationClientMock } = await import('./valuationMockHelper');
+	return { ValuationClient: createValuationClientMock() };
+});
+
+vi.mock('$lib/grpc-auth', () => ({
+	getServiceConnection: vi.fn().mockReturnValue({ url: 'localhost:80', credentials: {} }),
+}));
 import { RunValuation, RunTipsValuation } from '$lib/valuation';
 import type {
 	BondCalculatorInputs,

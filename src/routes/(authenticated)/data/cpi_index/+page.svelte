@@ -12,6 +12,9 @@
     return { ...d, mom };
   });
 
+  // Pre-computed reversed array — avoids allocating a new array on every render tick
+  $: reversedPoints = [...cpiPoints].reverse();
+
   // Chart dimensions
   const chartWidth = 740;
   const chartHeight = 340;
@@ -46,6 +49,27 @@
   $: labelInterval = Math.max(1, Math.floor(cpiPoints.length / 8));
 
   let hoveredIndex: number | null = null;
+
+  // Single mousemove handler on the SVG replaces O(n) per-circle event listeners.
+  // Finds the nearest data point by x-distance using the SVG viewBox coordinate system.
+  function handleChartMousemove(e: MouseEvent) {
+    if (svgPoints.length === 0) return;
+    const svgEl = e.currentTarget as SVGSVGElement;
+    const rect = svgEl.getBoundingClientRect();
+    const scaleX = chartWidth / rect.width;
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    // Binary search would work here too, but points are evenly spaced so a
+    // simple clamp + round is O(1):
+    const idx = Math.max(0, Math.min(
+      svgPoints.length - 1,
+      Math.round((mouseX - pad.left) / plotW * (svgPoints.length - 1))
+    ));
+    hoveredIndex = idx;
+  }
+
+  function handleChartMouseleave() {
+    hoveredIndex = null;
+  }
 </script>
 
 <div class="w-screen h-full flex">
@@ -53,125 +77,132 @@
 
   <div class="h-full w-full dashboard-container" style="overflow-y: auto;">
     <div class="portfolio_container px-10 py-7">
-  <h1 class="page-title">CPI-U Index</h1>
-  <p class="page-subtitle">Consumer Price Index for All Urban Consumers (CPI-U), seasonally unadjusted</p>
+      <h1 class="page-title">CPI-U Index</h1>
+      <p class="page-subtitle">Consumer Price Index for All Urban Consumers (CPI-U), seasonally unadjusted</p>
 
-  {#if data.error}
-    <div class="notice">{data.error}</div>
-  {/if}
-
-  <!-- SVG Chart -->
-  <div class="chart-box">
-    <svg viewBox="0 0 {chartWidth} {chartHeight}" class="cpi-chart">
-      <!-- Grid lines -->
-      {#each yTicks as tick}
-        {@const y = pad.top + plotH - ((tick - yMin) / yRange) * plotH}
-        <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke="#164e63" stroke-width="1" />
-        <text x={pad.left - 8} y={y + 4} text-anchor="end" fill="#a0adb7" font-size="11">{tick}</text>
-      {/each}
-
-      <!-- X-axis -->
-      <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="#164e63" stroke-width="1" />
-
-      <!-- X-axis labels -->
-      {#each svgPoints as p, i}
-        {#if i % labelInterval === 0 || i === svgPoints.length - 1}
-          <text
-            x={p.x} y={pad.top + plotH + 18}
-            text-anchor="middle" fill="#a0adb7" font-size="10"
-            transform="rotate(-35 {p.x} {pad.top + plotH + 18})"
-          >
-            {p.date}
-          </text>
-        {/if}
-      {/each}
-
-      <!-- Area fill under the line -->
-      {#if svgPoints.length > 1}
-        <polygon
-          points="{pad.left},{pad.top + plotH} {polyline} {svgPoints[svgPoints.length - 1].x},{pad.top + plotH}"
-          fill="rgba(124, 210, 186, 0.15)"
-        />
-        <polyline
-          points={polyline}
-          fill="none" stroke="#7cd2ba" stroke-width="2.5" stroke-linejoin="round"
-        />
+      {#if data.error}
+        <div class="notice">{data.error}</div>
       {/if}
 
-      <!-- Data dots -->
-      {#each svgPoints as p, i}
-        <circle
-          cx={p.x} cy={p.y} r={hoveredIndex === i ? 5 : 3}
-          fill={hoveredIndex === i ? '#7cd2ba' : '#0c3a46'}
-          stroke="#7cd2ba" stroke-width="1.5"
-          on:mouseenter={() => hoveredIndex = i}
-          on:mouseleave={() => hoveredIndex = null}
-          role="img" aria-label="{p.date}: {p.value}"
-        />
-        {#if hoveredIndex === i}
-          <rect x={p.x - 46} y={p.y - 32} width="92" height="24" rx="4"
-                fill="#0c3a46" stroke="#7cd2ba" stroke-width="1" />
-          <text x={p.x} y={p.y - 16} text-anchor="middle" fill="#7cd2ba" font-size="11" font-weight="bold">
-            {p.date}: {p.value.toFixed(1)}
-          </text>
-        {/if}
-      {/each}
+      {#if cpiPoints.length === 0}
+        <div class="empty-state">No CPI data available.</div>
+      {:else}
+        <!-- SVG Chart — mousemove/mouseleave on the SVG element; no per-circle listeners -->
+        <div class="chart-box">
+          <svg
+            viewBox="0 0 {chartWidth} {chartHeight}"
+            class="cpi-chart"
+            on:mousemove={handleChartMousemove}
+            on:mouseleave={handleChartMouseleave}
+            role="img"
+            aria-label="CPI-U Index chart"
+          >
+            <!-- Grid lines -->
+            {#each yTicks as tick}
+              {@const y = pad.top + plotH - ((tick - yMin) / yRange) * plotH}
+              <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke="#164e63" stroke-width="1" />
+              <text x={pad.left - 8} y={y + 4} text-anchor="end" fill="#a0adb7" font-size="11">{tick}</text>
+            {/each}
 
-      <!-- Y-axis label -->
-      <text x={14} y={pad.top + plotH / 2} text-anchor="middle" fill="#a0adb7" font-size="12"
-            transform="rotate(-90 14 {pad.top + plotH / 2})">
-        CPI-U Level
-      </text>
-    </svg>
-  </div>
+            <!-- X-axis -->
+            <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="#164e63" stroke-width="1" />
 
-  <!-- Data Table -->
-  <div class="table-section">
-    <h2 class="section-title">Monthly Data</h2>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>CPI-U Level</th>
-            <th>Month-over-Month (%)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each [...cpiPoints].reverse() as point, i}
-            <tr
-              class:highlight={hoveredIndex === cpiPoints.length - 1 - i}
-              on:mouseenter={() => hoveredIndex = cpiPoints.length - 1 - i}
-              on:mouseleave={() => hoveredIndex = null}
-            >
-              <td>{point.date}</td>
-              <td class="value-cell">{point.value.toFixed(3)}</td>
-              <td class="change-cell" class:positive={point.mom !== null && point.mom > 0} class:negative={point.mom !== null && point.mom < 0}>
-                {#if point.mom !== null}
-                  {point.mom > 0 ? '+' : ''}{point.mom.toFixed(3)}%
-                {:else}
-                  —
-                {/if}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  </div>
+            <!-- X-axis labels -->
+            {#each svgPoints as p, i}
+              {#if i % labelInterval === 0 || i === svgPoints.length - 1}
+                <text
+                  x={p.x} y={pad.top + plotH + 18}
+                  text-anchor="middle" fill="#a0adb7" font-size="10"
+                  transform="rotate(-35 {p.x} {pad.top + plotH + 18})"
+                >
+                  {p.date}
+                </text>
+              {/if}
+            {/each}
+
+            <!-- Area fill under the line -->
+            {#if svgPoints.length > 1}
+              <polygon
+                points="{pad.left},{pad.top + plotH} {polyline} {svgPoints[svgPoints.length - 1].x},{pad.top + plotH}"
+                fill="rgba(124, 210, 186, 0.15)"
+              />
+              <polyline
+                points={polyline}
+                fill="none" stroke="#7cd2ba" stroke-width="2.5" stroke-linejoin="round"
+              />
+            {/if}
+
+            <!-- Data dots — no event listeners; hover is handled by the SVG overlay above -->
+            {#each svgPoints as p, i}
+              <circle
+                cx={p.x} cy={p.y} r={hoveredIndex === i ? 5 : 3}
+                fill={hoveredIndex === i ? '#7cd2ba' : '#0c3a46'}
+                stroke="#7cd2ba" stroke-width="1.5"
+                pointer-events="none"
+                aria-label="{p.date}: {p.value}"
+              />
+            {/each}
+
+            <!-- Single tooltip rendered for the hovered point only -->
+            {#if hoveredIndex !== null && svgPoints[hoveredIndex]}
+              {@const hp = svgPoints[hoveredIndex]}
+              <rect x={hp.x - 46} y={hp.y - 32} width="92" height="24" rx="4"
+                    fill="#0c3a46" stroke="#7cd2ba" stroke-width="1" pointer-events="none" />
+              <text x={hp.x} y={hp.y - 16} text-anchor="middle" fill="#7cd2ba" font-size="11" font-weight="bold"
+                    pointer-events="none">
+                {hp.date}: {hp.value.toFixed(1)}
+              </text>
+            {/if}
+
+            <!-- Y-axis label -->
+            <text x={14} y={pad.top + plotH / 2} text-anchor="middle" fill="#a0adb7" font-size="12"
+                  transform="rotate(-90 14 {pad.top + plotH / 2})">
+              CPI-U Level
+            </text>
+          </svg>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-section">
+          <h2 class="section-title">Monthly Data</h2>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>CPI-U Level</th>
+                  <th>Month-over-Month (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each reversedPoints as point, i}
+                  <tr
+                    class:highlight={hoveredIndex === cpiPoints.length - 1 - i}
+                    on:mouseenter={() => hoveredIndex = cpiPoints.length - 1 - i}
+                    on:mouseleave={() => hoveredIndex = null}
+                  >
+                    <td>{point.date}</td>
+                    <td class="value-cell">{point.value.toFixed(3)}</td>
+                    <td class="change-cell" class:positive={point.mom !== null && point.mom > 0} class:negative={point.mom !== null && point.mom < 0}>
+                      {#if point.mom !== null}
+                        {point.mom > 0 ? '+' : ''}{point.mom.toFixed(3)}%
+                      {:else}
+                        —
+                      {/if}
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
 
 <style lang="scss">
   @import "../../../../styles/variables";
-
-  .page-container {
-    background-color: $primary-color;
-    min-height: 100vh;
-    padding: 28px 40px;
-    color: $white;
-  }
 
   .page-title {
     font-size: 2rem;
@@ -194,6 +225,12 @@
     margin-bottom: 16px;
   }
 
+  .empty-state {
+    color: $ltgrey;
+    padding: 40px 0;
+    font-size: 1rem;
+  }
+
   .chart-box {
     background-color: $bgc-color;
     border-radius: 6px;
@@ -205,8 +242,7 @@
     width: 100%;
     max-width: 740px;
     height: auto;
-
-    circle { cursor: pointer; transition: r 0.1s; }
+    cursor: crosshair;
   }
 
   .section-title {

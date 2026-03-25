@@ -6,9 +6,9 @@ import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/se
 import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
+import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
+import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
 const { FieldProto } = pkg;
-
-const transactionService = new ts.TransactionService();
 
 /**
  * Formats a date object to ISO date string (YYYY-MM-DD)
@@ -54,12 +54,14 @@ interface TransactionData {
   transactionMaturityDate: string;
   transactionTradeDate: string;
   transactionSide: string;
+  transactionPrice: string;
 }
 
-let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filter: positionFilter.PositionFilter): Promise<TransactionData[]> {
+let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filter: positionFilter.PositionFilter, apiKey?: string): Promise<TransactionData[]> {
   try {
     const now = datetime.ZonedDateTime.now();
-    const results: Transaction[] = await transactionService.searchTransaction(
+    const service = new ts.TransactionService(apiKey);
+    const results: Transaction[] = await service.searchTransaction(
       now.toProto(),
       filter,
       1000
@@ -91,7 +93,8 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         transactionCouponFrequency: bondSecurity?.getCouponFrequency()?.toString() ?? '',
         transactionMaturityDate: formatDateToISO(security.getMaturityDate()),
         transactionTradeDate: formatDateToISO(element.getTradeDate()),
-        transactionSide: element.getTransactionType().toString()
+        transactionSide: element.getTransactionType().toString(),
+        transactionPrice: element.getPrice()?.getPrice()?.getArbitraryPrecisionValue() ?? ''
       };
     });
 
@@ -103,11 +106,21 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
   }
 };
 
-let FetchTransaction = async function FetchTransaction(): Promise<TransactionData[]> {
+let FetchTransaction = async function FetchTransaction(apiKey?: string): Promise<TransactionData[]> {
   const filter = new positionFilter.PositionFilter();
   filter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
-  return FetchTransactionWithFilter(filter);
+  return FetchTransactionWithFilter(filter, apiKey);
 };
 
-export { FetchTransactionWithFilter, FetchTransaction };
+let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(portfolioId: string, apiKey?: string): Promise<TransactionData[]> {
+  const filter = new positionFilter.PositionFilter();
+  const portfolioUuid = new UUID(UUID.fromString(portfolioId.trim()));
+  filter.addFilter(FieldProto.PORTFOLIO_ID, PositionFilterOperator.EQUALS, portfolioUuid);
+  const results = await FetchTransactionWithFilter(filter, apiKey);
+  // Sort descending by trade date (most recent first)
+  results.sort((a, b) => b.transactionTradeDate.localeCompare(a.transactionTradeDate));
+  return results;
+};
+
+export { FetchTransactionWithFilter, FetchTransaction, FetchTransactionByPortfolio };
 export type { TransactionData };

@@ -52,7 +52,7 @@ describe('PortfolioGrid', () => {
 			const expectedParams = new URLSearchParams({
 				portfolioId: row.portfolioId,
 				fields: 'SECURITY_DESCRIPTION,PORTFOLIO_NAME',
-				measures: 'DIRECTED_QUANTITY,MARKET_VALUE',
+				measures: 'DIRECTED_QUANTITY,MARKET_VALUE,ACCRUED_INTEREST,DIRTY_PRICE,CLEAN_PRICE,CONVEXITY,MODIFIED_DURATION,DV01,YIELD_TO_MATURITY',
 				positionView: 'DEFAULT_VIEW',
 				positionType: 'TAX_LOT',
 			});
@@ -68,9 +68,10 @@ describe('PortfolioGrid', () => {
 
 	test('links include required query parameters: portfolioId, fields, measures, positionView, positionType', () => {
 		const links = screen.getAllByRole('link');
-		// Check the first link for portfolio-001
+		// Find a positions link for portfolio-001 (must include 'fields' param to distinguish from Txns link)
 		const firstLink = links.find((l) =>
-			l.getAttribute('href')?.includes('portfolio-001')
+			l.getAttribute('href')?.includes('portfolio-001') &&
+			l.getAttribute('href')?.includes('fields=')
 		);
 		expect(firstLink).toBeTruthy();
 
@@ -79,7 +80,7 @@ describe('PortfolioGrid', () => {
 
 		expect(params.get('portfolioId')).toBe('portfolio-001');
 		expect(params.get('fields')).toBe('SECURITY_DESCRIPTION,PORTFOLIO_NAME');
-		expect(params.get('measures')).toBe('DIRECTED_QUANTITY,MARKET_VALUE');
+		expect(params.get('measures')).toBe('DIRECTED_QUANTITY,MARKET_VALUE,ACCRUED_INTEREST,DIRTY_PRICE,CLEAN_PRICE,CONVEXITY,MODIFIED_DURATION,DV01,YIELD_TO_MATURITY');
 		expect(params.get('positionView')).toBe('DEFAULT_VIEW');
 		expect(params.get('positionType')).toBe('TAX_LOT');
 	});
@@ -89,10 +90,10 @@ describe('PortfolioGrid', () => {
 		await fireEvent.click(idHeader);
 
 		// After clicking ID header ascending, rows should be in ID order
+		// Each row now has 4 links: [Txns, Portfolio name, ID, AsOf] — ID is at index 2 (i % 4 === 2)
 		const allCells = screen.getAllByRole('link');
-		// Extract text from links - every 3rd link starting at index 1 is the ID column
 		const idTexts = allCells
-			.filter((_, i) => i % 3 === 1)
+			.filter((_, i) => i % 4 === 2)
 			.map((el) => el.textContent);
 
 		expect(idTexts).toEqual([
@@ -105,7 +106,7 @@ describe('PortfolioGrid', () => {
 		await fireEvent.click(idHeader);
 		const allCellsAfter = screen.getAllByRole('link');
 		const idTextsDesc = allCellsAfter
-			.filter((_, i) => i % 3 === 1)
+			.filter((_, i) => i % 4 === 2)
 			.map((el) => el.textContent);
 
 		expect(idTextsDesc).toEqual([

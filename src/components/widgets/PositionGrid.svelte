@@ -105,6 +105,83 @@
 		}
 		return "";
 	}
+
+	const measureDisplayNames: Record<string, string> = {
+		PROFIT_LOSS: "Unrealized P&L",
+		PROFIT_LOSS_PERCENT: "P&L %",
+		ACCRUED_INTEREST: "Accr. Int.",
+		DIRTY_PRICE: "Dirty Price",
+		CLEAN_PRICE: "Clean Price",
+		CONVEXITY: "Convexity",
+		MODIFIED_DURATION: "Mod. Duration",
+		DV01: "DV01",
+		YIELD_TO_MATURITY: "YTM",
+	};
+
+	const bondOnlyMeasures = new Set(["ACCRUED_INTEREST", "DIRTY_PRICE", "CLEAN_PRICE", "CONVEXITY", "MODIFIED_DURATION", "DV01", "YIELD_TO_MATURITY"]);
+
+	function getMeasureDisplayName(measureName: string): string {
+		return measureDisplayNames[measureName] ?? formatName(measureName);
+	}
+
+	// Summary row computations
+	$: summary = (() => {
+		const mvIdx = measures.indexOf('MARKET_VALUE');
+		const plIdx = measures.indexOf('PROFIT_LOSS');
+		const mdIdx = measures.indexOf('MODIFIED_DURATION');
+
+		let totalMV: number | null = null;
+		let totalPL: number | null = null;
+		let weightedMD: number | null = null;
+
+		if (mvIdx !== -1) {
+			const mvKey = requestData.measures[mvIdx];
+			let sum = 0;
+			for (const p of sortedPositions) {
+				const v = parseFloat(p[mvKey]);
+				if (!isNaN(v)) sum += v;
+			}
+			totalMV = sum;
+		}
+
+		if (plIdx !== -1) {
+			const plKey = requestData.measures[plIdx];
+			let sum = 0;
+			for (const p of sortedPositions) {
+				const v = p[plKey];
+				if (v != null && v !== '' && !isNaN(parseFloat(v))) sum += parseFloat(v);
+			}
+			totalPL = sum;
+		}
+
+		if (mvIdx !== -1 && mdIdx !== -1) {
+			const mvKey = requestData.measures[mvIdx];
+			const mdKey = requestData.measures[mdIdx];
+			let weightedSum = 0;
+			let totalWeight = 0;
+			for (const p of sortedPositions) {
+				const mv = parseFloat(p[mvKey]);
+				const md = parseFloat(p[mdKey]);
+				if (!isNaN(mv) && !isNaN(md)) {
+					weightedSum += mv * md;
+					totalWeight += mv;
+				}
+			}
+			if (totalWeight !== 0) weightedMD = weightedSum / totalWeight;
+		}
+
+		return { totalMV, totalPL, weightedMD, mvIdx, plIdx, mdIdx };
+	})();
+
+	function getPnlClass(measureName: string, value: any): string {
+		if (measureName !== "PROFIT_LOSS" && measureName !== "PROFIT_LOSS_PERCENT") return "";
+		if (value == null || value === undefined || value === "") return "";
+		const num = parseFloat(value);
+		if (isNaN(num)) return "";
+		if (num > 0) return "text-green-600";
+		if (num < 0) return "text-red-600";
+		return "";
+	}
 </script>
 
 <div class="portfolio_container mx-auto shadow px-10 py-7 my-4">
@@ -137,7 +214,7 @@
 								e.key === "Enter" &&
 								handleHeaderClick(measureIndex, false)}
 						>
-							{formatName(measure)}
+							{getMeasureDisplayName(measure)}
 							{getSortIndicatorForColumn(measureIndex, false)}
 						</th>
 					{/each}
@@ -146,14 +223,34 @@
 			<tbody>
 				{#each sortedPositions as position}
 					<tr class="table-row border-b border-slate-400">
-						{#each requestData.fields as field}
+						{#each requestData.fields as field, fieldIndex}
 							<td class="table-cell px-4 py-2">
-								{position[field]}
+								{#if position[field] == null || position[field] === ""}
+									{fields[fieldIndex] === "STRATEGY" ? "Unassigned" : "—"}
+								{:else}
+									{position[field]}
+								{/if}
 							</td>
 						{/each}
 						{#each requestData.measures as measure, i}
-							<td class="table-cell px-4 py-2">
-								{#if measures[i] === "CURRENT_YIELD" || measures[i] === "YIELD_TO_MATURITY"}
+							<td class="table-cell px-4 py-2 {getPnlClass(measures[i], position[measure])}">
+								{#if measures[i] === "PROFIT_LOSS" || measures[i] === "PROFIT_LOSS_PERCENT"}
+									{#if position[measure] == null || position[measure] === undefined || position[measure] === ""}
+										&mdash;
+									{:else if measures[i] === "PROFIT_LOSS_PERCENT"}
+										{formatPercent(position[measure])}
+									{:else}
+										{formatAmount(position[measure])}
+									{/if}
+								{:else if bondOnlyMeasures.has(measures[i])}
+									{#if position[measure] == null || position[measure] === undefined || position[measure] === ""}
+										&mdash;
+									{:else if measures[i] === "YIELD_TO_MATURITY"}
+										{formatPercent(position[measure])}
+									{:else}
+										{Number(position[measure]).toFixed(4)}
+									{/if}
+								{:else if measures[i] === "CURRENT_YIELD"}
 									{formatPercent(position[measure])}
 								{:else}
 									{formatAmount(position[measure])}
@@ -162,6 +259,32 @@
 						{/each}
 					</tr>
 				{/each}
+				{#if sortedPositions.length > 0}
+					<tr class="summary-row border-t-2 border-slate-500">
+						{#each requestData.fields as field, fieldIndex}
+							<td class="table-cell px-4 py-2">
+								{#if fieldIndex === 0}
+									<strong>Portfolio Total</strong>
+								{:else}
+									—
+								{/if}
+							</td>
+						{/each}
+						{#each requestData.measures as measure, i}
+							<td class="table-cell px-4 py-2">
+								{#if measures[i] === 'MARKET_VALUE' && summary.totalMV !== null}
+									<strong>{formatAmount(summary.totalMV)}</strong>
+								{:else if measures[i] === 'PROFIT_LOSS' && summary.totalPL !== null}
+									<strong class={summary.totalPL > 0 ? 'text-green-600' : summary.totalPL < 0 ? 'text-red-600' : ''}>{formatAmount(summary.totalPL)}</strong>
+								{:else if measures[i] === 'MODIFIED_DURATION' && summary.weightedMD !== null}
+									<strong>{summary.weightedMD.toFixed(4)}</strong>
+								{:else}
+									—
+								{/if}
+							</td>
+						{/each}
+					</tr>
+				{/if}
 			</tbody>
 		</table>
 	</div>
@@ -184,6 +307,11 @@
 	td {
 		white-space: nowrap;
 		min-width: 120px;
+	}
+
+	.summary-row {
+		font-weight: bold;
+		background-color: rgba(12, 58, 70, 0.08);
 	}
 
 	.sortable-header {

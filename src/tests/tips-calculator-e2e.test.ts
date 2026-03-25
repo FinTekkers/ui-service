@@ -7,7 +7,17 @@
  * - valuation-service running on port 8080
  * - ui-service running on port 443
  */
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+
+vi.mock('@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js', async () => {
+	const { createValuationClientMock } = await import('./valuationMockHelper');
+	return { ValuationClient: createValuationClientMock() };
+});
+
+vi.mock('$lib/grpc-auth', () => ({
+	getServiceConnection: vi.fn().mockReturnValue({ url: 'localhost:80', credentials: {} }),
+}));
+
 import { RunTipsValuation } from '$lib/valuation';
 import type { TipsCalculatorInputs, TipsValuationResult } from '$lib/valuation';
 

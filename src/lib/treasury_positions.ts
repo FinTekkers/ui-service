@@ -1,5 +1,8 @@
 // Services
-import { PositionService } from '@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService';
+import { PositionClient } from '@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js';
+import { getServiceConnection } from '$lib/grpc-auth';
+import { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
+import type { QueryPositionResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_response_pb';
 
 // Models
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
@@ -8,8 +11,6 @@ import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/ut
 // Requests
 import { QueryPositionRequest } from '@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest';
 
-// Types
-import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
 import measurePkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
 const { MeasureProto } = measurePkg;
 import type { MeasureProto as MeasureProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
@@ -61,16 +62,13 @@ function getMeasureName(measureEnum: number): string {
 export interface TreasuryTransaction {
     IDENTIFIER: string;
     TRANSACTION_TYPE: string;
-    TRADE_DATE: string;
-    MATURITY_DATE: string;
-    ISSUE_DATE: string;
+    TRADE_DATE: Date;
+    MATURITY_DATE?: string;
+    ISSUE_DATE?: string;
     PRODUCT_TYPE?: string;
     ADJUSTED_TENOR?: string;
     DIRECTED_QUANTITY: number;
-    TENOR?: {
-        years: number;
-        months: number;
-    };
+    TENOR?: string;
 }
 
 /**
@@ -113,12 +111,32 @@ export function positionToPlainObject(position: Position): Record<string, any> {
         } catch (error) {
             // Handle cases where getFieldDisplay fails (e.g., malformed TENOR descriptions)
             console.warn(`Error getting field display for ${fieldName}:`, error);
-            // Try to get raw value as fallback
             try {
                 const rawValue = (position as any).getFieldValue?.(field.getField());
                 displayValue = rawValue?.toString() || '';
             } catch {
                 displayValue = '';
+            }
+        }
+
+        // For ADJUSTED_TENOR: when display is "Tenor" (the raw type name), try richer sources
+        if (fieldName === 'ADJUSTED_TENOR' && displayValue === 'Tenor') {
+            // Try getFieldValue first
+            const fieldValue = (position as any).getFieldValue?.(field.getField());
+            if (fieldValue !== undefined && fieldValue !== null) {
+                displayValue = fieldValue;
+            } else {
+                // Try to decode from packed Any StringValue
+                try {
+                    const packed = (field as any).getFieldValuePacked?.();
+                    if (packed) {
+                        const { StringValue } = require('google-protobuf/google/protobuf/wrappers_pb');
+                        const sv = packed.unpack(StringValue.deserializeBinary, 'google.protobuf.StringValue');
+                        if (sv) displayValue = sv.getValue();
+                    }
+                } catch {
+                    // leave displayValue as-is
+                }
             }
         }
 
@@ -165,20 +183,28 @@ export function processTransactionData(
             const maturityDate = obj.MATURITY_DATE;
             const issueDate = obj.ISSUE_DATE;
             const productType = obj.PRODUCT_TYPE;
+            const adjustedTenor = obj.ADJUSTED_TENOR;
             const directedQuantity = Number(obj.DIRECTED_QUANTITY || 0);
+
+            // Convert TRADE_DATE string to Date object
+            const tradeDate = tradeDateStr ? new Date(tradeDateStr) : new Date();
 
             return {
                 IDENTIFIER: String(identifier),
                 TRANSACTION_TYPE: String(transactionType),
-                TRADE_DATE: tradeDateStr,
-                MATURITY_DATE: maturityDate,
-                ISSUE_DATE: issueDate,
+                TRADE_DATE: tradeDate,
+                MATURITY_DATE: maturityDate ? String(maturityDate) : undefined,
+                ISSUE_DATE: issueDate ? String(issueDate) : undefined,
                 PRODUCT_TYPE: productType ? String(productType) : undefined,
-                TENOR: null,
+                ADJUSTED_TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
+                TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
                 DIRECTED_QUANTITY: Number(directedQuantity),
             };
         })
         .filter((txn): txn is TreasuryTransaction => txn !== null);
+
+    // Sort by TRADE_DATE ascending
+    transactions.sort((a, b) => a.TRADE_DATE.getTime() - b.TRADE_DATE.getTime());
 
     return transactions;
 }
@@ -191,9 +217,9 @@ export function processTransactionData(
  * @returns Array of TreasuryTransaction objects, or null if no results found
  */
 export async function getTreasuryTransactions(
-    asOfDate: Date = new Date()
+    asOfDate: Date = new Date(),
+    apiKey?: string
 ): Promise<TreasuryTransaction[] | null> {
-    const positionService = new PositionService();
     const now = ZonedDateTime.now();
 
     // Create combined filter
@@ -228,8 +254,23 @@ export async function getTreasuryTransactions(
         now
     );
 
+    const conn = getServiceConnection(apiKey);
+    const client = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+
+    function streamSearch(): Promise<Position[]> {
+        const listPositions: Position[] = [];
+        const stream = client.search(request.toProto());
+        return new Promise<Position[]>((resolve, reject) => {
+            stream.on('data', (response: QueryPositionResponseProto) => {
+                response.getPositionsList().forEach(p => listPositions.push(new Position(p)));
+            });
+            stream.on('end', () => resolve(listPositions));
+            stream.on('error', (err) => reject(err));
+        });
+    }
+
     try {
-        const results: Position[] = await positionService.search(request);
+        const results: Position[] = await streamSearch();
 
         if (!results || results.length === 0) {
             console.log("No results found");
@@ -241,17 +282,6 @@ export async function getTreasuryTransactions(
         return transactions;
     } catch (error) {
         console.error("Error fetching treasury transactions:", error);
-
-        // Try to get validation errors if available
-        try {
-            const summary = await positionService.validateRequest(request);
-            summary.getErrorsList().forEach((err) => {
-                console.error(err.getDetail()?.getMessageForDeveloper());
-            });
-        } catch (validationError) {
-            // Ignore validation errors if they occur
-        }
-
         throw error;
     }
 }

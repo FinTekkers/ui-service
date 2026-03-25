@@ -106,6 +106,18 @@
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(4)}`;
   }
+
+  function formatDollar(val: string | undefined): string {
+    if (!val) return '—';
+    const n = parseFloat(val);
+    return isNaN(n) ? val : `$${n.toFixed(4)}`;
+  }
+
+  function formatConvexity(val: string | undefined): string {
+    if (!val) return '—';
+    const n = parseFloat(val);
+    return isNaN(n) ? val : n.toFixed(2);
+  }
 </script>
 
 <div class="portfolio_container px-10 py-7">
@@ -205,10 +217,17 @@
       {:else if result}
         <table class="results-table">
           <tbody>
+            <tr class="section-header"><td colspan="2">Price</td></tr>
             <tr>
-              <td class="label">Present Value</td>
-              <td class="value">{formatPrice(result.presentValue)}</td>
+              <td class="label">Dirty Price (Invoice)</td>
+              <td class="value">{formatPrice(result.dirtyPrice)}</td>
             </tr>
+            <tr>
+              <td class="label">Accrued Interest</td>
+              <td class="value">{formatDollar(result.accruedInterest)}</td>
+            </tr>
+
+            <tr class="section-header"><td colspan="2">Yield</td></tr>
             <tr>
               <td class="label">Current Yield</td>
               <td class="value">{formatPercent(result.currentYield)}</td>
@@ -217,9 +236,19 @@
               <td class="label">Yield to Maturity</td>
               <td class="value">{formatPercent(result.yieldToMaturity)}</td>
             </tr>
+
+            <tr class="section-header"><td colspan="2">Risk</td></tr>
             <tr>
               <td class="label">Macaulay Duration</td>
               <td class="value">{formatYears(result.macaulayDuration)}</td>
+            </tr>
+            <tr>
+              <td class="label">Modified Duration</td>
+              <td class="value">{formatYears(result.modifiedDuration)}</td>
+            </tr>
+            <tr>
+              <td class="label">Convexity</td>
+              <td class="value">{formatConvexity(result.convexity)}</td>
             </tr>
           </tbody>
         </table>
@@ -422,6 +451,17 @@
     td {
       padding: 10px 8px;
       font-size: 0.9rem;
+    }
+
+    .section-header td {
+      padding: 12px 8px 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: $ltgrey;
+      opacity: 0.6;
+      border-bottom: none;
     }
 
     .label {

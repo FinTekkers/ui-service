@@ -194,9 +194,11 @@ describe('SecurityGrid — delete button', () => {
 		expect(grid).toContain("dispatch('requestDelete'");
 	});
 
-	test('passes cusip and uuidHex in delete event', () => {
-		expect(grid).toContain('cusip: row.cusip');
+	test('passes identifier/cusip and uuidHex in delete event', () => {
 		expect(grid).toContain('uuidHex: row.uuidHex');
+		// identifier field (new) or cusip field (legacy) must be present in dispatch
+		const hasIdentifier = grid.includes('identifier: row.identifier') || grid.includes('cusip: row.cusip') || grid.includes('cusip: row.identifier');
+		expect(hasIdentifier).toBe(true);
 	});
 });
 

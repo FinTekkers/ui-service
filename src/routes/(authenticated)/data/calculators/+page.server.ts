@@ -7,38 +7,31 @@ type SecurityItem = { cusip: string; issuerName: string; couponRate?: string; ma
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
+  const apiKey = locals.user?.apiKey;
   const searchParams = new URLSearchParams(request.url.split('?')[1]);
 
-  // Load available securities for CUSIP autocomplete
-  let bondSecurities: SecurityItem[] = [];
-  let tipsSecurities: SecurityItem[] = [];
-  let frnSecurities: SecurityItem[] = [];
-  try {
-    const allSecurities = await FetchSecurity('Fixed Income', 'US Government');
-    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '/');
+  // Stream securities in the background — page renders immediately,
+  // autocomplete dropdowns populate when the fetch completes.
+  const securitiesPromise = FetchSecurity('Fixed Income', 'US Government', undefined, undefined, undefined, undefined, apiKey)
+    .then(allSecurities => {
+      const today = new Date().toISOString().slice(0, 10).replace(/-/g, '/');
+      const bondSecurities: SecurityItem[] = [];
+      const tipsSecurities: SecurityItem[] = [];
+      const frnSecurities: SecurityItem[] = [];
 
-    for (const s of allSecurities) {
-      // Filter out matured securities
-      if (s.maturityDate < today) continue;
-
-      const item: SecurityItem = {
-        cusip: s.cusip,
-        issuerName: s.issuerName,
-        couponRate: s.couponRate,
-        maturityDate: s.maturityDate,
-      };
-
-      if (s.securityType === SecurityTypeProto.TIPS) {
-        tipsSecurities.push(item);
-      } else if (s.securityType === SecurityTypeProto.FRN) {
-        frnSecurities.push(item);
-      } else {
-        bondSecurities.push(item);
+      for (const s of allSecurities) {
+        if (s.maturityDate < today) continue;
+        const item: SecurityItem = { cusip: s.cusip, issuerName: s.issuerName, couponRate: s.couponRate, maturityDate: s.maturityDate };
+        if (s.securityType === SecurityTypeProto.TIPS) tipsSecurities.push(item);
+        else if (s.securityType === SecurityTypeProto.FRN) frnSecurities.push(item);
+        else bondSecurities.push(item);
       }
-    }
-  } catch (e) {
-    console.error('Failed to load securities for autocomplete:', e);
-  }
+      return { bondSecurities, tipsSecurities, frnSecurities };
+    })
+    .catch(e => {
+      console.error('Failed to load securities for autocomplete:', e);
+      return { bondSecurities: [] as SecurityItem[], tipsSecurities: [] as SecurityItem[], frnSecurities: [] as SecurityItem[] };
+    });
 
   const tab = searchParams.get('tab');
   const emptyResults = { result: null, tipsResult: null, frnResult: null };
@@ -49,7 +42,7 @@ export async function load({ locals, request }) {
     const tipsPrice = searchParams.get('tipsPrice');
 
     if (!tipsMode || !tipsPrice) {
-      return { ...emptyResults, bondSecurities, tipsSecurities, frnSecurities, activeTab: 'tips', user: locals.user };
+      return { ...emptyResults, streamed: { securities: securitiesPromise }, activeTab: 'tips', user: locals.user };
     }
 
     const tipsInputs: TipsCalculatorInputs = {
@@ -66,8 +59,8 @@ export async function load({ locals, request }) {
       maturityDate: searchParams.get('tipsMaturityDate') ?? undefined,
     };
 
-    const tipsResult = await RunTipsValuation(tipsInputs);
-    return { ...emptyResults, tipsResult, bondSecurities, tipsSecurities, frnSecurities, activeTab: 'tips', user: locals.user };
+    const tipsResult = await RunTipsValuation(tipsInputs, apiKey);
+    return { ...emptyResults, tipsResult, streamed: { securities: securitiesPromise }, activeTab: 'tips', user: locals.user };
   }
 
   // --- FRN Calculator ---
@@ -75,7 +68,7 @@ export async function load({ locals, request }) {
     const frnMode = searchParams.get('frnMode') as 'cusip' | 'manual' | null;
 
     if (!frnMode) {
-      return { ...emptyResults, bondSecurities, tipsSecurities, frnSecurities, activeTab: 'frn', user: locals.user };
+      return { ...emptyResults, streamed: { securities: securitiesPromise }, activeTab: 'frn', user: locals.user };
     }
 
     const frnInputs: FrnCalculatorInputs = {
@@ -90,8 +83,8 @@ export async function load({ locals, request }) {
       referenceRateIndex: (searchParams.get('referenceRateIndex') as FrnCalculatorInputs['referenceRateIndex']) ?? undefined,
     };
 
-    const frnResult = await RunFrnValuation(frnInputs);
-    return { ...emptyResults, frnResult, bondSecurities, tipsSecurities, frnSecurities, activeTab: 'frn', user: locals.user };
+    const frnResult = await RunFrnValuation(frnInputs, apiKey);
+    return { ...emptyResults, frnResult, streamed: { securities: securitiesPromise }, activeTab: 'frn', user: locals.user };
   }
 
   // --- Bond Calculator ---
@@ -99,7 +92,7 @@ export async function load({ locals, request }) {
   const price = searchParams.get('price');
 
   if (!mode || !price) {
-    return { ...emptyResults, bondSecurities, tipsSecurities, frnSecurities, activeTab: 'bond', user: locals.user };
+    return { ...emptyResults, streamed: { securities: securitiesPromise }, activeTab: 'bond', user: locals.user };
   }
 
   const inputs: BondCalculatorInputs = {
@@ -114,6 +107,6 @@ export async function load({ locals, request }) {
     issuerName: searchParams.get('issuerName') ?? undefined,
   };
 
-  const result = await RunValuation(inputs);
-  return { ...emptyResults, result, bondSecurities, tipsSecurities, frnSecurities, activeTab: 'bond', user: locals.user };
+  const result = await RunValuation(inputs, apiKey);
+  return { ...emptyResults, result, streamed: { securities: securitiesPromise }, activeTab: 'bond', user: locals.user };
 }

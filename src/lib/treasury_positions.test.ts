@@ -16,18 +16,46 @@ import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/po
 import { Any } from 'google-protobuf/google/protobuf/any_pb';
 import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb';
 
-// Mock the PositionService
+// Mock PositionClient (raw gRPC client used after broker routing refactor)
 const mockSearch = vi.fn();
-const mockValidateRequest = vi.fn();
+const mockValidateQueryRequest = vi.fn();
 
-vi.mock('@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService', () => {
+// Helper to create a mock stream that emits positions then ends
+function makeMockStream(positions: any[], error?: Error) {
     return {
-        PositionService: vi.fn().mockImplementation(() => ({
+        on: vi.fn().mockImplementation(function (this: any, event: string, handler: Function) {
+            if (error) {
+                if (event === 'error') handler(error);
+            } else {
+                if (event === 'data' && positions.length > 0) {
+                    handler({ getPositionsList: () => positions });
+                }
+                if (event === 'end') handler();
+            }
+            return this;
+        }),
+    };
+}
+
+vi.mock('@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js', () => {
+    return {
+        PositionClient: vi.fn().mockImplementation(() => ({
             search: mockSearch,
-            validateRequest: mockValidateRequest,
+            validateQueryRequest: mockValidateQueryRequest,
         })),
     };
 });
+
+// Mock Position class as pass-through so mock position objects work directly
+vi.mock('@fintekkers/ledger-models/node/wrappers/models/position/position', () => {
+    return {
+        Position: vi.fn().mockImplementation((p: any) => p),
+    };
+});
+
+vi.mock('$lib/grpc-auth', () => ({
+    getServiceConnection: vi.fn().mockReturnValue({ url: 'localhost:80', credentials: {} }),
+}));
 
 // Mock ZonedDateTime
 vi.mock('@fintekkers/ledger-models/node/wrappers/models/utils/datetime', () => {
@@ -40,10 +68,12 @@ vi.mock('@fintekkers/ledger-models/node/wrappers/models/utils/datetime', () => {
     };
 });
 
-// Mock QueryPositionRequest
+// Mock QueryPositionRequest with toProto()
 vi.mock('@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest', () => {
     return {
-        QueryPositionRequest: vi.fn(),
+        QueryPositionRequest: vi.fn().mockImplementation(() => ({
+            toProto: vi.fn().mockReturnValue({}),
+        })),
     };
 });
 
@@ -384,11 +414,11 @@ describe('treasury_positions', () => {
         beforeEach(() => {
             vi.clearAllMocks();
             mockSearch.mockClear();
-            mockValidateRequest.mockClear();
+            mockValidateQueryRequest.mockClear();
         });
 
         it('should return null when no results are found', async () => {
-            mockSearch.mockResolvedValue([]);
+            mockSearch.mockReturnValue(makeMockStream([]));
 
             const result = await getTreasuryTransactions(new Date('2024-01-15'));
 
@@ -404,7 +434,7 @@ describe('treasury_positions', () => {
                         { getField: vi.fn(() => FieldProto.TRADE_DATE) },
                         { getField: vi.fn(() => FieldProto.TRANSACTION_TYPE) },
                     ]),
-                    getFieldDisplay: vi.fn((field) => {
+                    getFieldDisplay: vi.fn((field: any) => {
                         const fieldMap: Record<number, string> = {
                             [FieldProto.IDENTIFIER]: '912797LX3',
                             [FieldProto.TRADE_DATE]: '2024-01-15',
@@ -419,7 +449,7 @@ describe('treasury_positions', () => {
                 },
             ] as unknown as Position[];
 
-            mockSearch.mockResolvedValue(mockPositions);
+            mockSearch.mockReturnValue(makeMockStream(mockPositions));
 
             const result = await getTreasuryTransactions(new Date('2024-01-15'));
 
@@ -435,7 +465,7 @@ describe('treasury_positions', () => {
         });
 
         it('should use current date as default when no asOfDate is provided', async () => {
-            mockSearch.mockResolvedValue([]);
+            mockSearch.mockReturnValue(makeMockStream([]));
 
             await getTreasuryTransactions();
 
@@ -444,10 +474,7 @@ describe('treasury_positions', () => {
 
         it('should handle errors and throw them', async () => {
             const error = new Error('Service error');
-            mockSearch.mockRejectedValue(error);
-            mockValidateRequest.mockResolvedValue({
-                getErrorsList: vi.fn(() => []),
-            });
+            mockSearch.mockReturnValue(makeMockStream([], error));
 
             await expect(getTreasuryTransactions(new Date('2024-01-15'))).rejects.toThrow('Service error');
         });
@@ -459,7 +486,7 @@ describe('treasury_positions', () => {
                         { getField: vi.fn(() => FieldProto.IDENTIFIER) },
                         { getField: vi.fn(() => FieldProto.TRADE_DATE) },
                     ]),
-                    getFieldDisplay: vi.fn((field) => {
+                    getFieldDisplay: vi.fn((field: any) => {
                         if (field.getField() === FieldProto.IDENTIFIER) return 'USD';
                         if (field.getField() === FieldProto.TRADE_DATE) return '2024-01-15';
                         return '';
@@ -474,7 +501,7 @@ describe('treasury_positions', () => {
                         { getField: vi.fn(() => FieldProto.IDENTIFIER) },
                         { getField: vi.fn(() => FieldProto.TRADE_DATE) },
                     ]),
-                    getFieldDisplay: vi.fn((field) => {
+                    getFieldDisplay: vi.fn((field: any) => {
                         if (field.getField() === FieldProto.IDENTIFIER) return '912797LX3';
                         if (field.getField() === FieldProto.TRADE_DATE) return '2024-01-16';
                         return '';
@@ -486,7 +513,7 @@ describe('treasury_positions', () => {
                 },
             ] as unknown as Position[];
 
-            mockSearch.mockResolvedValue(mockPositions);
+            mockSearch.mockReturnValue(makeMockStream(mockPositions));
 
             const result = await getTreasuryTransactions(new Date('2024-01-20'));
 

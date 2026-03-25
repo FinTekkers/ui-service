@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test } from 'vitest';
-import FooterSection_SvelteComponent_ from './src/components/FooterSection.svelte';
+import FooterSection_SvelteComponent_ from '../components/FooterSection.svelte';
 
 
 

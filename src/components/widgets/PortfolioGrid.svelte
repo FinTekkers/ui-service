@@ -22,7 +22,7 @@
 		const params = new URLSearchParams({
 			portfolioId,
 			fields: 'SECURITY_DESCRIPTION,PORTFOLIO_NAME',
-			measures: 'DIRECTED_QUANTITY,MARKET_VALUE',
+			measures: 'DIRECTED_QUANTITY,MARKET_VALUE,ACCRUED_INTEREST,DIRTY_PRICE,CLEAN_PRICE,CONVEXITY,MODIFIED_DURATION,YIELD_TO_MATURITY',
 			positionView: 'DEFAULT_VIEW',
 			positionType: 'TAX_LOT',
 		});
@@ -48,6 +48,10 @@
 
 	function getSortIndicatorForColumn(fieldKey: keyof PortfolioData): string {
 		return getSortIndicator(sortField, fieldKey, sortDirection);
+	}
+
+	function getTransactionsUrl(portfolioId: string): string {
+		return `/data/portfolios?portfolioId=${encodeURIComponent(portfolioId)}`;
 	}
 
 	function handleDeleteClick(row: PortfolioData) {
@@ -81,6 +85,7 @@
 				{#each sortedRows as row}
 					<tr class="table-row border-b border-slate-400 clickable-row">
 						<td class="table-cell px-4 py-2 action-col">
+							<a href={getTransactionsUrl(row.portfolioId)} class="txn-btn" title="View transactions for {row.portfolioName}">Txns</a>
 							<button class="delete-btn" title="Delete {row.portfolioName}" on:click|stopPropagation={() => handleDeleteClick(row)}>Delete</button>
 						</td>
 						{#each columns as column}
@@ -140,8 +145,8 @@
 	}
 
 	.action-col {
-		min-width: 70px !important;
-		width: 70px;
+		min-width: 110px !important;
+		width: 110px;
 		position: sticky;
 		left: 0;
 		z-index: 1;
@@ -149,6 +154,24 @@
 	}
 
 	thead .action-col { background-color: #0c3a46; }
+
+	.txn-btn {
+		display: inline-block;
+		background-color: #1d6a80;
+		border: none;
+		color: white;
+		font-size: 0.8rem;
+		font-weight: 700;
+		padding: 4px 8px;
+		border-radius: 4px;
+		cursor: pointer;
+		white-space: nowrap;
+		text-decoration: none;
+		margin-right: 4px;
+		transition: all 0.15s;
+
+		&:hover { background-color: #155a6e; }
+	}
 
 	.delete-btn {
 		background-color: #c43d5a;

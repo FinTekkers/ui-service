@@ -1,16 +1,21 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let cusipInput: string = "";
+  let identifierInput: string = "";
+  let identifierType: "CUSIP" | "ISIN" = "CUSIP";
   let issueDateInput: string = "";
   let issueDateOperator: "greater_than" | "lesser_than" | "" = "";
+
+  $: identifierLabel = identifierType === "ISIN" ? "ISIN" : "CUSIP";
+  $: identifierPlaceholder = identifierType === "ISIN" ? "e.g. GB0002404557" : "e.g. 912828ZT0";
 
   function fetchSecurities() {
     let url = `/data/securities`;
     const params = new URLSearchParams();
 
-    if (cusipInput && cusipInput.trim() !== "") {
-      params.set("cusip", cusipInput.trim());
+    if (identifierInput && identifierInput.trim() !== "") {
+      params.set("identifier", identifierInput.trim());
+      params.set("identifierType", identifierType);
     }
 
     if (issueDateInput && issueDateInput.trim() !== "" && issueDateOperator) {
@@ -29,8 +34,11 @@
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
 
-    const cusipFromUrl = urlParams.get("cusip");
-    if (cusipFromUrl) cusipInput = cusipFromUrl;
+    const identifierFromUrl = urlParams.get("identifier") ?? urlParams.get("cusip");
+    if (identifierFromUrl) identifierInput = identifierFromUrl;
+
+    const idTypeFromUrl = urlParams.get("identifierType");
+    if (idTypeFromUrl === "ISIN") identifierType = "ISIN";
 
     const issueDateFromUrl = urlParams.get("issueDate");
     if (issueDateFromUrl) issueDateInput = issueDateFromUrl;
@@ -48,12 +56,27 @@
 <div class="mt-14 mx-10 w-full gap-2">
   <div class="security-select-container flex flex-col sm:flex-row gap-2">
     <div class="text-white">
-      <h4>CUSIP:</h4>
+      <h4>Identifier Type:</h4>
+      <div class="id-type-toggle">
+        <button
+          class="toggle-btn"
+          class:active={identifierType === "CUSIP"}
+          on:click={() => { identifierType = "CUSIP"; identifierInput = ""; }}
+        >CUSIP</button>
+        <button
+          class="toggle-btn"
+          class:active={identifierType === "ISIN"}
+          on:click={() => { identifierType = "ISIN"; identifierInput = ""; }}
+        >ISIN</button>
+      </div>
+    </div>
+    <div class="text-white">
+      <h4>{identifierLabel}:</h4>
       <input
         type="text"
-        id="cusip-input"
-        placeholder="Enter CUSIP..."
-        bind:value={cusipInput}
+        id="identifier-input"
+        placeholder={identifierPlaceholder}
+        bind:value={identifierInput}
         class="filter-input text-black"
       />
     </div>
@@ -93,6 +116,42 @@
   h4 {
     margin: 4px 0;
     font-size: 0.875rem;
+  }
+
+  .id-type-toggle {
+    display: flex;
+    gap: 0;
+    height: 38px;
+  }
+
+  .toggle-btn {
+    background-color: #0c3a46;
+    color: #aaa;
+    border: 1px solid #1b5060;
+    padding: 4px 14px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:first-child {
+      border-radius: 4px 0 0 4px;
+    }
+
+    &:last-child {
+      border-radius: 0 4px 4px 0;
+    }
+
+    &.active {
+      background-color: #7cd2ba;
+      color: #0c3a46;
+      font-weight: bold;
+      border-color: #7cd2ba;
+    }
+
+    &:hover:not(.active) {
+      background-color: #1b5060;
+      color: white;
+    }
   }
 
   .security-button {

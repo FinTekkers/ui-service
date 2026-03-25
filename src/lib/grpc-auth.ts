@@ -126,6 +126,33 @@ export async function brokerLogin(input: LoginInput): Promise<LoginResult> {
   }
 }
 
+export interface ProvisionApiKeyResult {
+  success: boolean;
+  apiKey?: string;
+  userId?: string;
+  error?: string;
+}
+
+export async function brokerProvisionApiKey(email: string, name: string, signupCode: string): Promise<ProvisionApiKeyResult> {
+  try {
+    const client = getAuthClient();
+    const response = await new Promise<any>((resolve, reject) => {
+      client.provisionApiKey({ email, name, signupCode }, (err: any, resp: any) => {
+        if (err) reject(err);
+        else resolve(resp);
+      });
+    });
+
+    if (response.apiKey) {
+      return { success: true, apiKey: response.apiKey, userId: response.userId };
+    }
+    return { success: false, error: response.message ?? 'No API key returned' };
+  } catch (error: any) {
+    const detail = error.details ?? error.message ?? 'Provision failed';
+    return { success: false, error: detail };
+  }
+}
+
 // --- Session management ---
 
 export function setApiKeyCookie(cookies: Cookies, apiKey: string) {
@@ -136,6 +163,18 @@ export function setApiKeyCookie(cookies: Cookies, apiKey: string) {
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
+}
+
+export function setUserInfoCookies(cookies: Cookies, name: string, email: string) {
+  const opts = {
+    path: '/',
+    httpOnly: true,
+    secure: import.meta.env.PROD,
+    sameSite: 'lax' as const,
+    maxAge: 60 * 60 * 24 * 30,
+  };
+  cookies.set('ft_user_name', name, opts);
+  cookies.set('ft_user_email', email, opts);
 }
 
 export function getApiKeyFromCookies(cookies: Cookies): string | undefined {
@@ -158,21 +197,18 @@ export function createAuthMetadata(apiKey: string): grpc.Metadata {
 }
 
 /**
- * Get an authenticated gRPC credentials object.
- * Wraps insecure credentials with per-call API key metadata.
+ * Get an authenticated gRPC interceptor that injects x-api-key into every call.
+ * Works with insecure channels (grpc-js forbids combining insecure + call credentials).
  */
-export function getAuthenticatedCredentials(apiKey: string): grpc.ChannelCredentials {
-  const callCreds = grpc.credentials.createFromMetadataGenerator(
-    (_params, callback) => {
-      const metadata = new grpc.Metadata();
-      metadata.add('x-api-key', apiKey);
-      callback(null, metadata);
-    }
-  );
-  return grpc.credentials.combineChannelCredentials(
-    grpc.credentials.createInsecure(),
-    callCreds
-  );
+export function getAuthenticatedInterceptor(apiKey: string): grpc.Interceptor {
+  return (_options, nextCall) => {
+    return new grpc.InterceptingCall(nextCall(_options), {
+      start(metadata: grpc.Metadata, listener: grpc.Listener, next: Function) {
+        metadata.add('x-api-key', apiKey);
+        next(metadata, listener);
+      }
+    });
+  };
 }
 
 /**
@@ -187,16 +223,18 @@ export function getBrokerURL(): string {
  * When API key is available, routes through broker with auth metadata.
  * Otherwise falls back to direct service connection.
  */
-export function getServiceConnection(apiKey?: string): { url: string; credentials: grpc.ChannelCredentials } {
+export function getServiceConnection(apiKey?: string): { url: string; credentials: grpc.ChannelCredentials; interceptors: grpc.Interceptor[] } {
   if (apiKey) {
     return {
       url: BROKER_HOST,
-      credentials: getAuthenticatedCredentials(apiKey),
+      credentials: grpc.credentials.createInsecure(),
+      interceptors: [getAuthenticatedInterceptor(apiKey)],
     };
   }
-  // Fallback: direct connection without auth
+  // No API key — route to broker anyway; it will return UNAUTHENTICATED (fail loudly)
   return {
     url: BROKER_HOST,
     credentials: grpc.credentials.createInsecure(),
+    interceptors: [],
   };
 }

@@ -34,15 +34,15 @@ function buildDeleteRequest(uuidHex: string, dryRun: boolean, force: boolean): a
   return request;
 }
 
-function getClient(): any {
-  const conn = getServiceConnection();
-  return new SecurityClient(conn.url, conn.credentials);
+function getClient(apiKey?: string): any {
+  const conn = getServiceConnection(apiKey);
+  return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
 }
 
-export async function deleteSecurity(uuidHex: string, dryRun: boolean, force = false): Promise<DeleteDryRunResult> {
+export async function deleteSecurity(uuidHex: string, dryRun: boolean, force = false, apiKey?: string): Promise<DeleteDryRunResult> {
   try {
     const request = buildDeleteRequest(uuidHex, dryRun, force);
-    const client = getClient();
+    const client = getClient(apiKey);
 
     const response = await new Promise<any>((resolve, reject) => {
       client.delete(request, (error: any, response: any) => {

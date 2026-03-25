@@ -33,15 +33,31 @@ vi.mock('@fintekkers/ledger-models/node/wrappers/models/utils/datetime', () => (
 	ZonedDateTime: { now: vi.fn(() => 'mock-now') },
 }));
 
-vi.mock('@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService', () => ({
-	PositionService: vi.fn().mockImplementation(() => ({
-		search: vi.fn().mockResolvedValue([]),
-		validateRequest: vi.fn().mockResolvedValue({ getErrorsList: () => [] }),
+// Mock PositionClient (raw gRPC client used by positions.ts after broker routing refactor)
+const mockStream = {
+	on: vi.fn().mockImplementation(function (this: any, event: string, handler: Function) {
+		if (event === 'end') handler();
+		return this;
+	}),
+};
+
+vi.mock('@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js', () => ({
+	PositionClient: vi.fn().mockImplementation(() => ({
+		search: vi.fn().mockReturnValue(mockStream),
+		validateQueryRequest: vi.fn().mockImplementation((_req: any, cb: Function) => {
+			cb(null, { getErrorsList: () => [] });
+		}),
 	})),
 }));
 
+vi.mock('$lib/grpc-auth', () => ({
+	getServiceConnection: vi.fn().mockReturnValue({ url: 'localhost:80', credentials: {} }),
+}));
+
 vi.mock('@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest', () => ({
-	QueryPositionRequest: vi.fn(),
+	QueryPositionRequest: vi.fn().mockImplementation(() => ({
+		toProto: vi.fn().mockReturnValue({}),
+	})),
 }));
 
 vi.mock('@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js', () => ({
@@ -76,8 +92,18 @@ vi.mock('@fintekkers/ledger-models/node/wrappers/models/security/identifier', ()
 
 vi.mock('@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js', () => ({
 	PositionFilterOperator: {
+		EQUALS: 'EQUALS',
 		MORE_THAN: 'MORE_THAN',
 		LESS_THAN: 'LESS_THAN',
+	},
+}));
+
+vi.mock('@fintekkers/ledger-models/node/wrappers/models/utils/uuid', () => ({
+	UUID: class MockUUID {
+		private value: string;
+		constructor(bytes: any) { this.value = String(bytes); }
+		static fromString(s: string) { return s; }
+		toUUIDProto() { return {}; }
 	},
 }));
 
@@ -100,7 +126,7 @@ describe('FetchPosition - portfolioId filter', () => {
 		measures: ['DIRECTED_QUANTITY'] as any[],
 	};
 
-	it('adds PORTFOLIO_ID equals filter when portfolioId is provided', async () => {
+	it('adds PORTFOLIO_ID filter (field_value_packed/UUIDProto) when portfolioId is provided', async () => {
 		await FetchPosition(
 			baseRequestData,
 			'DEFAULT_VIEW' as any,
@@ -111,14 +137,16 @@ describe('FetchPosition - portfolioId filter', () => {
 			undefined,
 			undefined,
 			undefined,
-			'portfolio-123'
+			'550e8400-e29b-41d4-a716-446655440000'
 		);
 
-		// Get the mock instance created by PositionFilter constructor
+		// The fix uses addFilter (not addEqualsFilter) so the entry is serialised as
+		// field_value_packed with UUIDProto, which is what the ledger-service expects.
 		const filterInstance = PositionFilter.mock.results[0].value;
-		expect(filterInstance.addEqualsFilter).toHaveBeenCalledWith(
+		expect(filterInstance.addFilter).toHaveBeenCalledWith(
 			'PORTFOLIO_ID',
-			'portfolio-123'
+			'EQUALS',
+			expect.any(Object)  // UUID instance
 		);
 	});
 
@@ -130,8 +158,8 @@ describe('FetchPosition - portfolioId filter', () => {
 		);
 
 		const filterInstance = PositionFilter.mock.results[0].value;
-		// addEqualsFilter should not have been called with PORTFOLIO_ID
-		const portfolioIdCalls = filterInstance.addEqualsFilter.mock.calls.filter(
+		// addFilter should not have been called with PORTFOLIO_ID
+		const portfolioIdCalls = filterInstance.addFilter.mock.calls.filter(
 			(call: any[]) => call[0] === 'PORTFOLIO_ID'
 		);
 		expect(portfolioIdCalls.length).toBe(0);
@@ -152,13 +180,13 @@ describe('FetchPosition - portfolioId filter', () => {
 		);
 
 		const filterInstance = PositionFilter.mock.results[0].value;
-		const portfolioIdCalls = filterInstance.addEqualsFilter.mock.calls.filter(
+		const portfolioIdCalls = filterInstance.addFilter.mock.calls.filter(
 			(call: any[]) => call[0] === 'PORTFOLIO_ID'
 		);
 		expect(portfolioIdCalls.length).toBe(0);
 	});
 
-	it('trims whitespace from portfolioId before adding filter', async () => {
+	it('trims whitespace from portfolioId and uses addFilter with a UUID object', async () => {
 		await FetchPosition(
 			baseRequestData,
 			'DEFAULT_VIEW' as any,
@@ -169,13 +197,14 @@ describe('FetchPosition - portfolioId filter', () => {
 			undefined,
 			undefined,
 			undefined,
-			'  portfolio-456  '
+			'  550e8400-e29b-41d4-a716-446655440001  '
 		);
 
 		const filterInstance = PositionFilter.mock.results[0].value;
-		expect(filterInstance.addEqualsFilter).toHaveBeenCalledWith(
-			'PORTFOLIO_ID',
-			'portfolio-456'
+		const portfolioIdCalls = filterInstance.addFilter.mock.calls.filter(
+			(call: any[]) => call[0] === 'PORTFOLIO_ID'
 		);
+		expect(portfolioIdCalls.length).toBe(1);
+		expect(portfolioIdCalls[0][1]).toBe('EQUALS');
 	});
 });

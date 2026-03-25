@@ -17,7 +17,9 @@ export function groupByDateAndCategory(
   const grouped = new Map<string, Map<string, number>>();
 
   for (const txn of transactions) {
-    const dateKey = txn.TRADE_DATE; // YYYY-MM-DD
+    const dateKey = txn.TRADE_DATE instanceof Date
+      ? txn.TRADE_DATE.toISOString().slice(0, 10)
+      : String(txn.TRADE_DATE); // YYYY-MM-DD
     const categoryValue =
       typeof category === 'function'
         ? category(txn)

@@ -300,17 +300,53 @@ const termCategories = [
   '>10 years'
 ];
 
-function tenorToTermBucket(tenor?: { years: number; months: number }): string {
-  console.log('tenor', tenor);
+function parseTenorToMonths(tenorStr: string): number {
+  // Parse ISO 8601 duration: P2Y, P6M, P2Y6M, etc.
+  const iso = /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?$/i.exec(tenorStr);
+  if (iso) {
+    const years = parseInt(iso[1] ?? '0') || 0;
+    const months = parseInt(iso[2] ?? '0') || 0;
+    const weeks = parseInt(iso[3] ?? '0') || 0;
+    return years * 12 + months + Math.round(weeks / 4);
+  }
+  // Parse "TERM: 5Y1M4W1D" format
+  const termMatch = /TERM:\s*(.+)/i.exec(tenorStr);
+  if (termMatch) return parseTenorToMonths(termMatch[1].replace(/(\d+)([YMWD])/gi, 'P$1$2').replace('PD', 'P').replace(/([YMWD])(\d)/g, '$1$2'));
+  // Parse "N years", "N months", "N year", "N month"
+  const yearMonthMatch = /^(\d+(?:\.\d+)?)\s*(year|yr|y)s?/i.exec(tenorStr);
+  if (yearMonthMatch) return Math.round(parseFloat(yearMonthMatch[1]) * 12);
+  const monthMatch = /^(\d+(?:\.\d+)?)\s*(month|mo|m)s?/i.exec(tenorStr);
+  if (monthMatch) return Math.round(parseFloat(monthMatch[1]));
+  // Parse shorthand like "6M", "2Y", "10Y"
+  const shortMatch = /^(\d+(?:\.\d+)?)(Y|M)/i.exec(tenorStr);
+  if (shortMatch) {
+    const n = parseFloat(shortMatch[1]);
+    return shortMatch[2].toUpperCase() === 'Y' ? Math.round(n * 12) : Math.round(n);
+  }
+  // Parse complex like "5Y1M4W1D"
+  let totalMonths = 0;
+  const parts = tenorStr.matchAll(/(\d+(?:\.\d+)?)\s*([YMWDymwd])/g);
+  let matched = false;
+  for (const part of parts) {
+    matched = true;
+    const n = parseFloat(part[1]);
+    switch (part[2].toUpperCase()) {
+      case 'Y': totalMonths += n * 12; break;
+      case 'M': totalMonths += n; break;
+      case 'W': totalMonths += n / 4; break;
+    }
+  }
+  if (matched) return Math.round(totalMonths);
+  return 0;
+}
+
+function tenorToTermBucket(tenor?: string): string {
   // Handle missing tenor
   if (!tenor) {
     return termCategories[0];
   }
 
-  // Safely extract years and months with defaults
-  const years = tenor.years ?? 0;
-  const months = tenor.months ?? 0;
-  const totalMonths = years * 12 + months;
+  const totalMonths = parseTenorToMonths(tenor);
 
   // Handle invalid calculations
   if (!Number.isFinite(totalMonths) || totalMonths < 0) {
@@ -331,10 +367,8 @@ function tenorToTermBucket(tenor?: { years: number; months: number }): string {
 export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
   // Group by date and derived term bucket (from TENOR)
   let grouped = groupByDateAndCategory(transactions, (txn) => {
-    console.log('txn', txn);
     return tenorToTermBucket(txn.TENOR);
-  }
-  );
+  });
 
   // Resample to monthly
   grouped = resampleMonthly(grouped);

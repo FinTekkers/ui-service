@@ -4,9 +4,9 @@ import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/p
 import * as dt from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";
 
-export async function FetchPortfolio(portfolioName: string) {
+export async function FetchPortfolio(portfolioName: string, apiKey?: string) {
   const now = dt.ZonedDateTime.now();
-  const portfolioService = new PortfolioService();
+  const portfolioService = new PortfolioService(apiKey);
 
   const filterPortfolio: PositionFilter = new PositionFilter();
   // filterPortfolio.addEqualsFilter(FieldProto.PORTFOLIO_NAME, portfolioName);

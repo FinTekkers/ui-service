@@ -113,7 +113,7 @@ def deploy_code_to_instance(instance_id: str) -> bool:
         # The load balancer on AWS will add the encryption/certificate termination and forward
         # to this port. We could expose to port 80, but the broker is already using that port
         # Run the production server
-        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=* pm2 start "GOOGLE_CLIENT_ID='
+        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=https://www.fintekkers.org pm2 start "GOOGLE_CLIENT_ID='
         + GOOGLE_CLIENT_ID
         + " GOOGLE_CLIENT_SECRET="
         + GOOGLE_CLIENT_SECRET
@@ -196,7 +196,7 @@ def teardown_instances_by_name(name: str):
 
 
 if __name__ == "__main__":
-    instance_id_map: map = create_instance()
+    instance_id_map: map = create_instance(name=SERVICE_NAME)
 
     new_instance_id = instance_id_map["new_instance"]
     old_instance_ids = instance_id_map["old_instances"]

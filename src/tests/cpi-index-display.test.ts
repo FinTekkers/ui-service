@@ -134,8 +134,9 @@ describe('CPI Index page – server data pipeline', () => {
 		expect(pageServer).toContain('c7c719a1-7bbc-5890-992d-7f6f3a4b3dca');
 	});
 
-	test('connects to PriceService on port 8083', () => {
-		expect(pageServer).toContain(':8083');
+	test('connects to PriceService via broker (conn.url, no direct port)', () => {
+		expect(pageServer).toContain('conn.url');
+		expect(pageServer).not.toContain(':8083');
 	});
 
 	test('uses PriceClient for gRPC calls', () => {

@@ -3,9 +3,23 @@ import { ObjectParser } from "@pilcrowjs/object-parser";
 import { createUser, getUserFromGoogleId } from "$lib/server/user";
 import { createSession, generateSessionToken, setSessionTokenCookie } from "$lib/server/session";
 import { decodeIdToken } from "arctic";
+import { brokerProvisionApiKey, setApiKeyCookie, setUserInfoCookies } from '$lib/grpc-auth';
 
 import type { RequestEvent } from "./$types";
 import type { OAuth2Tokens } from "arctic";
+
+async function ensureBrokerApiKey(event: RequestEvent, email: string, name: string): Promise<void> {
+	try {
+		const result = await brokerProvisionApiKey(email, name, 'S1GNUP');
+		if (result.success && result.apiKey) {
+			setApiKeyCookie(event.cookies, result.apiKey);
+		} else {
+			console.error('Broker ProvisionApiKey failed for Google SSO user:', email, result.error);
+		}
+	} catch (err) {
+		console.error('ensureBrokerApiKey threw unexpectedly:', err);
+	}
+}
 
 export async function GET(event: RequestEvent): Promise<Response> {
 	console.log("Callback received from Google");
@@ -65,6 +79,11 @@ export async function GET(event: RequestEvent): Promise<Response> {
 	const name = claimsParser.getString("name");
 	const picture = claimsParser.getString("picture");
 	const email = claimsParser.getString("email");
+
+	// Always refresh user info cookies from Google on every login
+	setUserInfoCookies(event.cookies, name, email);
+	// Provision/refresh API key — must complete before redirect so cookie is sent
+	await ensureBrokerApiKey(event, email, name);
 
 	const existingUser = getUserFromGoogleId(googleId);
 	if (existingUser !== null) {

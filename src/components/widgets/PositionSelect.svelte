@@ -10,6 +10,19 @@
 
   const { MeasureProto } = measure_pkg;
 
+  const VALUATION_ONLY_MEASURES = new Set([
+    'PRESENT_VALUE_CASHFLOWS',
+    'PRESENT_VALUE',
+    'REAL_YIELD',
+    'INFLATION_ADJUSTED_PRINCIPAL',
+    'DISCOUNT_MARGIN',
+    'SPREAD_DURATION',
+  ]);
+
+  const positionMeasureOptions = Object.keys(MeasureProto)
+    .filter(k => !VALUATION_ONLY_MEASURES.has(k))
+    .map(formatName);
+
   const { PositionTypeProto, PositionViewProto } = position_pkg;
 
   let isCheckboxChecked = false;
@@ -158,7 +171,7 @@
       <div class="multiselect-wrapper text-black">
         <MultiSelect
           id="measures-multiselect"
-          options={Object.keys(MeasureProto).map(formatName)}
+          options={positionMeasureOptions}
           placeholder="Select measures..."
           bind:selected={selectedMeasures}
         />

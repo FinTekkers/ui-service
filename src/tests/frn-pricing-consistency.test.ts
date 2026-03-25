@@ -117,7 +117,7 @@ async function runFrnValuation(inputs: FrnInputs): Promise<FrnResult> {
 			MeasureProto.PRESENT_VALUE_CASHFLOWS,
 		].forEach((m: any) => request.addMeasures(m));
 
-		const valuationURL = EnvConfig.apiURL.replace(':8082', ':8080');
+		const valuationURL = EnvConfig.apiURL.replace(/:\d+$/, ':8080');
 		const client = new ValuationClient(valuationURL, EnvConfig.apiCredentials);
 
 		const response: any = await new Promise((resolve, reject) => {

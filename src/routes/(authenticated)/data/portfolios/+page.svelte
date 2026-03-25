@@ -2,6 +2,7 @@
   import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
   import Portfolio from "../../../../components/widgets/PortfolioGrid.svelte";
   import DeleteConfirmModal from "../../../../components/widgets/DeleteConfirmModal.svelte";
+  import TransactionHistoryGrid from "../../../../components/widgets/TransactionHistoryGrid.svelte";
   import { enhance } from '$app/forms';
   export let data: import("./$types").PageData;
   export let form: import("./$types").ActionData;
@@ -62,6 +63,11 @@
     <Portfolio
       rows={Array.isArray(data.portfolioData) ? data.portfolioData : [data.portfolioData]}
       on:requestDelete={handleRequestDelete}
+    />
+
+    <TransactionHistoryGrid
+      transactions={data.transactions ?? []}
+      portfolioId={data.selectedPortfolioId ?? null}
     />
 
     {#if deleteTarget && !showModal}

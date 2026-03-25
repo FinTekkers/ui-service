@@ -89,8 +89,9 @@ describe('Prices page – price fetch pipeline', () => {
 		expect(pageServer).toContain('PriceClient');
 	});
 
-	test('connects to price service on port 8083', () => {
-		expect(pageServer).toContain(':8083');
+	test('connects to price service via broker (conn.url, no direct port)', () => {
+		expect(pageServer).toContain('conn.url');
+		expect(pageServer).not.toContain(':8083');
 	});
 
 	test('uses streaming search RPC', () => {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
   import Security from "../../../../components/widgets/SecurityGrid.svelte";
+  import SecurityDetail from "../../../../components/widgets/SecurityDetail.svelte";
   import SecuritySelect from "../../../../components/widgets/SecuritySelect.svelte";
   import { enhance } from '$app/forms';
 
@@ -76,10 +77,17 @@
       <div class="error-banner">{deleteError}</div>
     {/if}
 
-    <Security
-      rows={Array.isArray(data.security) ? data.security : [data.security]}
-      on:requestDelete={handleRequestDelete}
-    />
+    {#if Array.isArray(data.security) && data.security.length === 1}
+      <SecurityDetail
+        security={data.security[0]}
+        on:requestDelete={handleRequestDelete}
+      />
+    {:else}
+      <Security
+        rows={Array.isArray(data.security) ? data.security : [data.security]}
+        on:requestDelete={handleRequestDelete}
+      />
+    {/if}
 
     <!-- Dry-run form (hidden, auto-submitted when delete button clicked) -->
     {#if deleteTarget && !showModal}

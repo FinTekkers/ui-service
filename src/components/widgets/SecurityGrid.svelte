@@ -9,13 +9,17 @@
   import { createEventDispatcher } from 'svelte';
 
   type SecurityData = {
-    cusip: string;
+    identifier: string;
+    identifierType: string;
+    settlementCurrency: string;
+    cusip: string;               // deprecated alias kept for compatibility
     uuidHex?: string;
     issueDate: string;
     maturityDate: string;
     outstandingAmount: string;
     issuerName: string;
     assetClass: string;
+    securityType?: number;
     productType: string;
     productClass?: string;
     tenor?: string;
@@ -27,6 +31,16 @@
     asOf: string;
   };
 
+  const SECURITY_TYPE_LABELS: Record<number, string> = {
+    1: 'Cash',
+    2: 'Equity',
+    3: 'Bond',
+    4: 'TIPS',
+    5: 'FRN',
+    6: 'Index',
+    8: 'Equity Index',
+  };
+
   export let rows: Array<SecurityData>;
 
   const dispatch = createEventDispatcher();
@@ -36,9 +50,11 @@
   let sortDirection: SortDirection = "asc";
 
   const columns: Array<{ label: string; key: keyof SecurityData }> = [
-    { label: "CUSIP ID", key: "cusip" },
+    { label: "Identifier", key: "identifier" },
+    { label: "ID Type", key: "identifierType" },
     { label: "Issuer Name", key: "issuerName" },
     { label: "Asset Class", key: "assetClass" },
+    { label: "Security Type", key: "securityType" },
     { label: "Product Type", key: "productType" },
     { label: "Product Class", key: "productClass" },
     { label: "Issue Date", key: "issueDate" },
@@ -67,14 +83,17 @@
 
   function formatCellValue(row: SecurityData, key: keyof SecurityData): string {
     const value = row[key];
+    if (key === "securityType") {
+      return value != null ? (SECURITY_TYPE_LABELS[value as number] ?? String(value)) : '-';
+    }
     if (key === "faceValue" || key === "outstandingAmount") {
       return value ? formatAmount(String(value)) : '-';
     }
-    return value ?? '-';
+    return value != null ? String(value) : '-';
   }
 
   function handleDeleteClick(row: SecurityData) {
-    dispatch('requestDelete', { cusip: row.cusip, uuidHex: row.uuidHex, issuerName: row.issuerName });
+    dispatch('requestDelete', { identifier: row.identifier || row.cusip, cusip: row.identifier || row.cusip, uuidHex: row.uuidHex, issuerName: row.issuerName });
   }
 </script>
 
@@ -106,7 +125,7 @@
             <td class="table-cell px-4 py-2 action-col">
               <button
                 class="delete-btn"
-                title="Delete {row.cusip}"
+                title="Delete {row.identifier || row.cusip}"
                 on:click|stopPropagation={() => handleDeleteClick(row)}
               >
                 Delete

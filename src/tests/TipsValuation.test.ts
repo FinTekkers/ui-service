@@ -1,26 +1,19 @@
 /**
- * TIPS Valuation Integration Tests
- *
- * Tests the TIPS calculator end-to-end by calling RunTipsValuation,
- * which builds proto objects and sends them to the valuation service via gRPC.
- *
- * Prerequisites: valuation-service must be running on :8080
- *
- * Test bond:
- *   - Real coupon: 0.625% semi-annual
- *   - Maturity: 2030-01-15
- *   - Base CPI: 256.394 (at issuance)
- *   - Current CPI: 314.175
- *   - Face value: 100
- *   - Price: 100 (par)
- *   - Index Ratio = 314.175 / 256.394 = 1.2253
- *   - Adjusted Principal = 122.53
- *   - 8 remaining coupon periods (Jul 2026 – Jan 2030)
- *   - Expected Macaulay Duration: ~3.8–4.0 years
+ * TIPS Valuation tests — mocks ValuationClient so no running service needed.
  *
  * @vitest-environment node
  */
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+
+vi.mock('@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js', async () => {
+	const { createValuationClientMock } = await import('./valuationMockHelper');
+	return { ValuationClient: createValuationClientMock() };
+});
+
+vi.mock('$lib/grpc-auth', () => ({
+	getServiceConnection: vi.fn().mockReturnValue({ url: 'localhost:80', credentials: {} }),
+}));
+
 import { RunTipsValuation } from '$lib/valuation';
 import type { TipsCalculatorInputs, TipsValuationResult } from '$lib/valuation';
 

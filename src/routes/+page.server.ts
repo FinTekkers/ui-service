@@ -27,8 +27,8 @@ export const actions = {
 }
 
 
-export async function load() {
-  const securityService = new SecurityService();
+export async function load({ locals }: { locals: App.Locals }) {
+  const securityService = new SecurityService(locals.user?.apiKey);
   let results = [];
 
   const positionFilter = new PositionFilter();

@@ -25,12 +25,12 @@ const entityTypeMap: Record<EntityType, number> = {
   PORTFOLIO: EntityTypeProto.PORTFOLIO,
 };
 
-function getClient(entityType: EntityType): any {
-  const conn = getServiceConnection();
+function getClient(entityType: EntityType, apiKey?: string): any {
+  const conn = getServiceConnection(apiKey);
   switch (entityType) {
-    case 'SECURITY': return new SecurityClient(conn.url, conn.credentials);
-    case 'TRANSACTION': return new TransactionClient(conn.url, conn.credentials);
-    case 'PORTFOLIO': return new PortfolioClient(conn.url, conn.credentials);
+    case 'SECURITY': return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    case 'TRANSACTION': return new TransactionClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    case 'PORTFOLIO': return new PortfolioClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
   }
 }
 
@@ -40,6 +40,7 @@ export async function deleteEntity(
   dryRun: boolean,
   force = false,
   cascade = false,
+  apiKey?: string,
 ): Promise<DeleteResult> {
   try {
     const request = new DeleteRequestProto();
@@ -51,7 +52,7 @@ export async function deleteEntity(
     if (force) request.setForce(true);
     if (cascade) request.setCascade(true);
 
-    const client = getClient(entityType);
+    const client = getClient(entityType, apiKey);
 
     const response = await new Promise<any>((resolve, reject) => {
       client.delete(request, (error: any, resp: any) => {

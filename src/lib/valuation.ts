@@ -1,5 +1,7 @@
 import { ValuationClient } from '@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js';
+import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js';
 import { ValuationRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js';
+import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
 import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js';
 import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
 import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js';
@@ -15,10 +17,8 @@ import operation_pkg from '@fintekkers/ledger-models/node/fintekkers/requests/ut
 import { LocalDate } from '@fintekkers/ledger-models/node/wrappers/models/utils/date';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
-import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
-import EnvConfig from '@fintekkers/ledger-models/node/wrappers/models/utils/requestcontext';
 import { getServiceConnection } from '$lib/grpc-auth';
 
 const { MeasureProto } = measure_pkg;
@@ -48,10 +48,13 @@ export interface CashflowEntry {
 }
 
 export interface ValuationResult {
-  presentValue?: string;
+  dirtyPrice?: string;
+  accruedInterest?: string;
   currentYield?: string;
   yieldToMaturity?: string;
   macaulayDuration?: string;
+  modifiedDuration?: string;
+  convexity?: string;
   cashflows?: CashflowEntry[];
   error?: string;
 }
@@ -117,10 +120,13 @@ const MEASURE_DISCOUNT_MARGIN = MeasureProto.DISCOUNT_MARGIN;
 const MEASURE_SPREAD_DURATION = MeasureProto.SPREAD_DURATION;
 
 const VALUATION_MEASURES = [
-  MEASURE_PRESENT_VALUE,
+  MeasureProto.DIRTY_PRICE,
+  MeasureProto.ACCRUED_INTEREST,
   MeasureProto.CURRENT_YIELD,
   MeasureProto.YIELD_TO_MATURITY,
   MEASURE_MACAULAY_DURATION,
+  MeasureProto.MODIFIED_DURATION,
+  MeasureProto.CONVEXITY,
   MEASURE_PRESENT_VALUE_CASHFLOWS,
 ];
 
@@ -164,19 +170,35 @@ function parseCashflows(response: any): CashflowEntry[] {
   return cashflows;
 }
 
-async function buildSecurityProtoFromCusip(cusip: string): Promise<SecurityProto> {
-  const securityService = new SecurityService();
+async function buildSecurityProtoFromCusip(cusip: string, apiKey?: string): Promise<SecurityProto> {
   const filter = new PositionFilter();
   const identifierProto = new IdentifierProto()
     .setIdentifierType(IdentifierTypeProto.CUSIP)
     .setIdentifierValue(cusip.trim());
   filter.addObjectFilter(FieldProto.IDENTIFIER, new Identifier(identifierProto));
 
-  const results = await securityService.searchSecurityAsOfNow(filter);
+  const conn = getServiceConnection(apiKey);
+  const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+  const searchRequest = new QuerySecurityRequestProto();
+  searchRequest.setObjectClass('SecurityRequest');
+  searchRequest.setVersion('0.0.1');
+  searchRequest.setAsOf(ZonedDateTime.now().toProto());
+  searchRequest.setSearchSecurityInput(filter.toProto());
+
+  const results = await new Promise<SecurityProto[]>((resolve, reject) => {
+    const list: SecurityProto[] = [];
+    const stream = client.search(searchRequest);
+    stream.on('data', (response: any) => {
+      response.getSecurityResponseList().forEach((proto: any) => list.push(proto));
+    });
+    stream.on('end', () => resolve(list));
+    stream.on('error', (err: any) => reject(err));
+  });
+
   if (results.length === 0) {
     throw new Error(`No security found for CUSIP: ${cusip}`);
   }
-  return results[0].proto;
+  return results[0];
 }
 
 function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
@@ -231,7 +253,7 @@ function buildPriceProto(securityProto: SecurityProto, price: string): PriceProt
   return priceProto;
 }
 
-export async function RunValuation(inputs: BondCalculatorInputs): Promise<ValuationResult> {
+export async function RunValuation(inputs: BondCalculatorInputs, apiKey?: string): Promise<ValuationResult> {
   try {
     if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
       return { error: 'Please enter a CUSIP to look up.' };
@@ -241,7 +263,7 @@ export async function RunValuation(inputs: BondCalculatorInputs): Promise<Valuat
     }
 
     const securityProto = inputs.mode === 'cusip'
-      ? await buildSecurityProtoFromCusip(inputs.cusip!)
+      ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualSecurityProto(inputs);
 
     const priceProto = buildPriceProto(securityProto, inputs.price);
@@ -255,9 +277,8 @@ export async function RunValuation(inputs: BondCalculatorInputs): Promise<Valuat
     request.setPriceInput(priceProto);
     VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
-    const conn = getServiceConnection();
-    const valuationURL = conn.url.replace(':8082', ':8080').replace(':80', ':8080');
-    const client = new ValuationClient(valuationURL, conn.credentials);
+    const conn = getServiceConnection(apiKey);
+    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
 
     const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
       client.runValuation(request, (error, response) => {
@@ -270,10 +291,13 @@ export async function RunValuation(inputs: BondCalculatorInputs): Promise<Valuat
     response.getMeasureResultsList().forEach(entry => {
       const value = entry.getMeasureDecimalValue()?.getArbitraryPrecisionValue();
       switch (entry.getMeasure()) {
-        case MEASURE_PRESENT_VALUE:             result.presentValue = value; break;
+        case MeasureProto.DIRTY_PRICE:         result.dirtyPrice = value; break;
+        case MeasureProto.ACCRUED_INTEREST:    result.accruedInterest = value; break;
         case MeasureProto.CURRENT_YIELD:       result.currentYield = value; break;
         case MeasureProto.YIELD_TO_MATURITY:   result.yieldToMaturity = value; break;
         case MEASURE_MACAULAY_DURATION:        result.macaulayDuration = value; break;
+        case MeasureProto.MODIFIED_DURATION:   result.modifiedDuration = value; break;
+        case MeasureProto.CONVEXITY:           result.convexity = value; break;
       }
     });
 
@@ -353,7 +377,7 @@ function buildCpiPriceProto(currentCpi: string): PriceProto {
   return cpiPrice;
 }
 
-export async function RunTipsValuation(inputs: TipsCalculatorInputs): Promise<TipsValuationResult> {
+export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: string): Promise<TipsValuationResult> {
   try {
     if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
       return { error: 'Please enter a CUSIP to look up.' };
@@ -366,7 +390,7 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs): Promise<Ti
     }
 
     const securityProto = inputs.mode === 'cusip'
-      ? await buildSecurityProtoFromCusip(inputs.cusip!)
+      ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualTipsSecurityProto(inputs);
 
     const priceProto = buildPriceProto(securityProto, inputs.price);
@@ -384,9 +408,8 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs): Promise<Ti
 
     TIPS_VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
-    const conn = getServiceConnection();
-    const valuationURL = conn.url.replace(':8082', ':8080').replace(':80', ':8080');
-    const client = new ValuationClient(valuationURL, conn.credentials);
+    const conn = getServiceConnection(apiKey);
+    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
 
     const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
       client.runValuation(request, (error, response) => {
@@ -498,7 +521,7 @@ function buildReferenceRatePriceProto(referenceRate: string): PriceProto {
   return ratePrice;
 }
 
-export async function RunFrnValuation(inputs: FrnCalculatorInputs): Promise<FrnValuationResult> {
+export async function RunFrnValuation(inputs: FrnCalculatorInputs, apiKey?: string): Promise<FrnValuationResult> {
   try {
     if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
       return { error: 'Please enter a CUSIP to look up.' };
@@ -514,7 +537,7 @@ export async function RunFrnValuation(inputs: FrnCalculatorInputs): Promise<FrnV
     }
 
     const securityProto = inputs.mode === 'cusip'
-      ? await buildSecurityProtoFromCusip(inputs.cusip!)
+      ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualFrnSecurityProto(inputs);
 
     const priceValue = inputs.price && inputs.price.trim() ? inputs.price : '100';
@@ -531,9 +554,8 @@ export async function RunFrnValuation(inputs: FrnCalculatorInputs): Promise<FrnV
     request.setReferenceRateInput(referenceRateProto);
     FRN_VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
-    const conn = getServiceConnection();
-    const valuationURL = conn.url.replace(':8082', ':8080').replace(':80', ':8080');
-    const client = new ValuationClient(valuationURL, conn.credentials);
+    const conn = getServiceConnection(apiKey);
+    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
 
     const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
       client.runValuation(request, (error, response) => {

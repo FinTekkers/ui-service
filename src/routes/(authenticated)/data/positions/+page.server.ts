@@ -50,6 +50,15 @@ const measureLookup = {
   ADJUSTED_COST_BASIS: MeasureProto.ADJUSTED_COST_BASIS,
   CURRENT_YIELD: MeasureProto.CURRENT_YIELD,
   YIELD_TO_MATURITY: MeasureProto.YIELD_TO_MATURITY,
+  PROFIT_LOSS: MeasureProto.PROFIT_LOSS,
+  PROFIT_LOSS_PERCENT: MeasureProto.PROFIT_LOSS_PERCENT,
+  ACCRUED_INTEREST: MeasureProto.ACCRUED_INTEREST,
+  DIRTY_PRICE: MeasureProto.DIRTY_PRICE,
+  CLEAN_PRICE: MeasureProto.CLEAN_PRICE,
+  CONVEXITY: MeasureProto.CONVEXITY,
+  MODIFIED_DURATION: MeasureProto.MODIFIED_DURATION,
+  DV01: MeasureProto.DV01,
+  PRESENT_VALUE_CASHFLOWS: MeasureProto.PRESENT_VALUE_CASHFLOWS,
 };
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
@@ -142,7 +151,8 @@ export async function load({ locals, request }) {
     tradeDate || undefined,
     tradeDateOperator === 'greater_than' ? 'greater_than' : tradeDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
     assetClass || undefined,
-    portfolioId || undefined
+    portfolioId || undefined,
+    locals.user?.apiKey
   );
 
   const metadata = { fields: userFields, measures: userMeasures };

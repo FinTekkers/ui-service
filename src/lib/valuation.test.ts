@@ -1,7 +1,28 @@
 /**
- * Integration tests for the valuation service (running locally on port 8080).
+ * Unit tests for RunValuation — mocks ValuationClient so no running service needed.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js', async () => {
+	const { createValuationClientMock } = await import('../tests/valuationMockHelper');
+	return { ValuationClient: createValuationClientMock() };
+});
+
+vi.mock('@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js', () => ({
+	SecurityClient: vi.fn().mockImplementation(() => ({
+		search: vi.fn().mockReturnValue({
+			on: vi.fn().mockImplementation(function (this: any, event: string, handler: Function) {
+				if (event === 'end') handler();
+				return this;
+			}),
+		}),
+	})),
+}));
+
+vi.mock('$lib/grpc-auth', () => ({
+	getServiceConnection: vi.fn().mockReturnValue({ url: 'localhost:80', credentials: {} }),
+}));
+
 import { RunValuation } from './valuation';
 import { FetchSecurity } from './security';
 

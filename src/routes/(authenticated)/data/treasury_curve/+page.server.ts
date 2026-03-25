@@ -1,8 +1,11 @@
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
-import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
+import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js';
+import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
+import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
+import { getServiceConnection } from '$lib/grpc-auth';
 import { SecurityTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb';
-import type Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
+import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
 import type BondSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity';
 
 const { FieldProto } = pkg;
@@ -39,7 +42,8 @@ function daysBetween(a: Date, b: Date): number {
 }
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ url }: { url: URL }) {
+export async function load({ url, locals }: { url: URL; locals: App.Locals }) {
+  const apiKey = locals.user?.apiKey;
   const dateParam = url.searchParams.get('date');
   let asOfDate: Date;
   if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
@@ -49,14 +53,33 @@ export async function load({ url }: { url: URL }) {
   }
   const selectedDate = asOfDate.toISOString().slice(0, 10);
 
-  const securityService = new SecurityService();
   const filter = new PositionFilter();
   filter.addEqualsFilter(FieldProto.ASSET_CLASS, 'Fixed Income');
-  filter.addEqualsFilter(FieldProto.SECURITY_ISSUER_NAME, 'US Government');
 
   let securities: Security[];
   try {
-    securities = await securityService.searchSecurityAsOfNow(filter);
+    const conn = getServiceConnection(apiKey);
+    const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    const searchRequest = new QuerySecurityRequestProto();
+    searchRequest.setObjectClass('SecurityRequest');
+    searchRequest.setVersion('0.0.1');
+    searchRequest.setAsOf(ZonedDateTime.now().toProto());
+    searchRequest.setSearchSecurityInput(filter.toProto());
+
+    securities = await new Promise<Security[]>((resolve, reject) => {
+      const list: Security[] = [];
+      const stream = client.search(searchRequest);
+      stream.on('data', (response: any) => {
+        response.getSecurityResponseList().forEach((proto: any) => {
+          list.push(Security.create(proto));
+        });
+      });
+      stream.on('end', () => resolve(list));
+      stream.on('error', (err: any) => {
+        console.error('Security search stream error:', err);
+        reject(err);
+      });
+    });
   } catch (error: any) {
     console.error('Error fetching securities for curve:', error.message);
     return { curveData: [], selectedDate };

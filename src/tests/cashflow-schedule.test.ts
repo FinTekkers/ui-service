@@ -13,7 +13,17 @@
  *            settlement 2026-03-19, price 100 (at par)
  * Expected: 8 semiannual coupon periods from settlement to maturity
  */
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+
+vi.mock('@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js', async () => {
+	const { createValuationClientMock } = await import('./valuationMockHelper');
+	return { ValuationClient: createValuationClientMock() };
+});
+
+vi.mock('$lib/grpc-auth', () => ({
+	getServiceConnection: vi.fn().mockReturnValue({ url: 'localhost:80', credentials: {} }),
+}));
+
 import { RunValuation } from '$lib/valuation';
 import type { BondCalculatorInputs, ValuationResult, CashflowEntry } from '$lib/valuation';
 

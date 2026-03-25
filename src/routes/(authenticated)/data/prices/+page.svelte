@@ -2,7 +2,7 @@
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   export let data: import('./$types').PageData;
 
-  type PriceEntry = { date: string; price: number };
+  type PriceEntry = { date: string; price: number; cusip?: string };
 
   $: securities = (data.securities ?? []) as Array<{ cusip: string; description: string }>;
   $: prices = (data.prices ?? []) as PriceEntry[];
@@ -26,10 +26,10 @@
   }
 
   function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Enter') { e.preventDefault(); handleSearch(); return; }
     if (!showSuggestions || filtered.length === 0) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, filtered.length - 1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, 0); }
-    else if (e.key === 'Enter' && selectedIndex >= 0) { e.preventDefault(); selectCusip(filtered[selectedIndex].cusip); }
     else if (e.key === 'Escape') { showSuggestions = false; }
   }
 
@@ -180,8 +180,39 @@
         </div>
       {:else if selectedCusip && !priceError}
         <p class="empty-msg">No price history found for {selectedCusip}.</p>
+      {:else if !selectedCusip && prices.length > 0}
+        <!-- Browse table: most recent price per security -->
+        <div class="browse-section">
+          <h3 class="browse-title">Latest Prices <span class="browse-count">({prices.length})</span></h3>
+          <div class="table-wrapper">
+            <table class="text-left">
+              <thead class="border-b border-slate-400">
+                <tr>
+                  <th class="text-semibold px-4 py-2">CUSIP</th>
+                  <th class="text-semibold px-4 py-2">Price</th>
+                  <th class="text-semibold px-4 py-2">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each prices as p}
+                  <tr class="table-row border-b border-slate-400">
+                    <td class="table-cell px-4 py-2">
+                      {#if p.cusip}
+                        <a class="cusip-link" href="/data/prices?cusip={encodeURIComponent(p.cusip)}">{p.cusip}</a>
+                      {:else}
+                        —
+                      {/if}
+                    </td>
+                    <td class="table-cell px-4 py-2 price-val">{p.price.toFixed(6)}</td>
+                    <td class="table-cell px-4 py-2">{p.date}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        </div>
       {:else if !selectedCusip}
-        <p class="empty-msg">Select a CUSIP above to view its price history.</p>
+        <p class="empty-msg">No prices available.</p>
       {/if}
     </div>
   </div>
@@ -324,5 +355,29 @@
     font-size: 0.875rem;
     padding: 2rem 0;
     text-align: center;
+  }
+
+  .browse-section {
+    margin-top: 8px;
+  }
+
+  .browse-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: whitesmoke;
+    margin-bottom: 10px;
+  }
+
+  .browse-count {
+    font-weight: 400;
+    color: #a0adb7;
+    font-size: 0.85rem;
+  }
+
+  .cusip-link {
+    color: #7cd2ba;
+    font-weight: 600;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
   }
 </style>

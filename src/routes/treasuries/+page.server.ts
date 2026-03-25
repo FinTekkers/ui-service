@@ -3,11 +3,15 @@ import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/pos
 import { PositionFilterOperator } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js";
 import { TransactionTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/transaction/transaction_type_pb.js";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import { PositionService } from '@fintekkers/ledger-models/node/wrappers/services/position-service/PositionService';
-import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
+import { PositionClient } from '@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js';
+import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
+import { getServiceConnection } from '$lib/grpc-auth';
+import { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
+import type { QueryPositionResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_response_pb';
 import { QueryPositionRequest } from '@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest';
+import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
+import type { QuerySecurityResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_response_pb';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
-import type { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
 import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
 import type { MeasureProto as MeasureProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
 import measurePkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
@@ -17,7 +21,7 @@ const { PositionTypeProto, PositionViewProto } = positionPkg;
 import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
-import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
+import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
 
@@ -56,10 +60,11 @@ function createTreasuryTransactionMaturityFilter(transactionType: TransactionTyp
 /**
  * Fetches transactions using position service and converts to TransactionData format
  */
-async function fetchTransactionsFromPositions(filter: PositionFilter): Promise<TransactionData[]> {
+async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: string): Promise<TransactionData[]> {
   try {
-    const positionService = new PositionService();
-    const securityService = new SecurityService();
+    const conn = getServiceConnection(apiKey);
+    const positionClient = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    const securityClient = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
     const now = ZonedDateTime.now();
 
     // Define fields to request: IDENTIFIER and TRANSACTION_TYPE as required
@@ -83,7 +88,15 @@ async function fetchTransactionsFromPositions(filter: PositionFilter): Promise<T
     );
 
     // Search positions
-    const positions: Position[] = await positionService.search(request);
+    const positions: Position[] = await new Promise<Position[]>((resolve, reject) => {
+      const list: Position[] = [];
+      const stream = positionClient.search(request.toProto());
+      stream.on('data', (response: QueryPositionResponseProto) => {
+        response.getPositionsList().forEach(p => list.push(new Position(p)));
+      });
+      stream.on('end', () => resolve(list));
+      stream.on('error', (err) => reject(err));
+    });
 
     if (positions.length === 0) {
       return [];
@@ -134,7 +147,20 @@ async function fetchTransactionsFromPositions(filter: PositionFilter): Promise<T
 
       let security: Security | null = null;
       try {
-        const securities = await securityService.searchSecurityAsOfNow(securityFilter);
+        const secReq = new QuerySecurityRequestProto();
+        secReq.setObjectClass('SecurityRequest');
+        secReq.setVersion('0.0.1');
+        secReq.setAsOf(ZonedDateTime.now().toProto());
+        secReq.setSearchSecurityInput(securityFilter.toProto());
+        const securities = await new Promise<Security[]>((resolve, reject) => {
+          const list: Security[] = [];
+          const stream = securityClient.search(secReq);
+          stream.on('data', (response: QuerySecurityResponseProto) => {
+            response.getSecurityResponseList().forEach(s => list.push(Security.create(s)));
+          });
+          stream.on('end', () => resolve(list));
+          stream.on('error', (err) => reject(err));
+        });
         if (securities && securities.length > 0) {
           security = securities[0];
         }
@@ -252,14 +278,16 @@ export async function load({ locals }) {
   let buyTransactions = await FetchTransactionWithFilter(filter);
   buyTransactions = adjustQuantityDirection(buyTransactions, false);
 
+  const apiKey = locals.user?.apiKey;
+
   // Fetch MATURATION transactions - should be negative (using position service)
   const filter2 = createTreasuryTransactionMaturityFilter(TransactionTypeProto.MATURATION);
-  let maturationTransactions = await fetchTransactionsFromPositions(filter2);
+  let maturationTransactions = await fetchTransactionsFromPositions(filter2, apiKey);
   maturationTransactions = adjustQuantityDirection(maturationTransactions, true);
 
   // Fetch MATURATION_OFFSET transactions - should be positive (using position service)
   const filter3 = createTreasuryTransactionMaturityFilter(TransactionTypeProto.MATURATION_OFFSET);
-  let maturationTransactions2 = await fetchTransactionsFromPositions(filter3);
+  let maturationTransactions2 = await fetchTransactionsFromPositions(filter3, apiKey);
   maturationTransactions2 = adjustQuantityDirection(maturationTransactions2, false);
 
   // Combine MATURATION and MATURATION_OFFSET transactions by CUSIP, summing quantities
