@@ -184,7 +184,7 @@
         {#if security.uuidHex}
           <div class="field-row uuid-row">
             <span class="field-label">UUID</span>
-            <span class="field-value uuid-value" title={security.uuidHex}>{security.uuidHex.slice(0, 16)}…</span>
+            <span class="field-value uuid-value" title={security.uuidHex}>{security.uuidStr ?? security.uuidHex}</span>
           </div>
         {/if}
       </div>

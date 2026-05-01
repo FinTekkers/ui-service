@@ -13,6 +13,8 @@ import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/secur
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
+import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
+import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
 
 const { FieldProto } = pkg;
 
@@ -22,6 +24,7 @@ export interface securityData {
   settlementCurrency: string;  // "USD" | "GBP" | "" if not set
   cusip: string;               // deprecated alias for identifier; kept for compatibility
   uuidHex?: string;
+  uuidStr?: string;            // human-readable UUID (hyphenated)
   issueDate: string;
   maturityDate: string;
   outstandingAmount: string;
@@ -157,6 +160,7 @@ export async function FetchSecurity(
           // Serialize UUID for delete support
           const uuidProto = security.proto.getUuid();
           const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
+          const uuidStr = security.getID().toString();
 
           const result: securityData = {
             identifier: id,
@@ -164,6 +168,7 @@ export async function FetchSecurity(
             settlementCurrency,
             cusip: id,           // backward-compat alias
             uuidHex,
+            uuidStr,
             issueDate: issueDateStr,
             maturityDate: maturityDateStr,
             outstandingAmount,
@@ -233,6 +238,68 @@ export async function FetchSecurity(
     );
   } catch (error: any) {
     console.error("Error fetching security data:", error.message);
+    return [];
+  }
+}
+
+function mapSecuritiesToData(securities: Security[]): securityData[] {
+  return securities.reduce((acc: securityData[], security: Security) => {
+    const maturityDate = security.getMaturityDate().toDate();
+    const issueDate = security.getIssueDate().toDate();
+    const idProto = security.proto.getIdentifier ? security.proto.getIdentifier() : null;
+    const idTypeNum = idProto?.getIdentifierType() ?? 0;
+    const identifierTypeStr =
+      idTypeNum === IdentifierTypeProto.CUSIP ? 'CUSIP' :
+      idTypeNum === IdentifierTypeProto.ISIN  ? 'ISIN'  : 'UNKNOWN';
+    const id = security.getSecurityID()
+      ? security.getSecurityID().getIdentifierValue()
+      : security.getID().toString();
+    const uuidProto = security.proto.getUuid();
+    const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
+    const uuidStr = security.getID().toString();
+    const isBond = [SecurityTypeProto.BOND_SECURITY, SecurityTypeProto.TIPS, SecurityTypeProto.FRN]
+      .includes(security.proto.getSecurityType());
+    const bondSecurity = isBond ? (security as BondSecurity) : null;
+
+    const result: securityData = {
+      identifier: id,
+      identifierType: identifierTypeStr,
+      settlementCurrency: '',
+      cusip: id,
+      uuidHex,
+      uuidStr,
+      issueDate: issueDate.toISOString().slice(0, 10).replace(/-/g, '/'),
+      maturityDate: maturityDate.toISOString().slice(0, 10).replace(/-/g, '/'),
+      outstandingAmount: '0',
+      issuerName: security.getIssuerName(),
+      assetClass: security.getAssetClass(),
+      productType: bondSecurity?.getProductType() ?? '',
+      asOf: security.getAsOf().toString().split(' ')[0],
+      securityType: security.proto.getSecurityType(),
+    };
+
+    if (bondSecurity) {
+      try { result.couponRate = bondSecurity.getCouponRate()?.getArbitraryPrecisionValue(); } catch {}
+      try { result.couponFrequency = bondSecurity.getCouponFrequency()?.toString(); } catch {}
+      try { result.faceValue = bondSecurity.getFaceValue()?.getArbitraryPrecisionValue(); } catch {}
+      try {
+        const dd = bondSecurity.getDatedDate();
+        if (dd) result.datedDate = dd.toDate().toISOString().slice(0, 10).replace(/-/g, '/');
+      } catch {}
+    }
+
+    acc.push(result);
+    return acc;
+  }, []);
+}
+
+export async function FetchSecurityByUuid(uuidStr: string, apiKey?: string): Promise<securityData[]> {
+  try {
+    const service = new SecurityService(apiKey);
+    const securities = await service.searchByUuid(uuidStr);
+    return mapSecuritiesToData(securities);
+  } catch (error: any) {
+    console.error('Error fetching security by UUID:', error.message);
     return [];
   }
 }
