@@ -296,7 +296,6 @@
 
   .cpi-chart {
     width: 100%;
-    max-width: 740px;
     height: auto;
     cursor: crosshair;
   }
