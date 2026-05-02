@@ -119,11 +119,15 @@
       @include flex(row, flex-start, center, 1em);
       width: 50%;
       margin: 0;
-      transition: all 0.5s ease;
+      transition: color 0.5s ease;
 
       &:hover {
         color: $primary-button;
       }
+    }
+
+    :global(.user-menu-icon) {
+      flex-shrink: 0;
     }
   }
 

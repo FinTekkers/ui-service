@@ -3,43 +3,76 @@
   export let data: import('./$types').PageData;
 
   type PriceEntry = { date: string; price: number; cusip?: string };
+  type UniverseEntry = { identifier: string; identifierType: string; description: string; uuidHex: string; assetClass: string };
 
-  $: securities = (data.securities ?? []) as Array<{ cusip: string; description: string }>;
   $: prices = (data.prices ?? []) as PriceEntry[];
-  $: selectedCusip = (data.selectedCusip ?? '') as string;
+  $: selectedIdentifier = (data.selectedIdentifier ?? '') as string;
+  $: selectedIdentifierType = (data.selectedIdentifierType ?? 'cusip') as string;
   $: securityDescription = (data.securityDescription ?? '') as string;
   $: priceError = (data.priceError ?? '') as string;
 
-  // Autocomplete state
-  let cusipInput = data.selectedCusip ?? '';
+  // UI state — initialized from the URL on every load
+  let identifierTypeChoice: string = data.selectedIdentifierType ?? 'cusip';
+  let identifierInput: string = data.selectedIdentifier ?? '';
   let showSuggestions = false;
-  let selectedIndex = -1;
+  let selectedSuggestionIndex = -1;
 
-  $: filtered = cusipInput.length > 0
-    ? securities.filter(s => s.cusip.toUpperCase().startsWith(cusipInput.toUpperCase())).slice(0, 10)
-    : [];
+  // Map URL type → IdentifierTypeProto name used in the universe rows
+  const urlTypeToUniverseType: Record<string, string> = {
+    cusip: 'CUSIP',
+    ticker: 'EXCH_TICKER',
+    isin: 'ISIN',
+  };
 
-  function selectCusip(cusip: string) {
-    cusipInput = cusip;
-    showSuggestions = false;
-    window.location.href = `/data/prices?cusip=${encodeURIComponent(cusip)}`;
+  function placeholderFor(type: string): string {
+    if (type === 'ticker') return 'Enter ticker (e.g. AAPL)...';
+    if (type === 'isin') return 'Enter ISIN...';
+    return 'Enter CUSIP...';
   }
 
-  function handleKeydown(e: KeyboardEvent) {
+  function filterUniverse(universe: UniverseEntry[], type: string, input: string): UniverseEntry[] {
+    const wanted = urlTypeToUniverseType[type] ?? 'CUSIP';
+    const q = input.toUpperCase();
+    return universe
+      .filter((s) => s.identifierType === wanted)
+      .filter((s) => q === '' || s.identifier.toUpperCase().startsWith(q) || s.description.toUpperCase().includes(q))
+      .slice(0, 10);
+  }
+
+  function navigateTo(type: string, id: string) {
+    const u = new URL('/data/prices', window.location.origin);
+    u.searchParams.set('type', type);
+    u.searchParams.set('id', id);
+    window.location.href = u.pathname + u.search;
+  }
+
+  function selectSuggestion(entry: UniverseEntry) {
+    identifierInput = entry.identifier;
+    showSuggestions = false;
+    navigateTo(identifierTypeChoice, entry.identifier);
+  }
+
+  function handleSearch() {
+    const v = identifierInput.trim();
+    if (v) navigateTo(identifierTypeChoice, v);
+  }
+
+  function handleTypeChange() {
+    // Switching type clears the input — a CUSIP isn't a ticker.
+    identifierInput = '';
+    selectedSuggestionIndex = -1;
+    showSuggestions = false;
+  }
+
+  function handleKeydown(e: KeyboardEvent, filtered: UniverseEntry[]) {
     if (e.key === 'Enter') { e.preventDefault(); handleSearch(); return; }
     if (!showSuggestions || filtered.length === 0) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, filtered.length - 1); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, 0); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, filtered.length - 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, 0); }
     else if (e.key === 'Escape') { showSuggestions = false; }
   }
 
   function handleBlur() { setTimeout(() => { showSuggestions = false; }, 150); }
-
-  function handleSearch() {
-    if (cusipInput.trim()) {
-      window.location.href = `/data/prices?cusip=${encodeURIComponent(cusipInput.trim())}`;
-    }
-  }
 
   // Chart — ascending order for line
   $: chartPrices = [...prices].reverse();
@@ -80,31 +113,71 @@
     <div class="portfolio_container px-10 py-7">
       <h2 class="text-3xl font-extrabold my-3">Price History</h2>
 
-      <!-- CUSIP selector -->
+      <!-- Identifier type + value selector -->
       <div class="selector-row">
-        <div class="autocomplete-wrapper">
-          <input
-            type="text"
-            class="cusip-input"
-            placeholder="Enter CUSIP..."
-            bind:value={cusipInput}
-            autocomplete="off"
-            on:focus={() => { showSuggestions = true; selectedIndex = -1; }}
-            on:blur={handleBlur}
-            on:keydown={handleKeydown}
-            on:input={() => { showSuggestions = true; selectedIndex = -1; }}
-          />
-          {#if showSuggestions && filtered.length > 0}
-            <ul class="suggestions">
-              {#each filtered as sec, i}
-                <li class:selected={i === selectedIndex} on:mousedown|preventDefault={() => selectCusip(sec.cusip)}>
-                  <span class="suggestion-cusip">{sec.cusip}</span>
-                  <span class="suggestion-desc">{sec.description}</span>
-                </li>
-              {/each}
-            </ul>
-          {/if}
-        </div>
+        <select
+          class="type-select"
+          bind:value={identifierTypeChoice}
+          on:change={handleTypeChange}
+          aria-label="Identifier type"
+        >
+          <option value="cusip">CUSIP</option>
+          <option value="ticker">Ticker</option>
+          <option value="isin">ISIN</option>
+        </select>
+
+        {#await data.universe}
+          <div class="autocomplete-wrapper">
+            <input
+              type="text"
+              class="cusip-input"
+              placeholder={placeholderFor(identifierTypeChoice)}
+              bind:value={identifierInput}
+              autocomplete="off"
+              on:keydown={(e) => handleKeydown(e, [])}
+              disabled
+            />
+            <span class="loading-hint">Loading suggestions…</span>
+          </div>
+        {:then universe}
+          {@const filtered = filterUniverse(universe, identifierTypeChoice, identifierInput)}
+          <div class="autocomplete-wrapper">
+            <input
+              type="text"
+              class="cusip-input"
+              placeholder={placeholderFor(identifierTypeChoice)}
+              bind:value={identifierInput}
+              autocomplete="off"
+              on:focus={() => { showSuggestions = true; selectedSuggestionIndex = -1; }}
+              on:blur={handleBlur}
+              on:keydown={(e) => handleKeydown(e, filtered)}
+              on:input={() => { showSuggestions = true; selectedSuggestionIndex = -1; }}
+            />
+            {#if showSuggestions && filtered.length > 0}
+              <ul class="suggestions">
+                {#each filtered as entry, i}
+                  <li class:selected={i === selectedSuggestionIndex} on:mousedown|preventDefault={() => selectSuggestion(entry)}>
+                    <span class="suggestion-cusip">{entry.identifier}</span>
+                    <span class="suggestion-desc">{entry.description}</span>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
+          </div>
+        {:catch}
+          <div class="autocomplete-wrapper">
+            <input
+              type="text"
+              class="cusip-input"
+              placeholder={placeholderFor(identifierTypeChoice)}
+              bind:value={identifierInput}
+              autocomplete="off"
+              on:keydown={(e) => handleKeydown(e, [])}
+            />
+            <span class="loading-hint error">Suggestions unavailable</span>
+          </div>
+        {/await}
+
         <button class="search-btn" on:click={handleSearch}>View Prices</button>
       </div>
 
@@ -112,14 +185,14 @@
         <div class="error-banner">{priceError}</div>
       {/if}
 
-      {#if selectedCusip && securityDescription}
+      {#if selectedIdentifier && securityDescription}
         <p class="security-desc">{securityDescription}</p>
       {/if}
 
-      {#if prices.length > 0}
+      {#if prices.length > 0 && selectedIdentifier}
         <!-- Chart -->
         <div class="chart-box">
-          <h3 class="chart-title">Price Chart — {selectedCusip}</h3>
+          <h3 class="chart-title">Price Chart — {selectedIdentifier}</h3>
           <svg viewBox="0 0 {chartWidth} {chartHeight}" class="price-chart">
             {#each yTicks as tick}
               {@const y = pad.top + plotH - ((tick - yMin) / yRange) * plotH}
@@ -178,9 +251,9 @@
             </tbody>
           </table>
         </div>
-      {:else if selectedCusip && !priceError}
-        <p class="empty-msg">No price history found for {selectedCusip}.</p>
-      {:else if !selectedCusip && prices.length > 0}
+      {:else if selectedIdentifier && !priceError}
+        <p class="empty-msg">No price history found for {selectedIdentifier}.</p>
+      {:else if !selectedIdentifier && prices.length > 0}
         <!-- Browse table: most recent price per security -->
         <div class="browse-section">
           <h3 class="browse-title">Latest Prices <span class="browse-count">({prices.length})</span></h3>
@@ -188,7 +261,7 @@
             <table class="text-left">
               <thead class="border-b border-slate-400">
                 <tr>
-                  <th class="text-semibold px-4 py-2">CUSIP</th>
+                  <th class="text-semibold px-4 py-2">Identifier</th>
                   <th class="text-semibold px-4 py-2">Price</th>
                   <th class="text-semibold px-4 py-2">Date</th>
                 </tr>
@@ -198,7 +271,7 @@
                   <tr class="table-row border-b border-slate-400">
                     <td class="table-cell px-4 py-2">
                       {#if p.cusip}
-                        <a class="cusip-link" href="/data/prices?cusip={encodeURIComponent(p.cusip)}">{p.cusip}</a>
+                        <a class="cusip-link" href="/data/prices?type=cusip&id={encodeURIComponent(p.cusip)}">{p.cusip}</a>
                       {:else}
                         —
                       {/if}
@@ -211,7 +284,7 @@
             </table>
           </div>
         </div>
-      {:else if !selectedCusip}
+      {:else if !selectedIdentifier}
         <p class="empty-msg">No prices available.</p>
       {/if}
     </div>
@@ -233,6 +306,18 @@
     align-items: flex-start;
   }
 
+  .type-select {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    background-color: white;
+    color: #05192a;
+    height: 38px;
+    box-sizing: border-box;
+    cursor: pointer;
+  }
+
   .autocomplete-wrapper {
     position: relative;
     flex: 1;
@@ -251,6 +336,19 @@
     box-sizing: border-box;
 
     &::placeholder { color: #86929c; }
+    &:disabled { background-color: #f3f4f6; color: #86929c; cursor: not-allowed; }
+  }
+
+  .loading-hint {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    font-size: 0.7rem;
+    color: #a0adb7;
+    font-style: italic;
+
+    &.error { color: #fecaca; }
   }
 
   .suggestions {

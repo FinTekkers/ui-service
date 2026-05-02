@@ -1,4 +1,4 @@
-import { FetchSecurity } from '$lib/security';
+import { FetchSecurity, FetchSecurityUniverse, type IdentifierTypeName } from '$lib/security';
 import { PriceService } from '@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService';
 import { UUIDProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
@@ -15,28 +15,47 @@ interface PriceEntry {
   cusip?: string;
 }
 
+const VALID_TYPES = new Set(['cusip', 'ticker', 'isin']);
+
+function parseIdentifierType(raw: string | null): IdentifierTypeName {
+  const v = (raw ?? '').toLowerCase();
+  if (v === 'ticker') return 'EXCH_TICKER';
+  if (v === 'isin') return 'ISIN';
+  return 'CUSIP';
+}
+
+function uuidHexToString(uuidHex: string): string {
+  const uuidProto = UUIDProto.deserializeBinary(new Uint8Array(Buffer.from(uuidHex, 'hex')));
+  const rawBytes = uuidProto.getRawUuid_asU8();
+  const uuidStr = Array.from(rawBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${uuidStr.slice(0,8)}-${uuidStr.slice(8,12)}-${uuidStr.slice(12,16)}-${uuidStr.slice(16,20)}-${uuidStr.slice(20)}`;
+}
+
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
   const searchParams = new URLSearchParams(request.url.split('?')[1]);
-  const selectedCusip = searchParams.get('cusip') ?? '';
 
-  // Load the single selected security for description/UUID lookup
-  let securities: { cusip: string; description: string; uuidHex: string }[] = [];
-  if (selectedCusip) {
-    try {
-      const allSecs = await FetchSecurity('Fixed Income', 'US Government', selectedCusip, 'CUSIP', undefined, undefined, locals.user?.apiKey);
-      securities = allSecs
-        .filter(s => s.uuidHex)
-        .map(s => ({
-          cusip: s.cusip,
-          description: `${s.cusip} — ${s.issuerName} ${s.couponRate ? s.couponRate + '%' : ''} ${s.maturityDate}`.trim(),
-          uuidHex: s.uuidHex!,
-        }));
-    } catch (e) {
-      console.error('Failed to load security for price page:', e);
-    }
+  // URL contract: ?type=cusip|ticker|isin&id=<value>
+  // Legacy alias: ?cusip=<value> → treated as type=cusip&id=<value>
+  let typeRaw = searchParams.get('type');
+  let identifierValue = (searchParams.get('id') ?? '').trim();
+  const legacyCusip = (searchParams.get('cusip') ?? '').trim();
+  if (!identifierValue && legacyCusip) {
+    identifierValue = legacyCusip;
+    if (!typeRaw) typeRaw = 'cusip';
   }
+  const identifierType = parseIdentifierType(typeRaw);
+  const identifierTypeUrl = VALID_TYPES.has((typeRaw ?? '').toLowerCase())
+    ? (typeRaw as string).toLowerCase()
+    : 'cusip';
 
+  // Streamed promise — universe loads in parallel, page paints without waiting.
+  const universe = FetchSecurityUniverse(locals.user?.apiKey).catch((e) => {
+    console.error('Failed to load security universe:', e);
+    return [];
+  });
+
+  // Look up the selected security to render the chart and resolve UUID for PriceService.
   let prices: PriceEntry[] = [];
   let securityDescription = '';
   let priceError = '';
@@ -45,19 +64,27 @@ export async function load({ locals, request }) {
     const priceService = new PriceService(locals.user?.apiKey);
     const now = ZonedDateTime.now();
 
-    if (selectedCusip) {
-      // Filtered fetch: prices for one security
-      const sec = securities.find(s => s.cusip === selectedCusip);
+    if (identifierValue) {
+      const matches = await FetchSecurity(
+        null,
+        null,
+        identifierValue,
+        identifierType,
+        undefined,
+        undefined,
+        locals.user?.apiKey,
+      );
+
+      const sec = matches.find(s => s.uuidHex);
       if (!sec) {
-        priceError = `Security ${selectedCusip} not found`;
+        priceError = `${identifierType === 'EXCH_TICKER' ? 'Ticker' : identifierType} ${identifierValue} not found`;
       } else {
-        securityDescription = sec.description;
-        const uuidProto = UUIDProto.deserializeBinary(new Uint8Array(Buffer.from(sec.uuidHex, 'hex')));
-        const rawBytes = uuidProto.getRawUuid_asU8();
-        const uuidStr = Array.from(rawBytes).map(b => b.toString(16).padStart(2, '0')).join('');
-        const formatted = `${uuidStr.slice(0,8)}-${uuidStr.slice(8,12)}-${uuidStr.slice(12,16)}-${uuidStr.slice(16,20)}-${uuidStr.slice(20)}`;
+        const couponPart = sec.couponRate ? ` ${sec.couponRate}%` : '';
+        const maturityPart = sec.maturityDate ? ` ${sec.maturityDate}` : '';
+        securityDescription = `${sec.identifier} — ${sec.issuerName}${couponPart}${maturityPart}`.trim();
+
         const filter = new PositionFilter();
-        filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(formatted)));
+        filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(sec.uuidHex!))));
 
         const rawPrices = await priceService.search(now.toProto(), filter);
         prices = rawPrices
@@ -70,7 +97,7 @@ export async function load({ locals, request }) {
           .slice(0, 1000);
       }
     } else {
-      // Browse fetch: no filter — price service returns most recent price per security (capped at 100)
+      // Browse fetch: latest price per security
       const rawPrices = await priceService.search(now.toProto(), new PositionFilter());
       prices = rawPrices
         .map(p => {
@@ -90,9 +117,10 @@ export async function load({ locals, request }) {
   }
 
   return {
-    securities,
+    universe,                       // un-awaited Promise — streamed
     prices,
-    selectedCusip,
+    selectedIdentifier: identifierValue,
+    selectedIdentifierType: identifierTypeUrl,
     securityDescription,
     priceError,
     user: locals.user,

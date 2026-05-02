@@ -1,25 +1,28 @@
-import { FetchSecurity } from "$lib/security";
+import { FetchSecurity, FetchSecurityByUuid } from "$lib/security";
 import { deleteSecurity } from "$lib/security-delete";
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
   const searchParams = new URLSearchParams(request.url.split("?")[1]);
   // Accept both 'identifier' (new) and 'cusip' (old) param names during migration
+  const uuid = searchParams.get('uuid');
   const identifier = searchParams.get('identifier') ?? searchParams.get('cusip');
   const rawIdType = searchParams.get('identifierType');
   const identifierType = rawIdType === 'ISIN' ? 'ISIN' as const : rawIdType === 'CUSIP' ? 'CUSIP' as const : undefined;
   const issueDate = searchParams.get('issueDate');
   const issueDateOperator = searchParams.get('issueDateOperator');
 
-  const security = await FetchSecurity(
-    "Fixed Income",
-    "US Government",
-    identifier || undefined,
-    identifierType,
-    issueDate || undefined,
-    issueDateOperator === 'greater_than' ? 'greater_than' : issueDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
-    locals.user?.apiKey
-  );
+  const security = uuid
+    ? await FetchSecurityByUuid(uuid, locals.user?.apiKey)
+    : await FetchSecurity(
+        "Fixed Income",
+        "US Government",
+        identifier || undefined,
+        identifierType,
+        issueDate || undefined,
+        issueDateOperator === 'greater_than' ? 'greater_than' : issueDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
+        locals.user?.apiKey
+      );
 
   return {
     security: security,

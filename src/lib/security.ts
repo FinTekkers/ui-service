@@ -13,6 +13,8 @@ import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/secur
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
+import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
+import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
 
 const { FieldProto } = pkg;
 
@@ -22,6 +24,7 @@ export interface securityData {
   settlementCurrency: string;  // "USD" | "GBP" | "" if not set
   cusip: string;               // deprecated alias for identifier; kept for compatibility
   uuidHex?: string;
+  uuidStr?: string;            // human-readable UUID (hyphenated)
   issueDate: string;
   maturityDate: string;
   outstandingAmount: string;
@@ -46,24 +49,38 @@ export interface securityData {
  * @returns {Promise<securityData[]>} A promise resolving to an array of security data.
  */
 
+export type IdentifierTypeName = 'CUSIP' | 'ISIN' | 'EXCH_TICKER';
+
+function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
+  switch (name) {
+    case 'ISIN': return IdentifierTypeProto.ISIN;
+    case 'EXCH_TICKER': return IdentifierTypeProto.EXCH_TICKER;
+    case 'CUSIP':
+    default: return IdentifierTypeProto.CUSIP;
+  }
+}
+
 export async function FetchSecurity(
-  assetClass: string,
+  assetClass: string | null,
   issuerName: string | null,
   identifier?: string,
-  identifierType?: 'CUSIP' | 'ISIN',
+  identifierType?: IdentifierTypeName,
   issueDate?: string,
   issueDateOperator?: 'greater_than' | 'lesser_than',
   apiKey?: string,
 ): Promise<securityData[]> {
   const filterSecurity = new PositionFilter();
-  filterSecurity.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass);
+
+  if (assetClass) {
+    filterSecurity.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass);
+  }
 
   if (issuerName) {
     filterSecurity.addEqualsFilter(FieldProto.SECURITY_ISSUER_NAME, issuerName);
   }
 
   if (identifier && identifier.trim() !== "") {
-    const idType = identifierType === 'ISIN' ? IdentifierTypeProto.ISIN : IdentifierTypeProto.CUSIP;
+    const idType = identifierTypeNameToProto(identifierType ?? 'CUSIP');
     const identifierProto = new IdentifierProto().setIdentifierType(idType).setIdentifierValue(identifier.trim());
     filterSecurity.addObjectFilter(FieldProto.IDENTIFIER, new Identifier(identifierProto));
   }
@@ -85,7 +102,11 @@ export async function FetchSecurity(
     searchRequest.setAsOf(ZonedDateTime.now().toProto());
     searchRequest.setSearchSecurityInput(filterSecurity.toProto());
 
-    const securities = await new Promise<Security[]>((resolve, reject) => {
+    // Keep partials on mid-stream error. The security service can throw
+    // validation errors on individual records during streaming (e.g. a bond
+    // missing maturity_date); aborting the whole batch on the first bad
+    // record loses all the good ones that already arrived.
+    const securities = await new Promise<Security[]>((resolve) => {
       const list: Security[] = [];
       const stream = client.search(searchRequest);
       stream.on('data', (response: any) => {
@@ -95,34 +116,37 @@ export async function FetchSecurity(
       });
       stream.on('end', () => resolve(list));
       stream.on('error', (err: any) => {
-        console.error('Security search stream error:', err);
-        reject(err);
+        console.warn(`Security search stream error after ${list.length} records: ${err.details ?? err.message}`);
+        resolve(list);
       });
     });
 
     return securities.reduce(
       (acc: securityData[], security: Security) => {
+       try {
         const issuanceList = security.proto.getIssuanceInfoList();
         const issuance =
           issuanceList && issuanceList.length > 0 ? issuanceList[0] : null;
 
-        const maturityDate = security.getMaturityDate().toDate();
-        const issueDate = security.getIssueDate().toDate();
+        // Equity / index / cash / currency securities have no maturity or issue date —
+        // these getters throw. Default to a sentinel and let the per-class checks below
+        // skip the bond-specific filtering.
+        let maturityDate: Date;
+        let issueDate: Date;
+        try { maturityDate = security.getMaturityDate().toDate(); } catch { maturityDate = new Date(0); }
+        try { issueDate = security.getIssueDate().toDate(); } catch { issueDate = new Date(0); }
 
         // Determine whether to include this security based on issuance info.
         // US Treasuries carry issuance auction records; non-US bonds (e.g. Gilts) do not.
-        // If no issuance record exists at all, include the security unconditionally.
+        // Non-bond securities have no issuance — include unconditionally.
         if (issuance) {
           const qty = issuance.getPostAuctionOutstandingQuantity();
           if (!qty && maturityDate.getFullYear() > 2009) {
-            // US-style: skip if no auction quantity (treats as not yet auctioned / bad data)
             return acc;
-          } else if (!qty && maturityDate.getFullYear() <= 2009) {
-            // Matured US security without quantity — skip
+          } else if (!qty && maturityDate.getFullYear() <= 2009 && maturityDate.getFullYear() > 1970) {
             return acc;
           }
         }
-        // Either has valid issuance qty, or has no issuance record (non-US bond) — include it.
 
         {
           const outstandingAmount = issuance
@@ -136,8 +160,13 @@ export async function FetchSecurity(
           const idProto = security.proto.getIdentifier ? security.proto.getIdentifier() : null;
           const idTypeNum = idProto?.getIdentifierType() ?? 0;
           const identifierTypeStr =
-            idTypeNum === IdentifierTypeProto.CUSIP ? 'CUSIP' :
-            idTypeNum === IdentifierTypeProto.ISIN  ? 'ISIN'  : 'UNKNOWN';
+            idTypeNum === IdentifierTypeProto.CUSIP       ? 'CUSIP' :
+            idTypeNum === IdentifierTypeProto.ISIN        ? 'ISIN'  :
+            idTypeNum === IdentifierTypeProto.EXCH_TICKER ? 'EXCH_TICKER' :
+            idTypeNum === IdentifierTypeProto.FIGI        ? 'FIGI' :
+            idTypeNum === IdentifierTypeProto.SERIES_ID   ? 'SERIES_ID' :
+            idTypeNum === IdentifierTypeProto.OSI         ? 'OSI' :
+            idTypeNum === IdentifierTypeProto.CASH        ? 'CASH' : 'UNKNOWN';
 
           // Resolve settlement currency
           let settlementCurrency = '';
@@ -146,8 +175,9 @@ export async function FetchSecurity(
             settlementCurrency = settlementSec?.getCashDetails?.()?.getCashId?.() ?? '';
           } catch { /* optional field */ }
 
-          const issueDateStr = issueDate.toISOString().slice(0, 10).replace(/-/g, '/');
-          const maturityDateStr = maturityDate.toISOString().slice(0, 10).replace(/-/g, '/');
+          // Empty string for non-bond securities — sentinel new Date(0) = 1970-01-01
+          const issueDateStr = issueDate.getTime() === 0 ? '' : issueDate.toISOString().slice(0, 10).replace(/-/g, '/');
+          const maturityDateStr = maturityDate.getTime() === 0 ? '' : maturityDate.toISOString().slice(0, 10).replace(/-/g, '/');
           const asOfStr = security.getAsOf().toString().split(' ')[0]; // Format: "YYYY/MM/DD"
 
           // Check if it's a bond security to get additional fields
@@ -157,6 +187,7 @@ export async function FetchSecurity(
           // Serialize UUID for delete support
           const uuidProto = security.proto.getUuid();
           const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
+          const uuidStr = security.getID().toString();
 
           const result: securityData = {
             identifier: id,
@@ -164,6 +195,7 @@ export async function FetchSecurity(
             settlementCurrency,
             cusip: id,           // backward-compat alias
             uuidHex,
+            uuidStr,
             issueDate: issueDateStr,
             maturityDate: maturityDateStr,
             outstandingAmount,
@@ -227,12 +259,155 @@ export async function FetchSecurity(
 
           acc.push(result);
         }
+       } catch (perRecordErr: any) {
+         // Skip individual records that throw during deserialization rather than
+         // dropping the whole batch.
+         console.warn(`Skipping security during deserialization: ${perRecordErr?.message ?? perRecordErr}`);
+       }
         return acc;
       },
       []
     );
   } catch (error: any) {
     console.error("Error fetching security data:", error.message);
+    return [];
+  }
+}
+
+function mapSecuritiesToData(securities: Security[]): securityData[] {
+  return securities.reduce((acc: securityData[], security: Security) => {
+    const maturityDate = security.getMaturityDate().toDate();
+    const issueDate = security.getIssueDate().toDate();
+    const idProto = security.proto.getIdentifier ? security.proto.getIdentifier() : null;
+    const idTypeNum = idProto?.getIdentifierType() ?? 0;
+    const identifierTypeStr =
+      idTypeNum === IdentifierTypeProto.CUSIP ? 'CUSIP' :
+      idTypeNum === IdentifierTypeProto.ISIN  ? 'ISIN'  : 'UNKNOWN';
+    const id = security.getSecurityID()
+      ? security.getSecurityID().getIdentifierValue()
+      : security.getID().toString();
+    const uuidProto = security.proto.getUuid();
+    const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
+    const uuidStr = security.getID().toString();
+    const isBond = [SecurityTypeProto.BOND_SECURITY, SecurityTypeProto.TIPS, SecurityTypeProto.FRN]
+      .includes(security.proto.getSecurityType());
+    const bondSecurity = isBond ? (security as BondSecurity) : null;
+
+    const result: securityData = {
+      identifier: id,
+      identifierType: identifierTypeStr,
+      settlementCurrency: '',
+      cusip: id,
+      uuidHex,
+      uuidStr,
+      issueDate: issueDate.toISOString().slice(0, 10).replace(/-/g, '/'),
+      maturityDate: maturityDate.toISOString().slice(0, 10).replace(/-/g, '/'),
+      outstandingAmount: '0',
+      issuerName: security.getIssuerName(),
+      assetClass: security.getAssetClass(),
+      productType: bondSecurity?.getProductType() ?? '',
+      asOf: security.getAsOf().toString().split(' ')[0],
+      securityType: security.proto.getSecurityType(),
+    };
+
+    if (bondSecurity) {
+      try { result.couponRate = bondSecurity.getCouponRate()?.getArbitraryPrecisionValue(); } catch {}
+      try { result.couponFrequency = bondSecurity.getCouponFrequency()?.toString(); } catch {}
+      try { result.faceValue = bondSecurity.getFaceValue()?.getArbitraryPrecisionValue(); } catch {}
+      try {
+        const dd = bondSecurity.getDatedDate();
+        if (dd) result.datedDate = dd.toDate().toISOString().slice(0, 10).replace(/-/g, '/');
+      } catch {}
+    }
+
+    acc.push(result);
+    return acc;
+  }, []);
+}
+
+export interface UniverseEntry {
+  identifier: string;
+  identifierType: string;  // "CUSIP" | "ISIN" | "EXCH_TICKER" | "UNKNOWN"
+  description: string;
+  uuidHex: string;
+  assetClass: string;
+}
+
+const UNIVERSE_TTL_MS = 5 * 60 * 1000;
+const UNIVERSE_CAP_PER_CLASS = 1000;
+// Asset classes seeded by data-sourcing pipelines (market-data-inputs, app-soma-analytics).
+// The security service rejects an empty position filter, so we fan out one query per class.
+// Cap is per class so Fixed Income doesn't crowd out equities. Set generously since
+// universe is deduped to one entry per (identifierType, identifier).
+const UNIVERSE_ASSET_CLASSES = ['Fixed Income', 'Equity', 'Index', 'Cash', 'Currency'] as const;
+const universeCache = new Map<string, { value: UniverseEntry[]; fetchedAt: number }>();
+
+export function clearUniverseCache(): void {
+  universeCache.clear();
+}
+
+function dedupeLatestPerIdentifier(secs: securityData[]): securityData[] {
+  // The security service streams every historical version of each security.
+  // For autocomplete we only want one entry per (identifierType, identifier).
+  // Pick the latest by asOf when available.
+  const byKey = new Map<string, securityData>();
+  for (const s of secs) {
+    if (!s.uuidHex) continue;
+    const key = `${s.identifierType}:${s.identifier}`;
+    const existing = byKey.get(key);
+    if (!existing || (s.asOf ?? '') > (existing.asOf ?? '')) {
+      byKey.set(key, s);
+    }
+  }
+  return [...byKey.values()];
+}
+
+export async function FetchSecurityUniverse(apiKey?: string): Promise<UniverseEntry[]> {
+  const cacheKey = apiKey ?? '__no_key__';
+  const cached = universeCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < UNIVERSE_TTL_MS) {
+    return cached.value;
+  }
+
+  const perClass = await Promise.all(
+    UNIVERSE_ASSET_CLASSES.map(async (cls) => {
+      try {
+        const all = await FetchSecurity(cls, null, undefined, undefined, undefined, undefined, apiKey);
+        return dedupeLatestPerIdentifier(all).slice(0, UNIVERSE_CAP_PER_CLASS);
+      } catch (e: any) {
+        console.warn(`Universe fetch failed for asset class ${cls}:`, e?.message ?? e);
+        return [];
+      }
+    }),
+  );
+
+  const universe: UniverseEntry[] = [];
+  for (const secs of perClass) {
+    for (const sec of secs) {
+      const couponPart = sec.couponRate ? ` ${sec.couponRate}%` : '';
+      const maturityPart = sec.maturityDate && sec.assetClass === 'Fixed Income' ? ` ${sec.maturityDate}` : '';
+      const description = `${sec.issuerName}${couponPart}${maturityPart}`.trim();
+      universe.push({
+        identifier: sec.identifier,
+        identifierType: sec.identifierType,
+        description,
+        uuidHex: sec.uuidHex!,
+        assetClass: sec.assetClass,
+      });
+    }
+  }
+
+  universeCache.set(cacheKey, { value: universe, fetchedAt: Date.now() });
+  return universe;
+}
+
+export async function FetchSecurityByUuid(uuidStr: string, apiKey?: string): Promise<securityData[]> {
+  try {
+    const service = new SecurityService(apiKey);
+    const securities = await service.searchByUuid(uuidStr);
+    return mapSecuritiesToData(securities);
+  } catch (error: any) {
+    console.error('Error fetching security by UUID:', error.message);
     return [];
   }
 }
