@@ -1,9 +1,26 @@
 <script lang="ts">
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
 
-  export let data: { cpiData: Array<{ date: string; value: number }>; error: string | null; user?: any };
-
+  type CpiSeries = { identifier: string; description: string; indexType: string; uuidHex: string; uuidStr: string };
   type CpiPoint = { date: string; value: number; mom: number | null };
+
+  export let data: {
+    allSeries: CpiSeries[];
+    selectedSeries: CpiSeries | null;
+    cpiData: Array<{ date: string; value: number }>;
+    error: string | null;
+    user?: any;
+  };
+
+  $: selectedId = data.selectedSeries?.identifier ?? '';
+
+  function onSeriesChange(e: Event) {
+    const id = (e.currentTarget as HTMLSelectElement).value;
+    if (!id) return;
+    const u = new URL('/data/cpi_index', window.location.origin);
+    u.searchParams.set('series', id);
+    window.location.href = u.pathname + u.search;
+  }
 
   // Compute month-over-month change
   $: cpiPoints = data.cpiData.map((d, i): CpiPoint => {
@@ -12,7 +29,6 @@
     return { ...d, mom };
   });
 
-  // Pre-computed reversed array — avoids allocating a new array on every render tick
   $: reversedPoints = [...cpiPoints].reverse();
 
   // Chart dimensions
@@ -22,48 +38,52 @@
   const plotW = chartWidth - pad.left - pad.right;
   const plotH = chartHeight - pad.top - pad.bottom;
 
-  // Y-axis range with padding
-  $: values = cpiPoints.map(p => p.value);
-  $: yMin = Math.floor(Math.min(...values) - 2);
-  $: yMax = Math.ceil(Math.max(...values) + 2);
-  $: yRange = yMax - yMin;
+  $: values = cpiPoints.map((p) => p.value);
+  $: yMin = values.length > 0 ? Math.floor(Math.min(...values) - 2) : 0;
+  $: yMax = values.length > 0 ? Math.ceil(Math.max(...values) + 2) : 100;
+  $: yRange = Math.max(yMax - yMin, 1);
 
-  // Map to SVG coords
   $: svgPoints = cpiPoints.map((p, i) => ({
     ...p,
     x: pad.left + (i / Math.max(cpiPoints.length - 1, 1)) * plotW,
     y: pad.top + plotH - ((p.value - yMin) / yRange) * plotH,
   }));
 
-  $: polyline = svgPoints.map(p => `${p.x},${p.y}`).join(' ');
+  $: polyline = svgPoints.map((p) => `${p.x},${p.y}`).join(' ');
 
-  // Y-axis ticks (every 10 units to avoid overlap)
-  $: yTickStep = yRange > 40 ? 10 : yRange > 20 ? 5 : 2;
+  $: yTickStep = yRange > 200 ? 50 : yRange > 80 ? 20 : yRange > 40 ? 10 : yRange > 20 ? 5 : 2;
   $: yTickStart = Math.ceil(yMin / yTickStep) * yTickStep;
   $: yTicks = Array.from(
     { length: Math.floor((yMax - yTickStart) / yTickStep) + 1 },
-    (_, i) => yTickStart + i * yTickStep
+    (_, i) => yTickStart + i * yTickStep,
   );
 
-  // X-axis labels (show every Nth label to avoid crowding)
   $: labelInterval = Math.max(1, Math.floor(cpiPoints.length / 8));
+
+  // Title / subtitle / Y-axis label derived from selected series
+  $: pageTitle = data.selectedSeries
+    ? `${data.selectedSeries.indexType.replace('_', '-')} — ${data.selectedSeries.identifier}`
+    : 'CPI Index';
+  $: pageSubtitle = data.selectedSeries?.description ?? 'Select a CPI series to display.';
+  $: yAxisLabel = data.selectedSeries
+    ? `${data.selectedSeries.indexType.replace('_', '-')} Level`
+    : 'Index Level';
 
   let hoveredIndex: number | null = null;
 
-  // Single mousemove handler on the SVG replaces O(n) per-circle event listeners.
-  // Finds the nearest data point by x-distance using the SVG viewBox coordinate system.
   function handleChartMousemove(e: MouseEvent) {
     if (svgPoints.length === 0) return;
     const svgEl = e.currentTarget as SVGSVGElement;
     const rect = svgEl.getBoundingClientRect();
     const scaleX = chartWidth / rect.width;
     const mouseX = (e.clientX - rect.left) * scaleX;
-    // Binary search would work here too, but points are evenly spaced so a
-    // simple clamp + round is O(1):
-    const idx = Math.max(0, Math.min(
-      svgPoints.length - 1,
-      Math.round((mouseX - pad.left) / plotW * (svgPoints.length - 1))
-    ));
+    const idx = Math.max(
+      0,
+      Math.min(
+        svgPoints.length - 1,
+        Math.round(((mouseX - pad.left) / plotW) * (svgPoints.length - 1)),
+      ),
+    );
     hoveredIndex = idx;
   }
 
@@ -77,17 +97,31 @@
 
   <div class="h-full w-full dashboard-container" style="overflow-y: auto;">
     <div class="portfolio_container px-10 py-7">
-      <h1 class="page-title">CPI-U Index</h1>
-      <p class="page-subtitle">Consumer Price Index for All Urban Consumers (CPI-U), seasonally unadjusted</p>
+      <h1 class="page-title">{pageTitle}</h1>
+      <p class="page-subtitle">{pageSubtitle}</p>
+
+      <div class="series-selector-row">
+        <label for="series-select">Series</label>
+        <select id="series-select" class="series-select" value={selectedId} on:change={onSeriesChange} disabled={data.allSeries.length === 0}>
+          {#if data.allSeries.length === 0}
+            <option value="">No CPI series available</option>
+          {:else}
+            {#each data.allSeries as series}
+              <option value={series.identifier}>
+                {series.description} — {series.identifier} ({series.indexType.replace('_', '-')})
+              </option>
+            {/each}
+          {/if}
+        </select>
+      </div>
 
       {#if data.error}
         <div class="notice">{data.error}</div>
       {/if}
 
       {#if cpiPoints.length === 0}
-        <div class="empty-state">No CPI data available.</div>
+        <div class="empty-state">No CPI data available for the selected series.</div>
       {:else}
-        <!-- SVG Chart — mousemove/mouseleave on the SVG element; no per-circle listeners -->
         <div class="chart-box">
           <svg
             viewBox="0 0 {chartWidth} {chartHeight}"
@@ -95,19 +129,16 @@
             on:mousemove={handleChartMousemove}
             on:mouseleave={handleChartMouseleave}
             role="img"
-            aria-label="CPI-U Index chart"
+            aria-label="{pageTitle} chart"
           >
-            <!-- Grid lines -->
             {#each yTicks as tick}
               {@const y = pad.top + plotH - ((tick - yMin) / yRange) * plotH}
               <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke="#164e63" stroke-width="1" />
               <text x={pad.left - 8} y={y + 4} text-anchor="end" fill="#a0adb7" font-size="11">{tick}</text>
             {/each}
 
-            <!-- X-axis -->
             <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="#164e63" stroke-width="1" />
 
-            <!-- X-axis labels -->
             {#each svgPoints as p, i}
               {#if i % labelInterval === 0 || i === svgPoints.length - 1}
                 <text
@@ -120,7 +151,6 @@
               {/if}
             {/each}
 
-            <!-- Area fill under the line -->
             {#if svgPoints.length > 1}
               <polygon
                 points="{pad.left},{pad.top + plotH} {polyline} {svgPoints[svgPoints.length - 1].x},{pad.top + plotH}"
@@ -132,7 +162,6 @@
               />
             {/if}
 
-            <!-- Data dots — no event listeners; hover is handled by the SVG overlay above -->
             {#each svgPoints as p, i}
               <circle
                 cx={p.x} cy={p.y} r={hoveredIndex === i ? 5 : 3}
@@ -143,26 +172,23 @@
               />
             {/each}
 
-            <!-- Single tooltip rendered for the hovered point only -->
             {#if hoveredIndex !== null && svgPoints[hoveredIndex]}
               {@const hp = svgPoints[hoveredIndex]}
               <rect x={hp.x - 46} y={hp.y - 32} width="92" height="24" rx="4"
                     fill="#0c3a46" stroke="#7cd2ba" stroke-width="1" pointer-events="none" />
               <text x={hp.x} y={hp.y - 16} text-anchor="middle" fill="#7cd2ba" font-size="11" font-weight="bold"
                     pointer-events="none">
-                {hp.date}: {hp.value.toFixed(1)}
+                {hp.date}: {hp.value.toFixed(3)}
               </text>
             {/if}
 
-            <!-- Y-axis label -->
             <text x={14} y={pad.top + plotH / 2} text-anchor="middle" fill="#a0adb7" font-size="12"
                   transform="rotate(-90 14 {pad.top + plotH / 2})">
-              CPI-U Level
+              {yAxisLabel}
             </text>
           </svg>
         </div>
 
-        <!-- Data Table -->
         <div class="table-section">
           <h2 class="section-title">Monthly Data</h2>
           <div class="table-scroll">
@@ -170,7 +196,7 @@
               <thead>
                 <tr>
                   <th>Date</th>
-                  <th>CPI-U Level</th>
+                  <th>{yAxisLabel}</th>
                   <th>Month-over-Month (%)</th>
                 </tr>
               </thead>
@@ -214,6 +240,36 @@
     font-size: 0.85rem;
     color: $ltgrey;
     margin-bottom: 20px;
+  }
+
+  .series-selector-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+
+    label {
+      font-size: 0.85rem;
+      color: $ltgrey;
+    }
+  }
+
+  .series-select {
+    flex: 1;
+    max-width: 600px;
+    height: 38px;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    background-color: white;
+    color: #05192a;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
   }
 
   .notice {
