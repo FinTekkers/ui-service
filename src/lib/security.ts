@@ -49,12 +49,13 @@ export interface securityData {
  * @returns {Promise<securityData[]>} A promise resolving to an array of security data.
  */
 
-export type IdentifierTypeName = 'CUSIP' | 'ISIN' | 'EXCH_TICKER';
+export type IdentifierTypeName = 'CUSIP' | 'ISIN' | 'EXCH_TICKER' | 'SERIES_ID';
 
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
   switch (name) {
     case 'ISIN': return IdentifierTypeProto.ISIN;
     case 'EXCH_TICKER': return IdentifierTypeProto.EXCH_TICKER;
+    case 'SERIES_ID': return IdentifierTypeProto.SERIES_ID;
     case 'CUSIP':
     default: return IdentifierTypeProto.CUSIP;
   }

@@ -15,12 +15,13 @@ interface PriceEntry {
   cusip?: string;
 }
 
-const VALID_TYPES = new Set(['cusip', 'ticker', 'isin']);
+const VALID_TYPES = new Set(['cusip', 'ticker', 'isin', 'series']);
 
 function parseIdentifierType(raw: string | null): IdentifierTypeName {
   const v = (raw ?? '').toLowerCase();
   if (v === 'ticker') return 'EXCH_TICKER';
   if (v === 'isin') return 'ISIN';
+  if (v === 'series') return 'SERIES_ID';
   return 'CUSIP';
 }
 
@@ -77,7 +78,11 @@ export async function load({ locals, request }) {
 
       const sec = matches.find(s => s.uuidHex);
       if (!sec) {
-        priceError = `${identifierType === 'EXCH_TICKER' ? 'Ticker' : identifierType} ${identifierValue} not found`;
+        const typeLabel =
+          identifierType === 'EXCH_TICKER' ? 'Ticker' :
+          identifierType === 'SERIES_ID'   ? 'Series ID' :
+          identifierType;
+        priceError = `${typeLabel} ${identifierValue} not found`;
       } else {
         const couponPart = sec.couponRate ? ` ${sec.couponRate}%` : '';
         const maturityPart = sec.maturityDate ? ` ${sec.maturityDate}` : '';
