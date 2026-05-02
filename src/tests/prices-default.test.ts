@@ -1,10 +1,10 @@
 /**
- * ISSUE #40: Verify prices page default CUSIP via gRPC and grpc-auth fix.
+ * Behavioural checks for the prices page server load.
  *
- * Validates:
- * 1. +page.server.ts defaults to on-the-run 10Y Treasury via gRPC SearchSecurities
- * 2. grpc-auth.ts getServiceConnection() uses grpc.credentials.createInsecure()
- *    (not require(), which caused 'require is not defined' in ESM)
+ * Originally pinned to specific 10Y Treasury source strings (#40). After #186
+ * the page supports any identifier type, so the assertions are now behavioural:
+ * "load function exists, reads type+id from query string, returns the expected
+ * shape, handles legacy ?cusip= alias."
  */
 import { describe, expect, test } from 'vitest';
 import * as fs from 'fs';
@@ -13,10 +13,7 @@ import * as path from 'path';
 const PRICES_SERVER = path.resolve('src/routes/(authenticated)/data/prices/+page.server.ts');
 const GRPC_AUTH = path.resolve('src/lib/grpc-auth.ts');
 
-// =============================================================================
-// 1. Default CUSIP logic in +page.server.ts — gRPC-based 10Y Treasury default
-// =============================================================================
-describe('Prices page – 10Y Treasury default via gRPC', () => {
+describe('Prices page – server load behaviour', () => {
 	const src = fs.readFileSync(PRICES_SERVER, 'utf-8');
 
 	test('+page.server.ts exists', () => {
@@ -27,27 +24,38 @@ describe('Prices page – 10Y Treasury default via gRPC', () => {
 		expect(src).toContain('export async function load');
 	});
 
-	test('reads cusip from query params', () => {
+	test('reads identifier type from ?type query param', () => {
+		expect(src).toContain("searchParams.get('type')");
+	});
+
+	test('reads identifier value from ?id query param', () => {
+		expect(src).toContain("searchParams.get('id')");
+	});
+
+	test('preserves legacy ?cusip= query param as an alias', () => {
 		expect(src).toContain("searchParams.get('cusip')");
 	});
 
-	test('defaults to 10Y Treasury via SecurityService gRPC call when no cusip param', () => {
-		expect(src).toContain('new SecurityService()');
-		expect(src).toContain('searchSecurityAsOfNow');
+	test('returns selectedIdentifier and selectedIdentifierType in page data', () => {
+		expect(src).toMatch(/return\s*\{[\s\S]*selectedIdentifier/);
+		expect(src).toMatch(/return\s*\{[\s\S]*selectedIdentifierType/);
 	});
 
-	test('default is applied only when selectedCusip is falsy', () => {
-		expect(src).toContain('if (!selectedCusip)');
+	test('returns the universe as a streamed promise (un-awaited)', () => {
+		// The universe must be returned as a Promise so SvelteKit streams it.
+		// `load()` should NOT await FetchSecurityUniverse before returning.
+		expect(src).toContain('FetchSecurityUniverse(');
+		const universeLine = src.split('\n').find((l) => l.includes('FetchSecurityUniverse('));
+		expect(universeLine).toBeDefined();
+		expect(universeLine!).not.toMatch(/await\s+FetchSecurityUniverse/);
 	});
 
-	test('returns selectedCusip in the page data', () => {
-		expect(src).toMatch(/return\s*\{[\s\S]*selectedCusip/);
+	test('handles price fetch errors gracefully', () => {
+		expect(src).toContain('priceError');
+		expect(src).toContain('catch');
 	});
 });
 
-// =============================================================================
-// 2. grpc-auth.ts – 'require is not defined' fix
-// =============================================================================
 describe('grpc-auth.ts – ESM-compatible credentials', () => {
 	const src = fs.readFileSync(GRPC_AUTH, 'utf-8');
 
@@ -56,13 +64,11 @@ describe('grpc-auth.ts – ESM-compatible credentials', () => {
 	});
 
 	test('does NOT use require() anywhere', () => {
-		// require() breaks in ESM; the fix replaced it with grpc.credentials
 		const requireCalls = src.match(/\brequire\s*\(/g);
 		expect(requireCalls).toBeNull();
 	});
 
 	test('getServiceConnection uses grpc.credentials.createInsecure()', () => {
-		// Extract the getServiceConnection function body
 		const fnStart = src.indexOf('export function getServiceConnection');
 		expect(fnStart).toBeGreaterThan(-1);
 		const fnBody = src.slice(fnStart);
@@ -76,7 +82,6 @@ describe('grpc-auth.ts – ESM-compatible credentials', () => {
 	test('getAuthClient also uses grpc.credentials.createInsecure()', () => {
 		const fnStart = src.indexOf('function getAuthClient');
 		expect(fnStart).toBeGreaterThan(-1);
-		// Find the function's closing brace (after nested braces)
 		const fnBody = src.slice(fnStart, fnStart + 600);
 		expect(fnBody).toContain('grpc.credentials.createInsecure()');
 	});

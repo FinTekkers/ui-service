@@ -49,24 +49,38 @@ export interface securityData {
  * @returns {Promise<securityData[]>} A promise resolving to an array of security data.
  */
 
+export type IdentifierTypeName = 'CUSIP' | 'ISIN' | 'EXCH_TICKER';
+
+function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
+  switch (name) {
+    case 'ISIN': return IdentifierTypeProto.ISIN;
+    case 'EXCH_TICKER': return IdentifierTypeProto.EXCH_TICKER;
+    case 'CUSIP':
+    default: return IdentifierTypeProto.CUSIP;
+  }
+}
+
 export async function FetchSecurity(
-  assetClass: string,
+  assetClass: string | null,
   issuerName: string | null,
   identifier?: string,
-  identifierType?: 'CUSIP' | 'ISIN',
+  identifierType?: IdentifierTypeName,
   issueDate?: string,
   issueDateOperator?: 'greater_than' | 'lesser_than',
   apiKey?: string,
 ): Promise<securityData[]> {
   const filterSecurity = new PositionFilter();
-  filterSecurity.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass);
+
+  if (assetClass) {
+    filterSecurity.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass);
+  }
 
   if (issuerName) {
     filterSecurity.addEqualsFilter(FieldProto.SECURITY_ISSUER_NAME, issuerName);
   }
 
   if (identifier && identifier.trim() !== "") {
-    const idType = identifierType === 'ISIN' ? IdentifierTypeProto.ISIN : IdentifierTypeProto.CUSIP;
+    const idType = identifierTypeNameToProto(identifierType ?? 'CUSIP');
     const identifierProto = new IdentifierProto().setIdentifierType(idType).setIdentifierValue(identifier.trim());
     filterSecurity.addObjectFilter(FieldProto.IDENTIFIER, new Identifier(identifierProto));
   }
@@ -291,6 +305,66 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
     acc.push(result);
     return acc;
   }, []);
+}
+
+export interface UniverseEntry {
+  identifier: string;
+  identifierType: string;  // "CUSIP" | "ISIN" | "EXCH_TICKER" | "UNKNOWN"
+  description: string;
+  uuidHex: string;
+  assetClass: string;
+}
+
+const UNIVERSE_TTL_MS = 5 * 60 * 1000;
+const UNIVERSE_CAP = 500;
+// Asset classes seeded by data-sourcing pipelines (market-data-inputs, app-soma-analytics).
+// The security service rejects an empty position filter, so we fan out one query per class.
+const UNIVERSE_ASSET_CLASSES = ['Fixed Income', 'Equity', 'Index', 'Cash', 'Currency'] as const;
+const universeCache = new Map<string, { value: UniverseEntry[]; fetchedAt: number }>();
+
+export function clearUniverseCache(): void {
+  universeCache.clear();
+}
+
+export async function FetchSecurityUniverse(apiKey?: string): Promise<UniverseEntry[]> {
+  const cacheKey = apiKey ?? '__no_key__';
+  const cached = universeCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < UNIVERSE_TTL_MS) {
+    return cached.value;
+  }
+
+  const perClass = await Promise.all(
+    UNIVERSE_ASSET_CLASSES.map((cls) =>
+      FetchSecurity(cls, null, undefined, undefined, undefined, undefined, apiKey).catch((e) => {
+        console.warn(`Universe fetch failed for asset class ${cls}:`, e?.message ?? e);
+        return [];
+      }),
+    ),
+  );
+  const all = perClass.flat();
+
+  const seenUuids = new Set<string>();
+  const universe: UniverseEntry[] = [];
+  for (const sec of all) {
+    if (universe.length >= UNIVERSE_CAP) break;
+    if (!sec.uuidHex || seenUuids.has(sec.uuidHex)) continue;
+    seenUuids.add(sec.uuidHex);
+
+    const couponPart = sec.couponRate ? ` ${sec.couponRate}%` : '';
+    const maturityPart = sec.maturityDate && sec.assetClass === 'Fixed Income' ? ` ${sec.maturityDate}` : '';
+    const description = `${sec.issuerName}${couponPart}${maturityPart}`.trim();
+
+    universe.push({
+      identifier: sec.identifier,
+      identifierType: sec.identifierType,
+      description,
+      uuidHex: sec.uuidHex,
+      assetClass: sec.assetClass,
+    });
+  }
+
+  universeCache.set(cacheKey, { value: universe, fetchedAt: Date.now() });
+  return universe;
 }
 
 export async function FetchSecurityByUuid(uuidStr: string, apiKey?: string): Promise<securityData[]> {
