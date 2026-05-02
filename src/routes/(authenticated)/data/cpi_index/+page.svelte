@@ -108,7 +108,7 @@
           {:else}
             {#each data.allSeries as series}
               <option value={series.identifier}>
-                {series.description} — {series.identifier} ({series.indexType.replace('_', '-')})
+                {series.identifier} — {series.description} ({series.indexType.replace('_', '-')})
               </option>
             {/each}
           {/if}
