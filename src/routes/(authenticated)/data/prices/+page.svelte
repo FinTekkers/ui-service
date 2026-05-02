@@ -432,7 +432,6 @@
 
   .price-chart {
     width: 100%;
-    max-width: 700px;
     height: auto;
     circle { cursor: pointer; transition: r 0.1s; }
   }
