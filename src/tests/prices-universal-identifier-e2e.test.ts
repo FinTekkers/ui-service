@@ -295,6 +295,45 @@ describe('Prices page load() — numbers match PriceService directly', () => {
 		expect(pageData.selectedIdentifier).toBe('AAPL');
 		expect(pageData.selectedIdentifierType).toBe('ticker');
 	}, 30_000);
+
+	test('?type=series&id=CUUR0000SA0 (BLS CPI-U All Items) resolves and prices match PriceService', async () => {
+		if (!brokerAvailable || !apiKey) return;
+
+		const SERIES = 'CUUR0000SA0';
+		const matches = await FetchSecurity(null, null, SERIES, 'SERIES_ID' as any, undefined, undefined, apiKey);
+		if (matches.length === 0 || !matches[0].uuidHex) {
+			console.warn(`SERIES_ID ${SERIES} not loaded — skipping CPI numbers validation`);
+			return;
+		}
+		const sec = matches[0];
+
+		// Direct PriceService stream
+		const priceService = new PriceService(apiKey);
+		const filter = new PositionFilter();
+		filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(sec.uuidHex!))));
+		const directPrices = toPriceRows(await priceService.search(ZonedDateTime.now().toProto(), filter));
+		expect(directPrices.length).toBeGreaterThan(0);
+
+		// Page server load()
+		const { load } = await import('../routes/(authenticated)/data/prices/+page.server');
+		const event: any = {
+			locals: { user: { apiKey } },
+			request: { url: `https://example.com/data/prices?type=series&id=${SERIES}` },
+		};
+		const pageData: any = await load(event);
+		expect(pageData.selectedIdentifier).toBe(SERIES);
+		expect(pageData.selectedIdentifierType).toBe('series');
+		expect(pageData.priceError).toBe('');
+
+		const loadPrices = pageData.prices.map((p: any) => ({ date: p.date, price: p.price }));
+		const directKeyed = directPrices.map((p) => ({ date: p.date, price: p.price }));
+		expect(loadPrices.length).toBe(directKeyed.length);
+		expect(new Set(loadPrices.map((p: any) => p.date))).toEqual(new Set(directKeyed.map((p) => p.date)));
+		const directByDate = new Map(directKeyed.map((p) => [p.date, p.price]));
+		for (const lp of loadPrices) {
+			expect(directByDate.get(lp.date)).toBeCloseTo(lp.price, 8);
+		}
+	}, 60_000);
 });
 
 // ---------------------------------------------------------------------------

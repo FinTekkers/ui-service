@@ -22,11 +22,13 @@
     cusip: 'CUSIP',
     ticker: 'EXCH_TICKER',
     isin: 'ISIN',
+    series: 'SERIES_ID',
   };
 
   function placeholderFor(type: string): string {
     if (type === 'ticker') return 'Enter ticker (e.g. AAPL)...';
     if (type === 'isin') return 'Enter ISIN...';
+    if (type === 'series') return 'Enter Series ID (e.g. CUUR0000SA0)...';
     return 'Enter CUSIP...';
   }
 
@@ -124,6 +126,7 @@
           <option value="cusip">CUSIP</option>
           <option value="ticker">Ticker</option>
           <option value="isin">ISIN</option>
+          <option value="series">Series ID</option>
         </select>
 
         {#await data.universe}

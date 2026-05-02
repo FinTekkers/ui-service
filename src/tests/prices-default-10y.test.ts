@@ -38,11 +38,13 @@ describe('Prices page – identifier type selector + autocomplete', () => {
 		expect(pageSvelte).toContain('Price History');
 	});
 
-	test('renders an identifier-type <select> with CUSIP, Ticker, ISIN options', () => {
+	test('renders an identifier-type <select> with CUSIP, Ticker, ISIN, Series ID options', () => {
 		expect(pageSvelte).toContain('<select');
 		expect(pageSvelte).toContain('value="cusip"');
 		expect(pageSvelte).toContain('value="ticker"');
 		expect(pageSvelte).toContain('value="isin"');
+		expect(pageSvelte).toContain('value="series"');
+		expect(pageSvelte).toContain('Series ID');
 	});
 
 	test('switching the type clears the input', () => {
