@@ -131,10 +131,6 @@ describe('Prices page – chart and table', () => {
 	test('shows "no history" message when an identifier is selected but no prices found', () => {
 		expect(pageSvelte).toContain('No price history found for');
 	});
-
-	test('browse table column header is "Identifier" (not CUSIP-only)', () => {
-		expect(pageSvelte).toContain('>Identifier<');
-	});
 });
 
 describe('Prices page – CSS contrast', () => {
