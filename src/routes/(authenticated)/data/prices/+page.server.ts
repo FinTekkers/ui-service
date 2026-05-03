@@ -12,7 +12,6 @@ interface PriceEntry {
   date: string;
   price: number;
   asOfMs: number;
-  cusip?: string;
 }
 
 const VALID_TYPES = new Set(['cusip', 'ticker', 'isin', 'series']);
@@ -33,17 +32,31 @@ function uuidHexToString(uuidHex: string): string {
 }
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
+// Default landing view when no identifier is in the URL. Sidesteps is_link
+// resolution on a no-filter price scan (PriceProto returns link-stub securities,
+// so a "Latest Prices" table can't show real identifiers without an extra
+// resolution round-trip per UUID — see second-brain#196). Defaulting to a known
+// security keeps the same shape as the cpi_index page: identity is known up
+// front, prices are fetched by UUID.
+const DEFAULT_IDENTIFIER = 'AAPL';
+const DEFAULT_IDENTIFIER_TYPE = 'ticker';
+
 export async function load({ locals, request }) {
   const searchParams = new URLSearchParams(request.url.split('?')[1]);
 
-  // URL contract: ?type=cusip|ticker|isin&id=<value>
-  // Legacy alias: ?cusip=<value> → treated as type=cusip&id=<value>
+  // URL contract: ?type=cusip|ticker|isin|series&id=<value>
+  // Legacy alias:  ?cusip=<value> → treated as type=cusip&id=<value>
+  // No args:       defaults to type=ticker&id=AAPL.
   let typeRaw = searchParams.get('type');
   let identifierValue = (searchParams.get('id') ?? '').trim();
   const legacyCusip = (searchParams.get('cusip') ?? '').trim();
   if (!identifierValue && legacyCusip) {
     identifierValue = legacyCusip;
     if (!typeRaw) typeRaw = 'cusip';
+  }
+  if (!identifierValue) {
+    identifierValue = DEFAULT_IDENTIFIER;
+    typeRaw = DEFAULT_IDENTIFIER_TYPE;
   }
   const identifierType = parseIdentifierType(typeRaw);
   const identifierTypeUrl = VALID_TYPES.has((typeRaw ?? '').toLowerCase())
@@ -56,7 +69,6 @@ export async function load({ locals, request }) {
     return [];
   });
 
-  // Look up the selected security to render the chart and resolve UUID for PriceService.
   let prices: PriceEntry[] = [];
   let securityDescription = '';
   let priceError = '';
@@ -65,56 +77,40 @@ export async function load({ locals, request }) {
     const priceService = new PriceService(locals.user?.apiKey);
     const now = ZonedDateTime.now();
 
-    if (identifierValue) {
-      const matches = await FetchSecurity(
-        null,
-        null,
-        identifierValue,
-        identifierType,
-        undefined,
-        undefined,
-        locals.user?.apiKey,
-      );
+    const matches = await FetchSecurity(
+      null,
+      null,
+      identifierValue,
+      identifierType,
+      undefined,
+      undefined,
+      locals.user?.apiKey,
+    );
 
-      const sec = matches.find(s => s.uuidHex);
-      if (!sec) {
-        const typeLabel =
-          identifierType === 'EXCH_TICKER' ? 'Ticker' :
-          identifierType === 'SERIES_ID'   ? 'Series ID' :
-          identifierType;
-        priceError = `${typeLabel} ${identifierValue} not found`;
-      } else {
-        const couponPart = sec.couponRate ? ` ${sec.couponRate}%` : '';
-        const maturityPart = sec.maturityDate ? ` ${sec.maturityDate}` : '';
-        securityDescription = `${sec.identifier} — ${sec.issuerName}${couponPart}${maturityPart}`.trim();
-
-        const filter = new PositionFilter();
-        filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(sec.uuidHex!))));
-
-        const rawPrices = await priceService.search(now.toProto(), filter);
-        prices = rawPrices
-          .map(p => ({
-            date: new Date(p.getAsOf().toDateTime().toMillis()).toISOString().slice(0, 10),
-            price: p.getPrice().toNumber(),
-            asOfMs: p.getAsOf().toDateTime().toMillis(),
-          }))
-          .sort((a, b) => b.asOfMs - a.asOfMs)
-          .slice(0, 1000);
-      }
+    const sec = matches.find(s => s.uuidHex);
+    if (!sec) {
+      const typeLabel =
+        identifierType === 'EXCH_TICKER' ? 'Ticker' :
+        identifierType === 'SERIES_ID'   ? 'Series ID' :
+        identifierType;
+      priceError = `${typeLabel} ${identifierValue} not found`;
     } else {
-      // Browse fetch: latest price per security
-      const rawPrices = await priceService.search(now.toProto(), new PositionFilter());
+      const couponPart = sec.couponRate ? ` ${sec.couponRate}%` : '';
+      const maturityPart = sec.maturityDate ? ` ${sec.maturityDate}` : '';
+      securityDescription = `${sec.identifier} — ${sec.issuerName}${couponPart}${maturityPart}`.trim();
+
+      const filter = new PositionFilter();
+      filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(sec.uuidHex!))));
+
+      const rawPrices = await priceService.search(now.toProto(), filter);
       prices = rawPrices
-        .map(p => {
-          const cusip = (p.proto as any).getSecurity?.()?.getIdentifier?.()?.getIdentifierValue?.() ?? undefined;
-          return {
-            date: new Date(p.getAsOf().toDateTime().toMillis()).toISOString().slice(0, 10),
-            price: p.getPrice().toNumber(),
-            asOfMs: p.getAsOf().toDateTime().toMillis(),
-            cusip,
-          };
-        })
-        .sort((a, b) => a.cusip?.localeCompare(b.cusip ?? '') ?? 0);
+        .map(p => ({
+          date: new Date(p.getAsOf().toDateTime().toMillis()).toISOString().slice(0, 10),
+          price: p.getPrice().toNumber(),
+          asOfMs: p.getAsOf().toDateTime().toMillis(),
+        }))
+        .sort((a, b) => b.asOfMs - a.asOfMs)
+        .slice(0, 1000);
     }
   } catch (e: any) {
     priceError = e.details ?? e.message ?? 'Failed to fetch prices';

@@ -2,7 +2,7 @@
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   export let data: import('./$types').PageData;
 
-  type PriceEntry = { date: string; price: number; cusip?: string };
+  type PriceEntry = { date: string; price: number };
   type UniverseEntry = { identifier: string; identifierType: string; description: string; uuidHex: string; assetClass: string };
 
   $: prices = (data.prices ?? []) as PriceEntry[];
@@ -273,39 +273,6 @@
         </div>
       {:else if selectedIdentifier && !priceError}
         <p class="empty-msg">No price history found for {selectedIdentifier}.</p>
-      {:else if !selectedIdentifier && prices.length > 0}
-        <!-- Browse table: most recent price per security -->
-        <div class="browse-section">
-          <h3 class="browse-title">Latest Prices <span class="browse-count">({prices.length})</span></h3>
-          <div class="table-wrapper">
-            <table class="text-left">
-              <thead class="border-b border-slate-400">
-                <tr>
-                  <th class="text-semibold px-4 py-2">Identifier</th>
-                  <th class="text-semibold px-4 py-2">Price</th>
-                  <th class="text-semibold px-4 py-2">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each prices as p}
-                  <tr class="table-row border-b border-slate-400">
-                    <td class="table-cell px-4 py-2">
-                      {#if p.cusip}
-                        <a class="cusip-link" href="/data/prices?type=cusip&id={encodeURIComponent(p.cusip)}">{p.cusip}</a>
-                      {:else}
-                        —
-                      {/if}
-                    </td>
-                    <td class="table-cell px-4 py-2 price-val">{p.price.toFixed(6)}</td>
-                    <td class="table-cell px-4 py-2">{p.date}</td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      {:else if !selectedIdentifier}
-        <p class="empty-msg">No prices available.</p>
       {/if}
     </div>
   </div>
@@ -474,27 +441,4 @@
     text-align: center;
   }
 
-  .browse-section {
-    margin-top: 8px;
-  }
-
-  .browse-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: whitesmoke;
-    margin-bottom: 10px;
-  }
-
-  .browse-count {
-    font-weight: 400;
-    color: #a0adb7;
-    font-size: 0.85rem;
-  }
-
-  .cusip-link {
-    color: #7cd2ba;
-    font-weight: 600;
-    text-decoration: none;
-    &:hover { text-decoration: underline; }
-  }
 </style>
