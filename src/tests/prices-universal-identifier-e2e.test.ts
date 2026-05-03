@@ -392,6 +392,5 @@ function toPriceRows(raw: any[]): { date: string; price: number; asOfMs: number 
 			price: p.getPrice().toNumber(),
 			asOfMs: p.getAsOf().toDateTime().toMillis(),
 		}))
-		.sort((a, b) => b.asOfMs - a.asOfMs)
-		.slice(0, 1000);
+		.sort((a, b) => b.asOfMs - a.asOfMs);
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   export let data: import('./$types').PageData;
 
@@ -76,46 +77,59 @@
 
   function handleBlur() { setTimeout(() => { showSuggestions = false; }, 150); }
 
-  // Chart — ascending order for line
+  // ---- Plotly chart ----
+  // Ascending date order — plotly treats x as a time axis.
   $: chartPrices = [...prices].reverse();
 
-  const chartWidth = 700;
-  const chartHeight = 320;
-  const pad = { top: 30, right: 20, bottom: 60, left: 60 };
-  const plotW = chartWidth - pad.left - pad.right;
-  const plotH = chartHeight - pad.top - pad.bottom;
+  let chartEl: HTMLDivElement;
 
-  $: vals = chartPrices.map(p => p.price);
-  $: yMin = vals.length > 0 ? Math.floor(Math.min(...vals) - 1) : 0;
-  $: yMax = vals.length > 0 ? Math.ceil(Math.max(...vals) + 1) : 100;
-  $: yRange = Math.max(yMax - yMin, 1);
-
-  $: svgPoints = chartPrices.map((p, i) => ({
-    ...p,
-    x: pad.left + (i / Math.max(chartPrices.length - 1, 1)) * plotW,
-    y: pad.top + plotH - ((p.price - yMin) / yRange) * plotH,
-  }));
-
-  $: polyline = svgPoints.map(p => `${p.x},${p.y}`).join(' ');
-  $: yTicks = (() => {
-    const step = Math.max(1, Math.ceil(yRange / 6));
-    const ticks = [];
-    for (let t = yMin; t <= yMax; t += step) ticks.push(t);
-    return ticks;
-  })();
-  // Pick ~8 evenly-spaced tick indices, always including the first and last point.
-  // Using modulo with a separately-forced last tick caused the last label to land
-  // very close to the previous one and visually overlap.
-  $: tickIndices = (() => {
-    const n = svgPoints.length;
-    if (n === 0) return [];
-    if (n <= 8) return svgPoints.map((_, i) => i);
-    const target = 8;
-    const step = (n - 1) / (target - 1);
-    return Array.from({ length: target }, (_, i) => Math.round(i * step));
-  })();
-
-  let hoveredIndex: number | null = null;
+  // Loaded dynamically in onMount because plotly.js-dist is ~1MB and SSR-hostile.
+  // Identifier changes trigger a full page navigation (window.location.href in
+  // navigateTo), so onMount fires fresh on every visit — no need to react to
+  // chartPrices changes after initial render.
+  onMount(async () => {
+    if (chartPrices.length === 0 || !chartEl) return;
+    const Plotly: any = (await import('plotly.js-dist') as any).default ?? (await import('plotly.js-dist'));
+    const trace = {
+      x: chartPrices.map((p) => p.date),
+      y: chartPrices.map((p) => p.price),
+      mode: 'lines',
+      line: { color: '#7cd2ba', width: 1.5 },
+      hovertemplate: '%{x}<br>%{y:.4f}<extra></extra>',
+      name: selectedIdentifier,
+    };
+    const layout = {
+      paper_bgcolor: '#0c3a46',
+      plot_bgcolor: '#0c3a46',
+      font: { color: '#a0adb7', size: 11 },
+      margin: { t: 30, r: 20, b: 50, l: 60 },
+      hovermode: 'x unified',
+      xaxis: {
+        gridcolor: '#164e63',
+        rangeslider: { visible: true, bgcolor: '#0a2e38', thickness: 0.05 },
+        rangeselector: {
+          buttons: [
+            { count: 1, label: '1M', step: 'month', stepmode: 'backward' },
+            { count: 3, label: '3M', step: 'month', stepmode: 'backward' },
+            { count: 6, label: '6M', step: 'month', stepmode: 'backward' },
+            { count: 1, label: '1Y', step: 'year', stepmode: 'backward' },
+            { count: 5, label: '5Y', step: 'year', stepmode: 'backward' },
+            { step: 'all', label: 'All' },
+          ],
+          bgcolor: '#0c3a46',
+          activecolor: '#7cd2ba',
+          font: { color: '#a0adb7' },
+          x: 0,
+          y: 1.15,
+        },
+      },
+      yaxis: {
+        gridcolor: '#164e63',
+        title: { text: 'Price', font: { color: '#a0adb7' } },
+      },
+    };
+    Plotly.newPlot(chartEl, [trace], layout, { responsive: true, displayModeBar: false });
+  });
 </script>
 
 <div class="w-screen h-full flex">
@@ -206,47 +220,7 @@
         <!-- Chart -->
         <div class="chart-box">
           <h3 class="chart-title">Price Chart — {selectedIdentifier}</h3>
-          <svg viewBox="0 0 {chartWidth} {chartHeight}" class="price-chart">
-            {#each yTicks as tick}
-              {@const y = pad.top + plotH - ((tick - yMin) / yRange) * plotH}
-              <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke="#164e63" stroke-width="1" />
-              <text x={pad.left - 8} y={y + 4} text-anchor="end" fill="#a0adb7" font-size="11">{tick}</text>
-            {/each}
-            <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="#164e63" stroke-width="1" />
-            {#each tickIndices as idx}
-              {@const p = svgPoints[idx]}
-              <text x={p.x} y={pad.top + plotH + 18} text-anchor="middle" fill="#a0adb7" font-size="10"
-                    transform="rotate(-35 {p.x} {pad.top + plotH + 18})">{p.date}</text>
-            {/each}
-            {#if svgPoints.length > 1}
-              <polygon points="{pad.left},{pad.top + plotH} {polyline} {svgPoints[svgPoints.length - 1].x},{pad.top + plotH}"
-                       fill="rgba(124, 210, 186, 0.12)" />
-              <polyline points={polyline} fill="none" stroke="#7cd2ba" stroke-width="2.5" stroke-linejoin="round" />
-            {/if}
-            {#each svgPoints as p, i}
-              <circle cx={p.x} cy={p.y} r={hoveredIndex === i ? 5 : 3}
-                      fill={hoveredIndex === i ? '#7cd2ba' : '#0c3a46'} stroke="#7cd2ba" stroke-width="1.5"
-                      on:mouseenter={() => hoveredIndex = i} on:mouseleave={() => hoveredIndex = null}
-                      role="img" aria-label="{p.date}: {p.price}" />
-            {/each}
-            <text x={14} y={pad.top + plotH / 2} text-anchor="middle" fill="#a0adb7" font-size="12"
-                  transform="rotate(-90 14 {pad.top + plotH / 2})">Price</text>
-
-            <!-- Tooltip is the last element in the SVG so it draws on top of
-                 the polyline, area fill, and every circle (rendering it inside
-                 the circles loop let later circles paint over it). -->
-            {#if hoveredIndex !== null && svgPoints[hoveredIndex]}
-              {@const hp = svgPoints[hoveredIndex]}
-              {@const tipText = `${hp.date}: ${hp.price.toFixed(3)}`}
-              {@const tipW = tipText.length * 7 + 16}
-              <rect x={hp.x - tipW / 2} y={hp.y - 32} width={tipW} height="24" rx="4"
-                    fill="#0c3a46" stroke="#7cd2ba" stroke-width="1" pointer-events="none" />
-              <text x={hp.x} y={hp.y - 16} text-anchor="middle" fill="#7cd2ba" font-size="11" font-weight="bold"
-                    pointer-events="none">
-                {tipText}
-              </text>
-            {/if}
-          </svg>
+          <div bind:this={chartEl} class="price-chart" />
         </div>
 
         <!-- Table -->
@@ -259,11 +233,8 @@
               </tr>
             </thead>
             <tbody>
-              {#each prices as p, i}
-                <tr class="table-row border-b border-slate-400"
-                    class:highlight-row={hoveredIndex === prices.length - 1 - i}
-                    on:mouseenter={() => hoveredIndex = prices.length - 1 - i}
-                    on:mouseleave={() => hoveredIndex = null}>
+              {#each prices as p}
+                <tr class="table-row border-b border-slate-400">
                   <td class="table-cell px-4 py-2">{p.date}</td>
                   <td class="table-cell px-4 py-2 price-val">{p.price.toFixed(6)}</td>
                 </tr>
@@ -416,15 +387,13 @@
 
   .price-chart {
     width: 100%;
-    height: auto;
-    circle { cursor: pointer; transition: r 0.1s; }
+    min-height: 420px;  // chart + range slider + range selector
   }
 
   .table-wrapper {
     overflow-x: auto;
   }
 
-  .highlight-row { background-color: #0c3a46 !important; }
 
   .price-val {
     font-weight: 600;

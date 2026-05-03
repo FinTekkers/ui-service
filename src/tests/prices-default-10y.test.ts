@@ -91,22 +91,27 @@ describe('Prices page – identifier type selector + autocomplete', () => {
 describe('Prices page – chart and table', () => {
 	const pageSvelte = fs.readFileSync(path.join(ROUTE_DIR, '+page.svelte'), 'utf-8');
 
-	test('renders an SVG chart when prices exist', () => {
-		expect(pageSvelte).toContain('<svg');
-		expect(pageSvelte).toContain('</svg>');
+	test('renders a Plotly chart container when prices exist', () => {
+		// Chart is rendered client-side via plotly.js-dist; the container div
+		// is bound and Plotly.newPlot is called in onMount.
+		expect(pageSvelte).toContain('bind:this={chartEl}');
+		expect(pageSvelte).toContain("import('plotly.js-dist'");
+		expect(pageSvelte).toContain('Plotly.newPlot');
 	});
 
 	test('chart title shows the selected identifier', () => {
 		expect(pageSvelte).toContain('Price Chart — {selectedIdentifier}');
 	});
 
-	test('chart has a polyline for the price trend', () => {
-		expect(pageSvelte).toContain('<polyline');
+	test('chart has a range selector with standard period buttons', () => {
+		expect(pageSvelte).toContain('rangeselector');
+		expect(pageSvelte).toContain("label: '1M'");
+		expect(pageSvelte).toContain("label: '1Y'");
+		expect(pageSvelte).toContain("label: 'All'");
 	});
 
-	test('chart has interactive data point circles', () => {
-		expect(pageSvelte).toContain('<circle');
-		expect(pageSvelte).toContain('mouseenter');
+	test('chart has a range slider for navigation', () => {
+		expect(pageSvelte).toContain('rangeslider');
 	});
 
 	test('renders a data table with Date and Price columns', () => {
