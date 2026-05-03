@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
 
   type CpiSeries = { identifier: string; description: string; indexType: string; uuidHex: string; uuidStr: string };
@@ -22,7 +23,7 @@
     window.location.href = u.pathname + u.search;
   }
 
-  // Compute month-over-month change
+  // Month-over-month change for the table.
   $: cpiPoints = data.cpiData.map((d, i): CpiPoint => {
     const prev = i > 0 ? data.cpiData[i - 1].value : null;
     const mom = prev ? ((d.value - prev) / prev) * 100 : null;
@@ -30,35 +31,6 @@
   });
 
   $: reversedPoints = [...cpiPoints].reverse();
-
-  // Chart dimensions
-  const chartWidth = 740;
-  const chartHeight = 340;
-  const pad = { top: 30, right: 20, bottom: 60, left: 60 };
-  const plotW = chartWidth - pad.left - pad.right;
-  const plotH = chartHeight - pad.top - pad.bottom;
-
-  $: values = cpiPoints.map((p) => p.value);
-  $: yMin = values.length > 0 ? Math.floor(Math.min(...values) - 2) : 0;
-  $: yMax = values.length > 0 ? Math.ceil(Math.max(...values) + 2) : 100;
-  $: yRange = Math.max(yMax - yMin, 1);
-
-  $: svgPoints = cpiPoints.map((p, i) => ({
-    ...p,
-    x: pad.left + (i / Math.max(cpiPoints.length - 1, 1)) * plotW,
-    y: pad.top + plotH - ((p.value - yMin) / yRange) * plotH,
-  }));
-
-  $: polyline = svgPoints.map((p) => `${p.x},${p.y}`).join(' ');
-
-  $: yTickStep = yRange > 200 ? 50 : yRange > 80 ? 20 : yRange > 40 ? 10 : yRange > 20 ? 5 : 2;
-  $: yTickStart = Math.ceil(yMin / yTickStep) * yTickStep;
-  $: yTicks = Array.from(
-    { length: Math.floor((yMax - yTickStart) / yTickStep) + 1 },
-    (_, i) => yTickStart + i * yTickStep,
-  );
-
-  $: labelInterval = Math.max(1, Math.floor(cpiPoints.length / 8));
 
   // Title / subtitle / Y-axis label derived from selected series
   $: pageTitle = data.selectedSeries
@@ -69,27 +41,52 @@
     ? `${data.selectedSeries.indexType.replace('_', '-')} Level`
     : 'Index Level';
 
-  let hoveredIndex: number | null = null;
+  let chartEl: HTMLDivElement;
 
-  function handleChartMousemove(e: MouseEvent) {
-    if (svgPoints.length === 0) return;
-    const svgEl = e.currentTarget as SVGSVGElement;
-    const rect = svgEl.getBoundingClientRect();
-    const scaleX = chartWidth / rect.width;
-    const mouseX = (e.clientX - rect.left) * scaleX;
-    const idx = Math.max(
-      0,
-      Math.min(
-        svgPoints.length - 1,
-        Math.round(((mouseX - pad.left) / plotW) * (svgPoints.length - 1)),
-      ),
-    );
-    hoveredIndex = idx;
-  }
-
-  function handleChartMouseleave() {
-    hoveredIndex = null;
-  }
+  // Identifier changes navigate the page (window.location.href in onSeriesChange),
+  // so onMount fires fresh per visit. No reactive re-render needed.
+  onMount(async () => {
+    if (data.cpiData.length === 0 || !chartEl) return;
+    const Plotly: any = (await import('plotly.js-dist') as any).default ?? (await import('plotly.js-dist'));
+    const trace = {
+      x: data.cpiData.map((d) => d.date),
+      y: data.cpiData.map((d) => d.value),
+      mode: 'lines',
+      line: { color: '#7cd2ba', width: 1.5 },
+      hovertemplate: '%{x}<br>%{y:.3f}<extra></extra>',
+      name: data.selectedSeries?.identifier ?? '',
+    };
+    const layout = {
+      paper_bgcolor: '#0c3a46',
+      plot_bgcolor: '#0c3a46',
+      font: { color: '#a0adb7', size: 11 },
+      margin: { t: 30, r: 20, b: 50, l: 60 },
+      hovermode: 'x unified',
+      xaxis: {
+        gridcolor: '#164e63',
+        rangeslider: { visible: true, bgcolor: '#0a2e38', thickness: 0.05 },
+        rangeselector: {
+          buttons: [
+            { count: 1, label: '1Y', step: 'year', stepmode: 'backward' },
+            { count: 5, label: '5Y', step: 'year', stepmode: 'backward' },
+            { count: 10, label: '10Y', step: 'year', stepmode: 'backward' },
+            { count: 25, label: '25Y', step: 'year', stepmode: 'backward' },
+            { step: 'all', label: 'All' },
+          ],
+          bgcolor: '#0c3a46',
+          activecolor: '#7cd2ba',
+          font: { color: '#a0adb7' },
+          x: 0,
+          y: 1.15,
+        },
+      },
+      yaxis: {
+        gridcolor: '#164e63',
+        title: { text: yAxisLabel, font: { color: '#a0adb7' } },
+      },
+    };
+    Plotly.newPlot(chartEl, [trace], layout, { responsive: true, displayModeBar: false });
+  });
 </script>
 
 <div class="w-screen h-full flex">
@@ -123,70 +120,7 @@
         <div class="empty-state">No CPI data available for the selected series.</div>
       {:else}
         <div class="chart-box">
-          <svg
-            viewBox="0 0 {chartWidth} {chartHeight}"
-            class="cpi-chart"
-            on:mousemove={handleChartMousemove}
-            on:mouseleave={handleChartMouseleave}
-            role="img"
-            aria-label="{pageTitle} chart"
-          >
-            {#each yTicks as tick}
-              {@const y = pad.top + plotH - ((tick - yMin) / yRange) * plotH}
-              <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke="#164e63" stroke-width="1" />
-              <text x={pad.left - 8} y={y + 4} text-anchor="end" fill="#a0adb7" font-size="11">{tick}</text>
-            {/each}
-
-            <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="#164e63" stroke-width="1" />
-
-            {#each svgPoints as p, i}
-              {#if i % labelInterval === 0 || i === svgPoints.length - 1}
-                <text
-                  x={p.x} y={pad.top + plotH + 18}
-                  text-anchor="middle" fill="#a0adb7" font-size="10"
-                  transform="rotate(-35 {p.x} {pad.top + plotH + 18})"
-                >
-                  {p.date}
-                </text>
-              {/if}
-            {/each}
-
-            {#if svgPoints.length > 1}
-              <polygon
-                points="{pad.left},{pad.top + plotH} {polyline} {svgPoints[svgPoints.length - 1].x},{pad.top + plotH}"
-                fill="rgba(124, 210, 186, 0.15)"
-              />
-              <polyline
-                points={polyline}
-                fill="none" stroke="#7cd2ba" stroke-width="2.5" stroke-linejoin="round"
-              />
-            {/if}
-
-            {#each svgPoints as p, i}
-              <circle
-                cx={p.x} cy={p.y} r={hoveredIndex === i ? 5 : 3}
-                fill={hoveredIndex === i ? '#7cd2ba' : '#0c3a46'}
-                stroke="#7cd2ba" stroke-width="1.5"
-                pointer-events="none"
-                aria-label="{p.date}: {p.value}"
-              />
-            {/each}
-
-            {#if hoveredIndex !== null && svgPoints[hoveredIndex]}
-              {@const hp = svgPoints[hoveredIndex]}
-              <rect x={hp.x - 46} y={hp.y - 32} width="92" height="24" rx="4"
-                    fill="#0c3a46" stroke="#7cd2ba" stroke-width="1" pointer-events="none" />
-              <text x={hp.x} y={hp.y - 16} text-anchor="middle" fill="#7cd2ba" font-size="11" font-weight="bold"
-                    pointer-events="none">
-                {hp.date}: {hp.value.toFixed(3)}
-              </text>
-            {/if}
-
-            <text x={14} y={pad.top + plotH / 2} text-anchor="middle" fill="#a0adb7" font-size="12"
-                  transform="rotate(-90 14 {pad.top + plotH / 2})">
-              {yAxisLabel}
-            </text>
-          </svg>
+          <div bind:this={chartEl} class="cpi-chart" />
         </div>
 
         <div class="table-section">
@@ -201,12 +135,8 @@
                 </tr>
               </thead>
               <tbody>
-                {#each reversedPoints as point, i}
-                  <tr
-                    class:highlight={hoveredIndex === cpiPoints.length - 1 - i}
-                    on:mouseenter={() => hoveredIndex = cpiPoints.length - 1 - i}
-                    on:mouseleave={() => hoveredIndex = null}
-                  >
+                {#each reversedPoints as point}
+                  <tr>
                     <td>{point.date}</td>
                     <td class="value-cell">{point.value.toFixed(3)}</td>
                     <td class="change-cell" class:positive={point.mom !== null && point.mom > 0} class:negative={point.mom !== null && point.mom < 0}>
@@ -296,8 +226,7 @@
 
   .cpi-chart {
     width: 100%;
-    height: auto;
-    cursor: crosshair;
+    min-height: 420px;  // chart + range slider + range selector
   }
 
   .section-title {
@@ -335,7 +264,7 @@
     color: $white;
   }
 
-  tr:hover, .highlight {
+  tr:hover {
     background-color: $bgc-color;
     cursor: default;
   }
