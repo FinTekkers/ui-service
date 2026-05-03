@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   export let data: import('./$types').PageData;
 
@@ -10,60 +11,66 @@
   $: curveDate = (data.curveDate ?? '') as string;
   $: note = (data.note ?? '') as string;
 
-  // Chart config
-  const W = 720;
-  const H = 380;
-  const pad = { top: 35, right: 30, bottom: 55, left: 55 };
-  const plotW = W - pad.left - pad.right;
-  const plotH = H - pad.top - pad.bottom;
+  let chartEl: HTMLDivElement;
 
-  // Use par curve years for X-axis (all 3 curves align on years)
-  $: xPoints = par.map(p => p.years);
-  $: xMin = Math.min(...xPoints, 0.5);
-  $: xMax = Math.max(...xPoints, 30);
-  $: xRange = xMax - xMin;
-
-  // Y-axis: find global min/max across all curves
-  $: allYields = [...par.map(p => p.yield), ...spot.map(p => p.yield), ...forward.map(p => p.yield)];
-  $: yMin = Math.floor(Math.min(...allYields) * 2) / 2;  // round down to 0.5
-  $: yMax = Math.ceil(Math.max(...allYields) * 2) / 2 + 0.5;  // round up + headroom
-  $: yRange = yMax - yMin;
-
-  function xScale(years: number): number {
-    return pad.left + ((years - xMin) / xRange) * plotW;
-  }
-  function yScale(y: number): number {
-    return pad.top + plotH - ((y - yMin) / yRange) * plotH;
-  }
-
-  function toPolyline(points: CurvePoint[]): string {
-    return points.map(p => `${xScale(p.years)},${yScale(p.yield)}`).join(' ');
-  }
-
-  $: parLine = toPolyline(par);
-  $: spotLine = toPolyline(spot);
-  $: forwardLine = toPolyline(forward);
-
-  // Y ticks at 0.5% intervals
-  $: yTicks = (() => {
-    const ticks = [];
-    for (let t = yMin; t <= yMax; t += 0.5) ticks.push(Math.round(t * 100) / 100);
-    return ticks;
-  })();
-
-  // X labels from par tenors
-  $: xLabels = par.map(p => ({ years: p.years, label: p.tenor }));
-
-  // Hover: find nearest X position across all tenors
-  let hoveredYears: number | null = null;
-
-  function findAt(curve: CurvePoint[], years: number): CurvePoint | undefined {
-    return curve.find(p => Math.abs(p.years - years) < 0.01);
-  }
-
-  $: hoveredPar = hoveredYears !== null ? findAt(par, hoveredYears) : null;
-  $: hoveredSpot = hoveredYears !== null ? findAt(spot, hoveredYears) : null;
-  $: hoveredFwd = hoveredYears !== null ? findAt(forward, hoveredYears) : null;
+  onMount(async () => {
+    if (!chartEl || par.length === 0) return;
+    const Plotly: any = (await import('plotly.js-dist') as any).default ?? (await import('plotly.js-dist'));
+    const traces = [
+      {
+        x: par.map((p) => p.years),
+        y: par.map((p) => p.yield),
+        mode: 'lines+markers',
+        line: { color: '#60a5fa', width: 2.5 },
+        marker: { color: '#60a5fa', size: 6 },
+        hovertemplate: '%{customdata}<br>Par: %{y:.3f}%<extra></extra>',
+        customdata: par.map((p) => p.tenor),
+        name: 'Par',
+      },
+      {
+        x: spot.map((p) => p.years),
+        y: spot.map((p) => p.yield),
+        mode: 'lines+markers',
+        line: { color: '#7cd2ba', width: 2.5, dash: 'dash' },
+        marker: { color: '#7cd2ba', size: 6 },
+        hovertemplate: 'Spot: %{y:.3f}%<extra></extra>',
+        name: 'Spot',
+      },
+      {
+        x: forward.map((p) => p.years),
+        y: forward.map((p) => p.yield),
+        mode: 'lines+markers',
+        line: { color: '#f59e0b', width: 2.5, dash: 'dot' },
+        marker: { color: '#f59e0b', size: 6 },
+        hovertemplate: 'Fwd: %{y:.3f}%<extra></extra>',
+        name: 'Forward',
+      },
+    ];
+    const layout = {
+      paper_bgcolor: '#0c3a46',
+      plot_bgcolor: '#0c3a46',
+      font: { color: '#a0adb7', size: 11 },
+      margin: { t: 40, r: 30, b: 50, l: 60 },
+      hovermode: 'x unified',
+      legend: {
+        orientation: 'h',
+        x: 0,
+        y: 1.12,
+        font: { color: '#a0adb7' },
+        bgcolor: 'rgba(0,0,0,0)',
+      },
+      xaxis: {
+        gridcolor: '#164e63',
+        title: { text: 'Tenor (years)', font: { color: '#a0adb7' } },
+      },
+      yaxis: {
+        gridcolor: '#164e63',
+        title: { text: 'Yield (%)', font: { color: '#a0adb7' } },
+        ticksuffix: '%',
+      },
+    };
+    Plotly.newPlot(chartEl, traces, layout, { responsive: true, displayModeBar: false });
+  });
 
   // Build merged table data from par (primary) with spot and forward joined on years
   $: tableData = par.map(p => {
@@ -93,76 +100,7 @@
 
       <!-- Multi-line chart -->
       <div class="chart-box">
-        <svg viewBox="0 0 {W} {H}" class="curves-chart">
-          <!-- Grid -->
-          {#each yTicks as tick}
-            {@const y = yScale(tick)}
-            <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke="#164e63" stroke-width="0.5" />
-            <text x={pad.left - 8} y={y + 4} text-anchor="end" fill="#a0adb7" font-size="11">{tick.toFixed(1)}%</text>
-          {/each}
-
-          <!-- X-axis -->
-          <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="#164e63" stroke-width="1" />
-          {#each xLabels as xl}
-            <text x={xScale(xl.years)} y={pad.top + plotH + 18} text-anchor="middle" fill="#a0adb7" font-size="11">{xl.label}</text>
-          {/each}
-
-          <!-- Par curve (blue, solid) -->
-          <polyline points={parLine} fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linejoin="round" />
-          <!-- Spot curve (green, dashed) -->
-          <polyline points={spotLine} fill="none" stroke="#7cd2ba" stroke-width="2.5" stroke-dasharray="8,4" stroke-linejoin="round" />
-          <!-- Forward curve (orange, dotted) -->
-          <polyline points={forwardLine} fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="3,3" stroke-linejoin="round" />
-
-          <!-- Hover hit zones on par X points -->
-          {#each par as p}
-            <rect
-              x={xScale(p.years) - 15} y={pad.top} width="30" height={plotH}
-              fill="transparent"
-              on:mouseenter={() => hoveredYears = p.years}
-              on:mouseleave={() => hoveredYears = null}
-            />
-          {/each}
-
-          <!-- Hover dots + tooltip -->
-          {#if hoveredYears !== null}
-            {@const hx = xScale(hoveredYears)}
-            <line x1={hx} y1={pad.top} x2={hx} y2={pad.top + plotH} stroke="#ffffff33" stroke-width="1" />
-
-            {#if hoveredPar}
-              <circle cx={hx} cy={yScale(hoveredPar.yield)} r="5" fill="#60a5fa" stroke="white" stroke-width="1.5" />
-            {/if}
-            {#if hoveredSpot}
-              <circle cx={hx} cy={yScale(hoveredSpot.yield)} r="5" fill="#7cd2ba" stroke="white" stroke-width="1.5" />
-            {/if}
-            {#if hoveredFwd}
-              <circle cx={hx} cy={yScale(hoveredFwd.yield)} r="5" fill="#f59e0b" stroke="white" stroke-width="1.5" />
-            {/if}
-
-            <!-- Tooltip box -->
-            {@const tooltipX = hx < W / 2 ? hx + 12 : hx - 132}
-            <rect x={tooltipX} y={pad.top + 4} width="120" height="62" rx="4" fill="#0c3a46ee" stroke="#164e63" />
-            <text x={tooltipX + 8} y={pad.top + 20} fill="#a0adb7" font-size="10" font-weight="bold">
-              {hoveredPar?.tenor ?? hoveredYears + 'Y'}
-            </text>
-            <text x={tooltipX + 8} y={pad.top + 35} fill="#60a5fa" font-size="11">Par: {hoveredPar?.yield.toFixed(3) ?? '—'}%</text>
-            <text x={tooltipX + 8} y={pad.top + 49} fill="#7cd2ba" font-size="11">Spot: {hoveredSpot?.yield.toFixed(3) ?? '—'}%</text>
-            <text x={tooltipX + 8} y={pad.top + 63} fill="#f59e0b" font-size="11">Fwd: {hoveredFwd?.yield.toFixed(3) ?? '—'}%</text>
-          {/if}
-
-          <!-- Legend -->
-          <rect x={pad.left + 10} y={pad.top + 6} width="130" height="50" rx="4" fill="#0c3a46cc" />
-          <line x1={pad.left + 18} y1={pad.top + 20} x2={pad.left + 38} y2={pad.top + 20} stroke="#60a5fa" stroke-width="2.5" />
-          <text x={pad.left + 42} y={pad.top + 24} fill="#60a5fa" font-size="11">Par Curve</text>
-          <line x1={pad.left + 18} y1={pad.top + 34} x2={pad.left + 38} y2={pad.top + 34} stroke="#7cd2ba" stroke-width="2.5" stroke-dasharray="8,4" />
-          <text x={pad.left + 42} y={pad.top + 38} fill="#7cd2ba" font-size="11">Spot Curve</text>
-          <line x1={pad.left + 18} y1={pad.top + 48} x2={pad.left + 38} y2={pad.top + 48} stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="3,3" />
-          <text x={pad.left + 42} y={pad.top + 52} fill="#f59e0b" font-size="11">Forward Curve</text>
-
-          <!-- Y-axis label -->
-          <text x={14} y={pad.top + plotH / 2} text-anchor="middle" fill="#a0adb7" font-size="12"
-                transform="rotate(-90 14 {pad.top + plotH / 2})">Yield (%)</text>
-        </svg>
+        <div bind:this={chartEl} class="curves-chart" />
       </div>
 
       <!-- Data table -->
@@ -179,12 +117,7 @@
           </thead>
           <tbody>
             {#each tableData as row}
-              <tr
-                class="table-row border-b border-slate-400"
-                class:highlight-row={hoveredYears === row.years}
-                on:mouseenter={() => hoveredYears = row.years}
-                on:mouseleave={() => hoveredYears = null}
-              >
+              <tr class="table-row border-b border-slate-400">
                 <td class="table-cell px-4 py-2"><strong>{row.tenor}</strong></td>
                 <td class="table-cell px-4 py-2 par-col">{row.parYield.toFixed(3)}</td>
                 <td class="table-cell px-4 py-2 spot-col">{row.spotRate?.toFixed(3) ?? '—'}</td>
@@ -226,10 +159,7 @@
 
   .curves-chart {
     width: 100%;
-    max-width: 720px;
-    height: auto;
-
-    rect[fill="transparent"] { cursor: crosshair; }
+    min-height: 400px;
   }
 
   .table-wrapper {
@@ -239,6 +169,4 @@
   .par-col { color: #60a5fa; font-weight: 600; font-variant-numeric: tabular-nums; }
   .spot-col { color: #7cd2ba; font-weight: 600; font-variant-numeric: tabular-nums; }
   .fwd-col { color: #f59e0b; font-weight: 600; font-variant-numeric: tabular-nums; }
-
-  .highlight-row { background-color: $bgc-color !important; }
 </style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
 
   export let data: { curveData: Array<{
@@ -23,25 +24,38 @@
     }
   }
 
-  // SVG chart dimensions
-  const chartWidth = 700;
-  const chartHeight = 320;
-  const pad = { top: 30, right: 30, bottom: 50, left: 55 };
-  const plotW = chartWidth - pad.left - pad.right;
-  const plotH = chartHeight - pad.top - pad.bottom;
+  let chartEl: HTMLDivElement;
 
-  $: yMin = 0;
-  $: yMax = Math.ceil(Math.max(...curveData.map(d => d.couponRate), 5) + 0.5);
-  $: yRange = yMax - yMin;
-
-  $: points = curveData.map((d, i) => ({
-    ...d,
-    x: pad.left + (i / Math.max(curveData.length - 1, 1)) * plotW,
-    y: pad.top + plotH - ((d.couponRate - yMin) / yRange) * plotH,
-  }));
-
-  $: polyline = points.map(p => `${p.x},${p.y}`).join(' ');
-  $: yTicks = Array.from({ length: yMax - yMin + 1 }, (_, i) => yMin + i);
+  onMount(async () => {
+    if (!chartEl || curveData.length === 0) return;
+    const Plotly: any = (await import('plotly.js-dist') as any).default ?? (await import('plotly.js-dist'));
+    const trace = {
+      x: curveData.map((d) => d.tenor),
+      y: curveData.map((d) => d.couponRate),
+      mode: 'lines+markers',
+      line: { color: '#7cd2ba', width: 2.5, shape: 'linear' },
+      marker: { color: '#7cd2ba', size: 8 },
+      hovertemplate: '%{x}: %{y:.3f}%<extra></extra>',
+      name: 'On-the-run',
+    };
+    const layout = {
+      paper_bgcolor: '#0c3a46',
+      plot_bgcolor: '#0c3a46',
+      font: { color: '#a0adb7', size: 11 },
+      margin: { t: 30, r: 30, b: 50, l: 60 },
+      xaxis: {
+        type: 'category',
+        gridcolor: '#164e63',
+        title: { text: 'Tenor', font: { color: '#a0adb7' } },
+      },
+      yaxis: {
+        gridcolor: '#164e63',
+        title: { text: 'Yield (%)', font: { color: '#a0adb7' } },
+        ticksuffix: '%',
+      },
+    };
+    Plotly.newPlot(chartEl, [trace], layout, { responsive: true, displayModeBar: false });
+  });
 
   let hoveredIndex: number | null = null;
 </script>
@@ -105,54 +119,7 @@
   <!-- Yield Curve Chart -->
   <div class="chart-box">
     <h2 class="chart-title">Yield Curve</h2>
-    <svg viewBox="0 0 {chartWidth} {chartHeight}" class="curve-chart">
-      <!-- Grid lines -->
-      {#each yTicks as tick}
-        {@const y = pad.top + plotH - ((tick - yMin) / yRange) * plotH}
-        <line x1={pad.left} y1={y} x2={pad.left + plotW} y2={y} stroke="#164e63" stroke-width="1" />
-        <text x={pad.left - 8} y={y + 4} text-anchor="end" fill="#a0adb7" font-size="11">{tick}%</text>
-      {/each}
-
-      <!-- X-axis -->
-      <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="#164e63" stroke-width="1" />
-
-      <!-- X-axis labels -->
-      {#each points as p}
-        <text x={p.x} y={pad.top + plotH + 20} text-anchor="middle" fill="#a0adb7" font-size="11">
-          {p.tenor}
-        </text>
-      {/each}
-
-      <!-- Line -->
-      {#if points.length > 1}
-        <polyline points={polyline} fill="none" stroke="#7cd2ba" stroke-width="2.5" stroke-linejoin="round" />
-      {/if}
-
-      <!-- Data dots -->
-      {#each points as p, i}
-        <circle
-          cx={p.x} cy={p.y} r={hoveredIndex === i ? 6 : 4}
-          fill={hoveredIndex === i ? '#7cd2ba' : '#0c3a46'}
-          stroke="#7cd2ba" stroke-width="2"
-          on:mouseenter={() => hoveredIndex = i}
-          on:mouseleave={() => hoveredIndex = null}
-          role="img" aria-label="{p.tenor}: {p.couponRate.toFixed(2)}%"
-        />
-        {#if hoveredIndex === i}
-          <rect x={p.x - 36} y={p.y - 30} width="72" height="22" rx="4"
-                fill="#0c3a46" stroke="#7cd2ba" stroke-width="1" />
-          <text x={p.x} y={p.y - 15} text-anchor="middle" fill="#7cd2ba" font-size="12" font-weight="bold">
-            {p.couponRate.toFixed(2)}%
-          </text>
-        {/if}
-      {/each}
-
-      <!-- Y-axis label -->
-      <text x={14} y={pad.top + plotH / 2} text-anchor="middle" fill="#a0adb7" font-size="12"
-            transform="rotate(-90 14 {pad.top + plotH / 2})">
-        Yield (%)
-      </text>
-    </svg>
+    <div bind:this={chartEl} class="curve-chart" />
   </div>
     </div>
   </div>
@@ -264,9 +231,6 @@
 
   .curve-chart {
     width: 100%;
-    max-width: 700px;
-    height: auto;
-
-    circle { cursor: pointer; transition: r 0.1s; }
+    min-height: 360px;
   }
 </style>
