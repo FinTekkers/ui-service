@@ -422,8 +422,6 @@
 
   .table-wrapper {
     overflow-x: auto;
-    max-height: 500px;
-    overflow-y: auto;
   }
 
   .highlight-row { background-color: #0c3a46 !important; }
