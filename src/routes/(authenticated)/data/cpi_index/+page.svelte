@@ -308,8 +308,6 @@
 
   .table-scroll {
     overflow-x: auto;
-    max-height: 500px;
-    overflow-y: auto;
   }
 
   table {
