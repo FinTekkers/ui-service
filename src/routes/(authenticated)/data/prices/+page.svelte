@@ -103,7 +103,17 @@
     for (let t = yMin; t <= yMax; t += step) ticks.push(t);
     return ticks;
   })();
-  $: labelInterval = Math.max(1, Math.floor(chartPrices.length / 8));
+  // Pick ~8 evenly-spaced tick indices, always including the first and last point.
+  // Using modulo with a separately-forced last tick caused the last label to land
+  // very close to the previous one and visually overlap.
+  $: tickIndices = (() => {
+    const n = svgPoints.length;
+    if (n === 0) return [];
+    if (n <= 8) return svgPoints.map((_, i) => i);
+    const target = 8;
+    const step = (n - 1) / (target - 1);
+    return Array.from({ length: target }, (_, i) => Math.round(i * step));
+  })();
 
   let hoveredIndex: number | null = null;
 </script>
@@ -203,11 +213,10 @@
               <text x={pad.left - 8} y={y + 4} text-anchor="end" fill="#a0adb7" font-size="11">{tick}</text>
             {/each}
             <line x1={pad.left} y1={pad.top + plotH} x2={pad.left + plotW} y2={pad.top + plotH} stroke="#164e63" stroke-width="1" />
-            {#each svgPoints as p, i}
-              {#if i % labelInterval === 0 || i === svgPoints.length - 1}
-                <text x={p.x} y={pad.top + plotH + 18} text-anchor="middle" fill="#a0adb7" font-size="10"
-                      transform="rotate(-35 {p.x} {pad.top + plotH + 18})">{p.date}</text>
-              {/if}
+            {#each tickIndices as idx}
+              {@const p = svgPoints[idx]}
+              <text x={p.x} y={pad.top + plotH + 18} text-anchor="middle" fill="#a0adb7" font-size="10"
+                    transform="rotate(-35 {p.x} {pad.top + plotH + 18})">{p.date}</text>
             {/each}
             {#if svgPoints.length > 1}
               <polygon points="{pad.left},{pad.top + plotH} {polyline} {svgPoints[svgPoints.length - 1].x},{pad.top + plotH}"
@@ -219,16 +228,24 @@
                       fill={hoveredIndex === i ? '#7cd2ba' : '#0c3a46'} stroke="#7cd2ba" stroke-width="1.5"
                       on:mouseenter={() => hoveredIndex = i} on:mouseleave={() => hoveredIndex = null}
                       role="img" aria-label="{p.date}: {p.price}" />
-              {#if hoveredIndex === i}
-                <rect x={p.x - 50} y={p.y - 32} width="100" height="24" rx="4"
-                      fill="#0c3a46" stroke="#7cd2ba" stroke-width="1" />
-                <text x={p.x} y={p.y - 16} text-anchor="middle" fill="#7cd2ba" font-size="11" font-weight="bold">
-                  {p.date}: {p.price.toFixed(3)}
-                </text>
-              {/if}
             {/each}
             <text x={14} y={pad.top + plotH / 2} text-anchor="middle" fill="#a0adb7" font-size="12"
                   transform="rotate(-90 14 {pad.top + plotH / 2})">Price</text>
+
+            <!-- Tooltip is the last element in the SVG so it draws on top of
+                 the polyline, area fill, and every circle (rendering it inside
+                 the circles loop let later circles paint over it). -->
+            {#if hoveredIndex !== null && svgPoints[hoveredIndex]}
+              {@const hp = svgPoints[hoveredIndex]}
+              {@const tipText = `${hp.date}: ${hp.price.toFixed(3)}`}
+              {@const tipW = tipText.length * 7 + 16}
+              <rect x={hp.x - tipW / 2} y={hp.y - 32} width={tipW} height="24" rx="4"
+                    fill="#0c3a46" stroke="#7cd2ba" stroke-width="1" pointer-events="none" />
+              <text x={hp.x} y={hp.y - 16} text-anchor="middle" fill="#7cd2ba" font-size="11" font-weight="bold"
+                    pointer-events="none">
+                {tipText}
+              </text>
+            {/if}
           </svg>
         </div>
 
@@ -432,7 +449,6 @@
 
   .price-chart {
     width: 100%;
-    max-width: 700px;
     height: auto;
     circle { cursor: pointer; transition: r 0.1s; }
   }
