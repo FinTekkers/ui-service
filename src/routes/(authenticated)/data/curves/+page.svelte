@@ -9,7 +9,14 @@
   $: spot = (data.spot ?? []) as CurvePoint[];
   $: forward = (data.forward ?? []) as CurvePoint[];
   $: curveDate = (data.curveDate ?? '') as string;
-  $: note = (data.note ?? '') as string;
+
+  let asofInput: string = data.curveDate ?? new Date().toISOString().slice(0, 10);
+
+  function handleAsofChange() {
+    if (asofInput) {
+      window.location.href = `/data/curves?asof=${asofInput}`;
+    }
+  }
 
   let chartEl: HTMLDivElement;
 
@@ -93,10 +100,32 @@
   <div class="h-full w-full dashboard-container">
     <div class="portfolio_container px-10 py-7">
       <h2 class="text-3xl font-extrabold my-3">Treasury Yield Curves</h2>
+      <p class="page-subtitle">Live par / spot / forward curves fitted from on-the-run US Treasuries as of {curveDate}.</p>
 
-      <div class="mock-banner">
-        &#x26A0; MOCK DATA — values from {curveDate}, not live
+      <div class="date-picker-row">
+        <label for="asofDate">As of:</label>
+        <input
+          id="asofDate"
+          type="date"
+          bind:value={asofInput}
+          on:change={handleAsofChange}
+          max={new Date().toISOString().slice(0, 10)}
+        />
       </div>
+
+      {#if data.error}
+        <div class="error-banner">{data.error}</div>
+      {/if}
+      {#if (data.warnings ?? []).length > 0}
+        <details class="warnings">
+          <summary>{(data.warnings ?? []).length} warning(s)</summary>
+          <ul>
+            {#each data.warnings ?? [] as w}
+              <li>{w}</li>
+            {/each}
+          </ul>
+        </details>
+      {/if}
 
       <!-- Multi-line chart -->
       <div class="chart-box">
@@ -140,14 +169,54 @@
     overflow: auto;
   }
 
-  .mock-banner {
-    background-color: #78350f;
-    color: #fef3c7;
-    padding: 10px 16px;
+  .page-subtitle {
+    font-size: 0.9rem;
+    color: #a0adb7;
+    margin-bottom: 16px;
+  }
+
+  .date-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    input[type="date"] {
+      padding: 6px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      background-color: white;
+      color: #05192a;
+      height: 36px;
+    }
+  }
+
+  .error-banner {
+    background-color: #7f1d1d;
+    color: #fecaca;
+    padding: 8px 16px;
     border-radius: 4px;
     font-size: 0.85rem;
-    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .warnings {
+    background-color: #1e3a4d;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    color: #fbbf24;
     margin-bottom: 16px;
+
+    summary { cursor: pointer; font-weight: 600; }
+    ul { margin-top: 6px; padding-left: 20px; }
+    li { margin: 2px 0; }
   }
 
   .chart-box {
