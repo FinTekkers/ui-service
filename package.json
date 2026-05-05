@@ -25,7 +25,7 @@
 	"dependencies": {
 		"@auth/core": "^0.27.0",
 		"@auth/sveltekit": "^0.13.0",
-		"@fintekkers/ledger-models": "^0.1.131",
+		"@fintekkers/ledger-models": "^0.1.132",
 		"@iconify-json/mdi": "^1.2.3",
 		"@iconify-json/ph": "^1.2.2",
 		"@lucia-auth/adapter-drizzle": "^1.0.7",
@@ -77,6 +77,7 @@
 		"@types/better-sqlite3": "^7.6.9",
 		"@types/esm": "^3.2.1",
 		"@types/google-protobuf": "^3.15.6",
+		"google-protobuf": "^3.21.4",
 		"@types/jest-axe": "^3.5.9",
 		"@types/sqlite3": "^3.1.11",
 		"@types/uuid": "^10.0.0",

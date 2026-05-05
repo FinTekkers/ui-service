@@ -5,6 +5,7 @@
   export let data: { curveData: Array<{
     tenor: string; cusip: string; description: string;
     issueDate: string; maturityDate: string; couponRate: number;
+    cleanPrice: number | null;
   }>; selectedDate: string; user?: any };
 
   $: curveData = data.curveData ?? [];
@@ -95,6 +96,7 @@
           <th>Issue Date</th>
           <th>Maturity Date</th>
           <th>Coupon Rate (%)</th>
+          <th>Clean Price</th>
         </tr>
       </thead>
       <tbody>
@@ -110,6 +112,7 @@
             <td>{point.issueDate || '—'}</td>
             <td>{point.maturityDate || '—'}</td>
             <td class="yield-cell">{point.couponRate.toFixed(3)}%</td>
+            <td class="price-cell">{point.cleanPrice !== null && point.cleanPrice !== undefined ? point.cleanPrice.toFixed(4) : '—'}</td>
           </tr>
         {/each}
       </tbody>
@@ -214,6 +217,11 @@
   .yield-cell {
     font-weight: 700;
     color: #7cd2ba;
+  }
+
+  .price-cell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
   }
 
   .chart-box {
