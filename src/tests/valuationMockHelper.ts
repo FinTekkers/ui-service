@@ -128,13 +128,21 @@ export function createValuationClientMock() {
 	return vi.fn().mockImplementation(() => ({
 		runValuation: vi.fn().mockImplementation((request: any, callback: Function) => {
 			try {
-				// Bond requests now use the engine path: product_input.bond carries
-				// security + clean_price (#182). TIPS / FRN still use the legacy
-				// flat security_input + price_input. Fall back so the mock works
-				// for both shapes.
+				// Three input shapes live in this codebase:
+				//   - Engine path bond (#182): product_input.bond → BondInput
+				//   - Engine path TIPS (#207): product_input.tips → TipsInput
+				//   - Legacy flat fields (FRN today, bond/TIPS pre-migration):
+				//       security_input + price_input (+ cpi_price_input for TIPS)
+				// Read security + price + cpi from whichever shape is set so the
+				// mock works against all current and post-migration callers.
 				const bondInput = request.getProductInput?.()?.getBond?.();
-				const sec = bondInput?.getSecurity?.() ?? request.getSecurityInput?.();
-				const priceProto = bondInput?.getCleanPrice?.() ?? request.getPriceInput?.()?.getPrice?.();
+				const tipsInput = request.getProductInput?.()?.getTips?.();
+				const sec = bondInput?.getSecurity?.()
+					?? tipsInput?.getSecurity?.()
+					?? request.getSecurityInput?.();
+				const priceProto = bondInput?.getCleanPrice?.()
+					?? tipsInput?.getCleanPrice?.()
+					?? request.getPriceInput?.()?.getPrice?.();
 				const priceStr = priceProto?.getArbitraryPrecisionValue?.() ?? '100';
 				const price = parseFloat(priceStr);
 
@@ -151,9 +159,13 @@ export function createValuationClientMock() {
 					const referenceCpi = parseFloat(
 						sec?.getBaseCpi?.()?.getArbitraryPrecisionValue?.() ?? '256.394'
 					);
-					const currentCpi = parseFloat(
-						request.getCpiPriceInput?.()?.getPrice?.()?.getArbitraryPrecisionValue?.() ?? '314.175'
-					);
+					// Engine-path TIPS carries current_cpi on the TipsInput; legacy
+					// path used a separate cpi_price_input PriceProto. Read from
+					// whichever is set.
+					const currentCpiStr = tipsInput?.getCurrentCpi?.()?.getArbitraryPrecisionValue?.()
+						?? request.getCpiPriceInput?.()?.getPrice?.()?.getArbitraryPrecisionValue?.()
+						?? '314.175';
+					const currentCpi = parseFloat(currentCpiStr);
 					const indexRatio = referenceCpi > 0 ? currentCpi / referenceCpi : 1;
 					const adjustedPrincipal = faceValue * indexRatio;
 					const adjustedCouponPeriodic = adjustedPrincipal * couponRate / 2;
