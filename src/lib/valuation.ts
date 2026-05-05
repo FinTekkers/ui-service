@@ -48,6 +48,7 @@ export interface CashflowEntry {
 }
 
 export interface ValuationResult {
+  presentValue?: string;
   dirtyPrice?: string;
   accruedInterest?: string;
   currentYield?: string;
@@ -120,6 +121,7 @@ const MEASURE_DISCOUNT_MARGIN = MeasureProto.DISCOUNT_MARGIN;
 const MEASURE_SPREAD_DURATION = MeasureProto.SPREAD_DURATION;
 
 const VALUATION_MEASURES = [
+  MEASURE_PRESENT_VALUE,
   MeasureProto.DIRTY_PRICE,
   MeasureProto.ACCRUED_INTEREST,
   MeasureProto.CURRENT_YIELD,
@@ -291,6 +293,7 @@ export async function RunValuation(inputs: BondCalculatorInputs, apiKey?: string
     response.getMeasureResultsList().forEach(entry => {
       const value = entry.getMeasureDecimalValue()?.getArbitraryPrecisionValue();
       switch (entry.getMeasure()) {
+        case MEASURE_PRESENT_VALUE:            result.presentValue = value; break;
         case MeasureProto.DIRTY_PRICE:         result.dirtyPrice = value; break;
         case MeasureProto.ACCRUED_INTEREST:    result.accruedInterest = value; break;
         case MeasureProto.CURRENT_YIELD:       result.currentYield = value; break;
