@@ -1,6 +1,7 @@
 import { ValuationClient } from '@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js';
 import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js';
 import { ValuationRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js';
+import { ProductInput, BondInput } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js';
 import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
 import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js';
 import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
@@ -268,15 +269,21 @@ export async function RunValuation(inputs: BondCalculatorInputs, apiKey?: string
       ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualSecurityProto(inputs);
 
-    const priceProto = buildPriceProto(securityProto, inputs.price);
+    // Engine path (#181): typed BondInput inside ProductInput, instead of the
+    // legacy flat security_input + price_input fields. The valuation service
+    // routes bond requests through engine/bond.rs when product_input.bond is
+    // set. TIPS and FRN still use the legacy path below.
+    const bondInput = new BondInput()
+      .setSecurity(securityProto)
+      .setCleanPrice(decimalValue(inputs.price));
+    const productInput = new ProductInput().setBond(bondInput);
 
     const request = new ValuationRequestProto();
     request.setObjectClass('ValuationRequestProto');
     request.setVersion('0.0.1');
     request.setOperationType(RequestOperationTypeProto.GET);
     request.setAsofDatetime(ZonedDateTime.now().toProto());
-    request.setSecurityInput(securityProto);
-    request.setPriceInput(priceProto);
+    request.setProductInput(productInput);
     VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
     const conn = getServiceConnection(apiKey);

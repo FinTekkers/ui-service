@@ -128,10 +128,16 @@ export function createValuationClientMock() {
 	return vi.fn().mockImplementation(() => ({
 		runValuation: vi.fn().mockImplementation((request: any, callback: Function) => {
 			try {
-				const priceStr = request.getPriceInput?.()?.getPrice?.()?.getArbitraryPrecisionValue?.() ?? '100';
+				// Bond requests now use the engine path: product_input.bond carries
+				// security + clean_price (#182). TIPS / FRN still use the legacy
+				// flat security_input + price_input. Fall back so the mock works
+				// for both shapes.
+				const bondInput = request.getProductInput?.()?.getBond?.();
+				const sec = bondInput?.getSecurity?.() ?? request.getSecurityInput?.();
+				const priceProto = bondInput?.getCleanPrice?.() ?? request.getPriceInput?.()?.getPrice?.();
+				const priceStr = priceProto?.getArbitraryPrecisionValue?.() ?? '100';
 				const price = parseFloat(priceStr);
 
-				const sec = request.getSecurityInput?.();
 				const faceValue = parseFloat(sec?.getFaceValue?.()?.getArbitraryPrecisionValue?.() ?? '1000');
 				const couponRatePct = parseFloat(sec?.getCouponRate?.()?.getArbitraryPrecisionValue?.() ?? '5');
 				const couponRate = couponRatePct / 100;
