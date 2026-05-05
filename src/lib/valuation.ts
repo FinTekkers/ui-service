@@ -1,7 +1,7 @@
 import { ValuationClient } from '@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js';
 import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js';
 import { ValuationRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js';
-import { ProductInput, BondInput, TipsInput } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js';
+import { ProductInput, BondInput, TipsInput, FrnInput } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js';
 import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
 import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js';
 import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
@@ -554,18 +554,24 @@ export async function RunFrnValuation(inputs: FrnCalculatorInputs, apiKey?: stri
       ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualFrnSecurityProto(inputs);
 
+    // Engine path (#180 / #208): typed FrnInput inside ProductInput, instead of
+    // the legacy security_input + price_input + reference_rate_input flat fields.
+    // The valuation service routes FRN requests through engine/frn.rs when
+    // product_input.frn is set. The reference rate is now sourced from the
+    // SecurityProto's reference_rate_index field (set in buildManualFrnSecurityProto)
+    // rather than a separate request-level rate input — matches the Rust decoder.
     const priceValue = inputs.price && inputs.price.trim() ? inputs.price : '100';
-    const priceProto = buildPriceProto(securityProto, priceValue);
-    const referenceRateProto = buildReferenceRatePriceProto(inputs.referenceRate);
+    const frnInput = new FrnInput()
+      .setSecurity(securityProto)
+      .setCleanPrice(decimalValue(priceValue));
+    const productInput = new ProductInput().setFrn(frnInput);
 
     const request = new ValuationRequestProto();
     request.setObjectClass('ValuationRequestProto');
     request.setVersion('0.0.1');
     request.setOperationType(RequestOperationTypeProto.GET);
     request.setAsofDatetime(ZonedDateTime.now().toProto());
-    request.setSecurityInput(securityProto);
-    request.setPriceInput(priceProto);
-    request.setReferenceRateInput(referenceRateProto);
+    request.setProductInput(productInput);
     FRN_VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
     const conn = getServiceConnection(apiKey);
