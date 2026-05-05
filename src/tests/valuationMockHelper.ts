@@ -12,9 +12,28 @@ const MP = {
 	MACAULAY_DURATION: 8,
 	REAL_YIELD: 10,
 	INFLATION_ADJUSTED_PRINCIPAL: 11,
+	PRESENT_VALUE_CASHFLOWS: 12,
+	DISCOUNT_MARGIN: 13,
+	SPREAD_DURATION: 14,
 };
 
 const TIPS_SECURITY_TYPE = 4;
+const FRN_SECURITY_TYPE = 5;
+
+// CouponFrequencyProto values
+const COUPON_FREQ = {
+	ANNUALLY: 1,
+	SEMIANNUALLY: 2,
+	QUARTERLY: 3,
+	MONTHLY: 4,
+};
+
+function periodsPerYear(freq: number): number {
+	if (freq === COUPON_FREQ.ANNUALLY) return 1;
+	if (freq === COUPON_FREQ.QUARTERLY) return 4;
+	if (freq === COUPON_FREQ.MONTHLY) return 12;
+	return 2; // semiannual default
+}
 
 // ---- Bond pricing ----
 
@@ -50,12 +69,12 @@ function macaulayDuration(face: number, couponRate: number, periods: number, ytm
 	return totalPv > 0 ? weighted / totalPv : 0;
 }
 
-function buildCashflowDates(periods: number, matDate: Date): Date[] {
+function buildCashflowDates(periods: number, matDate: Date, monthsPerPeriod: number = 6): Date[] {
 	const dates: Date[] = [];
 	let d = new Date(matDate);
 	for (let i = 0; i < periods; i++) {
 		dates.unshift(new Date(d));
-		d = new Date(d.getFullYear(), d.getMonth() - 6, d.getDate());
+		d = new Date(d.getFullYear(), d.getMonth() - monthsPerPeriod, d.getDate());
 	}
 	return dates;
 }
@@ -137,11 +156,14 @@ export function createValuationClientMock() {
 				// mock works against all current and post-migration callers.
 				const bondInput = request.getProductInput?.()?.getBond?.();
 				const tipsInput = request.getProductInput?.()?.getTips?.();
+				const frnInput = request.getProductInput?.()?.getFrn?.();
 				const sec = bondInput?.getSecurity?.()
 					?? tipsInput?.getSecurity?.()
+					?? frnInput?.getSecurity?.()
 					?? request.getSecurityInput?.();
 				const priceProto = bondInput?.getCleanPrice?.()
 					?? tipsInput?.getCleanPrice?.()
+					?? frnInput?.getCleanPrice?.()
 					?? request.getPriceInput?.()?.getPrice?.();
 				const priceStr = priceProto?.getArbitraryPrecisionValue?.() ?? '100';
 				const price = parseFloat(priceStr);
@@ -151,10 +173,83 @@ export function createValuationClientMock() {
 				const couponRate = couponRatePct / 100;
 				const secType = sec?.getSecurityType?.();
 				const isTips = secType === TIPS_SECURITY_TYPE;
+				const isFrn = secType === FRN_SECURITY_TYPE;
 
-				const { periods, matDate } = countPeriods(sec?.getMaturityDate?.());
+				const { periods: bondPeriods, matDate } = countPeriods(sec?.getMaturityDate?.());
 				const priceAbs = price * faceValue / 100;
 
+				if (isFrn) {
+					// FRN scenarios (F/G/H): 2yr quarterly, R=4%, QM=50bps, varying price.
+					// Coupon per period = face × (refRate + spread/10000) / freq.
+					// Final period adds principal. Periods derived from maturity date
+					// using the security's coupon frequency (quarterly = 4/yr).
+					const freqEnum = sec?.getCouponFrequency?.() ?? COUPON_FREQ.QUARTERLY;
+					const ppy = periodsPerYear(freqEnum);
+					// Use ceil — a 2yr quarterly FRN with maturity 2028-01-15 from
+					// "today" 2026-03-19 has 7.34 raw periods; the convention is to
+					// emit a coupon at every coupon date including the final one,
+					// which produces 8 cashflows for what scenarios call a 2yr FRN.
+					const today = new Date('2026-03-19');
+					const daysDiff = (matDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+					const periods = Math.max(1, Math.ceil((daysDiff / 365) * ppy));
+					const monthsPerPeriod = Math.round(12 / ppy);
+
+					// Pre-engine-path tests passed the reference rate via request.referenceRateInput.
+					// Engine-path inputs no longer carry it on the request — the rate is sourced
+					// from the security's reference_rate_index (or implied by quoted_margin /
+					// at-coupon-reset assumption). The mock falls back to a sensible default
+					// when neither is set so legacy tests continue to work.
+					const refRateLegacy = parseFloat(
+						request.getReferenceRateInput?.()?.getPrice?.()?.getArbitraryPrecisionValue?.() ?? '0.04',
+					);
+					const spreadBps = parseFloat(sec?.getSpread?.()?.getArbitraryPrecisionValue?.() ?? '50');
+					const couponPerPeriod = faceValue * (refRateLegacy + spreadBps / 10000) / ppy;
+
+					// At-coupon-reset valuation: PV ≈ price (the FRN identity at par).
+					// Per-period discount derived so cashflow PVs sum to PV.
+					// Discount per period = (refRate + DM) / freq — solve DM so sum matches price.
+					// Simplification: use ytm = refRate + (spread / 10000) + (par - price)/par/years
+					// rough approximation; for the scenarios this lands within tolerance and
+					// preserves the sum(CF PVs) == PV invariant.
+					const yearsToMat = periods / ppy;
+					const dmDecimal = (spreadBps / 10000) + (faceValue - priceAbs) / faceValue / Math.max(yearsToMat, 0.01);
+					const ytmPerPeriod = (refRateLegacy + dmDecimal) / ppy;
+
+					const pvBeforeNorm = (() => {
+						let s = 0;
+						for (let i = 1; i <= periods; i++) {
+							const fv = i === periods ? couponPerPeriod + faceValue : couponPerPeriod;
+							s += fv / Math.pow(1 + ytmPerPeriod, i);
+						}
+						return s;
+					})();
+					// Normalise so sum(cf PVs) == priceAbs exactly (preserves the CRITICAL
+					// invariant the tests check).
+					const norm = priceAbs / pvBeforeNorm;
+					const dates = buildCashflowDates(periods, matDate, monthsPerPeriod);
+					const frnCfs = dates.map((date, i) => {
+						const fv = i === periods - 1 ? couponPerPeriod + faceValue : couponPerPeriod;
+						const pvCf = fv / Math.pow(1 + ytmPerPeriod, i + 1) * norm;
+						return {
+							date: date.toISOString().slice(0, 10),
+							fvAmount: fv.toFixed(8),
+							pvAmount: pvCf.toFixed(8),
+						};
+					});
+
+					const pvQuoted = price; // % of par
+					const dmBps = dmDecimal * 10000;
+					const cy = couponPerPeriod * ppy / priceAbs;
+
+					callback(null, buildResponse([
+						{ measure: MP.PRESENT_VALUE, value: pvQuoted.toFixed(8) },
+						{ measure: MP.CURRENT_YIELD, value: cy.toFixed(8) },
+						{ measure: MP.DISCOUNT_MARGIN, value: dmBps.toFixed(4) },
+					], frnCfs));
+					return;
+				}
+
+				const periods = bondPeriods;
 				if (isTips) {
 					const referenceCpi = parseFloat(
 						sec?.getBaseCpi?.()?.getArbitraryPrecisionValue?.() ?? '256.394'
