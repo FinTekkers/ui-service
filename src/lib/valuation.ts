@@ -3,7 +3,6 @@ import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/servic
 import { ValuationRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js';
 import { ProductInput, BondInput, TipsInput, FrnInput } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js';
 import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
-import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js';
 import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
 import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js';
 import { SecurityTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb.js';
@@ -246,58 +245,89 @@ function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
   return security;
 }
 
-function buildPriceProto(securityProto: SecurityProto, price: string): PriceProto {
-  const priceProto = new PriceProto();
-  priceProto.setObjectClass('PriceProto');
-  priceProto.setVersion('0.0.1');
-  priceProto.setAsOf(ZonedDateTime.now().toProto());
-  priceProto.setPrice(decimalValue(price));
-  priceProto.setSecurity(securityProto);
-  return priceProto;
+// ---------------------------------------------------------------------------
+// Shared core (#210)
+// ---------------------------------------------------------------------------
+
+/**
+ * Send a ValuationRequestProto to the service. Caller assembles the
+ * ProductInput + measure list; this just handles the request envelope and
+ * the (callback-style) gRPC call.
+ */
+async function runValuationCore(
+  productInput: ProductInput,
+  measures: number[],
+  apiKey?: string,
+): Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto> {
+  const request = new ValuationRequestProto();
+  request.setObjectClass('ValuationRequestProto');
+  request.setVersion('0.0.1');
+  request.setOperationType(RequestOperationTypeProto.GET);
+  request.setAsofDatetime(ZonedDateTime.now().toProto());
+  request.setProductInput(productInput);
+  measures.forEach((m) => request.addMeasures(m));
+
+  const conn = getServiceConnection(apiKey);
+  const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+
+  return new Promise((resolve, reject) => {
+    client.runValuation(request, (err, response) => {
+      if (err) reject(err);
+      else resolve(response);
+    });
+  });
 }
 
-export async function RunValuation(inputs: BondCalculatorInputs, apiKey?: string): Promise<ValuationResult> {
-  try {
-    if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
-      return { error: 'Please enter a CUSIP to look up.' };
-    }
-    if (!inputs.price || !inputs.price.trim()) {
-      return { error: 'Please enter a price (% of par).' };
-    }
+/**
+ * Translate raw service error strings into user-friendly messages. Most
+ * errors are shared across product types ("Maturity date must be in the
+ * future" applies to bonds, TIPS, FRNs alike); the per-product overrides
+ * are layered on top via the optional `productSpecific` callback.
+ */
+function mapValuationError(
+  rawMessage: string,
+  productSpecific?: (msg: string) => string | null,
+): string {
+  if (productSpecific) {
+    const override = productSpecific(rawMessage);
+    if (override) return override;
+  }
+  if (rawMessage.includes('Maturity date must be in the future')) {
+    return 'This security has already matured and cannot be valued.';
+  }
+  if (rawMessage.includes('Periods to maturity must be at least 1')) {
+    return 'This security matures too soon (less than one coupon period remaining).';
+  }
+  return rawMessage; // fall through — surface the underlying error to the user
+}
 
+// ---------------------------------------------------------------------------
+// Bond
+// ---------------------------------------------------------------------------
+
+export async function RunBondValuation(inputs: BondCalculatorInputs, apiKey?: string): Promise<ValuationResult> {
+  if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
+    return { error: 'Please enter a CUSIP to look up.' };
+  }
+  if (!inputs.price || !inputs.price.trim()) {
+    return { error: 'Please enter a price (% of par).' };
+  }
+
+  try {
     const securityProto = inputs.mode === 'cusip'
       ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualSecurityProto(inputs);
 
-    // Engine path (#181): typed BondInput inside ProductInput, instead of the
-    // legacy flat security_input + price_input fields. The valuation service
-    // routes bond requests through engine/bond.rs when product_input.bond is
-    // set. TIPS and FRN still use the legacy path below.
-    const bondInput = new BondInput()
-      .setSecurity(securityProto)
-      .setCleanPrice(decimalValue(inputs.price));
-    const productInput = new ProductInput().setBond(bondInput);
+    const productInput = new ProductInput().setBond(
+      new BondInput()
+        .setSecurity(securityProto)
+        .setCleanPrice(decimalValue(inputs.price)),
+    );
 
-    const request = new ValuationRequestProto();
-    request.setObjectClass('ValuationRequestProto');
-    request.setVersion('0.0.1');
-    request.setOperationType(RequestOperationTypeProto.GET);
-    request.setAsofDatetime(ZonedDateTime.now().toProto());
-    request.setProductInput(productInput);
-    VALUATION_MEASURES.forEach(m => request.addMeasures(m));
-
-    const conn = getServiceConnection(apiKey);
-    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
-
-    const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
-      client.runValuation(request, (error, response) => {
-        if (error) reject(error);
-        else resolve(response);
-      });
-    });
+    const response = await runValuationCore(productInput, VALUATION_MEASURES, apiKey);
 
     const result: ValuationResult = {};
-    response.getMeasureResultsList().forEach(entry => {
+    response.getMeasureResultsList().forEach((entry) => {
       const value = entry.getMeasureDecimalValue()?.getArbitraryPrecisionValue();
       switch (entry.getMeasure()) {
         case MEASURE_PRESENT_VALUE:            result.presentValue = value; break;
@@ -310,30 +340,26 @@ export async function RunValuation(inputs: BondCalculatorInputs, apiKey?: string
         case MeasureProto.CONVEXITY:           result.convexity = value; break;
       }
     });
-
     result.cashflows = parseCashflows(response);
-
     return result;
   } catch (error: any) {
-    const rawMessage = error.details ?? error.message ?? 'Valuation failed';
-
-    // Provide user-friendly messages for known service errors
-    if (rawMessage.includes('Invalid Coupon Frequency')) {
-      return { error: 'This security has no coupon (e.g. a zero-coupon bond or FRN) and cannot be valued with this calculator.' };
-    }
-    if (rawMessage.includes('Maturity date must be in the future')) {
-      return { error: 'This security has already matured and cannot be valued.' };
-    }
-    if (rawMessage.includes('Periods to maturity must be at least 1')) {
-      return { error: 'This security matures too soon (less than one coupon period remaining).' };
-    }
-    if (rawMessage.includes('No security found')) {
-      return { error: rawMessage };
-    }
-
-    return { error: rawMessage };
+    return {
+      error: mapValuationError(error.details ?? error.message ?? 'Valuation failed', (msg) => {
+        if (msg.includes('Invalid Coupon Frequency')) {
+          return 'This security has no coupon (e.g. a zero-coupon bond or FRN) and cannot be valued with this calculator.';
+        }
+        if (msg.includes('No security found')) return msg;
+        return null;
+      }),
+    };
   }
 }
+
+/**
+ * @deprecated Use `RunBondValuation` for clarity. Kept as an alias for the
+ * existing UI consumers; remove once they migrate.
+ */
+export const RunValuation = RunBondValuation;
 
 function buildManualTipsSecurityProto(inputs: TipsCalculatorInputs): SecurityProto {
   const security = new SecurityProto();
@@ -378,59 +404,34 @@ function buildManualTipsSecurityProto(inputs: TipsCalculatorInputs): SecurityPro
   return security;
 }
 
-function buildCpiPriceProto(currentCpi: string): PriceProto {
-  const cpiPrice = new PriceProto();
-  cpiPrice.setObjectClass('PriceProto');
-  cpiPrice.setVersion('0.0.1');
-  cpiPrice.setAsOf(ZonedDateTime.now().toProto());
-  cpiPrice.setPrice(decimalValue(currentCpi));
-  return cpiPrice;
-}
+// ---------------------------------------------------------------------------
+// TIPS
+// ---------------------------------------------------------------------------
 
 export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: string): Promise<TipsValuationResult> {
-  try {
-    if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
-      return { error: 'Please enter a CUSIP to look up.' };
-    }
-    if (!inputs.price || !inputs.price.trim()) {
-      return { error: 'Please enter a price (% of par).' };
-    }
-    if (!inputs.currentCpi || !inputs.currentCpi.trim()) {
-      return { error: 'Please enter the current CPI value.' };
-    }
+  if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
+    return { error: 'Please enter a CUSIP to look up.' };
+  }
+  if (!inputs.price || !inputs.price.trim()) {
+    return { error: 'Please enter a price (% of par).' };
+  }
+  if (!inputs.currentCpi || !inputs.currentCpi.trim()) {
+    return { error: 'Please enter the current CPI value.' };
+  }
 
+  try {
     const securityProto = inputs.mode === 'cusip'
       ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualTipsSecurityProto(inputs);
 
-    // Engine path (#183 / #207): typed TipsInput inside ProductInput, instead
-    // of the legacy security_input + price_input + cpi_price_input flat fields.
-    // The valuation service routes TIPS requests through engine/tips.rs when
-    // product_input.tips is set.
-    const tipsInput = new TipsInput()
-      .setSecurity(securityProto)
-      .setCleanPrice(decimalValue(inputs.price))
-      .setCurrentCpi(decimalValue(inputs.currentCpi));
-    const productInput = new ProductInput().setTips(tipsInput);
+    const productInput = new ProductInput().setTips(
+      new TipsInput()
+        .setSecurity(securityProto)
+        .setCleanPrice(decimalValue(inputs.price))
+        .setCurrentCpi(decimalValue(inputs.currentCpi)),
+    );
 
-    const request = new ValuationRequestProto();
-    request.setObjectClass('ValuationRequestProto');
-    request.setVersion('0.0.1');
-    request.setOperationType(RequestOperationTypeProto.GET);
-    request.setAsofDatetime(ZonedDateTime.now().toProto());
-    request.setProductInput(productInput);
-
-    TIPS_VALUATION_MEASURES.forEach(m => request.addMeasures(m));
-
-    const conn = getServiceConnection(apiKey);
-    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
-
-    const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
-      client.runValuation(request, (error, response) => {
-        if (error) reject(error);
-        else resolve(response);
-      });
-    });
+    const response = await runValuationCore(productInput, TIPS_VALUATION_MEASURES, apiKey);
 
     const result: TipsValuationResult = {};
 
@@ -441,7 +442,7 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
       result.indexRatio = (currentCpi / referenceCpi).toString();
     }
 
-    response.getMeasureResultsList().forEach(entry => {
+    response.getMeasureResultsList().forEach((entry) => {
       const value = entry.getMeasureDecimalValue()?.getArbitraryPrecisionValue();
       switch (entry.getMeasure()) {
         case MEASURE_PRESENT_VALUE:                    result.presentValue = value; break;
@@ -452,30 +453,26 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
         case MEASURE_INFLATION_ADJUSTED_PRINCIPAL:    result.inflationAdjustedPrincipal = value; break;
       }
     });
-
     result.cashflows = parseCashflows(response);
-
     return result;
   } catch (error: any) {
-    const rawMessage = error.details ?? error.message ?? 'Valuation failed';
-
-    if (rawMessage.includes('Invalid Coupon Frequency')) {
-      return { error: 'This security has an unsupported coupon frequency for TIPS valuation.' };
-    }
-    if (rawMessage.includes('Maturity date must be in the future')) {
-      return { error: 'This TIPS has already matured and cannot be valued.' };
-    }
-    if (rawMessage.includes('Periods to maturity must be at least 1')) {
-      return { error: 'This TIPS matures too soon (less than one coupon period remaining).' };
-    }
-    if (rawMessage.includes('No security found')) {
-      return { error: rawMessage };
-    }
-    if (rawMessage.includes('TIPS') || rawMessage.includes('inflation')) {
-      return { error: rawMessage };
-    }
-
-    return { error: rawMessage };
+    return {
+      error: mapValuationError(error.details ?? error.message ?? 'Valuation failed', (msg) => {
+        if (msg.includes('Invalid Coupon Frequency')) {
+          return 'This security has an unsupported coupon frequency for TIPS valuation.';
+        }
+        if (msg.includes('Maturity date must be in the future')) {
+          return 'This TIPS has already matured and cannot be valued.';
+        }
+        if (msg.includes('Periods to maturity must be at least 1')) {
+          return 'This TIPS matures too soon (less than one coupon period remaining).';
+        }
+        if (msg.includes('No security found') || msg.includes('TIPS') || msg.includes('inflation')) {
+          return msg;
+        }
+        return null;
+      }),
+    };
   }
 }
 
@@ -526,66 +523,40 @@ function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto
   return security;
 }
 
-function buildReferenceRatePriceProto(referenceRate: string): PriceProto {
-  const ratePrice = new PriceProto();
-  ratePrice.setObjectClass('PriceProto');
-  ratePrice.setVersion('0.0.1');
-  ratePrice.setAsOf(ZonedDateTime.now().toProto());
-  ratePrice.setPrice(decimalValue(referenceRate));
-  return ratePrice;
-}
+// ---------------------------------------------------------------------------
+// FRN
+// ---------------------------------------------------------------------------
 
 export async function RunFrnValuation(inputs: FrnCalculatorInputs, apiKey?: string): Promise<FrnValuationResult> {
-  try {
-    if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
-      return { error: 'Please enter a CUSIP to look up.' };
-    }
-    if (!inputs.price && !inputs.discountMargin) {
-      return { error: 'Please enter either a price or a discount margin.' };
-    }
-    if (!inputs.referenceRate || !inputs.referenceRate.trim()) {
-      return { error: 'Please enter the current reference rate (%).' };
-    }
-    if (!inputs.spread || !inputs.spread.trim()) {
-      return { error: 'Please enter the spread (basis points).' };
-    }
+  if (inputs.mode === 'cusip' && (!inputs.cusip || !inputs.cusip.trim())) {
+    return { error: 'Please enter a CUSIP to look up.' };
+  }
+  if (!inputs.price && !inputs.discountMargin) {
+    return { error: 'Please enter either a price or a discount margin.' };
+  }
+  if (!inputs.referenceRate || !inputs.referenceRate.trim()) {
+    return { error: 'Please enter the current reference rate (%).' };
+  }
+  if (!inputs.spread || !inputs.spread.trim()) {
+    return { error: 'Please enter the spread (basis points).' };
+  }
 
+  try {
     const securityProto = inputs.mode === 'cusip'
       ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualFrnSecurityProto(inputs);
 
-    // Engine path (#180 / #208): typed FrnInput inside ProductInput, instead of
-    // the legacy security_input + price_input + reference_rate_input flat fields.
-    // The valuation service routes FRN requests through engine/frn.rs when
-    // product_input.frn is set. The reference rate is now sourced from the
-    // SecurityProto's reference_rate_index field (set in buildManualFrnSecurityProto)
-    // rather than a separate request-level rate input — matches the Rust decoder.
     const priceValue = inputs.price && inputs.price.trim() ? inputs.price : '100';
-    const frnInput = new FrnInput()
-      .setSecurity(securityProto)
-      .setCleanPrice(decimalValue(priceValue));
-    const productInput = new ProductInput().setFrn(frnInput);
+    const productInput = new ProductInput().setFrn(
+      new FrnInput()
+        .setSecurity(securityProto)
+        .setCleanPrice(decimalValue(priceValue)),
+    );
 
-    const request = new ValuationRequestProto();
-    request.setObjectClass('ValuationRequestProto');
-    request.setVersion('0.0.1');
-    request.setOperationType(RequestOperationTypeProto.GET);
-    request.setAsofDatetime(ZonedDateTime.now().toProto());
-    request.setProductInput(productInput);
-    FRN_VALUATION_MEASURES.forEach(m => request.addMeasures(m));
-
-    const conn = getServiceConnection(apiKey);
-    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
-
-    const response = await new Promise<import('@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js').ValuationResponseProto>((resolve, reject) => {
-      client.runValuation(request, (error, response) => {
-        if (error) reject(error);
-        else resolve(response);
-      });
-    });
+    const response = await runValuationCore(productInput, FRN_VALUATION_MEASURES, apiKey);
 
     const result: FrnValuationResult = {};
-    response.getMeasureResultsList().forEach(entry => {
+    response.getMeasureResultsList().forEach((entry) => {
       const value = entry.getMeasureDecimalValue()?.getArbitraryPrecisionValue();
       switch (entry.getMeasure()) {
         case MEASURE_PRESENT_VALUE:        result.presentValue = value; break;
@@ -594,23 +565,20 @@ export async function RunFrnValuation(inputs: FrnCalculatorInputs, apiKey?: stri
         case MEASURE_SPREAD_DURATION:     result.spreadDuration = value; break;
       }
     });
-
     result.cashflows = parseCashflows(response);
-
     return result;
   } catch (error: any) {
-    const rawMessage = error.details ?? error.message ?? 'Valuation failed';
-
-    if (rawMessage.includes('Maturity date must be in the future')) {
-      return { error: 'This FRN has already matured and cannot be valued.' };
-    }
-    if (rawMessage.includes('Periods to maturity must be at least 1')) {
-      return { error: 'This FRN matures too soon (less than one coupon period remaining).' };
-    }
-    if (rawMessage.includes('No security found')) {
-      return { error: rawMessage };
-    }
-
-    return { error: rawMessage };
+    return {
+      error: mapValuationError(error.details ?? error.message ?? 'Valuation failed', (msg) => {
+        if (msg.includes('Maturity date must be in the future')) {
+          return 'This FRN has already matured and cannot be valued.';
+        }
+        if (msg.includes('Periods to maturity must be at least 1')) {
+          return 'This FRN matures too soon (less than one coupon period remaining).';
+        }
+        if (msg.includes('No security found')) return msg;
+        return null;
+      }),
+    };
   }
 }
