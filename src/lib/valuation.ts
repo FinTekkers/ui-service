@@ -1,7 +1,7 @@
 import { ValuationClient } from '@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js';
 import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js';
 import { ValuationRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js';
-import { ProductInput, BondInput } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js';
+import { ProductInput, BondInput, TipsInput } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js';
 import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
 import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js';
 import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
@@ -403,18 +403,22 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
       ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualTipsSecurityProto(inputs);
 
-    const priceProto = buildPriceProto(securityProto, inputs.price);
-    const cpiPriceProto = buildCpiPriceProto(inputs.currentCpi);
+    // Engine path (#183 / #207): typed TipsInput inside ProductInput, instead
+    // of the legacy security_input + price_input + cpi_price_input flat fields.
+    // The valuation service routes TIPS requests through engine/tips.rs when
+    // product_input.tips is set.
+    const tipsInput = new TipsInput()
+      .setSecurity(securityProto)
+      .setCleanPrice(decimalValue(inputs.price))
+      .setCurrentCpi(decimalValue(inputs.currentCpi));
+    const productInput = new ProductInput().setTips(tipsInput);
 
     const request = new ValuationRequestProto();
     request.setObjectClass('ValuationRequestProto');
     request.setVersion('0.0.1');
     request.setOperationType(RequestOperationTypeProto.GET);
     request.setAsofDatetime(ZonedDateTime.now().toProto());
-    request.setSecurityInput(securityProto);
-    request.setPriceInput(priceProto);
-
-    request.setCpiPriceInput(cpiPriceProto);
+    request.setProductInput(productInput);
 
     TIPS_VALUATION_MEASURES.forEach(m => request.addMeasures(m));
 
