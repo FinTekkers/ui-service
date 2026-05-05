@@ -29,3 +29,9 @@ AWSCLIV2.pkg
 
 .npmrc
 *.key
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/playwright/.auth/
