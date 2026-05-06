@@ -1,32 +1,70 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { buildFilterUrl } from "$lib/filters/urlState";
+  // Browser-safe import (security.ts pulls in @grpc/grpc-js which crashes
+  // in the client bundle).
+  import {
+    IDENTIFIER_TYPE_NAMES,
+    SECURITY_TYPE_NAMES,
+    type IdentifierTypeName,
+    type SecurityTypeName,
+  } from "$lib/securityFilterTypes";
+
+  // Phase 1 of second-brain#226: extend filter form to the full identifier
+  // set + assetClass / issuerName / securityType. The CUSIP/ISIN button
+  // toggle was a hardcoded 2-option form; replaced with a dropdown of all
+  // 7 IdentifierTypeProto values. No new component yet — Phase 2 introduces
+  // an IdentifierFilter primitive.
 
   let identifierInput: string = "";
-  let identifierType: "CUSIP" | "ISIN" = "CUSIP";
+  let identifierType: IdentifierTypeName = "CUSIP";
   let issueDateInput: string = "";
   let issueDateOperator: "greater_than" | "lesser_than" | "" = "";
+  let assetClassInput: string = "";
+  let issuerNameInput: string = "";
+  let securityTypeInput: SecurityTypeName | "" = "";
 
-  $: identifierLabel = identifierType === "ISIN" ? "ISIN" : "CUSIP";
-  $: identifierPlaceholder = identifierType === "ISIN" ? "e.g. GB0002404557" : "e.g. 912828ZT0";
+  // Tailored placeholders so the user gets a hint of what each identifier
+  // type looks like. Falls back to a generic example for the rarer types.
+  const IDENTIFIER_PLACEHOLDERS: Record<IdentifierTypeName, string> = {
+    CUSIP: "e.g. 912828ZT0",
+    ISIN: "e.g. GB0002404557",
+    EXCH_TICKER: "e.g. AAPL",
+    SERIES_ID: "e.g. CPIAUCSL",
+    OSI: "e.g. AAPL  240119C00150000",
+    FIGI: "e.g. BBG000B9XRY4",
+    CASH: "e.g. USD",
+  };
+
+  $: identifierPlaceholder = IDENTIFIER_PLACEHOLDERS[identifierType];
 
   function fetchSecurities() {
-    let url = `/data/securities`;
-    const params = new URLSearchParams();
+    if (typeof window === "undefined") return;
 
-    if (identifierInput && identifierInput.trim() !== "") {
-      params.set("identifier", identifierInput.trim());
-      params.set("identifierType", identifierType);
-    }
+    const trimmedIdentifier = identifierInput.trim();
+    const trimmedIssueDate = issueDateInput.trim();
+    // Issue-date filter is a coupled (date, operator) pair: emit both or
+    // neither so the page-server doesn't apply a half-formed filter.
+    const issueDateOverride =
+      trimmedIssueDate && issueDateOperator ? trimmedIssueDate : undefined;
+    const issueDateOperatorOverride =
+      trimmedIssueDate && issueDateOperator ? issueDateOperator : undefined;
 
-    if (issueDateInput && issueDateInput.trim() !== "" && issueDateOperator) {
-      params.set("issueDate", issueDateInput.trim());
-      params.set("issueDateOperator", issueDateOperator);
-    }
-
-    const queryString = params.toString();
-    if (queryString) {
-      url += `?${queryString}`;
-    }
+    const url = buildFilterUrl(
+      "/data/securities",
+      new URLSearchParams(window.location.search),
+      {
+        identifier: trimmedIdentifier || undefined,
+        // Only emit identifierType alongside an identifier; otherwise it's
+        // dead weight in the URL.
+        identifierType: trimmedIdentifier ? identifierType : undefined,
+        issueDate: issueDateOverride,
+        issueDateOperator: issueDateOperatorOverride,
+        assetClass: assetClassInput.trim() || undefined,
+        issuerName: issuerNameInput.trim() || undefined,
+        securityType: securityTypeInput || undefined,
+      },
+    );
 
     window.location.href = url;
   }
@@ -38,7 +76,9 @@
     if (identifierFromUrl) identifierInput = identifierFromUrl;
 
     const idTypeFromUrl = urlParams.get("identifierType");
-    if (idTypeFromUrl === "ISIN") identifierType = "ISIN";
+    if (idTypeFromUrl && (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(idTypeFromUrl)) {
+      identifierType = idTypeFromUrl as IdentifierTypeName;
+    }
 
     const issueDateFromUrl = urlParams.get("issueDate");
     if (issueDateFromUrl) issueDateInput = issueDateFromUrl;
@@ -50,6 +90,17 @@
     ) {
       issueDateOperator = issueDateOperatorFromUrl;
     }
+
+    const assetClassFromUrl = urlParams.get("assetClass");
+    if (assetClassFromUrl !== null) assetClassInput = assetClassFromUrl;
+
+    const issuerNameFromUrl = urlParams.get("issuerName");
+    if (issuerNameFromUrl !== null) issuerNameInput = issuerNameFromUrl;
+
+    const securityTypeFromUrl = urlParams.get("securityType");
+    if (securityTypeFromUrl && (SECURITY_TYPE_NAMES as readonly string[]).includes(securityTypeFromUrl)) {
+      securityTypeInput = securityTypeFromUrl as SecurityTypeName;
+    }
   });
 </script>
 
@@ -57,21 +108,18 @@
   <div class="security-select-container flex flex-col sm:flex-row gap-2">
     <div class="text-white">
       <h4>Identifier Type:</h4>
-      <div class="id-type-toggle">
-        <button
-          class="toggle-btn"
-          class:active={identifierType === "CUSIP"}
-          on:click={() => { identifierType = "CUSIP"; identifierInput = ""; }}
-        >CUSIP</button>
-        <button
-          class="toggle-btn"
-          class:active={identifierType === "ISIN"}
-          on:click={() => { identifierType = "ISIN"; identifierInput = ""; }}
-        >ISIN</button>
-      </div>
+      <select
+        id="identifier-type-select"
+        bind:value={identifierType}
+        class="filter-select text-black"
+      >
+        {#each IDENTIFIER_TYPE_NAMES as name}
+          <option value={name}>{name}</option>
+        {/each}
+      </select>
     </div>
     <div class="text-white">
-      <h4>{identifierLabel}:</h4>
+      <h4>{identifierType}:</h4>
       <input
         type="text"
         id="identifier-input"
@@ -80,6 +128,41 @@
         class="filter-input text-black"
       />
     </div>
+    <div class="text-white">
+      <h4>Asset Class:</h4>
+      <input
+        type="text"
+        id="asset-class-input"
+        placeholder="e.g. Fixed Income (blank = all)"
+        bind:value={assetClassInput}
+        class="filter-input text-black"
+      />
+    </div>
+    <div class="text-white">
+      <h4>Issuer Name:</h4>
+      <input
+        type="text"
+        id="issuer-name-input"
+        placeholder="e.g. US Government (blank = all)"
+        bind:value={issuerNameInput}
+        class="filter-input text-black"
+      />
+    </div>
+    <div class="text-white">
+      <h4>Security Type:</h4>
+      <select
+        id="security-type-select"
+        bind:value={securityTypeInput}
+        class="filter-select text-black"
+      >
+        <option value="">All</option>
+        {#each SECURITY_TYPE_NAMES as name}
+          <option value={name}>{name}</option>
+        {/each}
+      </select>
+    </div>
+  </div>
+  <div class="security-select-container flex flex-col sm:flex-row gap-2 mt-2">
     <div class="text-white">
       <h4>Issue Date Filter:</h4>
       <input
@@ -116,42 +199,6 @@
   h4 {
     margin: 4px 0;
     font-size: 0.875rem;
-  }
-
-  .id-type-toggle {
-    display: flex;
-    gap: 0;
-    height: 38px;
-  }
-
-  .toggle-btn {
-    background-color: #0c3a46;
-    color: #aaa;
-    border: 1px solid #1b5060;
-    padding: 4px 14px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.15s;
-
-    &:first-child {
-      border-radius: 4px 0 0 4px;
-    }
-
-    &:last-child {
-      border-radius: 0 4px 4px 0;
-    }
-
-    &.active {
-      background-color: #7cd2ba;
-      color: #0c3a46;
-      font-weight: bold;
-      border-color: #7cd2ba;
-    }
-
-    &:hover:not(.active) {
-      background-color: #1b5060;
-      color: white;
-    }
   }
 
   .security-button {
