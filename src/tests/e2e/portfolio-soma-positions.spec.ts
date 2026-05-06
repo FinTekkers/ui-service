@@ -5,28 +5,29 @@
  *   1. /data/portfolios renders the seeded "Federal Reserve SOMA Holdings" row.
  *   2. Clicking the portfolio name link navigates to /data/positions with the
  *      portfolio's UUID as `portfolioId` in the query string.
- *   3. The positions page renders the default flat tax-lot view for SOMA.
+ *   3. The positions page renders the default TRANSACTION view scoped to SOMA.
  *   4. Switching the request to fields=PRODUCT_TYPE & measures=DIRECTED_QUANTITY
  *      (the backend's group-by mode) renders one row per product type with the
  *      aggregated DIRECTED_QUANTITY value — i.e. the page surfaces a real
  *      Measure × Field aggregation by relying on the position-service's
- *      server-side aggregation when only one field is requested.
+ *      server-side aggregation when only one field is requested. The query is
+ *      portfolio-scoped via the PORTFOLIO_ID PositionFilter wired through
+ *      +page.server.ts → FetchPosition.
  *
- * Why URL-driven for step 4 (instead of driving the PositionSelect controls):
- *   PositionSelect.fetchPositions() drops the inbound `portfolioId` query param
- *   when constructing the next URL — second-brain#220. Until that is fixed,
- *   the only way to keep the request portfolio-scoped through a UI flow is to
- *   URL-navigate. Filed as an issue rather than fixed inline because the
- *   workaround is clean and the fix needs careful thought (which params to
- *   preserve generically).
+ * Default-URL filter set (mirrored both in PortfolioGrid.getPositionsUrl and
+ * step 4 of this test):
+ *   - positionType=TRANSACTION (transaction-rolled-up state, not per tax lot).
+ *   - tradeDate=<today> & tradeDateOperator=lesser_than excludes future-dated
+ *     / unsettled trades so the page reflects the as-of-now position.
+ *   - hideZeros=true suppresses fully-zero rows.
+ *   - portfolioId scopes the search to the clicked portfolio.
  *
- * Why the PortfolioGrid default URL was trimmed in this PR:
- *   The previous default included ACCRUED_INTEREST/DIRTY_PRICE/CLEAN_PRICE/
- *   CONVEXITY/MODIFIED_DURATION — all of which the ledger-service
- *   position-search returns `12 UNIMPLEMENTED` for. A single unsupported
- *   measure 500s the entire stream, so every portfolio click landed on the
- *   error page. Trimmed to working measures only; backend gap tracked in
- *   second-brain#219.
+ * Why the PortfolioGrid default URL was trimmed earlier in this branch's
+ * history: the previous default included ACCRUED_INTEREST / DIRTY_PRICE /
+ * CLEAN_PRICE / CONVEXITY / MODIFIED_DURATION — all of which the ledger-
+ * service position-search returns `12 UNIMPLEMENTED` for. A single
+ * unsupported measure 500s the entire stream. Backend gap tracked in
+ * second-brain#219.
  */
 import { test, expect } from '@playwright/test';
 
@@ -69,12 +70,20 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
     // 4. Switch to the PRODUCT_TYPE × DIRECTED_QUANTITY view. The position
     //    service aggregates server-side: requesting only PRODUCT_TYPE collapses
     //    the result set to one row per product type with summed measures.
+    //    Mirror the view/filter defaults set by PortfolioGrid (TRANSACTION
+    //    view, tradeDate < today, hideZeros) so the assertion exercises the
+    //    same shape the user lands on, just with a different fields/measures
+    //    selection. portfolioId keeps the search scoped to SOMA.
+    const today = new Date().toISOString().slice(0, 10);
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
       `&fields=PRODUCT_TYPE` +
       `&measures=DIRECTED_QUANTITY` +
       `&positionView=DEFAULT_VIEW` +
-      `&positionType=TAX_LOT`,
+      `&positionType=TRANSACTION` +
+      `&tradeDate=${today}` +
+      `&tradeDateOperator=lesser_than` +
+      `&hideZeros=true`,
     );
 
     await expect(page.getByRole('heading', { name: 'Positions' })).toBeVisible({ timeout: 15_000 });
@@ -98,14 +107,16 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
       ).toHaveCount(1);
     }
 
-    // The non-cash product types have a non-zero DIRECTED_QUANTITY rendered as
-    // a $-prefixed amount with two decimals (formatAmount in formatUtils).
-    // CASH is allowed to be $0.00 — SOMA's reported holdings don't include
-    // standalone cash positions.
-    for (const productType of ['NOTE', 'BILL', 'BOND'] as const) {
+    // Every product type has a non-zero DIRECTED_QUANTITY. Under TRANSACTION
+    // view + hideZeros=true the seed shows positive holdings for NOTE/BILL/
+    // BOND and a negative CASH leg (the offsetting cash impact of the bond
+    // purchases). formatAmount uses Intl.NumberFormat USD which renders
+    // negatives as `-$1,234.56` and positives as `$1,234.56`; the regex
+    // accepts either sign.
+    for (const productType of SOMA_PRODUCT_TYPES) {
       const row = dataRows.filter({ has: page.locator('td', { hasText: new RegExp(`^${productType}$`) }) });
       const valueCell = row.locator('td').nth(1);
-      await expect(valueCell).toHaveText(/\$[1-9][\d,]*\.\d{2}/);
+      await expect(valueCell).toHaveText(/^-?\$[1-9][\d,]*\.\d{2}$/);
     }
   });
 });

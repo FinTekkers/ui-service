@@ -26,12 +26,28 @@
 		// and a single unsupported measure 500s the whole positions page.
 		// Backend gap tracked in second-brain#219; restore the bond analytics
 		// columns here once that issue is closed.
+		//
+		// View defaults:
+		//   - positionType=TRANSACTION rolls up positions at the transaction
+		//     level (current state), not per tax lot — what a portfolio
+		//     manager wants on first load.
+		//   - tradeDate < today filters out unsettled/future-dated trades so
+		//     the page reflects the as-of-now position.
+		//   - hideZeros suppresses positions whose every measure is zero.
+		//   - portfolioId scopes the search to the clicked portfolio (SOMA in
+		//     the seeded dataset). The /data/positions page-server already
+		//     wires this through to FetchPosition's PORTFOLIO_ID filter — no
+		//     extension required.
+		const today = new Date().toISOString().slice(0, 10);
 		const params = new URLSearchParams({
 			portfolioId,
 			fields: 'SECURITY_DESCRIPTION,PORTFOLIO_NAME',
 			measures: 'DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY',
 			positionView: 'DEFAULT_VIEW',
-			positionType: 'TAX_LOT',
+			positionType: 'TRANSACTION',
+			tradeDate: today,
+			tradeDateOperator: 'lesser_than',
+			hideZeros: 'true',
 		});
 		return `/data/positions?${params.toString()}`;
 	}
