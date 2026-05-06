@@ -7,6 +7,8 @@
   import { onMount } from "svelte";
   import { buildFilterUrl } from "$lib/filters/urlState";
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
+  import DateFilter from "../filters/DateFilter.svelte";
+  import type { DateOperator } from "../filters/DateFilter.svelte";
   // Browser-safe import (security.ts pulls in @grpc/grpc-js).
   import {
     IDENTIFIER_TYPE_NAMES,
@@ -47,12 +49,12 @@
   // now matches /data/securities and /data/prices.
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
+  // Phase 3 of #226 (PR-A): tradeDate UX uses the shared DateFilter
+  // primitive. State + URL conventions unchanged — the bound
+  // `tradeDateInput` and `tradeDateOperator` flow through the same
+  // fetchPositions/loadSelectedValues paths as before.
   let tradeDateInput: string = "";
-  let tradeDateOperator:
-    | "greater_than"
-    | "lesser_than"
-    | "lesser_than_or_equals"
-    | "" = "";
+  let tradeDateOperator: DateOperator | "" = "";
   let assetClassInput: string = "";
   let hideZeros: boolean = false;
 
@@ -169,15 +171,11 @@
       }
 
       if (
-        tradeDateOperatorFromUrl &&
-        (tradeDateOperatorFromUrl === "greater_than" ||
-          tradeDateOperatorFromUrl === "lesser_than" ||
-          tradeDateOperatorFromUrl === "lesser_than_or_equals")
+        tradeDateOperatorFromUrl === "greater_than" ||
+        tradeDateOperatorFromUrl === "lesser_than" ||
+        tradeDateOperatorFromUrl === "lesser_than_or_equals"
       ) {
-        tradeDateOperator = tradeDateOperatorFromUrl as
-          | "greater_than"
-          | "lesser_than"
-          | "lesser_than_or_equals";
+        tradeDateOperator = tradeDateOperatorFromUrl;
       }
 
       if (assetClassInput) {
@@ -259,28 +257,15 @@
         inputId="position-identifier-input"
       />
     </div>
-    <div class="text-white">
+    <div class="text-white date-filter-cell">
       <h4>Trade Date Filter:</h4>
-      <input
-        type="date"
-        id="trade-date-input"
-        bind:value={tradeDateInput}
-        class="trade-date-input text-black"
+      <DateFilter
+        bind:date={tradeDateInput}
+        bind:operator={tradeDateOperator}
+        inputClass="position-select-input text-black"
+        selectClass="position-select-input text-black"
+        inputId="trade-date-input"
       />
-    </div>
-    <div class="text-white">
-      <h4>Operator:</h4>
-      <select
-        id="trade-date-operator"
-        bind:value={tradeDateOperator}
-        class="trade-date-operator text-black"
-        disabled={!tradeDateInput}
-      >
-        <option value="">Select operator...</option>
-        <option value="greater_than">Greater Than</option>
-        <option value="lesser_than">Lesser Than</option>
-        <option value="lesser_than_or_equals">Lesser Than or Equal</option>
-      </select>
     </div>
     <div class="text-white">
       <h4>Asset Class:</h4>
@@ -351,8 +336,6 @@
     }
   }
 
-  .trade-date-input,
-  .trade-date-operator,
   .asset-class-input {
     padding: 4px 10px;
     border: 1px solid #ccc;
@@ -365,11 +348,12 @@
   }
 
   // .position-select-input is passed via selectClass / inputClass into
-  // IdentifierFilter (Phase 3 of #226). The component renders those
-  // classes onto its <select> and <input>, but those nodes live in a
-  // child component scope, so Svelte's scoped CSS would drop the rule
-  // as unused. :global keeps it applying; the .position-select-container
-  // ancestor confines blast radius to PositionSelect's tree.
+  // IdentifierFilter and DateFilter (Phase 2/3 of #226). The components
+  // render those classes onto their <select>/<input>, but those nodes
+  // live in a child component scope, so Svelte's scoped CSS would drop
+  // the rule as unused. :global keeps it applying; the
+  // .position-select-container ancestor confines blast radius to
+  // PositionSelect's tree.
   :global(.position-select-container .position-select-input) {
     padding: 4px 10px;
     border: 1px solid #ccc;
@@ -381,11 +365,7 @@
     background-color: white;
   }
 
-  .trade-date-operator {
-    font-size: 0.875rem !important; /* Ensure select text matches input size */
-  }
-
-  .trade-date-operator:disabled {
+  :global(.position-select-container .position-select-input:disabled) {
     background-color: #f0f0f0;
     cursor: not-allowed;
   }
