@@ -17,8 +17,9 @@
  * Default-URL filter set (mirrored both in PortfolioGrid.getPositionsUrl and
  * step 4 of this test):
  *   - positionType=TRANSACTION (transaction-rolled-up state, not per tax lot).
- *   - tradeDate=<today> & tradeDateOperator=lesser_than excludes future-dated
- *     / unsettled trades so the page reflects the as-of-now position.
+ *   - tradeDate=<today> & tradeDateOperator=lesser_than_or_equals excludes
+ *     future-dated trades while including those booked today, so the page
+ *     reflects the as-of-now position.
  *   - hideZeros=true suppresses fully-zero rows.
  *   - portfolioId scopes the search to the clicked portfolio.
  *
@@ -71,7 +72,7 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
     //    service aggregates server-side: requesting only PRODUCT_TYPE collapses
     //    the result set to one row per product type with summed measures.
     //    Mirror the view/filter defaults set by PortfolioGrid (TRANSACTION
-    //    view, tradeDate < today, hideZeros) so the assertion exercises the
+    //    view, tradeDate <= today, hideZeros) so the assertion exercises the
     //    same shape the user lands on, just with a different fields/measures
     //    selection. portfolioId keeps the search scoped to SOMA.
     const today = new Date().toISOString().slice(0, 10);
@@ -82,7 +83,7 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
       `&positionView=DEFAULT_VIEW` +
       `&positionType=TRANSACTION` +
       `&tradeDate=${today}` +
-      `&tradeDateOperator=lesser_than` +
+      `&tradeDateOperator=lesser_than_or_equals` +
       `&hideZeros=true`,
     );
 
