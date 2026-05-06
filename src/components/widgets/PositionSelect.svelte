@@ -37,7 +37,11 @@
 
   let cusipInput: string = "";
   let tradeDateInput: string = "";
-  let tradeDateOperator: "greater_than" | "lesser_than" | "" = "";
+  let tradeDateOperator:
+    | "greater_than"
+    | "lesser_than"
+    | "lesser_than_or_equals"
+    | "" = "";
   let assetClassInput: string = "";
   let hideZeros: boolean = false;
 
@@ -143,11 +147,13 @@
       if (
         tradeDateOperatorFromUrl &&
         (tradeDateOperatorFromUrl === "greater_than" ||
-          tradeDateOperatorFromUrl === "lesser_than")
+          tradeDateOperatorFromUrl === "lesser_than" ||
+          tradeDateOperatorFromUrl === "lesser_than_or_equals")
       ) {
         tradeDateOperator = tradeDateOperatorFromUrl as
           | "greater_than"
-          | "lesser_than";
+          | "lesser_than"
+          | "lesser_than_or_equals";
       }
 
       if (assetClassInput) {
@@ -249,6 +255,7 @@
         <option value="">Select operator...</option>
         <option value="greater_than">Greater Than</option>
         <option value="lesser_than">Lesser Than</option>
+        <option value="lesser_than_or_equals">Lesser Than or Equal</option>
       </select>
     </div>
     <div class="text-white">

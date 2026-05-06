@@ -149,7 +149,13 @@ export async function load({ locals, request }) {
     validSortDirection,
     cusip || undefined,
     tradeDate || undefined,
-    tradeDateOperator === 'greater_than' ? 'greater_than' : tradeDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
+    tradeDateOperator === 'greater_than'
+      ? 'greater_than'
+      : tradeDateOperator === 'lesser_than_or_equals'
+        ? 'lesser_than_or_equals'
+        : tradeDateOperator === 'lesser_than'
+          ? 'lesser_than'
+          : undefined,
     assetClass || undefined,
     portfolioId || undefined,
     locals.user?.apiKey

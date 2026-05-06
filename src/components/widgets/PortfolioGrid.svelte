@@ -31,8 +31,9 @@
 		//   - positionType=TRANSACTION rolls up positions at the transaction
 		//     level (current state), not per tax lot — what a portfolio
 		//     manager wants on first load.
-		//   - tradeDate < today filters out unsettled/future-dated trades so
-		//     the page reflects the as-of-now position.
+		//   - tradeDate <= today excludes future-dated trades while including
+		//     today's. A PM checking their book at end-of-day expects trades
+		//     booked today to appear.
 		//   - hideZeros suppresses positions whose every measure is zero.
 		//   - portfolioId scopes the search to the clicked portfolio (SOMA in
 		//     the seeded dataset). The /data/positions page-server already
@@ -46,7 +47,7 @@
 			positionView: 'DEFAULT_VIEW',
 			positionType: 'TRANSACTION',
 			tradeDate: today,
-			tradeDateOperator: 'lesser_than',
+			tradeDateOperator: 'lesser_than_or_equals',
 			hideZeros: 'true',
 		});
 		return `/data/positions?${params.toString()}`;
