@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   export let data: import('./$types').PageData;
 
   type CurvePoint = { tenor: string; years: number; yield: number };
@@ -94,11 +93,7 @@
   });
 </script>
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
-
-  <div class="h-full w-full dashboard-container">
-    <div class="portfolio_container px-10 py-7">
+<div class="portfolio_container px-10 py-7">
       <h2 class="text-3xl font-extrabold my-3">Treasury Yield Curves</h2>
       <p class="page-subtitle">Live par / spot / forward curves fitted from on-the-run US Treasuries as of {curveDate}.</p>
 
@@ -155,19 +150,12 @@
               </tr>
             {/each}
           </tbody>
-        </table>
-      </div>
-    </div>
+    </table>
   </div>
 </div>
 
 <style lang="scss">
   @import "../../../../styles/grid-table";
-
-  .dashboard-container {
-    background-color: $primary-color;
-    overflow: auto;
-  }
 
   .page-subtitle {
     font-size: 0.9rem;

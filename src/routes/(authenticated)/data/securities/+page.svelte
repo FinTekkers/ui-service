@@ -1,5 +1,4 @@
 <script lang="ts">
-  import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
   import Security from "../../../../components/widgets/SecurityGrid.svelte";
   import SecurityDetail from "../../../../components/widgets/SecurityDetail.svelte";
   import SecuritySelect from "../../../../components/widgets/SecuritySelect.svelte";
@@ -64,43 +63,37 @@
   }
 </script>
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
+<SecuritySelect />
 
-  <div class="h-full w-full dashboard-container">
-    <SecuritySelect />
+{#if deleteSuccess}
+  <div class="success-banner">{deleteSuccess}</div>
+{/if}
+{#if deleteError && !showModal}
+  <div class="error-banner">{deleteError}</div>
+{/if}
 
-    {#if deleteSuccess}
-      <div class="success-banner">{deleteSuccess}</div>
-    {/if}
-    {#if deleteError && !showModal}
-      <div class="error-banner">{deleteError}</div>
-    {/if}
+{#if Array.isArray(data.security) && data.security.length === 1}
+  <SecurityDetail
+    security={data.security[0]}
+    on:requestDelete={handleRequestDelete}
+  />
+{:else}
+  <Security
+    rows={Array.isArray(data.security) ? data.security : [data.security]}
+    on:requestDelete={handleRequestDelete}
+  />
+{/if}
 
-    {#if Array.isArray(data.security) && data.security.length === 1}
-      <SecurityDetail
-        security={data.security[0]}
-        on:requestDelete={handleRequestDelete}
-      />
-    {:else}
-      <Security
-        rows={Array.isArray(data.security) ? data.security : [data.security]}
-        on:requestDelete={handleRequestDelete}
-      />
-    {/if}
-
-    <!-- Dry-run form (hidden, auto-submitted when delete button clicked) -->
-    {#if deleteTarget && !showModal}
-      <form method="POST" action="?/dryRun" use:enhance={() => {
-        deleteLoading = true;
-        return async ({ update }) => { await update(); };
-      }}>
-        <input type="hidden" name="uuidHex" value={deleteTarget.uuidHex} />
-        <button type="submit" class="hidden-submit" bind:this={dryRunSubmitBtn}></button>
-      </form>
-    {/if}
-  </div>
-</div>
+<!-- Dry-run form (hidden, auto-submitted when delete button clicked) -->
+{#if deleteTarget && !showModal}
+  <form method="POST" action="?/dryRun" use:enhance={() => {
+    deleteLoading = true;
+    return async ({ update }) => { await update(); };
+  }}>
+    <input type="hidden" name="uuidHex" value={deleteTarget.uuidHex} />
+    <button type="submit" class="hidden-submit" bind:this={dryRunSubmitBtn}></button>
+  </form>
+{/if}
 
 <!-- Confirmation Modal -->
 {#if showModal && dryRunResult && deleteTarget}
@@ -178,11 +171,6 @@
 
 <style lang="scss">
   @import "../../../../style";
-
-  .dashboard-container {
-    background-color: $primary-color;
-    overflow: auto;
-  }
 
   .hidden-submit {
     display: none;

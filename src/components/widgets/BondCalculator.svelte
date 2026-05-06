@@ -291,11 +291,22 @@
 <style lang="scss">
   @import "../../styles/grid-table";
 
+  // Sticky inputs+results so the user can keep their parameters visible
+  // while scrolling a long cashflow schedule (#223 calc-page amendment).
+  // Pins to the top of .content-area (the layout's scroll surface) when
+  // the page scrolls. Background matches the page so previous content
+  // doesn't bleed through. z-index high enough to sit above the cashflow
+  // table rows but below modals/dropdowns (which use z-index ≥ 10).
   .calculator-layout {
     display: flex;
     gap: 2rem;
     flex-wrap: wrap;
     margin-top: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: $primary-color;
+    padding-bottom: 1rem;
   }
 
   .inputs-panel {

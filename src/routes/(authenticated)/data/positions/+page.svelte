@@ -1,6 +1,5 @@
 <script lang="ts">
   import { navigating } from "$app/stores";
-  import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
   import Position from "../../../../components/widgets/PositionGrid.svelte";
   import PositionSelect from "../../../../components/widgets/PositionSelect.svelte";
   export let data: import("./$types").PageData;
@@ -67,39 +66,33 @@
 
 {@debug}
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
-
-  <div class="h-full w-full dashboard-container">
-    {#if portfolioId}
-      <div class="px-4 pt-4">
-        <a href="/data/portfolios" class="back-link">
-          &larr; Back to Portfolios
-        </a>
-      </div>
-    {/if}
-
-    <PositionSelect />
-
-    {#if $navigating}
-      <div class="loading-container">
-        <div class="spinner" />
-        <p>Loading positions…</p>
-      </div>
-    {:else if hasRequestedData && filteredPositions.length === 0}
-      <div class="empty-state">
-        <p>No positions in this portfolio</p>
-      </div>
-    {:else if hasRequestedData}
-      <Position
-        positions={filteredPositions}
-        requestData={data.requestData}
-        metadata={data.metadata}
-        onSortChange={handleSortChange}
-      />
-    {/if}
+{#if portfolioId}
+  <div class="px-4 pt-4">
+    <a href="/data/portfolios" class="back-link">
+      &larr; Back to Portfolios
+    </a>
   </div>
-</div>
+{/if}
+
+<PositionSelect />
+
+{#if $navigating}
+  <div class="loading-container">
+    <div class="spinner" />
+    <p>Loading positions…</p>
+  </div>
+{:else if hasRequestedData && filteredPositions.length === 0}
+  <div class="empty-state">
+    <p>No positions in this portfolio</p>
+  </div>
+{:else if hasRequestedData}
+  <Position
+    positions={filteredPositions}
+    requestData={data.requestData}
+    metadata={data.metadata}
+    onSortChange={handleSortChange}
+  />
+{/if}
 
 <style lang="scss">
   @import "../../../../style";
@@ -112,20 +105,6 @@
 
     &:hover {
       text-decoration: underline;
-    }
-  }
-
-  .dashboard-container {
-    background-color: $primary-color;
-    overflow: auto;
-
-    .dashboard-menu {
-      width: 98%;
-      height: 98%;
-      padding: 2em;
-      border-radius: 5px;
-      background-color: $tealblack;
-      color: $primary-color;
     }
   }
 

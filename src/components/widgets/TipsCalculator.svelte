@@ -306,11 +306,19 @@
 <style lang="scss">
   @import "../../styles/grid-table";
 
+  // Sticky inputs+results so the user keeps parameters visible while
+  // scrolling a long cashflow schedule (#223 calc-page amendment). See
+  // BondCalculator.svelte for full rationale.
   .calculator-layout {
     display: flex;
     gap: 2rem;
     flex-wrap: wrap;
     margin-top: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: $primary-color;
+    padding-bottom: 1rem;
   }
 
   .inputs-panel {

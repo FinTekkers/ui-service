@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   import IdentifierFilter from '../../../../components/filters/IdentifierFilter.svelte';
   import type { IdentifierTypeName } from '$lib/securityFilterTypes';
   export let data: import('./$types').PageData;
@@ -151,11 +150,7 @@
   });
 </script>
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
-
-  <div class="h-full w-full dashboard-container">
-    <div class="portfolio_container px-10 py-7">
+<div class="portfolio_container px-10 py-7">
       <h2 class="text-3xl font-extrabold my-3">Price History</h2>
 
       <!-- Identifier type + value selector. Universe-driven autocomplete
@@ -253,20 +248,13 @@
             </tbody>
           </table>
         </div>
-      {:else if selectedIdentifier && !priceError}
-        <p class="empty-msg">No price history found for {selectedIdentifier}.</p>
-      {/if}
-    </div>
-  </div>
+  {:else if selectedIdentifier && !priceError}
+    <p class="empty-msg">No price history found for {selectedIdentifier}.</p>
+  {/if}
 </div>
 
 <style lang="scss">
   @import "../../../../styles/grid-table";
-
-  .dashboard-container {
-    background-color: $primary-color;
-    overflow: auto;
-  }
 
   .selector-row {
     display: flex;
