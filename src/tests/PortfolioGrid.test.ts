@@ -47,14 +47,22 @@ describe('PortfolioGrid', () => {
 
 	test('each row contains links with the correct positions URL', () => {
 		const links = screen.getAllByRole('link');
+		// Date computed the same way as PortfolioGrid.getPositionsUrl. The
+		// component runs in the same test invocation so they will agree
+		// barring a midnight rollover mid-test (which would also flake the
+		// component's own behavior, not our assertion shape).
+		const today = new Date().toISOString().slice(0, 10);
 
 		for (const row of mockRows) {
 			const expectedParams = new URLSearchParams({
 				portfolioId: row.portfolioId,
 				fields: 'SECURITY_DESCRIPTION,PORTFOLIO_NAME',
-				measures: 'DIRECTED_QUANTITY,MARKET_VALUE,ACCRUED_INTEREST,DIRTY_PRICE,CLEAN_PRICE,CONVEXITY,MODIFIED_DURATION,DV01,YIELD_TO_MATURITY',
+				measures: 'DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY',
 				positionView: 'DEFAULT_VIEW',
-				positionType: 'TAX_LOT',
+				positionType: 'TRANSACTION',
+				tradeDate: today,
+				tradeDateOperator: 'lesser_than',
+				hideZeros: 'true',
 			});
 			const expectedUrl = `/data/positions?${expectedParams.toString()}`;
 
@@ -80,9 +88,12 @@ describe('PortfolioGrid', () => {
 
 		expect(params.get('portfolioId')).toBe('portfolio-001');
 		expect(params.get('fields')).toBe('SECURITY_DESCRIPTION,PORTFOLIO_NAME');
-		expect(params.get('measures')).toBe('DIRECTED_QUANTITY,MARKET_VALUE,ACCRUED_INTEREST,DIRTY_PRICE,CLEAN_PRICE,CONVEXITY,MODIFIED_DURATION,DV01,YIELD_TO_MATURITY');
+		expect(params.get('measures')).toBe('DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY');
 		expect(params.get('positionView')).toBe('DEFAULT_VIEW');
-		expect(params.get('positionType')).toBe('TAX_LOT');
+		expect(params.get('positionType')).toBe('TRANSACTION');
+		expect(params.get('tradeDate')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+		expect(params.get('tradeDateOperator')).toBe('lesser_than');
+		expect(params.get('hideZeros')).toBe('true');
 	});
 
 	test('clicking a column header triggers sorting', async () => {

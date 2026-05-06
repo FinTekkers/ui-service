@@ -85,6 +85,17 @@
       url += `&hideZeros=true`;
     }
 
+    // Preserve portfolioId from the inbound URL so re-running the form keeps
+    // the search scoped to the portfolio the user navigated in from. Without
+    // this, clicking SOMA → /positions → "Run" would silently widen the
+    // query to all portfolios. Tracked in second-brain#220.
+    if (typeof window !== "undefined") {
+      const inboundPortfolioId = new URLSearchParams(window.location.search).get("portfolioId");
+      if (inboundPortfolioId) {
+        url += `&portfolioId=${encodeURIComponent(inboundPortfolioId)}`;
+      }
+    }
+
     window.location.href = url;
   }
 
