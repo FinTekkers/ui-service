@@ -19,12 +19,11 @@ import type { PositionTypeProto, PositionViewProto } from '@fintekkers/ledger-mo
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 const { FieldProto } = pkg;
 import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
-import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
-import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { pack } from '@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
+import type { IdentifierTypeName } from '$lib/securityFilterTypes';
 
 function searchPositions(request: ReturnType<QueryPositionRequest['toProto']>, apiKey?: string): Promise<Position[]> {
     const conn = getServiceConnection(apiKey);
@@ -46,20 +45,26 @@ export async function FetchPosition(
     positionTypeEnumValue: PositionTypeProto,
     sortBy?: FieldProtoType,
     sortDirection: 'asc' | 'desc' = 'asc',
-    cusip?: string,
+    identifier?: string,
     tradeDate?: string,
     tradeDateOperator?: 'greater_than' | 'lesser_than' | 'lesser_than_or_equals',
     assetClass?: string,
     portfolioId?: string,
-    apiKey?: string
+    apiKey?: string,
+    identifierType?: IdentifierTypeName,
 ): Promise<any> {
-    // Create position filter and add CUSIP filter if provided
+    // Add IDENTIFIER filter if provided. identifierType defaults to CUSIP
+    // for backward compat with the pre-#227 callers that only knew about
+    // CUSIP. Passing an explicit type (EXCH_TICKER, ISIN, …) is supported
+    // now that PositionSelect uses IdentifierFilter.
     const positionFilter = new PositionFilter();
-    if (cusip && cusip.trim() !== "") {
-        //TODO: add constructor for this
-        let identifierProto = new IdentifierProto().setIdentifierType(IdentifierTypeProto.CUSIP).setIdentifierValue(cusip.trim());
-        let identifier = new Identifier(identifierProto);
-        positionFilter.addObjectFilter(FieldProto.IDENTIFIER, identifier);
+    if (identifier && identifier.trim() !== "") {
+        // Identifier.fromName (ledger-models 0.1.133+) constructs the
+        // wrapper from a proto-enum name string; replaces the local
+        // identifierTypeNameToProtoLocal switch + manual IdentifierProto
+        // assembly we used to do here.
+        const identifierObj = Identifier.fromName(identifierType ?? 'CUSIP', identifier.trim());
+        positionFilter.addObjectFilter(FieldProto.IDENTIFIER, identifierObj);
     }
 
     // Add TRADE_DATE filter if provided

@@ -6,6 +6,7 @@ import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/positi
 const { MeasureProto } = measure_pkg;
 
 import { FetchPosition } from "$lib/positions";
+import { IDENTIFIER_TYPE_NAMES, type IdentifierTypeName } from "$lib/securityFilterTypes";
 
 import position_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js';
 const { PositionViewProto, PositionTypeProto } = position_pkg;
@@ -68,7 +69,26 @@ export async function load({ locals, request }) {
   const positionType = searchParams.get('positionType');
   const fields = searchParams.get('fields');
   const measures = searchParams.get('measures');
-  const cusip = searchParams.get('cusip');
+  // Identifier filter — second-brain#227. Canonical shape:
+  //   ?identifier=<value>&identifierType=<CUSIP|ISIN|EXCH_TICKER|…>
+  // Backward-compat shim: ?cusip=<value> is treated as
+  // ?identifier=<value>&identifierType=CUSIP for one release. The
+  // deprecation warning logs once per request hit; remove the shim in a
+  // future release once stale bookmarks are unlikely.
+  let identifier = searchParams.get('identifier');
+  const rawIdentifierType = searchParams.get('identifierType');
+  let identifierType: IdentifierTypeName | undefined =
+    rawIdentifierType && (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(rawIdentifierType)
+      ? (rawIdentifierType as IdentifierTypeName)
+      : undefined;
+  const legacyCusip = searchParams.get('cusip');
+  if (!identifier && legacyCusip) {
+    console.warn(
+      "[deprecation] /data/positions ?cusip=… is deprecated; use ?identifier=…&identifierType=CUSIP. (#227 backward-compat shim)",
+    );
+    identifier = legacyCusip;
+    identifierType = identifierType ?? 'CUSIP';
+  }
   const tradeDate = searchParams.get('tradeDate');
   const tradeDateOperator = searchParams.get('tradeDateOperator');
   const assetClass = searchParams.get('assetClass');
@@ -147,7 +167,7 @@ export async function load({ locals, request }) {
     positionTypeEnumValue,
     mappedSortBy,
     validSortDirection,
-    cusip || undefined,
+    identifier || undefined,
     tradeDate || undefined,
     tradeDateOperator === 'greater_than'
       ? 'greater_than'
@@ -158,7 +178,8 @@ export async function load({ locals, request }) {
           : undefined,
     assetClass || undefined,
     portfolioId || undefined,
-    locals.user?.apiKey
+    locals.user?.apiKey,
+    identifierType,
   );
 
   const metadata = { fields: userFields, measures: userMeasures };

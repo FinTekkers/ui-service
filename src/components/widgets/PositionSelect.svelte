@@ -6,6 +6,12 @@
   import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
   import { onMount } from "svelte";
   import { buildFilterUrl } from "$lib/filters/urlState";
+  import IdentifierFilter from "../filters/IdentifierFilter.svelte";
+  // Browser-safe import (security.ts pulls in @grpc/grpc-js).
+  import {
+    IDENTIFIER_TYPE_NAMES,
+    type IdentifierTypeName,
+  } from "$lib/securityFilterTypes";
 
   const { FieldProto } = pkg;
 
@@ -36,7 +42,11 @@
   export let selectedPositionType: string[] = ["Transaction"];
   export let selectedPositionView: string[] = ["Default View"];
 
-  let cusipInput: string = "";
+  // Phase 3 of second-brain#226 (issue #227): identifier UX uses the shared
+  // IdentifierFilter primitive. Was CUSIP-only (cusipInput + ?cusip=...);
+  // now matches /data/securities and /data/prices.
+  let identifierInput: string = "";
+  let identifierType: IdentifierTypeName = "CUSIP";
   let tradeDateInput: string = "";
   let tradeDateOperator:
     | "greater_than"
@@ -70,6 +80,10 @@
     const tradeDateOperatorOverride =
       trimmedTradeDate && tradeDateOperator ? tradeDateOperator : undefined;
 
+    // identifier + identifierType form the same coupled pair as tradeDate +
+    // tradeDateOperator: a type without a value is meaningless on the URL.
+    const trimmedIdentifier = identifierInput.trim();
+
     const url = buildFilterUrl(
       "/data/positions",
       new URLSearchParams(window.location.search),
@@ -78,7 +92,11 @@
         positionType: selectedPositionType.map(unformatName).join(","),
         fields: selectedFields.map(unformatName).join(","),
         measures: selectedMeasures.map(unformatName).join(","),
-        cusip: cusipInput.trim() || undefined,
+        identifier: trimmedIdentifier || undefined,
+        identifierType: trimmedIdentifier ? identifierType : undefined,
+        // No legacy ?cusip= override needed: buildFilterUrl only carries
+        // forward keys in inheritKeys (just portfolioId), so a stale
+        // ?cusip= bookmark naturally disappears on re-submit.
         tradeDate: tradeDateOverride,
         tradeDateOperator: tradeDateOperatorOverride,
         assetClass: assetClassInput.trim() || undefined,
@@ -102,7 +120,9 @@
       const selectedMeasuresFromUrl = urlParams.get("measures");
       const selectedPositionTypeFromUrl = urlParams.get("positionType");
       const selectedPositionViewFromUrl = urlParams.get("positionView");
-      const cusipFromUrl = urlParams.get("cusip");
+      const identifierFromUrl = urlParams.get("identifier");
+      const identifierTypeFromUrl = urlParams.get("identifierType");
+      const legacyCusipFromUrl = urlParams.get("cusip");
       const tradeDateFromUrl = urlParams.get("tradeDate");
       const tradeDateOperatorFromUrl = urlParams.get("tradeDateOperator");
       const assetClassFromUrl = urlParams.get("assetClass");
@@ -127,8 +147,21 @@
           .map(formatName);
       }
 
-      if (cusipFromUrl) {
-        cusipInput = cusipFromUrl;
+      // Identifier load order: canonical (?identifier=…&identifierType=…)
+      // wins; fall back to the legacy ?cusip=… bookmark and pin the type
+      // to CUSIP. The page-server emits a deprecation warning when it
+      // sees the legacy shape, so users still get a signal.
+      if (identifierFromUrl) {
+        identifierInput = identifierFromUrl;
+        if (
+          identifierTypeFromUrl &&
+          (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(identifierTypeFromUrl)
+        ) {
+          identifierType = identifierTypeFromUrl as IdentifierTypeName;
+        }
+      } else if (legacyCusipFromUrl) {
+        identifierInput = legacyCusipFromUrl;
+        identifierType = "CUSIP";
       }
 
       if (tradeDateFromUrl) {
@@ -216,14 +249,14 @@
     </div>
   </div>
   <div class="position-select-container flex flex-col sm:flex-row gap-2 mt-2">
-    <div class="text-white">
-      <h4>CUSIP:</h4>
-      <input
-        type="text"
-        id="cusip-input"
-        placeholder="Enter CUSIP..."
-        bind:value={cusipInput}
-        class="cusip-input text-black"
+    <div class="text-white identifier-filter-cell">
+      <h4>Identifier:</h4>
+      <IdentifierFilter
+        bind:identifierType
+        bind:identifier={identifierInput}
+        selectClass="position-select-input text-black"
+        inputClass="position-select-input text-black"
+        inputId="position-identifier-input"
       />
     </div>
     <div class="text-white">
@@ -318,7 +351,6 @@
     }
   }
 
-  .cusip-input,
   .trade-date-input,
   .trade-date-operator,
   .asset-class-input {
@@ -330,6 +362,23 @@
     height: 38px; /* Matched to typical multiselect height if possible, or adequate size */
     box-sizing: border-box;
     background-color: white; /* Ensure white background */
+  }
+
+  // .position-select-input is passed via selectClass / inputClass into
+  // IdentifierFilter (Phase 3 of #226). The component renders those
+  // classes onto its <select> and <input>, but those nodes live in a
+  // child component scope, so Svelte's scoped CSS would drop the rule
+  // as unused. :global keeps it applying; the .position-select-container
+  // ancestor confines blast radius to PositionSelect's tree.
+  :global(.position-select-container .position-select-input) {
+    padding: 4px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 0.875rem;
+    height: 38px;
+    box-sizing: border-box;
+    background-color: white;
   }
 
   .trade-date-operator {
