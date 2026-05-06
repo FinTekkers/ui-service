@@ -49,15 +49,44 @@ export interface securityData {
  * @returns {Promise<securityData[]>} A promise resolving to an array of security data.
  */
 
-export type IdentifierTypeName = 'CUSIP' | 'ISIN' | 'EXCH_TICKER' | 'SERIES_ID';
+// Phase 1 of second-brain#226: support every IdentifierTypeProto entry the
+// platform currently models. The names + iteration order live in
+// $lib/securityFilterTypes (browser-safe, no grpc deps); we re-export them
+// here so existing callers of $lib/security keep working.
+import {
+  IDENTIFIER_TYPE_NAMES,
+  SECURITY_TYPE_NAMES,
+  type IdentifierTypeName,
+  type SecurityTypeName,
+} from './securityFilterTypes';
+export {
+  IDENTIFIER_TYPE_NAMES,
+  SECURITY_TYPE_NAMES,
+  type IdentifierTypeName,
+  type SecurityTypeName,
+};
 
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
   switch (name) {
     case 'ISIN': return IdentifierTypeProto.ISIN;
     case 'EXCH_TICKER': return IdentifierTypeProto.EXCH_TICKER;
     case 'SERIES_ID': return IdentifierTypeProto.SERIES_ID;
+    case 'OSI': return IdentifierTypeProto.OSI;
+    case 'FIGI': return IdentifierTypeProto.FIGI;
+    case 'CASH': return IdentifierTypeProto.CASH;
     case 'CUSIP':
     default: return IdentifierTypeProto.CUSIP;
+  }
+}
+
+function securityTypeNameToProto(name: SecurityTypeName): number {
+  switch (name) {
+    case 'BOND_SECURITY': return SecurityTypeProto.BOND_SECURITY;
+    case 'EQUITY_SECURITY': return SecurityTypeProto.EQUITY_SECURITY;
+    case 'INDEX_SECURITY': return SecurityTypeProto.INDEX_SECURITY;
+    case 'CASH_SECURITY': return SecurityTypeProto.CASH_SECURITY;
+    case 'TIPS': return SecurityTypeProto.TIPS;
+    case 'FRN': return SecurityTypeProto.FRN;
   }
 }
 
@@ -69,6 +98,7 @@ export async function FetchSecurity(
   issueDate?: string,
   issueDateOperator?: 'greater_than' | 'lesser_than',
   apiKey?: string,
+  securityType?: SecurityTypeName,
 ): Promise<securityData[]> {
   const filterSecurity = new PositionFilter();
 
@@ -93,6 +123,16 @@ export async function FetchSecurity(
       : PositionFilterOperator.LESS_THAN;
     filterSecurity.addFilter(FieldProto.ISSUE_DATE, operator, issueDateObj);
   }
+
+  // securityType is post-filtered after streaming. The PositionFilter proto
+  // has no SECURITY_TYPE field today, so we can't push the filter to the
+  // server; instead we filter the streamed results below by
+  // security.proto.getSecurityType(). The result set for /data/securities
+  // is already capped (universe loop uses ~1000/class), so post-filter cost
+  // is bounded.
+  const securityTypeProtoValue = securityType
+    ? securityTypeNameToProto(securityType)
+    : null;
 
   try {
     const conn = getServiceConnection(apiKey);
@@ -125,6 +165,17 @@ export async function FetchSecurity(
     return securities.reduce(
       (acc: securityData[], security: Security) => {
        try {
+        // Post-filter on securityType (no SECURITY_TYPE FieldProto, so the
+        // gRPC search can't narrow this server-side). Bond product variants
+        // — TIPS / FRN — are distinct proto values from BOND_SECURITY, so
+        // a 'BOND_SECURITY' filter does NOT also match TIPS/FRN. Callers
+        // wanting "all bonds" should pass assetClass=Fixed Income instead.
+        if (
+          securityTypeProtoValue !== null &&
+          security.proto.getSecurityType() !== securityTypeProtoValue
+        ) {
+          return acc;
+        }
         const issuanceList = security.proto.getIssuanceInfoList();
         const issuance =
           issuanceList && issuanceList.length > 0 ? issuanceList[0] : null;

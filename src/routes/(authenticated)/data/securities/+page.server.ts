@@ -1,5 +1,19 @@
-import { FetchSecurity, FetchSecurityByUuid } from "$lib/security";
+import {
+  FetchSecurity,
+  FetchSecurityByUuid,
+  IDENTIFIER_TYPE_NAMES,
+  SECURITY_TYPE_NAMES,
+  type IdentifierTypeName,
+  type SecurityTypeName,
+} from "$lib/security";
 import { deleteSecurity } from "$lib/security-delete";
+
+// Backward-compat defaults: pre-#226 the page-server hardcoded these. New
+// /data/securities URLs can override either one to broaden the search.
+// Existing bookmarks (?identifier=...&identifierType=CUSIP) keep working
+// because both params default to today's behavior.
+const DEFAULT_ASSET_CLASS = 'Fixed Income';
+const DEFAULT_ISSUER_NAME = 'US Government';
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
@@ -8,20 +22,42 @@ export async function load({ locals, request }) {
   const uuid = searchParams.get('uuid');
   const identifier = searchParams.get('identifier') ?? searchParams.get('cusip');
   const rawIdType = searchParams.get('identifierType');
-  const identifierType = rawIdType === 'ISIN' ? 'ISIN' as const : rawIdType === 'CUSIP' ? 'CUSIP' as const : undefined;
+  // Phase 1 of second-brain#226: accept the full IdentifierTypeProto set
+  // (was 'ISIN'|'CUSIP' only). Anything not in the allowlist falls back to
+  // undefined → FetchSecurity defaults to CUSIP, preserving prior behavior
+  // for malformed / legacy URLs.
+  const identifierType: IdentifierTypeName | undefined =
+    rawIdType && (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(rawIdType)
+      ? (rawIdType as IdentifierTypeName)
+      : undefined;
   const issueDate = searchParams.get('issueDate');
   const issueDateOperator = searchParams.get('issueDateOperator');
+  // assetClass / issuerName are now URL-driven. Empty string in the URL
+  // (e.g. ?assetClass=) clears the filter so the user can broaden the
+  // search across asset classes; absence of the param keeps the default.
+  const rawAssetClass = searchParams.get('assetClass');
+  const assetClass = rawAssetClass === null ? DEFAULT_ASSET_CLASS : rawAssetClass;
+  const rawIssuerName = searchParams.get('issuerName');
+  const issuerName = rawIssuerName === null ? DEFAULT_ISSUER_NAME : rawIssuerName;
+  // securityType (post-filtered in FetchSecurity since FieldProto has no
+  // SECURITY_TYPE today). Allowlist guards against typo'd URLs.
+  const rawSecurityType = searchParams.get('securityType');
+  const securityType: SecurityTypeName | undefined =
+    rawSecurityType && (SECURITY_TYPE_NAMES as readonly string[]).includes(rawSecurityType)
+      ? (rawSecurityType as SecurityTypeName)
+      : undefined;
 
   const security = uuid
     ? await FetchSecurityByUuid(uuid, locals.user?.apiKey)
     : await FetchSecurity(
-        "Fixed Income",
-        "US Government",
+        assetClass || null,
+        issuerName || null,
         identifier || undefined,
         identifierType,
         issueDate || undefined,
         issueDateOperator === 'greater_than' ? 'greater_than' : issueDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
-        locals.user?.apiKey
+        locals.user?.apiKey,
+        securityType
       );
 
   return {
