@@ -71,32 +71,50 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
       return a.getTradeDate().toDate().getTime() - b.getTradeDate().toDate().getTime();
     });
 
-    const transactionData: TransactionData[] = results.map((element) => {
-      const security: Security = element.getSecurity();
-      const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY;
-      const bondSecurity = isBond ? (security as BondSecurity) : null;
+    // Map per-element and skip the row on any wrapper-side throw. The
+    // ledger-models Security wrapper throws e.g. "Issue date is required"
+    // for instruments that legitimately have no issue date (CASH legs in
+    // bond purchases). Without this guard, a single malformed row tanks the
+    // entire transaction list. Mirrors the per-row try/catch in
+    // positions.ts:elementsToReturn.
+    const safe = <T>(fn: () => T, fallback: T): T => {
+      try {
+        return fn();
+      } catch {
+        return fallback;
+      }
+    };
+    const transactionData: TransactionData[] = [];
+    for (const element of results) {
+      try {
+        const security: Security = element.getSecurity();
+        const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY;
+        const bondSecurity = isBond ? (security as BondSecurity) : null;
 
-      const txnUuid = element.proto?.getUuid?.();
-      const uuidHex = txnUuid ? Buffer.from(txnUuid.serializeBinary()).toString('hex') : undefined;
+        const txnUuid = element.proto?.getUuid?.();
+        const uuidHex = txnUuid ? Buffer.from(txnUuid.serializeBinary()).toString('hex') : undefined;
 
-      return {
-        transactionId: security.getSecurityID().getIdentifierValue().toString(),
-        uuidHex,
-        transactionSettlementDate: formatDateToISO(element.getSettlementDate()),
-        transactionIssuerName: element.getIssuerName().toString(),
-        transactionIssueDate: formatDateToISO(security.getIssueDate()),
-        transactionQuantity: element.getQuantity().toString(),
-        transactionProductType: bondSecurity?.getProductType() ?? security.getProductType() ?? '',
-        transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
-        transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
-        transactionTenor: bondSecurity?.getTenor().getTenorDescription() ?? '',
-        transactionCouponFrequency: bondSecurity?.getCouponFrequency()?.toString() ?? '',
-        transactionMaturityDate: formatDateToISO(security.getMaturityDate()),
-        transactionTradeDate: formatDateToISO(element.getTradeDate()),
-        transactionSide: element.getTransactionType().toString(),
-        transactionPrice: element.getPrice()?.getPrice()?.getArbitraryPrecisionValue() ?? ''
-      };
-    });
+        transactionData.push({
+          transactionId: safe(() => security.getSecurityID().getIdentifierValue().toString(), ''),
+          uuidHex,
+          transactionSettlementDate: safe(() => formatDateToISO(element.getSettlementDate()), ''),
+          transactionIssuerName: safe(() => element.getIssuerName().toString(), ''),
+          transactionIssueDate: safe(() => formatDateToISO(security.getIssueDate()), ''),
+          transactionQuantity: safe(() => element.getQuantity().toString(), ''),
+          transactionProductType: safe(() => bondSecurity?.getProductType() ?? security.getProductType() ?? '', ''),
+          transactionCouponRate: safe(() => security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '', ''),
+          transactionCouponType: safe(() => bondSecurity?.getCouponType().name() ?? '', ''),
+          transactionTenor: safe(() => bondSecurity?.getTenor().getTenorDescription() ?? '', ''),
+          transactionCouponFrequency: safe(() => bondSecurity?.getCouponFrequency()?.toString() ?? '', ''),
+          transactionMaturityDate: safe(() => formatDateToISO(security.getMaturityDate()), ''),
+          transactionTradeDate: safe(() => formatDateToISO(element.getTradeDate()), ''),
+          transactionSide: safe(() => element.getTransactionType().toString(), ''),
+          transactionPrice: safe(() => element.getPrice()?.getPrice()?.getArbitraryPrecisionValue() ?? '', ''),
+        });
+      } catch (rowErr: any) {
+        console.warn('Skipping transaction row due to wrapper error:', rowErr?.message ?? rowErr);
+      }
+    }
 
     return transactionData;
   } catch (error: any) {

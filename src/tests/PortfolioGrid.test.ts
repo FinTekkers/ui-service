@@ -132,6 +132,22 @@ describe('PortfolioGrid', () => {
 		// 1 header row + 3 data rows
 		expect(rows.length).toBe(4);
 	});
+
+	test('Txns link goes to /data/transactions?portfolioId=<uuid> for each row', () => {
+		// Issue #222: the Txns button used to point at /data/portfolios (same
+		// page) which made it a dead click. Each row's Txns link must now go
+		// to the transactions page with the row's portfolioId in the query.
+		for (const row of mockRows) {
+			const expectedUrl = `/data/transactions?portfolioId=${encodeURIComponent(row.portfolioId)}`;
+			const txnsLink = screen
+				.getAllByRole('link', { name: /Txns/ })
+				.find((l) => l.getAttribute('href') === expectedUrl);
+			expect(txnsLink).toBeTruthy();
+			expect(txnsLink!.getAttribute('title')).toBe(
+				`View transactions for ${row.portfolioName}`,
+			);
+		}
+	});
 });
 
 describe('PortfolioGrid with empty rows', () => {

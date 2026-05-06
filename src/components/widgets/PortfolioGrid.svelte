@@ -75,7 +75,11 @@
 	}
 
 	function getTransactionsUrl(portfolioId: string): string {
-		return `/data/portfolios?portfolioId=${encodeURIComponent(portfolioId)}`;
+		// Land on the transactions page scoped to this portfolio. The
+		// /data/transactions page-server reads portfolioId and routes to
+		// FetchTransactionByPortfolio (PORTFOLIO_ID PositionFilter), mirroring
+		// the positions-side wiring fixed under second-brain#220 / PR #123.
+		return `/data/transactions?portfolioId=${encodeURIComponent(portfolioId)}`;
 	}
 
 	function handleDeleteClick(row: PortfolioData) {
