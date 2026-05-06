@@ -19,30 +19,11 @@ import type { PositionTypeProto, PositionViewProto } from '@fintekkers/ledger-mo
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 const { FieldProto } = pkg;
 import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
-import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
-import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { pack } from '@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
 import type { IdentifierTypeName } from '$lib/securityFilterTypes';
-
-// Local copy of the proto-name → enum mapping. /lib/security.ts has the
-// same shape but importing it here would drag the full security module
-// (and its grpc deps) in just for an enum lookup. Phase 4+ may extract
-// the mapping into securityFilterTypes if more callers need it.
-function identifierTypeNameToProtoLocal(name: IdentifierTypeName): IdentifierTypeProto {
-    switch (name) {
-        case 'ISIN': return IdentifierTypeProto.ISIN;
-        case 'EXCH_TICKER': return IdentifierTypeProto.EXCH_TICKER;
-        case 'SERIES_ID': return IdentifierTypeProto.SERIES_ID;
-        case 'OSI': return IdentifierTypeProto.OSI;
-        case 'FIGI': return IdentifierTypeProto.FIGI;
-        case 'CASH': return IdentifierTypeProto.CASH;
-        case 'CUSIP':
-        default: return IdentifierTypeProto.CUSIP;
-    }
-}
 
 function searchPositions(request: ReturnType<QueryPositionRequest['toProto']>, apiKey?: string): Promise<Position[]> {
     const conn = getServiceConnection(apiKey);
@@ -78,9 +59,11 @@ export async function FetchPosition(
     // now that PositionSelect uses IdentifierFilter.
     const positionFilter = new PositionFilter();
     if (identifier && identifier.trim() !== "") {
-        const idType = identifierTypeNameToProtoLocal(identifierType ?? 'CUSIP');
-        let identifierProto = new IdentifierProto().setIdentifierType(idType).setIdentifierValue(identifier.trim());
-        let identifierObj = new Identifier(identifierProto);
+        // Identifier.fromName (ledger-models 0.1.133+) constructs the
+        // wrapper from a proto-enum name string; replaces the local
+        // identifierTypeNameToProtoLocal switch + manual IdentifierProto
+        // assembly we used to do here.
+        const identifierObj = Identifier.fromName(identifierType ?? 'CUSIP', identifier.trim());
         positionFilter.addObjectFilter(FieldProto.IDENTIFIER, identifierObj);
     }
 
