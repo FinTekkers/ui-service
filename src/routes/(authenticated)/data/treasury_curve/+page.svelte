@@ -64,7 +64,7 @@
 <div class="w-screen h-full flex">
   <DashboardSideBar {data} />
 
-  <div class="h-full w-full dashboard-container" style="overflow-y: auto;">
+  <div class="h-full w-full dashboard-container" style="overflow: auto;">
     <div class="portfolio_container px-10 py-7">
   <h1 class="page-title">On-the-Run Treasury Yield Curve</h1>
   <p class="date-subtitle">as of {displayDate}</p>
@@ -183,8 +183,8 @@
     margin-bottom: 16px;
   }
 
+  // No overflow-x here: page-level wrapper owns scrolling (second-brain#223).
   .table-scroll {
-    overflow-x: auto;
     margin-bottom: 24px;
   }
 

@@ -286,9 +286,9 @@
     margin: 20px 0 4px 0;
   }
 
-  /* Table wrapper — matches SecurityGrid */
+  /* Table wrapper — matches SecurityGrid. No overflow-x: page-level
+     wrapper owns scrolling (second-brain#223). */
   .table-wrapper {
-    overflow-x: auto;
     width: 100%;
     margin-bottom: 8px;
   }
