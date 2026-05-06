@@ -4,17 +4,17 @@
   // Browser-safe import (security.ts pulls in @grpc/grpc-js which crashes
   // in the client bundle).
   import {
-    IDENTIFIER_TYPE_NAMES,
     SECURITY_TYPE_NAMES,
     type IdentifierTypeName,
     type SecurityTypeName,
   } from "$lib/securityFilterTypes";
+  import IdentifierFilter from "../filters/IdentifierFilter.svelte";
 
-  // Phase 1 of second-brain#226: extend filter form to the full identifier
-  // set + assetClass / issuerName / securityType. The CUSIP/ISIN button
-  // toggle was a hardcoded 2-option form; replaced with a dropdown of all
-  // 7 IdentifierTypeProto values. No new component yet — Phase 2 introduces
-  // an IdentifierFilter primitive.
+  // Phase 2 of second-brain#226: identifier-type dropdown + value input
+  // moved into the IdentifierFilter primitive. Phase 1's inline 7-option
+  // dropdown + per-type placeholder logic now lives in
+  // src/components/filters/IdentifierFilter.svelte and is shared with
+  // /data/prices.
 
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
@@ -23,20 +23,6 @@
   let assetClassInput: string = "";
   let issuerNameInput: string = "";
   let securityTypeInput: SecurityTypeName | "" = "";
-
-  // Tailored placeholders so the user gets a hint of what each identifier
-  // type looks like. Falls back to a generic example for the rarer types.
-  const IDENTIFIER_PLACEHOLDERS: Record<IdentifierTypeName, string> = {
-    CUSIP: "e.g. 912828ZT0",
-    ISIN: "e.g. GB0002404557",
-    EXCH_TICKER: "e.g. AAPL",
-    SERIES_ID: "e.g. CPIAUCSL",
-    OSI: "e.g. AAPL  240119C00150000",
-    FIGI: "e.g. BBG000B9XRY4",
-    CASH: "e.g. USD",
-  };
-
-  $: identifierPlaceholder = IDENTIFIER_PLACEHOLDERS[identifierType];
 
   function fetchSecurities() {
     if (typeof window === "undefined") return;
@@ -75,9 +61,20 @@
     const identifierFromUrl = urlParams.get("identifier") ?? urlParams.get("cusip");
     if (identifierFromUrl) identifierInput = identifierFromUrl;
 
+    // IdentifierFilter validates the type itself via supportedTypes, but we
+    // still guard against a typo'd URL setting an invalid value here so the
+    // bound prop never becomes a string outside the union.
     const idTypeFromUrl = urlParams.get("identifierType");
-    if (idTypeFromUrl && (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(idTypeFromUrl)) {
-      identifierType = idTypeFromUrl as IdentifierTypeName;
+    if (
+      idTypeFromUrl === "CUSIP" ||
+      idTypeFromUrl === "ISIN" ||
+      idTypeFromUrl === "EXCH_TICKER" ||
+      idTypeFromUrl === "SERIES_ID" ||
+      idTypeFromUrl === "OSI" ||
+      idTypeFromUrl === "FIGI" ||
+      idTypeFromUrl === "CASH"
+    ) {
+      identifierType = idTypeFromUrl;
     }
 
     const issueDateFromUrl = urlParams.get("issueDate");
@@ -106,26 +103,14 @@
 
 <div class="mt-14 mx-10 w-full gap-2">
   <div class="security-select-container flex flex-col sm:flex-row gap-2">
-    <div class="text-white">
-      <h4>Identifier Type:</h4>
-      <select
-        id="identifier-type-select"
-        bind:value={identifierType}
-        class="filter-select text-black"
-      >
-        {#each IDENTIFIER_TYPE_NAMES as name}
-          <option value={name}>{name}</option>
-        {/each}
-      </select>
-    </div>
-    <div class="text-white">
-      <h4>{identifierType}:</h4>
-      <input
-        type="text"
-        id="identifier-input"
-        placeholder={identifierPlaceholder}
-        bind:value={identifierInput}
-        class="filter-input text-black"
+    <div class="text-white identifier-filter-cell">
+      <h4>Identifier:</h4>
+      <IdentifierFilter
+        bind:identifierType
+        bind:identifier={identifierInput}
+        selectClass="filter-select text-black"
+        inputClass="filter-input text-black"
+        inputId="identifier-input"
       />
     </div>
     <div class="text-white">
@@ -226,8 +211,15 @@
     }
   }
 
-  .filter-input,
-  .filter-select {
+  // .filter-input / .filter-select are used both directly in this template
+  // and passed through into IdentifierFilter (Phase 2 of #226). The
+  // IdentifierFilter-rendered nodes live in a child component scope, so
+  // Svelte would scope-strip the unprefixed selector. The :global rules
+  // below match either case while the parent selector keeps blast radius
+  // confined to /data/securities's filter UI (catalog also uses the same
+  // class names with its own scoped styles).
+  :global(.security-select-container .filter-input),
+  :global(.security-select-container .filter-select) {
     padding: 4px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -239,7 +231,7 @@
     color: $black;
   }
 
-  .filter-select:disabled {
+  :global(.security-select-container .filter-select:disabled) {
     background-color: #f0f0f0;
     color: $grey;
     cursor: not-allowed;

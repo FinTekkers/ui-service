@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
+  import IdentifierFilter from '../../../../components/filters/IdentifierFilter.svelte';
+  import type { IdentifierTypeName } from '$lib/securityFilterTypes';
   export let data: import('./$types').PageData;
 
   type PriceEntry = { date: string; price: number };
@@ -8,43 +10,60 @@
 
   $: prices = (data.prices ?? []) as PriceEntry[];
   $: selectedIdentifier = (data.selectedIdentifier ?? '') as string;
-  $: selectedIdentifierType = (data.selectedIdentifierType ?? 'cusip') as string;
   $: securityDescription = (data.securityDescription ?? '') as string;
   $: priceError = (data.priceError ?? '') as string;
 
+  // Phase 2 of second-brain#226: identifier UX moved to <IdentifierFilter>.
+  // Internal state is the proto name (IdentifierTypeName) — the page-server
+  // still expects/emits short URL keys (?type=cusip|ticker|isin|series),
+  // so we translate at the URL boundary in `navigateTo` and on initial
+  // load below. Keeping the URL convention preserves existing bookmarks.
+  const PROTO_TO_URL: Record<IdentifierTypeName, string> = {
+    CUSIP: 'cusip',
+    EXCH_TICKER: 'ticker',
+    ISIN: 'isin',
+    SERIES_ID: 'series',
+    // Not currently surfaced on /data/prices but defined for completeness;
+    // supportedTypes prop below restricts the dropdown to the four above.
+    OSI: 'osi',
+    FIGI: 'figi',
+    CASH: 'cash',
+  };
+  function urlKeyToProto(urlKey: string | undefined | null): IdentifierTypeName {
+    switch ((urlKey ?? '').toLowerCase()) {
+      case 'ticker': return 'EXCH_TICKER';
+      case 'isin': return 'ISIN';
+      case 'series': return 'SERIES_ID';
+      default: return 'CUSIP';
+    }
+  }
+
   // UI state — initialized from the URL on every load
-  let identifierTypeChoice: string = data.selectedIdentifierType ?? 'cusip';
+  let identifierType: IdentifierTypeName = urlKeyToProto(data.selectedIdentifierType);
   let identifierInput: string = data.selectedIdentifier ?? '';
   let showSuggestions = false;
   let selectedSuggestionIndex = -1;
 
-  // Map URL type → IdentifierTypeProto name used in the universe rows
-  const urlTypeToUniverseType: Record<string, string> = {
-    cusip: 'CUSIP',
-    ticker: 'EXCH_TICKER',
-    isin: 'ISIN',
-    series: 'SERIES_ID',
-  };
+  // Order matters in the dropdown — keep CUSIP first so legacy users on
+  // the default "no params" landing don't get a surprise type change.
+  const PRICES_SUPPORTED_TYPES: readonly IdentifierTypeName[] = [
+    'CUSIP',
+    'EXCH_TICKER',
+    'ISIN',
+    'SERIES_ID',
+  ] as const;
 
-  function placeholderFor(type: string): string {
-    if (type === 'ticker') return 'Enter ticker (e.g. AAPL)...';
-    if (type === 'isin') return 'Enter ISIN...';
-    if (type === 'series') return 'Enter Series ID (e.g. CUUR0000SA0)...';
-    return 'Enter CUSIP...';
-  }
-
-  function filterUniverse(universe: UniverseEntry[], type: string, input: string): UniverseEntry[] {
-    const wanted = urlTypeToUniverseType[type] ?? 'CUSIP';
+  function filterUniverse(universe: UniverseEntry[], type: IdentifierTypeName, input: string): UniverseEntry[] {
     const q = input.toUpperCase();
     return universe
-      .filter((s) => s.identifierType === wanted)
+      .filter((s) => s.identifierType === type)
       .filter((s) => q === '' || s.identifier.toUpperCase().startsWith(q) || s.description.toUpperCase().includes(q))
       .slice(0, 10);
   }
 
-  function navigateTo(type: string, id: string) {
+  function navigateTo(type: IdentifierTypeName, id: string) {
     const u = new URL('/data/prices', window.location.origin);
-    u.searchParams.set('type', type);
+    u.searchParams.set('type', PROTO_TO_URL[type]);
     u.searchParams.set('id', id);
     window.location.href = u.pathname + u.search;
   }
@@ -52,17 +71,17 @@
   function selectSuggestion(entry: UniverseEntry) {
     identifierInput = entry.identifier;
     showSuggestions = false;
-    navigateTo(identifierTypeChoice, entry.identifier);
+    navigateTo(identifierType, entry.identifier);
   }
 
   function handleSearch() {
     const v = identifierInput.trim();
-    if (v) navigateTo(identifierTypeChoice, v);
+    if (v) navigateTo(identifierType, v);
   }
 
   function handleTypeChange() {
-    // Switching type clears the input — a CUSIP isn't a ticker.
-    identifierInput = '';
+    // IdentifierFilter has already cleared identifierInput via clearOnTypeChange.
+    // We just need to dismiss any in-flight autocomplete UI.
     selectedSuggestionIndex = -1;
     showSuggestions = false;
   }
@@ -139,47 +158,39 @@
     <div class="portfolio_container px-10 py-7">
       <h2 class="text-3xl font-extrabold my-3">Price History</h2>
 
-      <!-- Identifier type + value selector -->
+      <!-- Identifier type + value selector. Universe-driven autocomplete
+           lives in the default slot below the input — IdentifierFilter
+           positions it relative to the value input via a `position:
+           relative` wrapper. The {#await} branches each render a different
+           hint inside the slot; the input itself is rendered by
+           IdentifierFilter so layout stays consistent. -->
       <div class="selector-row">
-        <select
-          class="type-select"
-          bind:value={identifierTypeChoice}
-          on:change={handleTypeChange}
-          aria-label="Identifier type"
-        >
-          <option value="cusip">CUSIP</option>
-          <option value="ticker">Ticker</option>
-          <option value="isin">ISIN</option>
-          <option value="series">Series ID</option>
-        </select>
-
         {#await data.universe}
-          <div class="autocomplete-wrapper">
-            <input
-              type="text"
-              class="cusip-input"
-              placeholder={placeholderFor(identifierTypeChoice)}
-              bind:value={identifierInput}
-              autocomplete="off"
-              on:keydown={(e) => handleKeydown(e, [])}
-              disabled
-            />
+          <IdentifierFilter
+            bind:identifierType
+            bind:identifier={identifierInput}
+            supportedTypes={PRICES_SUPPORTED_TYPES}
+            selectClass="type-select"
+            inputClass="cusip-input"
+            on:typeChange={handleTypeChange}
+            on:keydown={(e) => handleKeydown(e, [])}
+          >
             <span class="loading-hint">Loading suggestions…</span>
-          </div>
+          </IdentifierFilter>
         {:then universe}
-          {@const filtered = filterUniverse(universe, identifierTypeChoice, identifierInput)}
-          <div class="autocomplete-wrapper">
-            <input
-              type="text"
-              class="cusip-input"
-              placeholder={placeholderFor(identifierTypeChoice)}
-              bind:value={identifierInput}
-              autocomplete="off"
-              on:focus={() => { showSuggestions = true; selectedSuggestionIndex = -1; }}
-              on:blur={handleBlur}
-              on:keydown={(e) => handleKeydown(e, filtered)}
-              on:input={() => { showSuggestions = true; selectedSuggestionIndex = -1; }}
-            />
+          {@const filtered = filterUniverse(universe, identifierType, identifierInput)}
+          <IdentifierFilter
+            bind:identifierType
+            bind:identifier={identifierInput}
+            supportedTypes={PRICES_SUPPORTED_TYPES}
+            selectClass="type-select"
+            inputClass="cusip-input"
+            on:typeChange={handleTypeChange}
+            on:focus={() => { showSuggestions = true; selectedSuggestionIndex = -1; }}
+            on:blur={handleBlur}
+            on:keydown={(e) => handleKeydown(e, filtered)}
+            on:input={() => { showSuggestions = true; selectedSuggestionIndex = -1; }}
+          >
             {#if showSuggestions && filtered.length > 0}
               <ul class="suggestions">
                 {#each filtered as entry, i}
@@ -190,19 +201,19 @@
                 {/each}
               </ul>
             {/if}
-          </div>
+          </IdentifierFilter>
         {:catch}
-          <div class="autocomplete-wrapper">
-            <input
-              type="text"
-              class="cusip-input"
-              placeholder={placeholderFor(identifierTypeChoice)}
-              bind:value={identifierInput}
-              autocomplete="off"
-              on:keydown={(e) => handleKeydown(e, [])}
-            />
+          <IdentifierFilter
+            bind:identifierType
+            bind:identifier={identifierInput}
+            supportedTypes={PRICES_SUPPORTED_TYPES}
+            selectClass="type-select"
+            inputClass="cusip-input"
+            on:typeChange={handleTypeChange}
+            on:keydown={(e) => handleKeydown(e, [])}
+          >
             <span class="loading-hint error">Suggestions unavailable</span>
-          </div>
+          </IdentifierFilter>
         {/await}
 
         <button class="search-btn" on:click={handleSearch}>View Prices</button>
@@ -264,7 +275,12 @@
     align-items: flex-start;
   }
 
-  .type-select {
+  // .type-select and .cusip-input are passed as `selectClass` / `inputClass`
+  // props down into IdentifierFilter, so they end up on nodes in a child
+  // component's scope. Svelte's scoped CSS would otherwise drop them as
+  // unused; :global keeps them applying. Limited blast radius: these are
+  // page-local class names not used elsewhere.
+  :global(.type-select) {
     padding: 6px 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -276,13 +292,7 @@
     cursor: pointer;
   }
 
-  .autocomplete-wrapper {
-    position: relative;
-    flex: 1;
-    max-width: 400px;
-  }
-
-  .cusip-input {
+  :global(.cusip-input) {
     width: 100%;
     padding: 6px 12px;
     border: 1px solid #ddd;
@@ -292,10 +302,9 @@
     color: #05192a;
     height: 38px;
     box-sizing: border-box;
-
-    &::placeholder { color: #86929c; }
-    &:disabled { background-color: #f3f4f6; color: #86929c; cursor: not-allowed; }
   }
+  :global(.cusip-input::placeholder) { color: #86929c; }
+  :global(.cusip-input:disabled) { background-color: #f3f4f6; color: #86929c; cursor: not-allowed; }
 
   .loading-hint {
     position: absolute;

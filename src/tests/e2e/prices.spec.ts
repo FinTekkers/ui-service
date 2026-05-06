@@ -45,10 +45,16 @@ test.describe('/data/prices', () => {
     await expect(input).toHaveValue('AAPL');
 
     // Switching to CUSIP fires handleTypeChange which clears the input
-    // and updates the placeholder.
-    await page.locator('select.type-select').selectOption('cusip');
+    // and updates the placeholder. The dropdown values are now proto names
+    // (IdentifierTypeName) since Phase 2 of #226 moved the controls into
+    // the IdentifierFilter primitive — the URL convention is still
+    // ?type=cusip, but the form's internal state speaks proto names.
+    await page.locator('select.type-select').selectOption('CUSIP');
     await expect(input).toHaveValue('');
-    await expect(input).toHaveAttribute('placeholder', /CUSIP/);
+    // Placeholder consolidated to the IdentifierFilter default ("e.g.
+    // 912828ZT0") — the bare value, no "CUSIP" prefix. Use the example
+    // CUSIP as a stable proxy for "the CUSIP placeholder is showing".
+    await expect(input).toHaveAttribute('placeholder', /912828ZT0/);
   });
 
   test('autocomplete suggests TSLA and selecting it navigates to the TSLA chart', async ({ page }) => {
