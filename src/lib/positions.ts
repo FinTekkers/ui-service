@@ -25,6 +25,24 @@ import { pack } from '@fintekkers/ledger-models/node/wrappers/models/utils/seria
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
+import type { IdentifierTypeName } from '$lib/securityFilterTypes';
+
+// Local copy of the proto-name → enum mapping. /lib/security.ts has the
+// same shape but importing it here would drag the full security module
+// (and its grpc deps) in just for an enum lookup. Phase 4+ may extract
+// the mapping into securityFilterTypes if more callers need it.
+function identifierTypeNameToProtoLocal(name: IdentifierTypeName): IdentifierTypeProto {
+    switch (name) {
+        case 'ISIN': return IdentifierTypeProto.ISIN;
+        case 'EXCH_TICKER': return IdentifierTypeProto.EXCH_TICKER;
+        case 'SERIES_ID': return IdentifierTypeProto.SERIES_ID;
+        case 'OSI': return IdentifierTypeProto.OSI;
+        case 'FIGI': return IdentifierTypeProto.FIGI;
+        case 'CASH': return IdentifierTypeProto.CASH;
+        case 'CUSIP':
+        default: return IdentifierTypeProto.CUSIP;
+    }
+}
 
 function searchPositions(request: ReturnType<QueryPositionRequest['toProto']>, apiKey?: string): Promise<Position[]> {
     const conn = getServiceConnection(apiKey);
@@ -46,20 +64,24 @@ export async function FetchPosition(
     positionTypeEnumValue: PositionTypeProto,
     sortBy?: FieldProtoType,
     sortDirection: 'asc' | 'desc' = 'asc',
-    cusip?: string,
+    identifier?: string,
     tradeDate?: string,
     tradeDateOperator?: 'greater_than' | 'lesser_than' | 'lesser_than_or_equals',
     assetClass?: string,
     portfolioId?: string,
-    apiKey?: string
+    apiKey?: string,
+    identifierType?: IdentifierTypeName,
 ): Promise<any> {
-    // Create position filter and add CUSIP filter if provided
+    // Add IDENTIFIER filter if provided. identifierType defaults to CUSIP
+    // for backward compat with the pre-#227 callers that only knew about
+    // CUSIP. Passing an explicit type (EXCH_TICKER, ISIN, …) is supported
+    // now that PositionSelect uses IdentifierFilter.
     const positionFilter = new PositionFilter();
-    if (cusip && cusip.trim() !== "") {
-        //TODO: add constructor for this
-        let identifierProto = new IdentifierProto().setIdentifierType(IdentifierTypeProto.CUSIP).setIdentifierValue(cusip.trim());
-        let identifier = new Identifier(identifierProto);
-        positionFilter.addObjectFilter(FieldProto.IDENTIFIER, identifier);
+    if (identifier && identifier.trim() !== "") {
+        const idType = identifierTypeNameToProtoLocal(identifierType ?? 'CUSIP');
+        let identifierProto = new IdentifierProto().setIdentifierType(idType).setIdentifierValue(identifier.trim());
+        let identifierObj = new Identifier(identifierProto);
+        positionFilter.addObjectFilter(FieldProto.IDENTIFIER, identifierObj);
     }
 
     // Add TRADE_DATE filter if provided
