@@ -293,8 +293,10 @@
 <style lang="scss">
 	@import "../../styles/grid-table";
 
+	// No overflow-x here: we let the page-level wrapper own horizontal
+	// scrolling so the user sees one global scrollbar instead of one per
+	// grid (second-brain#223).
 	.table-wrapper {
-		overflow-x: auto;
 		width: 100%;
 	}
 

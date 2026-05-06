@@ -390,8 +390,9 @@
     min-height: 420px;  // chart + range slider + range selector
   }
 
+  // No overflow-x here: page-level wrapper owns scrolling (second-brain#223).
   .table-wrapper {
-    overflow-x: auto;
+    width: 100%;
   }
 
 

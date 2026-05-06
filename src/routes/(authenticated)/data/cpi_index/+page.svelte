@@ -92,7 +92,7 @@
 <div class="w-screen h-full flex">
   <DashboardSideBar {data} />
 
-  <div class="h-full w-full dashboard-container" style="overflow-y: auto;">
+  <div class="h-full w-full dashboard-container" style="overflow: auto;">
     <div class="portfolio_container px-10 py-7">
       <h1 class="page-title">{pageTitle}</h1>
       <p class="page-subtitle">{pageSubtitle}</p>
@@ -235,8 +235,9 @@
     margin-bottom: 12px;
   }
 
+  // No overflow-x here: page-level wrapper owns scrolling (second-brain#223).
   .table-scroll {
-    overflow-x: auto;
+    width: 100%;
   }
 
   table {

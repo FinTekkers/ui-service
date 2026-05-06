@@ -231,8 +231,9 @@
     min-height: 400px;
   }
 
+  // No overflow-x here: page-level wrapper owns scrolling (second-brain#223).
   .table-wrapper {
-    overflow-x: auto;
+    width: 100%;
   }
 
   .par-col { color: #60a5fa; font-weight: 600; font-variant-numeric: tabular-nums; }
