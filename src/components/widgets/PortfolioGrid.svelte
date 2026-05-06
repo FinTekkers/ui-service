@@ -19,10 +19,17 @@
 	const dispatch = createEventDispatcher();
 
 	function getPositionsUrl(portfolioId: string): string {
+		// Only request measures the ledger-service position-search currently
+		// implements. ACCRUED_INTEREST, DIRTY_PRICE, CLEAN_PRICE, CONVEXITY,
+		// MODIFIED_DURATION, and UNADJUSTED_COST_BASIS return UNIMPLEMENTED
+		// today (they live in the valuation pipeline, not the position search)
+		// and a single unsupported measure 500s the whole positions page.
+		// Backend gap tracked in second-brain#219; restore the bond analytics
+		// columns here once that issue is closed.
 		const params = new URLSearchParams({
 			portfolioId,
 			fields: 'SECURITY_DESCRIPTION,PORTFOLIO_NAME',
-			measures: 'DIRECTED_QUANTITY,MARKET_VALUE,ACCRUED_INTEREST,DIRTY_PRICE,CLEAN_PRICE,CONVEXITY,MODIFIED_DURATION,YIELD_TO_MATURITY',
+			measures: 'DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY',
 			positionView: 'DEFAULT_VIEW',
 			positionType: 'TAX_LOT',
 		});
