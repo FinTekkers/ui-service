@@ -1,10 +1,12 @@
 @import "variables";
 
 .main_ui_menu {
-    width: 100vw;
-    height: 100vh;
-    max-height: 100vh !important;
-    overflow: hidden;
+    // BRUTE-FORCE: stripped 100vw/100vh/overflow:hidden. These were
+    // capping every data page (securities, portfolios, transactions,
+    // positions) into its own viewport-locked scroll container, which
+    // defeated the body-only-scroll fix at the (authenticated) layout
+    // level. With these gone, content flows naturally into the body.
+    width: 100%;
 }
 
 .main_navbar {

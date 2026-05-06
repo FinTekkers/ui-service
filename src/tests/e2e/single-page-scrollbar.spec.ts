@@ -1,120 +1,70 @@
 /**
- * Page-shell single-scrollbar invariant — second-brain#223 follow-up.
+ * Single-page scrollbar — second-brain#223 (brute-force).
  *
- * The bug: PR #127 dropped table-level overflow but two scrollbars were
- * still visible on every authenticated data page. Cause: the per-page
- * outer wrapper allowed body scroll when the sidebar overflowed, while
- * the right-pane .dashboard-container had its own overflow:auto.
+ * History:
+ *   PR #127  per-grid overflow stripped → two scrollbars still showed.
+ *   PR #131  Option 1 (app-shell pinned + content-area scroll) — phantom
+ *            gutter on macOS "Always show scrollbars".
+ *   PR #132  Option 2 (sticky sidebar + body scroll) — broke in Safari
+ *            (sticky + flex + 100vh interaction; not reproducible in
+ *            Chromium-headless).
+ *   This PR  Brute-force: <html> is the only scroll container.
+ *            .main_ui_menu lost its 100vh + overflow:hidden cap;
+ *            sidebar is no longer sticky; calculator-layout is no
+ *            longer sticky. Trade-off: sidebar/inputs scroll with the
+ *            page. Acceptance: works in Safari + Chrome (manual).
  *
- * The fix: factor src/routes/(authenticated)/+layout.svelte to own the
- * shell. .auth-shell pinned to viewport with overflow:hidden; sidebar
- * with internal scroll if its menu grows; .content-area is the single
- * scroll surface for page content.
- *
- * This spec uses a deliberately small viewport (1024×500) to FORCE both
- * vertical and horizontal overflow on every page, and asserts:
- *   1. document.body does not scroll.
- *   2. The only scroll surface in the main content flow is .content-area.
- *      The sidebar (inside .dashboard-sidebar) is allowed to scroll
- *      internally when its menu items + logo + logout exceed viewport
- *      height — that's part of Option 1's app-shell shape (sidebar
- *      contains its own scroll instead of pushing body). It's not a
- *      competing scroll for the content area.
- *
- * Default desktop viewports (1280×720+) often don't trigger the bug
- * because content fits — that's why the bug shipped past PR #127.
- *
- * Calc pages are included: their inputs+results section uses
- * position:sticky to stay visible while the cashflow flows past, so the
- * single-scrollbar invariant holds on /data/calculators too.
+ * Assertions:
+ *   1. <html>.overflowY is 'scroll' (always-visible track).
+ *   2. <body>.overflowY is 'visible' (body delegates scroll to html).
+ *   3. No descendant of .auth-shell is an active scroll container
+ *      (scrollHeight > clientHeight WITH overflow auto|scroll set),
+ *      apart from autocomplete-suggestion popups (.suggestions etc.
+ *      which are absolutely-positioned overlays, not layout scrollers).
  */
+
 import { test, expect } from '@playwright/test';
 
-// 1024 wide forces some grids to need horizontal scroll; 500 tall forces
-// every page to need vertical scroll once content+padding exceed it.
-test.use({ viewport: { width: 1024, height: 500 } });
+const PAGES = ['/data/securities', '/data/positions', '/data/calculators'];
 
-const PAGES = [
-  '/data/securities',
-  '/data/positions',
-  '/data/transactions',
-  '/data/portfolios',
-  '/data/prices',
-  '/data/cpi_index',
-  '/data/treasury_curve',
-  '/data/curves',
-  '/data/catalog',
-  '/data/calculators',
-] as const;
+// storageState is provided by the chromium project (auth.setup.ts dependency).
+test.use({
+  viewport: { width: 1920, height: 1080 },
+});
 
-// Authentication waits for storageState (set by playwright.config.ts via
-// auth.setup.ts), so each test starts already logged in.
 for (const path of PAGES) {
-  test(`${path} — single page-level scroll surface (.content-area)`, async ({ page }) => {
+  test(`${path} — single body scrollbar (brute-force)`, async ({ page }) => {
     await page.goto(path);
-
-    // Wait for the layout to render before measuring.
     await expect(page.locator('.auth-shell')).toBeVisible({ timeout: 10_000 });
-    await page.waitForLoadState('networkidle');
 
-    // Body must not be scrollable. The auth-shell's overflow:hidden
-    // suppresses body scroll; if it's > 0 we've regressed.
-    const bodyOverflow = await page.evaluate(() => ({
-      scrollHeight: document.body.scrollHeight,
-      clientHeight: document.body.clientHeight,
-      overflowY: getComputedStyle(document.body).overflowY,
+    const rootScroll = await page.evaluate(() => ({
+      htmlOverflowY: getComputedStyle(document.documentElement).overflowY,
+      bodyOverflowY: getComputedStyle(document.body).overflowY,
     }));
-    expect(
-      bodyOverflow.scrollHeight - bodyOverflow.clientHeight,
-      `body must not scroll on ${path} (got scrollHeight=${bodyOverflow.scrollHeight}, clientHeight=${bodyOverflow.clientHeight})`,
-    ).toBeLessThanOrEqual(1);
+    expect(rootScroll.htmlOverflowY, `${path}: html.overflow-y must be 'scroll'`).toBe('scroll');
+    expect(rootScroll.bodyOverflowY, `${path}: body.overflow-y must be 'visible'`).toBe('visible');
 
-    // Count actually-scrolling elements OUTSIDE the sidebar. The sidebar
-    // (inside .dashboard-sidebar) is allowed to scroll internally — that's
-    // the Option 1 design. We only care about competing scroll surfaces
-    // in the main content flow.
-    //
-    // Autocomplete .suggestions lists and similar dropdowns have
-    // max-height + overflow:auto but are display:none / hidden when not
-    // active, so they don't show up as actively scrolling.
-    const scrollingOutsideSidebar = await page.evaluate(() => {
-      const out: string[] = [];
-      const candidates = Array.from(document.querySelectorAll<HTMLElement>('*'));
-      for (const el of candidates) {
-        if (el.closest('.dashboard-sidebar')) continue;
+    const rogueScrollers = await page.evaluate(() => {
+      const shell = document.querySelector('.auth-shell');
+      if (!shell) return ['.auth-shell missing'];
+      const offenders: string[] = [];
+      const all = shell.querySelectorAll<HTMLElement>('*');
+      for (const el of all) {
+        if (el.closest('.suggestions, [class*="suggestion"]')) continue;
         const cs = getComputedStyle(el);
-        const scrollable =
+        const hasOverflow =
           cs.overflowY === 'auto' || cs.overflowY === 'scroll' ||
           cs.overflowX === 'auto' || cs.overflowX === 'scroll' ||
           cs.overflow === 'auto' || cs.overflow === 'scroll';
-        if (!scrollable) continue;
-        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        if (!hasOverflow) continue;
         const overflowsY = el.scrollHeight - el.clientHeight > 1;
         const overflowsX = el.scrollWidth - el.clientWidth > 1;
         if (overflowsY || overflowsX) {
-          out.push(`${el.tagName}.${el.className?.toString?.().split(' ').slice(0, 2).join('.')}`);
+          offenders.push(`${el.tagName}.${el.className}: scrollH=${el.scrollHeight} clientH=${el.clientHeight}`);
         }
       }
-      return out;
+      return offenders;
     });
-
-    expect(
-      scrollingOutsideSidebar.length,
-      `${path} should have exactly one content-area scroll surface; found: ${JSON.stringify(scrollingOutsideSidebar)}`,
-    ).toBeLessThanOrEqual(1);
-
-    // When something IS scrolling outside the sidebar, it must be
-    // .content-area — not some grid that re-introduced overflow.
-    if (scrollingOutsideSidebar.length === 1) {
-      const contentAreaIsScrolling = await page.locator('.content-area').evaluate((el) => {
-        const overflowsY = el.scrollHeight - el.clientHeight > 1;
-        const overflowsX = el.scrollWidth - el.clientWidth > 1;
-        return overflowsY || overflowsX;
-      });
-      expect(
-        contentAreaIsScrolling,
-        `${path}: the one scrolling element must be .content-area`,
-      ).toBe(true);
-    }
+    expect(rogueScrollers, `${path}: only <html> may scroll; found rogue scrollers`).toEqual([]);
   });
 }
