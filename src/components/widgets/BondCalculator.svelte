@@ -302,11 +302,6 @@
     gap: 2rem;
     flex-wrap: wrap;
     margin-top: 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background-color: $primary-color;
-    padding-bottom: 1rem;
   }
 
   .inputs-panel {
