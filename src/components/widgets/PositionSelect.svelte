@@ -5,6 +5,7 @@
   import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
   import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
   import { onMount } from "svelte";
+  import { buildFilterUrl } from "$lib/filters/urlState";
 
   const { FieldProto } = pkg;
 
@@ -59,46 +60,36 @@
   }
 
   function fetchPositions() {
-    const selectedFieldsString = selectedFields.map(unformatName).join(",");
-    const selectedMeasuresString = selectedMeasures.map(unformatName).join(",");
+    if (typeof window === "undefined") return;
 
-    // Unformat selected position view and type
-    const unformattedPositionView = selectedPositionView.map(unformatName);
-    const unformattedPositionType = selectedPositionType.map(unformatName);
+    const trimmedTradeDate = tradeDateInput.trim();
+    // tradeDate and its operator are a coupled pair: only emit one if the
+    // other is also set, otherwise the page-server filter is half-applied.
+    const tradeDateOverride =
+      trimmedTradeDate && tradeDateOperator ? trimmedTradeDate : undefined;
+    const tradeDateOperatorOverride =
+      trimmedTradeDate && tradeDateOperator ? tradeDateOperator : undefined;
 
-    let url = `/data/positions?positionView=${unformattedPositionView}&positionType=${unformattedPositionType}&fields=${selectedFieldsString}&measures=${selectedMeasuresString}`;
-
-    // Add CUSIP to URL if provided
-    if (cusipInput && cusipInput.trim() !== "") {
-      url += `&cusip=${encodeURIComponent(cusipInput.trim())}`;
-    }
-
-    // Add TRADE_DATE filter to URL if provided
-    if (tradeDateInput && tradeDateInput.trim() !== "" && tradeDateOperator) {
-      url += `&tradeDate=${encodeURIComponent(tradeDateInput.trim())}`;
-      url += `&tradeDateOperator=${encodeURIComponent(tradeDateOperator)}`;
-    }
-
-    // Add ASSET_CLASS filter to URL if provided
-    if (assetClassInput && assetClassInput.trim() !== "") {
-      url += `&assetClass=${encodeURIComponent(assetClassInput.trim())}`;
-    }
-
-    // Add hideZeros filter to URL
-    if (hideZeros) {
-      url += `&hideZeros=true`;
-    }
-
-    // Preserve portfolioId from the inbound URL so re-running the form keeps
-    // the search scoped to the portfolio the user navigated in from. Without
-    // this, clicking SOMA → /positions → "Run" would silently widen the
-    // query to all portfolios. Tracked in second-brain#220.
-    if (typeof window !== "undefined") {
-      const inboundPortfolioId = new URLSearchParams(window.location.search).get("portfolioId");
-      if (inboundPortfolioId) {
-        url += `&portfolioId=${encodeURIComponent(inboundPortfolioId)}`;
-      }
-    }
+    const url = buildFilterUrl(
+      "/data/positions",
+      new URLSearchParams(window.location.search),
+      {
+        positionView: selectedPositionView.map(unformatName).join(","),
+        positionType: selectedPositionType.map(unformatName).join(","),
+        fields: selectedFields.map(unformatName).join(","),
+        measures: selectedMeasures.map(unformatName).join(","),
+        cusip: cusipInput.trim() || undefined,
+        tradeDate: tradeDateOverride,
+        tradeDateOperator: tradeDateOperatorOverride,
+        assetClass: assetClassInput.trim() || undefined,
+        hideZeros: hideZeros ? "true" : undefined,
+      },
+      // Inherit portfolioId so re-submitting the form keeps the search
+      // scoped to the portfolio the user navigated in from (second-brain#220
+      // / PR #123). The list of inheritKeys is the only place this rule
+      // lives now — adding more ambient context in future is one-line.
+      ["portfolioId"],
+    );
 
     window.location.href = url;
   }
