@@ -48,7 +48,7 @@ export async function FetchPosition(
     sortDirection: 'asc' | 'desc' = 'asc',
     cusip?: string,
     tradeDate?: string,
-    tradeDateOperator?: 'greater_than' | 'lesser_than',
+    tradeDateOperator?: 'greater_than' | 'lesser_than' | 'lesser_than_or_equals',
     assetClass?: string,
     portfolioId?: string,
     apiKey?: string
@@ -65,9 +65,12 @@ export async function FetchPosition(
     // Add TRADE_DATE filter if provided
     if (tradeDate && tradeDate.trim() !== "" && tradeDateOperator) {
         const tradeDateObj = new Date(tradeDate);
-        const operator = tradeDateOperator === 'greater_than'
-            ? PositionFilterOperator.MORE_THAN
-            : PositionFilterOperator.LESS_THAN;
+        const operator =
+            tradeDateOperator === 'greater_than'
+                ? PositionFilterOperator.MORE_THAN
+                : tradeDateOperator === 'lesser_than_or_equals'
+                    ? PositionFilterOperator.LESS_THAN_OR_EQUALS
+                    : PositionFilterOperator.LESS_THAN;
         positionFilter.addFilter(FieldProto.TRADE_DATE, operator, tradeDateObj);
     }
 
