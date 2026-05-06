@@ -1,5 +1,4 @@
 <script lang="ts">
-  import DashboardSideBar from "../../../../components/DashboardSideBar.svelte";
   import Portfolio from "../../../../components/widgets/PortfolioGrid.svelte";
   import DeleteConfirmModal from "../../../../components/widgets/DeleteConfirmModal.svelte";
   import TransactionHistoryGrid from "../../../../components/widgets/TransactionHistoryGrid.svelte";
@@ -49,38 +48,32 @@
   }
 </script>
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
+{#if deleteSuccess}
+  <div class="success-banner">{deleteSuccess}</div>
+{/if}
+{#if deleteError && !showModal}
+  <div class="error-banner">{deleteError}</div>
+{/if}
 
-  <div class="h-full w-full dashboard-container">
-    {#if deleteSuccess}
-      <div class="success-banner">{deleteSuccess}</div>
-    {/if}
-    {#if deleteError && !showModal}
-      <div class="error-banner">{deleteError}</div>
-    {/if}
+<Portfolio
+  rows={Array.isArray(data.portfolioData) ? data.portfolioData : [data.portfolioData]}
+  on:requestDelete={handleRequestDelete}
+/>
 
-    <Portfolio
-      rows={Array.isArray(data.portfolioData) ? data.portfolioData : [data.portfolioData]}
-      on:requestDelete={handleRequestDelete}
-    />
+<TransactionHistoryGrid
+  transactions={data.transactions ?? []}
+  portfolioId={data.selectedPortfolioId ?? null}
+/>
 
-    <TransactionHistoryGrid
-      transactions={data.transactions ?? []}
-      portfolioId={data.selectedPortfolioId ?? null}
-    />
-
-    {#if deleteTarget && !showModal}
-      <form method="POST" action="?/dryRun" use:enhance={() => {
-        deleteLoading = true;
-        return async ({ update }) => { await update(); };
-      }}>
-        <input type="hidden" name="uuidHex" value={deleteTarget.uuidHex} />
-        <button type="submit" class="hidden-submit" bind:this={dryRunSubmitBtn}></button>
-      </form>
-    {/if}
-  </div>
-</div>
+{#if deleteTarget && !showModal}
+  <form method="POST" action="?/dryRun" use:enhance={() => {
+    deleteLoading = true;
+    return async ({ update }) => { await update(); };
+  }}>
+    <input type="hidden" name="uuidHex" value={deleteTarget.uuidHex} />
+    <button type="submit" class="hidden-submit" bind:this={dryRunSubmitBtn}></button>
+  </form>
+{/if}
 
 <DeleteConfirmModal
   show={showModal}
@@ -95,7 +88,6 @@
 
 <style lang="scss">
   @import "../../../../style";
-  .dashboard-container { background-color: $primary-color; overflow: auto; }
   .hidden-submit { display: none; }
   .success-banner { background-color: #065f46; color: #d1fae5; padding: 10px 40px; font-size: 0.85rem; font-weight: 600; }
   .error-banner { background-color: #7f1d1d; color: #fecaca; padding: 10px 40px; font-size: 0.85rem; font-weight: 600; }

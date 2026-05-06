@@ -1,5 +1,4 @@
 <script lang="ts">
-  import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   import { enhance } from '$app/forms';
 
   export let data: import('./$types').PageData;
@@ -23,11 +22,7 @@
   }
 </script>
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
-
-  <div class="h-full w-full dashboard-container">
-    <div class="portfolio_container px-10 py-7">
+<div class="portfolio_container px-10 py-7">
       <h2 class="text-3xl font-extrabold my-3">Profile</h2>
 
       {#if form?.success}
@@ -109,19 +104,12 @@
           <div class="no-key-notice">
             <p>No API key available. Register with an email and password at <a href="/register">/register</a> to get an API key for API access.</p>
           </div>
-        {/if}
-      </div>
-    </div>
+    {/if}
   </div>
 </div>
 
 <style lang="scss">
   @import "../../../../styles/grid-table";
-
-  .dashboard-container {
-    background-color: $primary-color;
-    overflow: auto;
-  }
 
   .success-banner {
     background-color: #065f46;

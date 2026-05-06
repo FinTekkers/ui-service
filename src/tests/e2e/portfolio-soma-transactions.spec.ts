@@ -54,8 +54,10 @@ test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
     expect(await dataRows.count()).toBeGreaterThan(0);
 
     // second-brain#223: the table-wrapper around the grid must NOT have its
-    // own overflow scroll. Page-level .dashboard-container owns scrolling so
-    // the user sees a single horizontal/vertical scrollbar.
+    // own overflow scroll. Page-level .content-area (in (authenticated)/+layout)
+    // owns scrolling so the user sees a single horizontal/vertical scrollbar.
+    // The 223-followup spec has the broader page-shell single-scroll
+    // assertions; this one just guards the per-grid invariant.
     const tableWrapper = page.locator('.table-wrapper').first();
     const wrapperOverflow = await tableWrapper.evaluate((el) => {
       const cs = window.getComputedStyle(el);
@@ -63,13 +65,5 @@ test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
     });
     expect(wrapperOverflow.x).toBe('visible');
     expect(wrapperOverflow.y).toBe('visible');
-
-    // .dashboard-container, by contrast, must be the scroll owner.
-    const dashOverflow = await page.locator('.dashboard-container').evaluate((el) => {
-      const cs = window.getComputedStyle(el);
-      return { x: cs.overflowX, y: cs.overflowY };
-    });
-    expect(['auto', 'scroll']).toContain(dashOverflow.x);
-    expect(['auto', 'scroll']).toContain(dashOverflow.y);
   });
 });

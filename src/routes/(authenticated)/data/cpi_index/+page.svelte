@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
 
   type CpiSeries = { identifier: string; description: string; indexType: string; uuidHex: string; uuidStr: string };
   type CpiPoint = { date: string; value: number; mom: number | null };
@@ -89,11 +88,7 @@
   });
 </script>
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
-
-  <div class="h-full w-full dashboard-container" style="overflow: auto;">
-    <div class="portfolio_container px-10 py-7">
+<div class="portfolio_container px-10 py-7">
       <h1 class="page-title">{pageTitle}</h1>
       <p class="page-subtitle">{pageSubtitle}</p>
 
@@ -152,9 +147,7 @@
             </table>
           </div>
         </div>
-      {/if}
-    </div>
-  </div>
+  {/if}
 </div>
 
 <style lang="scss">

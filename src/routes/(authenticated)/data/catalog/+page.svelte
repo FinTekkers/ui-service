@@ -1,5 +1,4 @@
 <script lang="ts">
-  import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
   import measuresData from '$lib/data/measures.json';
   import fieldsData from '$lib/data/fields.json';
 
@@ -77,11 +76,7 @@
   }
 </script>
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
-
-  <div class="h-full w-full dashboard-container">
-    <div class="portfolio_container px-10 py-7">
+<div class="portfolio_container px-10 py-7">
       <h2 class="text-3xl font-extrabold my-3">Data Catalog</h2>
 
       <!-- Tab bar — same pattern as calculators page -->
@@ -200,21 +195,14 @@
           </div>
         {/each}
 
-        {#if filteredFields.length === 0}
-          <p class="empty-msg">No fields match your search.</p>
-        {/if}
-      {/if}
-    </div>
-  </div>
+  {#if filteredFields.length === 0}
+    <p class="empty-msg">No fields match your search.</p>
+  {/if}
+{/if}
 </div>
 
 <style lang="scss">
   @import "../../../../styles/grid-table";
-
-  .dashboard-container {
-    background-color: $primary-color;
-    overflow: auto;
-  }
 
   /* Tab bar — matches calculators page exactly */
   .tab-bar {

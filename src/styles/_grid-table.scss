@@ -1,10 +1,14 @@
 @import "variables";
 
+// Used as the inner content wrapper inside every (authenticated) data
+// page (and grid widgets). Was previously height:100% + overflow:auto,
+// which made it a third nested scroll surface (sidebar / .content-area /
+// here) — second-brain#223 follow-up. The page-level .content-area in
+// (authenticated)/+layout.svelte owns scrolling now; this just provides
+// padding + background.
 .portfolio_container {
-    height: 100%;
     width: 100%;
     background-color: $primary-color;
-    overflow: auto;
     padding: 28px 40px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }

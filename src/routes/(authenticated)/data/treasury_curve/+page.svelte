@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import DashboardSideBar from '../../../../components/DashboardSideBar.svelte';
 
   export let data: { curveData: Array<{
     tenor: string; cusip: string; description: string;
@@ -61,11 +60,7 @@
   let hoveredIndex: number | null = null;
 </script>
 
-<div class="w-screen h-full flex">
-  <DashboardSideBar {data} />
-
-  <div class="h-full w-full dashboard-container" style="overflow: auto;">
-    <div class="portfolio_container px-10 py-7">
+<div class="portfolio_container px-10 py-7">
   <h1 class="page-title">On-the-Run Treasury Yield Curve</h1>
   <p class="date-subtitle">as of {displayDate}</p>
 
@@ -123,8 +118,6 @@
   <div class="chart-box">
     <h2 class="chart-title">Yield Curve</h2>
     <div bind:this={chartEl} class="curve-chart" />
-  </div>
-    </div>
   </div>
 </div>
 
