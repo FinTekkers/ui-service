@@ -1,11 +1,21 @@
-import { FetchTransaction } from "$lib/transactions";
+import { FetchTransaction, FetchTransactionByPortfolio } from "$lib/transactions";
 import { deleteEntity } from '$lib/entity-delete';
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
-export async function load({locals}) {
-  const transactions = await FetchTransaction(locals.user?.apiKey);
+export async function load({ locals, url }) {
+  // When the user clicks "Txns" on a portfolio row in /data/portfolios, the
+  // link includes ?portfolioId=<uuid>. Route through FetchTransactionByPortfolio
+  // so the gRPC search adds a PORTFOLIO_ID PositionFilter and returns only
+  // that portfolio's transactions. Without scoping, the portfolio click would
+  // dump every transaction across every portfolio onto the page.
+  const portfolioId = url.searchParams.get('portfolioId');
+  const apiKey = locals.user?.apiKey;
+  const transactions = portfolioId
+    ? await FetchTransactionByPortfolio(portfolioId, apiKey)
+    : await FetchTransaction(apiKey);
   return {
-    transactions: transactions,
+    transactions,
+    portfolioId: portfolioId || null,
     user: locals.user
   };
 }
