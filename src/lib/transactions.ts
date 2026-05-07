@@ -5,7 +5,7 @@ import type Transaction from "@fintekkers/ledger-models/node/wrappers/models/tra
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
-import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
+import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
 const { FieldProto } = pkg;
