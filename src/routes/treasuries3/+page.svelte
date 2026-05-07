@@ -9,18 +9,19 @@
   let sortColumn: string | null = null;
   let sortDirection: "asc" | "desc" = "asc";
 
-  // Format date for display
-  function formatDate(dateStr: string | undefined): string {
+  // Format date for display. Accepts both string (per interface for
+  // ISSUE_DATE/MATURITY_DATE) and Date (per interface for TRADE_DATE).
+  function formatDate(dateStr: string | Date | undefined): string {
     if (!dateStr) return "N/A";
     try {
-      const date = new Date(dateStr);
+      const date = dateStr instanceof Date ? dateStr : new Date(dateStr);
       return date.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
       });
     } catch {
-      return dateStr;
+      return String(dateStr);
     }
   }
 
@@ -33,13 +34,33 @@
   }
 
   // Parse date for sorting
-  function parseDate(dateStr: string | undefined): Date {
+  function parseDate(dateStr: string | Date | undefined): Date {
     if (!dateStr) return new Date(0);
+    if (dateStr instanceof Date) return dateStr;
     try {
       return new Date(dateStr);
     } catch {
       return new Date(0);
     }
+  }
+
+  // TENOR is delivered as a wrapper-formatted description string
+  // (e.g. "2Y3M", "5Y", "6M") from treasury_positions.ts. The page
+  // wants `{ years, months }` for sortable + tabular display. Parse
+  // here (Path B from the dispatch — keeps the producer interface
+  // matching runtime; the parsing concern stays in the consumer).
+  // Pre-fix the page accessed `.years`/`.months` on the string and
+  // silently rendered blank cells. Format from
+  // ledger-models's `Tenor.getTenorDescription()`: optional Y / M / W /
+  // D segments. We only need Y + M for the table.
+  function parseTenor(tenor: string | undefined): { years: number; months: number } | undefined {
+    if (!tenor) return undefined;
+    const m = tenor.match(/(?:(\d+)Y)?(?:(\d+)M)?/);
+    if (!m) return undefined;
+    const years = m[1] ? parseInt(m[1], 10) : 0;
+    const months = m[2] ? parseInt(m[2], 10) : 0;
+    if (years === 0 && months === 0) return undefined;
+    return { years, months };
   }
 
   // Get sortable value for a transaction
@@ -57,11 +78,11 @@
         return parseDate(txn.ISSUE_DATE).getTime();
       case "MATURITY_DATE":
         return parseDate(txn.MATURITY_DATE).getTime();
-      case "TENOR":
-        if (txn.TENOR) {
-          return (txn.TENOR.years || 0) * 12 + (txn.TENOR.months || 0);
-        }
+      case "TENOR": {
+        const t = parseTenor(txn.TENOR);
+        if (t) return t.years * 12 + t.months;
         return txn.ADJUSTED_TENOR || "";
+      }
       case "DIRECTED_QUANTITY":
         return txn.DIRECTED_QUANTITY || 0;
       default:
@@ -221,6 +242,7 @@
         </thead>
         <tbody>
           {#each sortedTransactions as txn}
+            {@const tenorParsed = parseTenor(txn.TENOR)}
             <tr>
               <td class="identifier">{txn.IDENTIFIER}</td>
               <td>{formatDate(txn.TRADE_DATE)}</td>
@@ -235,9 +257,9 @@
               <td>{formatDate(txn.ISSUE_DATE)}</td>
               <td>{formatDate(txn.MATURITY_DATE)}</td>
               <td>
-                {#if txn.TENOR}
-                  {txn.TENOR.years > 0 ? `${txn.TENOR.years}Y ` : ""}
-                  {txn.TENOR.months > 0 ? `${txn.TENOR.months}M` : ""}
+                {#if tenorParsed}
+                  {tenorParsed.years > 0 ? `${tenorParsed.years}Y ` : ""}
+                  {tenorParsed.months > 0 ? `${tenorParsed.months}M` : ""}
                 {:else}
                   {txn.ADJUSTED_TENOR || "N/A"}
                 {/if}

@@ -41,4 +41,11 @@ export interface User {
     googleId: string;
     name: string;
     picture: string;
+    // Optional because the Google-session auth flow doesn't issue a
+    // broker apiKey (only the BrokerUser flow in hooks.server.ts does).
+    // Declared here so consumers that read `locals.user?.apiKey` across
+    // the AppUser union (GoogleUser | BrokerUser) type-check without a
+    // narrowing dance — matches the runtime where Google-flow returns
+    // undefined and broker-flow returns the cookie value.
+    apiKey?: string;
 }
