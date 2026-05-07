@@ -49,14 +49,17 @@ async function transactionSearch(limit: number): Promise<{
 	req.setSearchTransactionInput(filter.toProto());
 	req.setLimit(limit);
 
-	const items: any[] = [];
+	// Count messages only — don't accumulate proto wrappers. limit=100000 used to
+	// OOM the vitest worker by pushing 100K heavy objects into an array we never
+	// inspected beyond `.length`.
+	let count = 0;
 	let error: string | undefined;
 
 	await new Promise<void>((resolve) => {
 		const stream = client.search(req);
 		stream.on('data', (resp: any) => {
 			const list = resp.getTransactionResponseList?.() ?? [];
-			list.forEach((t: any) => items.push(t));
+			count += list.length;
 		});
 		stream.on('end', () => resolve());
 		stream.on('error', (err: any) => {
@@ -65,7 +68,7 @@ async function transactionSearch(limit: number): Promise<{
 		});
 	});
 
-	return { count: items.length, error, limitSentToService: limit };
+	return { count, error, limitSentToService: limit };
 }
 
 // ---------------------------------------------------------------------------
