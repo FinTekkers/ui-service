@@ -33,14 +33,14 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 
-const SOMA_PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
+const PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
 const PROBE_CUSIP = 'ZZZZZZZZZ';
 const PROBE_TICKER = 'ZZTOP';
 const PROBE_TRADE_DATE = '2026-05-06';
 
 async function resolvePortfolioId(page: Page): Promise<string> {
   await page.goto('/data/portfolios');
-  const link = page.getByRole('link', { name: SOMA_PORTFOLIO_NAME });
+  const link = page.getByRole('link', { name: PORTFOLIO_NAME });
   const href = await link.getAttribute('href');
   expect(href).toMatch(/portfolioId=[0-9a-f-]{36}/);
   return new URL(href!, page.url()).searchParams.get('portfolioId')!;
