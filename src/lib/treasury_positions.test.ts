@@ -276,10 +276,14 @@ describe('treasury_positions', () => {
 
             expect(result).toHaveLength(1);
             expect(result[0].TRADE_DATE).toBeInstanceOf(Date);
-            // Check that the date is valid and represents January 2024
-            // Note: Date parsing can vary by timezone, so we check the date string representation
-            const dateStr = result[0].TRADE_DATE;
-            expect(dateStr).toBe('2024-01-15');
+            // Check that the parsed Date represents 2024-01-15. Earlier
+            // version of this test compared TRADE_DATE (a Date) to the
+            // string literal '2024-01-15' directly — which can never
+            // pass after the toBeInstanceOf(Date) assertion above.
+            // Compare via the ISO date string instead; UTC-stable
+            // because the producer parses 'YYYY-MM-DD' as midnight UTC.
+            const tradeDate = result[0].TRADE_DATE as Date;
+            expect(tradeDate.toISOString().slice(0, 10)).toBe('2024-01-15');
         });
 
         it('should sort transactions by trade date in ascending order', () => {
