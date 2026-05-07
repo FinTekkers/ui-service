@@ -41,6 +41,50 @@ test.describe('/data/securities filter extension', () => {
     await expect(page.getByText(/^AAPL$/).first()).toBeVisible({ timeout: 10_000 });
   });
 
+  test('AssetClassFilter — ?assetClass=FIXED_INCOME round-trips through Fetch', async ({ page }) => {
+    // Phase 3 (#226) — AssetClassFilter primitive on /data/securities.
+    // Loading with the proto-enum name selects the dropdown; clicking
+    // Fetch re-emits the canonical URL shape with assetClass preserved
+    // alongside other params.
+    await page.goto(
+      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&assetClass=FIXED_INCOME',
+    );
+    await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    const acSelect = page.locator('#asset-class-input');
+    await expect(acSelect, 'AssetClassFilter loaded the URL value').toHaveValue('FIXED_INCOME');
+
+    await page.getByRole('button', { name: /Fetch Securities/ }).click();
+    await page.waitForURL(/\/data\/securities\?.*assetClass=FIXED_INCOME/, { timeout: 10_000 });
+
+    const params = new URL(page.url()).searchParams;
+    expect(params.get('assetClass'), 'assetClass re-emitted as proto enum').toBe('FIXED_INCOME');
+    expect(params.get('identifier'), 'other params preserved').toBe('AAPL');
+    expect(params.get('identifierType')).toBe('EXCH_TICKER');
+  });
+
+  test('SecurityTypeFilter — ?securityType=BOND_SECURITY round-trips through Fetch', async ({ page }) => {
+    await page.goto(
+      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&securityType=BOND_SECURITY',
+    );
+    await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    const stSelect = page.locator('#security-type-select');
+    await expect(stSelect, 'SecurityTypeFilter loaded the URL value').toHaveValue('BOND_SECURITY');
+
+    await page.getByRole('button', { name: /Fetch Securities/ }).click();
+    await page.waitForURL(/\/data\/securities\?.*securityType=BOND_SECURITY/, { timeout: 10_000 });
+
+    const params = new URL(page.url()).searchParams;
+    expect(params.get('securityType')).toBe('BOND_SECURITY');
+    expect(params.get('identifier'), 'other params preserved').toBe('AAPL');
+    expect(params.get('identifierType')).toBe('EXCH_TICKER');
+  });
+
   test('legacy ?identifier=...&identifierType=CUSIP URL shape still works', async ({ page }) => {
     // Existing bookmark shape — no assetClass / issuerName / securityType
     // set, so the page-server applies the pre-#226 defaults (Fixed Income

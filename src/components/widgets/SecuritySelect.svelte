@@ -5,22 +5,40 @@
   // in the client bundle).
   import {
     SECURITY_TYPE_NAMES,
+    ASSET_CLASS_NAMES,
     type IdentifierTypeName,
     type SecurityTypeName,
+    type AssetClassName,
   } from "$lib/securityFilterTypes";
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
+  import SecurityTypeFilter from "../filters/SecurityTypeFilter.svelte";
+  import AssetClassFilter from "../filters/AssetClassFilter.svelte";
 
-  // Phase 2 of second-brain#226: identifier-type dropdown + value input
-  // moved into the IdentifierFilter primitive. Phase 1's inline 7-option
-  // dropdown + per-type placeholder logic now lives in
-  // src/components/filters/IdentifierFilter.svelte and is shared with
-  // /data/prices.
+  // Phase 2/3 of second-brain#226: filter primitives now own their controls.
+  // - Phase 2 (PR #130): identifier-type dropdown + value → IdentifierFilter.
+  // - Phase 3 (this PR): assetClass <input> → AssetClassFilter; securityType
+  //   <select> → SecurityTypeFilter. Both emit proto-enum names via URL
+  //   (FIXED_INCOME / BOND_SECURITY / …); page-server still treats the
+  //   value as a free-form string so legacy URLs like ?assetClass=Equity
+  //   continue to filter correctly server-side.
+
+  // Legacy free-form → proto-enum normalization for assetClass URL load.
+  // Pre-Phase-3 URLs (e.g. tests using ?assetClass=Equity) carried free-
+  // form labels; this lets the dropdown round-trip them onto the
+  // canonical enum value so the user sees their filter selected and a
+  // subsequent Fetch re-emits the canonical shape.
+  const ASSET_CLASS_FREEFORM_TO_ENUM: Record<string, AssetClassName> = {
+    'fixed income': 'FIXED_INCOME',
+    'equity': 'EQUITY',
+    'cash': 'CASH_ASSET_CLASS',
+    'index': 'INDEX',
+  };
 
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
   let issueDateInput: string = "";
   let issueDateOperator: "greater_than" | "lesser_than" | "" = "";
-  let assetClassInput: string = "";
+  let assetClassInput: AssetClassName | "" = "";
   let issuerNameInput: string = "";
   let securityTypeInput: SecurityTypeName | "" = "";
 
@@ -46,7 +64,7 @@
         identifierType: trimmedIdentifier ? identifierType : undefined,
         issueDate: issueDateOverride,
         issueDateOperator: issueDateOperatorOverride,
-        assetClass: assetClassInput.trim() || undefined,
+        assetClass: assetClassInput || undefined,
         issuerName: issuerNameInput.trim() || undefined,
         securityType: securityTypeInput || undefined,
       },
@@ -89,7 +107,19 @@
     }
 
     const assetClassFromUrl = urlParams.get("assetClass");
-    if (assetClassFromUrl !== null) assetClassInput = assetClassFromUrl;
+    if (assetClassFromUrl !== null && assetClassFromUrl !== "") {
+      // Canonical: a proto-enum name (FIXED_INCOME, EQUITY, …).
+      if ((ASSET_CLASS_NAMES as readonly string[]).includes(assetClassFromUrl)) {
+        assetClassInput = assetClassFromUrl as AssetClassName;
+      } else {
+        // Legacy free-form (Equity, Fixed Income, …) — map to enum so
+        // the dropdown round-trips on the next Fetch. Falls through to
+        // empty if the value isn't recognized; the page-server still
+        // sees the original URL param and applies it as a string filter.
+        const normalized = ASSET_CLASS_FREEFORM_TO_ENUM[assetClassFromUrl.toLowerCase()];
+        if (normalized) assetClassInput = normalized;
+      }
+    }
 
     const issuerNameFromUrl = urlParams.get("issuerName");
     if (issuerNameFromUrl !== null) issuerNameInput = issuerNameFromUrl;
@@ -115,12 +145,10 @@
     </div>
     <div class="text-white">
       <h4>Asset Class:</h4>
-      <input
-        type="text"
-        id="asset-class-input"
-        placeholder="e.g. Fixed Income (blank = all)"
+      <AssetClassFilter
         bind:value={assetClassInput}
-        class="filter-input text-black"
+        selectClass="filter-select text-black"
+        selectId="asset-class-input"
       />
     </div>
     <div class="text-white">
@@ -135,16 +163,11 @@
     </div>
     <div class="text-white">
       <h4>Security Type:</h4>
-      <select
-        id="security-type-select"
+      <SecurityTypeFilter
         bind:value={securityTypeInput}
-        class="filter-select text-black"
-      >
-        <option value="">All</option>
-        {#each SECURITY_TYPE_NAMES as name}
-          <option value={name}>{name}</option>
-        {/each}
-      </select>
+        selectClass="filter-select text-black"
+        selectId="security-type-select"
+      />
     </div>
   </div>
   <div class="security-select-container flex flex-col sm:flex-row gap-2 mt-2">
