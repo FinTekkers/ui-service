@@ -5,24 +5,30 @@ import type { IdentifierTypeName } from '$lib/securityFilterTypes';
 
 describe('IdentifierFilter', () => {
   test('renders the default 7 type options with friendly labels', () => {
+    // Order matches Identifier.getAllTypeNames() (proto-declaration
+    // order). PR #134 switched IDENTIFIER_TYPE_NAMES from a hand-typed
+    // array (CUSIP-first) to the runtime helper; this assertion was
+    // never updated to match. Drive-by fix from Phase 3 PR-A — the
+    // dispatch instructed me to keep the existing 14-test green
+    // baseline, and this blocks unit-test green.
     const { getAllByRole } = render(IdentifierFilter);
     const options = getAllByRole('option') as HTMLOptionElement[];
     expect(options.map((o) => o.value)).toEqual([
-      'CUSIP',
-      'ISIN',
       'EXCH_TICKER',
-      'SERIES_ID',
+      'ISIN',
+      'CUSIP',
       'OSI',
       'FIGI',
+      'SERIES_ID',
       'CASH',
     ]);
     expect(options.map((o) => o.text)).toEqual([
-      'CUSIP',
-      'ISIN',
       'Ticker',
-      'Series ID',
+      'ISIN',
+      'CUSIP',
       'OSI',
       'FIGI',
+      'Series ID',
       'Cash',
     ]);
   });

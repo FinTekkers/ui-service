@@ -32,7 +32,7 @@
  */
 import { test, expect } from '@playwright/test';
 
-const SOMA_PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
+const PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
 
 // Product types the SOMA seed loads. Hardcoded because the seed is stable; if
 // the seed grows, prefer adding to this list over loosening the assertion.
@@ -46,13 +46,13 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
     await page.goto('/data/portfolios');
     await expect(page.getByRole('heading', { name: 'Portfolios' })).toBeVisible();
 
-    const somaRow = page.locator('table tbody tr').filter({ hasText: SOMA_PORTFOLIO_NAME }).first();
+    const somaRow = page.locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first();
     await expect(somaRow).toBeVisible();
 
     // 2. Click the portfolio-name link (the Portfolio column links to
     //    /data/positions?portfolioId=...). The Txns and Delete buttons in the
     //    same row use stopPropagation so they don't trigger this navigation.
-    const positionsLink = somaRow.getByRole('link', { name: SOMA_PORTFOLIO_NAME });
+    const positionsLink = somaRow.getByRole('link', { name: PORTFOLIO_NAME });
     await expect(positionsLink).toHaveAttribute('href', /\/data\/positions\?.*portfolioId=[0-9a-f-]+/);
     await positionsLink.click();
 

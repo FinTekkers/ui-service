@@ -17,14 +17,14 @@
  */
 import { test, expect } from '@playwright/test';
 
-const SOMA_PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
+const PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
 
 test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
   test('clicking Txns on SOMA navigates to its transactions and renders rows', async ({ page }) => {
     await page.goto('/data/portfolios');
     await expect(page.getByRole('heading', { name: 'Portfolios' })).toBeVisible();
 
-    const somaRow = page.locator('table tbody tr').filter({ hasText: SOMA_PORTFOLIO_NAME }).first();
+    const somaRow = page.locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first();
     await expect(somaRow).toBeVisible();
 
     // The Txns button is an <a> with class .txn-btn — find it inside the SOMA

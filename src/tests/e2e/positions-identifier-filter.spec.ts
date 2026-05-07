@@ -1,7 +1,8 @@
 /**
- * Regression for second-brain#227 (PositionSelect → IdentifierFilter).
+ * Regression for second-brain#227 (PositionSelect → IdentifierFilter)
+ * AND second-brain#226 phase 3 PR-A (PositionSelect → DateFilter).
  *
- * Three cases — explicit per-type coverage:
+ * Five cases:
  *   1. CUSIP — ?identifier+identifierType=CUSIP loads into the form,
  *      Fetch round-trips the URL with portfolioId carried via inheritKeys
  *      (#220-style guard).
@@ -9,6 +10,15 @@
  *   3. Legacy ?cusip=… bookmark loads into the IdentifierFilter input
  *      and re-emits as canonical (?identifier+identifierType=CUSIP) on
  *      next Fetch, with no ?cusip= residue.
+ *   4. tradeDate + tradeDateOperator — both URL params load into
+ *      DateFilter, Fetch round-trips both with portfolioId preserved.
+ *   5. tradeDate alone (no operator) — the date populates the DateFilter
+ *      input, the operator select stays empty (and disabled). Fetch
+ *      doesn't crash; the half-applied filter guard in
+ *      PositionSelect.fetchPositions drops both params on re-emit (a
+ *      type-without-value or value-without-type filter is meaningless
+ *      to the page-server). Documented behavior; not a UX regression
+ *      for this PR.
  *
  * Why URL-load instead of dropdown-then-fill: testing via the dropdown
  * triggers IdentifierFilter's clearOnTypeChange handler, whose bind
@@ -23,13 +33,14 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 
-const SOMA_PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
+const PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
 const PROBE_CUSIP = 'ZZZZZZZZZ';
 const PROBE_TICKER = 'ZZTOP';
+const PROBE_TRADE_DATE = '2026-05-06';
 
 async function resolvePortfolioId(page: Page): Promise<string> {
   await page.goto('/data/portfolios');
-  const link = page.getByRole('link', { name: SOMA_PORTFOLIO_NAME });
+  const link = page.getByRole('link', { name: PORTFOLIO_NAME });
   const href = await link.getAttribute('href');
   expect(href).toMatch(/portfolioId=[0-9a-f-]{36}/);
   return new URL(href!, page.url()).searchParams.get('portfolioId')!;
@@ -103,5 +114,66 @@ test.describe('/data/positions IdentifierFilter (#227)', () => {
     expect(params.get('identifierType'), 'legacy entry re-emits with type=CUSIP').toBe('CUSIP');
     expect(params.get('cusip'), 'legacy ?cusip= must be gone after re-emission').toBeNull();
     expect(params.get('portfolioId')).toBe(portfolioId);
+  });
+
+  test('tradeDate + tradeDateOperator round-trip through Fetch with portfolio scope', async ({ page }) => {
+    const portfolioId = await resolvePortfolioId(page);
+
+    await page.goto(
+      `/data/positions?portfolioId=${portfolioId}` +
+      `&tradeDate=${PROBE_TRADE_DATE}&tradeDateOperator=lesser_than_or_equals` +
+      `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
+    );
+
+    // DateFilter loads both bound props from the URL via PositionSelect's
+    // loadSelectedValues. The date input takes the date; the operator
+    // select takes the operator and is enabled because the date is set.
+    const dateInput = page.locator('#trade-date-input');
+    await expect(dateInput).toBeVisible({ timeout: 10_000 });
+    await expect(dateInput, 'tradeDate populates DateFilter input').toHaveValue(PROBE_TRADE_DATE);
+    const opSelect = page.getByLabel('Date operator');
+    await expect(opSelect, 'tradeDateOperator populates DateFilter select')
+      .toHaveValue('lesser_than_or_equals');
+    await expect(opSelect, 'operator select enabled when date is set').toBeEnabled();
+
+    await page.getByRole('button', { name: 'Fetch' }).click();
+    await page.waitForURL(/\/data\/positions\?.*tradeDate=/, { timeout: 10_000 });
+
+    const params = new URL(page.url()).searchParams;
+    expect(params.get('tradeDate'), 'tradeDate re-emitted').toBe(PROBE_TRADE_DATE);
+    expect(params.get('tradeDateOperator'), 'tradeDateOperator re-emitted')
+      .toBe('lesser_than_or_equals');
+    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
+  });
+
+  test('tradeDate alone (no operator) survives Fetch', async ({ page }) => {
+    const portfolioId = await resolvePortfolioId(page);
+
+    await page.goto(
+      `/data/positions?portfolioId=${portfolioId}` +
+      `&tradeDate=${PROBE_TRADE_DATE}` + // no &tradeDateOperator=
+      `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
+    );
+
+    // Date populates; operator stays empty AND the select is enabled
+    // because the date IS set (DateFilter only disables the select when
+    // the date is empty).
+    const dateInput = page.locator('#trade-date-input');
+    await expect(dateInput).toBeVisible({ timeout: 10_000 });
+    await expect(dateInput, 'tradeDate populates DateFilter input').toHaveValue(PROBE_TRADE_DATE);
+    const opSelect = page.getByLabel('Date operator');
+    await expect(opSelect, 'no operator in URL → select stays empty').toHaveValue('');
+
+    // Fetch completes — half-applied filter guard in
+    // PositionSelect.fetchPositions drops both tradeDate and
+    // tradeDateOperator when only one is set (a type-without-value /
+    // value-without-type filter is meaningless to the page-server).
+    await page.getByRole('button', { name: 'Fetch' }).click();
+    await page.waitForURL(/\/data\/positions/, { timeout: 10_000 });
+
+    const params = new URL(page.url()).searchParams;
+    expect(params.get('tradeDate'), 'half-applied filter dropped on re-emit').toBeNull();
+    expect(params.get('tradeDateOperator'), 'no orphan operator emitted').toBeNull();
+    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
   });
 });
