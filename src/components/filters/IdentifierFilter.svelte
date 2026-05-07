@@ -26,6 +26,8 @@
   import { createEventDispatcher } from 'svelte';
   import {
     IDENTIFIER_TYPE_NAMES,
+    IDENTIFIER_TYPE_LABELS,
+    IDENTIFIER_TYPE_PLACEHOLDERS,
     type IdentifierTypeName,
   } from '$lib/securityFilterTypes';
 
@@ -38,30 +40,9 @@
   // passes the full list (or omits this prop).
   export let supportedTypes: readonly IdentifierTypeName[] = IDENTIFIER_TYPE_NAMES;
 
-  // Built-in human-friendly labels. Consumers can override per-type via the
-  // `labels` prop (merged over defaults). Phase 1 SecuritySelect was using
-  // raw proto names — Phase 2 standardizes on these prettier ones, but a
-  // consumer that wants raw names can pass a labels override.
-  const DEFAULT_LABELS: Record<IdentifierTypeName, string> = {
-    CUSIP: 'CUSIP',
-    ISIN: 'ISIN',
-    EXCH_TICKER: 'Ticker',
-    SERIES_ID: 'Series ID',
-    OSI: 'OSI',
-    FIGI: 'FIGI',
-    CASH: 'Cash',
-  };
-
-  const DEFAULT_PLACEHOLDERS: Record<IdentifierTypeName, string> = {
-    CUSIP: 'e.g. 912828ZT0',
-    ISIN: 'e.g. GB0002404557',
-    EXCH_TICKER: 'e.g. AAPL',
-    SERIES_ID: 'e.g. CPIAUCSL',
-    OSI: 'e.g. AAPL  240119C00150000',
-    FIGI: 'e.g. BBG000B9XRY4',
-    CASH: 'e.g. USD',
-  };
-
+  // Built-in human-friendly labels + per-type placeholder hints. Defaults
+  // live in $lib/securityFilterTypes (single source for the proto-enum
+  // vocabulary); consumers can override per-type via the props below.
   export let labels: Partial<Record<IdentifierTypeName, string>> = {};
   export let placeholders: Partial<Record<IdentifierTypeName, string>> = {};
 
@@ -79,8 +60,8 @@
   export let selectClass: string = '';
   export let inputId: string = 'identifier-filter-value';
 
-  $: resolvedLabels = { ...DEFAULT_LABELS, ...labels };
-  $: resolvedPlaceholders = { ...DEFAULT_PLACEHOLDERS, ...placeholders };
+  $: resolvedLabels = { ...IDENTIFIER_TYPE_LABELS, ...labels };
+  $: resolvedPlaceholders = { ...IDENTIFIER_TYPE_PLACEHOLDERS, ...placeholders };
   $: currentPlaceholder = resolvedPlaceholders[identifierType];
 
   const dispatch = createEventDispatcher<{ typeChange: IdentifierTypeName }>();

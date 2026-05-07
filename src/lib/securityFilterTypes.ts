@@ -42,12 +42,38 @@ export type IdentifierTypeName =
 export const IDENTIFIER_TYPE_NAMES: readonly IdentifierTypeName[] =
   Identifier.getAllTypeNames() as readonly IdentifierTypeName[];
 
+// Friendly UI labels for the dropdown. Centralized here so consumers
+// (IdentifierFilter today; future autocomplete / detail views tomorrow)
+// don't duplicate the strings. Ledger-models could host these long-term
+// next to getAllTypeNames(); this file is the right place until then.
+export const IDENTIFIER_TYPE_LABELS: Record<IdentifierTypeName, string> = {
+  CUSIP: 'CUSIP',
+  ISIN: 'ISIN',
+  EXCH_TICKER: 'Ticker',
+  SERIES_ID: 'Series ID',
+  OSI: 'OSI',
+  FIGI: 'FIGI',
+  CASH: 'Cash',
+};
+
+// Placeholder examples per identifier type. Same centralization rationale
+// as IDENTIFIER_TYPE_LABELS — IdentifierFilter consumes these today;
+// future search/autocomplete consumers will too.
+export const IDENTIFIER_TYPE_PLACEHOLDERS: Record<IdentifierTypeName, string> = {
+  CUSIP: 'e.g. 912828ZT0',
+  ISIN: 'e.g. GB0002404557',
+  EXCH_TICKER: 'e.g. AAPL',
+  SERIES_ID: 'e.g. CPIAUCSL',
+  OSI: 'e.g. AAPL  240119C00150000',
+  FIGI: 'e.g. BBG000B9XRY4',
+  CASH: 'e.g. USD',
+};
+
 // ----- SecurityTypeProto -----
 
 // Was hand-typed pre-0.1.134 (only 6 entries: BOND/EQUITY/INDEX/CASH/TIPS/FRN).
 // The wrapper now exposes the full 8-entry set (adds FX_SPOT and
 // EQUITY_INDEX_SECURITY) — the dropdown picks them up automatically.
-// Friendly labels live with the consumer primitive (SecurityTypeFilter.svelte).
 export type SecurityTypeName =
   | 'CASH_SECURITY'
   | 'EQUITY_SECURITY'
@@ -61,11 +87,24 @@ export type SecurityTypeName =
 export const SECURITY_TYPE_NAMES: readonly SecurityTypeName[] =
   SecurityType.getAllTypeNames() as readonly SecurityTypeName[];
 
+// Friendly UI labels for the dropdown. Hides the `_SECURITY` suffix while
+// the URL/proto still carries the canonical name (?securityType=BOND_SECURITY).
+export const SECURITY_TYPE_LABELS: Record<SecurityTypeName, string> = {
+  BOND_SECURITY: 'Bond',
+  EQUITY_SECURITY: 'Equity',
+  INDEX_SECURITY: 'Index',
+  CASH_SECURITY: 'Cash',
+  TIPS: 'TIPS',
+  FRN: 'FRN',
+  FX_SPOT: 'FX Spot',
+  EQUITY_INDEX_SECURITY: 'Equity Index',
+};
+
 // ----- AssetClassProto -----
 
-// CASH_ASSET_CLASS is the proto name due to package-wide enum collision
-// with IdentifierTypeProto.CASH; the friendly 'Cash' label in
-// AssetClassFilter hides the wart from end users.
+// CASH_ASSET_CLASS is the proto name due to a package-wide enum collision
+// with IdentifierTypeProto.CASH; the friendly 'Cash' label below hides
+// the wart from end users.
 export type AssetClassName =
   | 'FIXED_INCOME'
   | 'EQUITY'
@@ -74,3 +113,10 @@ export type AssetClassName =
 
 export const ASSET_CLASS_NAMES: readonly AssetClassName[] =
   AssetClass.getAllTypeNames() as readonly AssetClassName[];
+
+export const ASSET_CLASS_LABELS: Record<AssetClassName, string> = {
+  FIXED_INCOME: 'Fixed Income',
+  EQUITY: 'Equity',
+  CASH_ASSET_CLASS: 'Cash',
+  INDEX: 'Index',
+};

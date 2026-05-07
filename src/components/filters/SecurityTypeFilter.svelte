@@ -1,29 +1,3 @@
-<script lang="ts" context="module">
-  /**
-   * Friendly default labels for SecurityType enum entries. Hides the
-   * `_SECURITY` suffix on the user-facing dropdown while the URL/proto
-   * still carries the canonical name (e.g. ?securityType=BOND_SECURITY).
-   * Consumers can override per-entry via the `labels` prop.
-   *
-   * Adding a new SecurityTypeProto enum entry lights up automatically in
-   * the dropdown via SecurityType.getAllTypeNames() — but it'll display
-   * its raw proto name until added here. Treated as a deliberate review
-   * hook (same as the IdentifierTypeName literal-union lag).
-   */
-  import type { SecurityTypeName } from '$lib/securityFilterTypes';
-
-  export const DEFAULT_LABELS: Record<SecurityTypeName, string> = {
-    BOND_SECURITY: 'Bond',
-    EQUITY_SECURITY: 'Equity',
-    INDEX_SECURITY: 'Index',
-    CASH_SECURITY: 'Cash',
-    TIPS: 'TIPS',
-    FRN: 'FRN',
-    FX_SPOT: 'FX Spot',
-    EQUITY_INDEX_SECURITY: 'Equity Index',
-  };
-</script>
-
 <script lang="ts">
   /**
    * Phase 3 of second-brain#226 — third composable filter primitive,
@@ -36,10 +10,19 @@
    * Owns: a single proto-name dropdown for SecurityType. Includes an
    * "All" empty option so consumers can express "no filter" by emitting
    * an empty string.
+   *
+   * Friendly default labels (e.g. BOND_SECURITY → 'Bond') live in
+   * $lib/securityFilterTypes alongside the runtime name list — single
+   * source for the proto-enum vocabulary. Adding a new SecurityTypeProto
+   * enum entry lights up the dropdown via SecurityType.getAllTypeNames()
+   * automatically; the raw proto name displays until a label is added —
+   * deliberate review hook.
    */
-  // SecurityTypeName type is already imported in <script context="module">
-  // above and shared with this instance script.
-  import { SECURITY_TYPE_NAMES } from '$lib/securityFilterTypes';
+  import {
+    SECURITY_TYPE_NAMES,
+    SECURITY_TYPE_LABELS,
+    type SecurityTypeName,
+  } from '$lib/securityFilterTypes';
 
   // Two-way binding — empty string represents "no filter" / All.
   export let value: SecurityTypeName | '' = '';
@@ -48,7 +31,7 @@
   // SecurityType.getAllTypeNames().
   export let supportedTypes: readonly SecurityTypeName[] = SECURITY_TYPE_NAMES;
 
-  // Per-entry label override; merged over DEFAULT_LABELS.
+  // Per-entry label override; merged over the centralized SECURITY_TYPE_LABELS.
   export let labels: Partial<Record<SecurityTypeName, string>> = {};
 
   // Class pass-through (matches IdentifierFilter / DateFilter).
@@ -59,7 +42,7 @@
   // can pass `allLabel=''` and constrain via the parent.
   export let allLabel: string = 'All';
 
-  $: resolvedLabels = { ...DEFAULT_LABELS, ...labels };
+  $: resolvedLabels = { ...SECURITY_TYPE_LABELS, ...labels };
 </script>
 
 <select
