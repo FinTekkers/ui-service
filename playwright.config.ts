@@ -3,9 +3,15 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Playwright configuration for ui-service browser-driven E2E tests.
  *
- * The vitest-driven "e2e" suites in src/tests/ remain the home for HTTP/gRPC
- * level tests. Playwright is reserved for tests that genuinely need a browser:
- * hydration, JS-driven autocomplete, click handlers, chart rendering.
+ * Browser-driven specs live in tests/e2e/ at the repo root. Relocated
+ * out of src/tests/e2e/ so vitest's default file-glob (src/**) stops
+ * mis-collecting them — Playwright specs import @playwright/test which
+ * doesn't load under jsdom; vitest reported each as "0 tests / FAIL"
+ * (6 noise failures in the baseline).
+ *
+ * The vitest-driven HTTP/gRPC-level tests stay in src/tests/. Playwright
+ * is reserved for tests that genuinely need a browser: hydration,
+ * JS-driven autocomplete, click handlers, chart rendering.
  *
  * Pre-reqs to run locally:
  *   - ui-service dev server on https://localhost:443
@@ -20,7 +26,7 @@ import { defineConfig, devices } from '@playwright/test';
  * src/tests/auth-flow-e2e.test.ts.
  */
 export default defineConfig({
-  testDir: './src/tests/e2e',
+  testDir: './tests/e2e',
   testMatch: /.*\.spec\.ts$/,
 
   fullyParallel: true,
