@@ -108,7 +108,13 @@ describe('/treasuries page – TransactionData shape', () => {
 	const lib = fs.readFileSync(path.resolve('src/lib/transactions.ts'), 'utf-8');
 
 	test('TransactionData interface is exported', () => {
-		expect(lib).toContain('export type { TransactionData }');
+		// Match `TransactionData` appearing inside any `export type { ... }`
+		// list. The previous literal-substring assertion broke when
+		// PR-B (Phase 3 of #226) extended the export to also include
+		// TradeDateOperator. Same pattern as the stale-baseline cleanup
+		// in PR #139 — assert the intent (type is exported) not the
+		// exact line shape.
+		expect(lib).toMatch(/export\s+type\s*\{[^}]*\bTransactionData\b[^}]*\}/);
 	});
 
 	const requiredFields = [

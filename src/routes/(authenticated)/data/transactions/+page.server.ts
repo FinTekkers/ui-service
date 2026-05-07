@@ -1,4 +1,4 @@
-import { FetchTransaction, FetchTransactionByPortfolio } from "$lib/transactions";
+import { FetchTransaction, FetchTransactionByPortfolio, type TradeDateOperator } from "$lib/transactions";
 import { deleteEntity } from '$lib/entity-delete';
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
@@ -10,9 +10,24 @@ export async function load({ locals, url }) {
   // dump every transaction across every portfolio onto the page.
   const portfolioId = url.searchParams.get('portfolioId');
   const apiKey = locals.user?.apiKey;
+
+  // Phase 3 PR-B of #226: optional tradeDate filter. URL convention
+  // mirrors /data/positions exactly (?tradeDate=YYYY-MM-DD&
+  // tradeDateOperator=greater_than|lesser_than|lesser_than_or_equals).
+  // Both URL params required for the filter to apply — half-formed
+  // shapes drop both, matching the form's emit guard.
+  const tradeDate = url.searchParams.get('tradeDate') ?? undefined;
+  const rawTradeDateOp = url.searchParams.get('tradeDateOperator');
+  const tradeDateOperator: TradeDateOperator | undefined =
+    rawTradeDateOp === 'greater_than' ||
+    rawTradeDateOp === 'lesser_than' ||
+    rawTradeDateOp === 'lesser_than_or_equals'
+      ? rawTradeDateOp
+      : undefined;
+
   const transactions = portfolioId
-    ? await FetchTransactionByPortfolio(portfolioId, apiKey)
-    : await FetchTransaction(apiKey);
+    ? await FetchTransactionByPortfolio(portfolioId, apiKey, tradeDate, tradeDateOperator)
+    : await FetchTransaction(apiKey, tradeDate, tradeDateOperator);
   return {
     transactions,
     portfolioId: portfolioId || null,

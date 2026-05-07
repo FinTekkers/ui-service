@@ -98,4 +98,53 @@ test.describe('/data/securities filter extension', () => {
       timeout: 15_000,
     });
   });
+
+  // Phase 3 PR-B of #226: issueDate DateFilter on /data/securities.
+  test('issueDate + issueDateOperator round-trip through Fetch with other params preserved', async ({ page }) => {
+    // Backend supports greater_than / lesser_than only on issueDate
+    // (FetchSecurity in $lib/security maps just these two). DateFilter
+    // is restricted via the `operators` prop to match.
+    await page.goto(
+      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER' +
+      '&issueDate=2024-01-15&issueDateOperator=greater_than',
+    );
+    await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    const dateInput = page.locator('#issue-date-input');
+    await expect(dateInput).toHaveValue('2024-01-15');
+    const opSelect = page.getByLabel('Date operator');
+    await expect(opSelect).toHaveValue('greater_than');
+    await expect(opSelect).toBeEnabled();
+
+    await page.getByRole('button', { name: /Fetch Securities/ }).click();
+    await page.waitForURL(/\/data\/securities\?.*issueDate=/, { timeout: 10_000 });
+
+    const params = new URL(page.url()).searchParams;
+    expect(params.get('issueDate')).toBe('2024-01-15');
+    expect(params.get('issueDateOperator')).toBe('greater_than');
+    expect(params.get('identifier'), 'other params preserved').toBe('AAPL');
+    expect(params.get('identifierType')).toBe('EXCH_TICKER');
+  });
+
+  test('issueDate operator dropdown excludes lesser_than_or_equals (backend-supported subset)', async ({ page }) => {
+    // FetchSecurity's signature only accepts 'greater_than' | 'lesser_than'.
+    // DateFilter's `operators` prop on /data/securities trims the third
+    // option (lesser_than_or_equals) so the dropdown can't surface a
+    // selection the page-server would silently drop.
+    await page.goto('/data/securities?issueDate=2024-01-15&issueDateOperator=greater_than');
+    await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // Inspect the operator <select>'s options. Should be exactly 3:
+    // the empty placeholder + greater_than + lesser_than. No
+    // lesser_than_or_equals option.
+    const opValues = await page.getByLabel('Date operator').evaluate((el) => {
+      const select = el as HTMLSelectElement;
+      return Array.from(select.options).map((o) => o.value);
+    });
+    expect(opValues).toEqual(['', 'greater_than', 'lesser_than']);
+  });
 });

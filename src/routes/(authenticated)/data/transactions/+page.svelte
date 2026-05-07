@@ -1,5 +1,6 @@
 <script lang="ts">
   import Transaction from "../../../../components/widgets/TransactionGrid.svelte";
+  import TransactionSelect from "../../../../components/widgets/TransactionSelect.svelte";
   import DeleteConfirmModal from "../../../../components/widgets/DeleteConfirmModal.svelte";
   import { enhance } from '$app/forms';
   export let data: import("./$types").PageData;
@@ -46,6 +47,8 @@
     setTimeout(() => { window.location.reload(); }, 1500);
   }
 </script>
+
+<TransactionSelect />
 
 {#if deleteSuccess}
   <div class="success-banner">{deleteSuccess}</div>

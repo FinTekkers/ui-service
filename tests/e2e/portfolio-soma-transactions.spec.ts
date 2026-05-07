@@ -66,4 +66,67 @@ test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
     expect(wrapperOverflow.x).toBe('visible');
     expect(wrapperOverflow.y).toBe('visible');
   });
+
+  // Phase 3 PR-B of #226: tradeDate DateFilter on /data/transactions.
+  test('tradeDate + tradeDateOperator round-trip through Filter with portfolioId preserved', async ({ page }) => {
+    await page.goto('/data/portfolios');
+    const txnsLink = page
+      .locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first()
+      .getByRole('link', { name: /^Txns$/ });
+    const href = await txnsLink.getAttribute('href');
+    const portfolioId = new URL(href!, page.url()).searchParams.get('portfolioId')!;
+
+    // Land with both URL params set; DateFilter (via TransactionSelect's
+    // onMount) should populate the date input and operator select. The
+    // operator dropdown must be enabled because the date is set.
+    await page.goto(
+      `/data/transactions?portfolioId=${portfolioId}` +
+      `&tradeDate=2026-05-06&tradeDateOperator=lesser_than_or_equals`,
+    );
+
+    const dateInput = page.locator('#trade-date-input');
+    await expect(dateInput).toBeVisible({ timeout: 10_000 });
+    await expect(dateInput).toHaveValue('2026-05-06');
+    const opSelect = page.getByLabel('Date operator');
+    await expect(opSelect).toHaveValue('lesser_than_or_equals');
+    await expect(opSelect).toBeEnabled();
+
+    // Click Filter → the form re-emits the same URL shape; portfolioId
+    // is carried via TransactionSelect's inheritKeys (#220 guard).
+    await page.getByRole('button', { name: /^Filter$/ }).click();
+    await page.waitForURL(/\/data\/transactions\?.*tradeDate=/, { timeout: 10_000 });
+
+    const params = new URL(page.url()).searchParams;
+    expect(params.get('tradeDate')).toBe('2026-05-06');
+    expect(params.get('tradeDateOperator')).toBe('lesser_than_or_equals');
+    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
+  });
+
+  test('tradeDate without operator: filter dropped on re-emit (half-applied guard)', async ({ page }) => {
+    await page.goto('/data/portfolios');
+    const txnsLink = page
+      .locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first()
+      .getByRole('link', { name: /^Txns$/ });
+    const href = await txnsLink.getAttribute('href');
+    const portfolioId = new URL(href!, page.url()).searchParams.get('portfolioId')!;
+
+    // URL has tradeDate but no operator. DateFilter populates the date
+    // input; operator stays empty. Clicking Filter drops both params
+    // on re-emit (the form's emit guard mirrors the page-server's
+    // half-formed-filter rule).
+    await page.goto(
+      `/data/transactions?portfolioId=${portfolioId}&tradeDate=2026-05-06`,
+    );
+    const dateInput = page.locator('#trade-date-input');
+    await expect(dateInput).toHaveValue('2026-05-06');
+    await expect(page.getByLabel('Date operator')).toHaveValue('');
+
+    await page.getByRole('button', { name: /^Filter$/ }).click();
+    await page.waitForURL(/\/data\/transactions/, { timeout: 10_000 });
+
+    const params = new URL(page.url()).searchParams;
+    expect(params.get('tradeDate'), 'half-applied filter dropped').toBeNull();
+    expect(params.get('tradeDateOperator'), 'no orphan operator emitted').toBeNull();
+    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
+  });
 });
