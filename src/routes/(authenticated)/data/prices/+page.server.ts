@@ -1,4 +1,5 @@
 import { FetchSecurity, FetchSecurityUniverse, type IdentifierTypeName } from '$lib/security';
+import type { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { PriceService } from '@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService';
 import { UUIDProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
@@ -100,7 +101,10 @@ export async function load({ locals, request }) {
       securityDescription = `${sec.identifier} — ${sec.issuerName}${couponPart}${maturityPart}`.trim();
 
       const filter = new PositionFilter();
-      filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(sec.uuidHex!))));
+      // Wrapper's addObjectFilter signature is too narrow (declares
+      // only Identifier); runtime accepts UUID for SECURITY_ID filters.
+      // Cast preserves runtime behavior; signature widening is upstream.
+      filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(sec.uuidHex!))) as unknown as Identifier);
 
       const rawPrices = await priceService.search(now.toProto(), filter);
       prices = rawPrices

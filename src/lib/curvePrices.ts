@@ -9,6 +9,7 @@ import { QueryPriceRequestProto, PriceHorizonProto, PriceFrequencyProto } from '
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
+import type { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import field_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import { getServiceConnection } from '$lib/grpc-auth';
 
@@ -33,7 +34,11 @@ export async function fetchPricesForSecurity(uuidStr: string, apiKey?: string): 
   request.setFrequency(PriceFrequencyProto.PRICE_FREQUENCY_DAILY);
 
   const filter = new PositionFilter();
-  filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidStr)));
+  // The wrapper's addObjectFilter signature only declares `Identifier`,
+  // but the runtime accepts any pack()-able object including UUID
+  // (used for SECURITY_ID filtering). Cast preserves the existing
+  // runtime behavior; tracked for an upstream signature widening.
+  filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidStr)) as unknown as Identifier);
   request.setSearchPriceInput(filter.toProto());
 
   const conn = getServiceConnection(apiKey);

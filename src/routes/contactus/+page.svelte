@@ -78,7 +78,7 @@
                 <input
                     on:focus={() => handleFocus("firstname")}
                     on:change={(event) =>
-                        handleChange("firstname", event?.target.value)}
+                        handleChange("firstname", (event.target as HTMLInputElement).value)}
                     on:blur={() => handleBlur("firstname")}
                     id="firstname"
                     name="firstname"
@@ -105,7 +105,7 @@
                 <input
                     on:focus={() => handleFocus("lastname")}
                     on:change={(event) =>
-                        handleChange("lastname", event?.target.value)}
+                        handleChange("lastname", (event.target as HTMLInputElement).value)}
                     on:blur={() => handleBlur("lastname")}
                     id="lastname"
                     name="lastname"
@@ -131,7 +131,7 @@
                 <input
                     on:focus={() => handleFocus("email")}
                     on:change={(event) =>
-                        handleChange("email", event?.target.value)}
+                        handleChange("email", (event.target as HTMLInputElement).value)}
                     on:blur={() => handleBlur("email")}
                     id="email"
                     type="email"
@@ -157,7 +157,7 @@
                 <textarea
                     on:focus={() => handleFocus("message")}
                     on:change={(event) =>
-                        handleChange("message", event?.target.value)}
+                        handleChange("message", (event.target as HTMLTextAreaElement).value)}
                     on:blur={() => handleBlur("message")}
                     id="message"
                     name="message"

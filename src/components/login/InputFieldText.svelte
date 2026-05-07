@@ -1,7 +1,15 @@
 <script lang='ts'>
   import type { formError } from "$lib/types";
 
-  export let fieldName: keyof formError;
+  // fieldName was previously typed `keyof formError`, which TS resolves
+  // to `string | number | symbol`. The downstream consumers
+  // (handleChange/handleFocus/handleBlur/displayError) and the DOM
+  // attribute bindings (`for={fieldName}`, `id={fieldName}`,
+  // `name={fieldName}`) all expect plain strings — `keyof formError`
+  // can't narrow there. Loosened to `string`; formError already has
+  // `[x: string]: any`, so any string fieldName indexes correctly into
+  // the `inputValue[fieldName]` lookup below.
+  export let fieldName: string;
   export let inputValue: formError;
   export let focusedElement: string | null;
   export let handleChange: (fieldName: string, value: string) => void;
@@ -12,16 +20,6 @@
   // Check if form is not null before using it to initialize inputValue
   let form: formError | null = null;
   $: inputValue = form ? form : {};
-
-  // Display function
-  const display = (fieldName: string) => {
-  if (form && form.formError) { // Check if form and formError are defined
-    const errors = Array.from(form.formError); // Ensure form.formError is defined
-    return errors.includes(fieldName);
-  }
-  return false;
-};
-
 </script>
 
 <label for={fieldName}>
@@ -30,7 +28,7 @@
   </span>
   <input
     on:focus={() => handleFocus(fieldName)}
-    on:change={(event) => handleChange(fieldName, event?.target.value)}
+    on:change={(event) => handleChange(fieldName, (event.target as HTMLInputElement).value)}
     on:blur={() => handleBlur(fieldName)}
     id={fieldName}
     name={fieldName}

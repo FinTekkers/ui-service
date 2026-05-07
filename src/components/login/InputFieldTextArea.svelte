@@ -1,7 +1,10 @@
 <script lang='ts'>
   import type { formError } from "$lib/types";
 
-  export let fieldName: keyof formError;
+  // Same fix as InputFieldText: `keyof formError` is `string | number |
+  // symbol` which can't satisfy the string-typed downstream consumers.
+  // formError has `[x: string]: any`, so any string keys index in.
+  export let fieldName: string;
   export let inputValue: formError;
   export let focusedElement: string | null;
   export let handleChange: (fieldName: string, value: string) => void;
@@ -12,16 +15,6 @@
   // Check if form is not null before using it to initialize inputValue
   let form: formError | null = null;
   $: inputValue = form ? form : {};
-
-  // Display function
-  const display = (fieldName: string) => {
-  if (form && form.formError) { // Check if form and formError are defined
-    const errors = Array.from(form.formError); // Ensure form.formError is defined
-    return errors.includes(fieldName);
-  }
-  return false;
-};
-
 </script>
 
 <label for={fieldName}>
@@ -30,7 +23,7 @@
   </span>
   <textarea
     on:focus={() => handleFocus(fieldName)}
-    on:change={(event) => handleChange(fieldName, event?.target.value)}
+    on:change={(event) => handleChange(fieldName, (event.target as HTMLTextAreaElement).value)}
     on:blur={() => handleBlur(fieldName)}
     id={fieldName}
     name={fieldName}

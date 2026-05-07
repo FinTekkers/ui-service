@@ -4,6 +4,7 @@ import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/ut
 import { getServiceConnection } from '$lib/grpc-auth';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
+import type { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import field_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
 import { IndexTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb';
@@ -83,7 +84,9 @@ async function fetchPrices(uuidStr: string, apiKey?: string): Promise<CpiDataPoi
   request.setFrequency(PriceFrequencyProto.PRICE_FREQUENCY_DAILY);
 
   const filter = new PositionFilter();
-  filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidStr)));
+  // Wrapper signature too narrow (Identifier-only); runtime accepts UUID
+  // for SECURITY_ID. Cast pending an upstream signature widening.
+  filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidStr)) as unknown as Identifier);
   request.setSearchPriceInput(filter.toProto());
 
   const conn = getServiceConnection(apiKey);
