@@ -8,6 +8,7 @@ import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/se
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
+import { SecurityType } from "@fintekkers/ledger-models/node/wrappers/models/security/security_type";
 import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
@@ -79,15 +80,14 @@ function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProt
   }
 }
 
+// SecurityType.fromName (ledger-models 0.1.134+) replaces the local
+// proto-name → enum switch. Throws on unknown name; the call site
+// passes a value that's already constrained to the SecurityTypeName
+// union, so the throw is unreachable at runtime — but the wrapper's
+// error message still lists valid names if a malformed cast slips
+// through.
 function securityTypeNameToProto(name: SecurityTypeName): number {
-  switch (name) {
-    case 'BOND_SECURITY': return SecurityTypeProto.BOND_SECURITY;
-    case 'EQUITY_SECURITY': return SecurityTypeProto.EQUITY_SECURITY;
-    case 'INDEX_SECURITY': return SecurityTypeProto.INDEX_SECURITY;
-    case 'CASH_SECURITY': return SecurityTypeProto.CASH_SECURITY;
-    case 'TIPS': return SecurityTypeProto.TIPS;
-    case 'FRN': return SecurityTypeProto.FRN;
-  }
+  return SecurityType.fromName(name);
 }
 
 export async function FetchSecurity(
