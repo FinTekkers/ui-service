@@ -28,6 +28,7 @@ import * as http from 'http';
 import * as path from 'path';
 
 import { FetchSecurity, FetchSecurityUniverse, clearUniverseCache } from '$lib/security';
+import type { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { PriceService } from '@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
@@ -202,7 +203,7 @@ async function findValidatableSecurity(apiKeyArg: string): Promise<{ identifier:
 	const now = ZonedDateTime.now();
 	for (const cand of priceable.slice(0, 25)) {
 		const filter = new PositionFilter();
-		filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(cand.uuidHex))));
+		filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(cand.uuidHex))) as unknown as Identifier);
 		const raw = await priceService.search(now.toProto(), filter);
 		if (raw.length > 0) {
 			return { identifier: cand.identifier, identifierType: cand.identifierType, uuidHex: cand.uuidHex };
@@ -228,7 +229,7 @@ describe('Prices page load() — numbers match PriceService directly', () => {
 		const priceService = new PriceService(apiKey);
 		const now = ZonedDateTime.now();
 		const filter = new PositionFilter();
-		filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(chosen.uuidHex))));
+		filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(chosen.uuidHex))) as unknown as Identifier);
 		const directPrices = toPriceRows(await priceService.search(now.toProto(), filter));
 
 		// Page server load()
@@ -310,7 +311,7 @@ describe('Prices page load() — numbers match PriceService directly', () => {
 		// Direct PriceService stream
 		const priceService = new PriceService(apiKey);
 		const filter = new PositionFilter();
-		filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(sec.uuidHex!))));
+		filter.addObjectFilter(FieldProto.SECURITY_ID, new UUID(UUID.fromString(uuidHexToString(sec.uuidHex!))) as unknown as Identifier);
 		const directPrices = toPriceRows(await priceService.search(ZonedDateTime.now().toProto(), filter));
 		expect(directPrices.length).toBeGreaterThan(0);
 
