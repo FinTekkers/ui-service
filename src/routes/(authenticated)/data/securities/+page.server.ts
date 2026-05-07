@@ -32,18 +32,17 @@ export async function load({ locals, request }) {
       ? (rawIdType as IdentifierTypeName)
       : undefined;
   const issueDate = searchParams.get('issueDate');
-  // FetchSecurity supports MORE_THAN / LESS_THAN on issueDate only.
-  // normalizeDateOperator handles the one-release shim from snake_case;
-  // anything resolving to LESS_THAN_OR_EQUALS (e.g. a stale bookmark)
-  // drops to undefined here so the backend doesn't see an unsupported
-  // operator.
-  const normalizedIssueOp = normalizeDateOperator(
+  // FetchSecurity accepts the full PositionFilterOperator set;
+  // normalizeDateOperator handles the one-release shim from snake_case
+  // and returns undefined for unrecognized values. (The SecuritySelect
+  // dropdown narrows the *UX* to MORE_THAN / LESS_THAN today via
+  // DateFilter's `operators` prop — that's a UI choice, not a backend
+  // limitation, and bookmarks carrying any other valid operator name
+  // pass straight through.)
+  const issueDateOperator = normalizeDateOperator(
     searchParams.get('issueDateOperator'),
     'issueDateOperator',
-  );
-  const issueDateOperator = normalizedIssueOp === 'MORE_THAN' || normalizedIssueOp === 'LESS_THAN'
-    ? normalizedIssueOp
-    : undefined;
+  ) ?? undefined;
   // assetClass / issuerName are now URL-driven. Empty string in the URL
   // (e.g. ?assetClass=) clears the filter so the user can broaden the
   // search across asset classes; absence of the param keeps the default.

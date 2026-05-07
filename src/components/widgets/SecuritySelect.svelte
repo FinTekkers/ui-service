@@ -42,9 +42,12 @@
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
   // Phase 3 PR-B of #226: issueDate UX uses the shared DateFilter
-  // primitive. Operators restricted to MORE_THAN / LESS_THAN —
-  // FetchSecurity in $lib/security only supports those two; widening
-  // the dropdown without backend support would surface a silent no-op.
+  // primitive. Operators restricted to MORE_THAN / LESS_THAN — this
+  // is a UX choice (narrow the picker to the two operators users
+  // actually want for issueDate searches), NOT a backend constraint:
+  // the security search supports the full PositionFilterOperator set.
+  // Bookmarks carrying any other valid operator pass through the
+  // page-server to the backend; the dropdown just won't render them.
   let issueDateInput: string = "";
   let issueDateOperator: Extract<DateOperator, "MORE_THAN" | "LESS_THAN"> | "" = "";
   const ISSUE_DATE_OPERATORS = ["MORE_THAN", "LESS_THAN"] as const satisfies readonly DateOperator[];

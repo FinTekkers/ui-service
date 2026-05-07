@@ -18,7 +18,6 @@ import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/model
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
-import type { DateOperator } from '$lib/filters/dateOperator';
 
 const { FieldProto } = pkg;
 
@@ -99,10 +98,14 @@ export async function FetchSecurity(
   identifier?: string,
   identifierType?: IdentifierTypeName,
   issueDate?: string,
-  // Backend supports MORE_THAN / LESS_THAN on issueDate; LESS_THAN_OR_EQUALS
-  // is intentionally excluded (the SecuritySelect dropdown enforces the
-  // same subset client-side).
-  issueDateOperator?: Extract<DateOperator, 'MORE_THAN' | 'LESS_THAN'>,
+  // Accepts the full PositionFilterOperator name set — the backend's
+  // security search supports every operator (EQUALS, NOT_EQUALS,
+  // LESS_THAN, LESS_THAN_OR_EQUALS, MORE_THAN, MORE_THAN_OR_EQUALS).
+  // Mirrors the operator handling in positions.ts and transactions.ts
+  // post-#229; consumers that want a narrower UX (e.g. SecuritySelect's
+  // 2-option dropdown) restrict via the DateFilter `operators` prop,
+  // not by trimming the type here.
+  issueDateOperator?: string,
   apiKey?: string,
   securityType?: SecurityTypeName,
 ): Promise<securityData[]> {
