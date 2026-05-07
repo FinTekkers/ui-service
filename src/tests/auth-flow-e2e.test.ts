@@ -537,14 +537,20 @@ describe('AC5: All backend gRPC requests include API key', () => {
 		const grpcAuth = fs.readFileSync(path.resolve('src/lib/grpc-auth.ts'), 'utf-8');
 		expect(grpcAuth).toContain('x-api-key');
 		expect(grpcAuth).toContain('createAuthMetadata');
-		expect(grpcAuth).toContain('getAuthenticatedCredentials');
+		// Pre-rename this asserted `getAuthenticatedCredentials`. The
+		// helper was renamed to `getAuthenticatedInterceptor` in 2736cc7
+		// when the auth path moved from a ChannelCredentials-injected
+		// pattern to a per-call grpc.Interceptor (matches how the rest
+		// of @grpc/grpc-js's auth helpers are typed).
+		expect(grpcAuth).toContain('getAuthenticatedInterceptor');
 	});
 
 	test('grpc-auth.ts getServiceConnection routes through broker with API key', () => {
 		const grpcAuth = fs.readFileSync(path.resolve('src/lib/grpc-auth.ts'), 'utf-8');
 		expect(grpcAuth).toContain('getServiceConnection');
 		expect(grpcAuth).toContain('BROKER_HOST');
-		expect(grpcAuth).toContain('getAuthenticatedCredentials(apiKey)');
+		// Same rename — assert the call site wires the interceptor in.
+		expect(grpcAuth).toContain('getAuthenticatedInterceptor(apiKey)');
 	});
 
 	test('valid API key is accepted by broker for gRPC service calls', async () => {
