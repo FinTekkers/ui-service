@@ -1,12 +1,19 @@
 /**
- * ISSUE #3: CPI-U Index page display tests.
+ * CPI Index page display tests.
  *
  * Verifies:
  * 1. Route files exist
- * 2. Page source structure (SVG chart, table, data shape)
- * 3. Fallback data correctness (when price service is unavailable)
- * 4. CSS contrast for CPI-specific colors
- * 5. Data pipeline integrity
+ * 2. Page source structure (Plotly chart, table, dynamic title/subtitle/Y-axis)
+ * 3. CSS contrast for CPI-specific colors
+ * 4. Data pipeline integrity
+ *
+ * Updated for the post-PR-#9x rewrite: the page used to render a
+ * hand-rolled SVG chart with a hardcoded "CPI-U Index" title and a
+ * hardcoded fallback-data array. It now renders Plotly via onMount,
+ * derives title/subtitle/Y-axis from `data.selectedSeries`, and drops
+ * the hardcoded-fallback block (returns empty cpiData + an error
+ * string when the price service is unavailable). Tests rewritten to
+ * match — see PR description for the per-category breakdown.
  */
 import { describe, expect, test } from 'vitest';
 import * as fs from 'fs';
@@ -37,43 +44,51 @@ describe('CPI Index page – route files', () => {
 describe('CPI Index page – component structure', () => {
 	const pageSvelte = fs.readFileSync(path.join(ROUTE_DIR, '+page.svelte'), 'utf-8');
 
-	test('has page title "CPI-U Index"', () => {
-		expect(pageSvelte).toContain('CPI-U Index');
+	test('derives page title from selected series', () => {
+		// The page no longer hardcodes "CPI-U Index" — pageTitle is
+		// computed from `data.selectedSeries.indexType` + `.identifier`
+		// (e.g. "CPI-U — CUUR0000SA0"), so any of the supported BLS
+		// series renders correctly.
+		expect(pageSvelte).toContain('pageTitle');
+		expect(pageSvelte).toContain('data.selectedSeries');
+		expect(pageSvelte).toMatch(/pageTitle\s*=\s*data\.selectedSeries/);
 	});
 
-	test('has subtitle describing the index', () => {
-		expect(pageSvelte).toContain('Consumer Price Index for All Urban Consumers');
+	test('derives subtitle from selected series description', () => {
+		// Was hardcoded "Consumer Price Index for All Urban Consumers";
+		// now uses `data.selectedSeries.description` so each BLS series
+		// shows its own descriptive title.
+		expect(pageSvelte).toContain('pageSubtitle');
+		expect(pageSvelte).toMatch(/pageSubtitle\s*=\s*data\.selectedSeries\?\.description/);
 	});
 
-	test('renders an SVG chart', () => {
-		expect(pageSvelte).toContain('<svg');
-		expect(pageSvelte).toContain('</svg>');
+	test('renders a Plotly chart (no hand-rolled SVG)', () => {
+		// Chart migrated from hand-rolled SVG (<polyline>/<polygon>/<circle>)
+		// to Plotly. Plotly is dynamic-imported in onMount, attached to
+		// chartEl via `bind:this`, and rendered with Plotly.newPlot.
+		expect(pageSvelte).toContain("import('plotly.js-dist')");
+		expect(pageSvelte).toContain('Plotly.newPlot');
+		expect(pageSvelte).toContain('bind:this={chartEl}');
+		// Confirm the SVG primitives are gone — they were the bug surface
+		// for the previous hardcoded-only-CPI-U implementation.
+		expect(pageSvelte).not.toMatch(/<polyline\b/);
+		expect(pageSvelte).not.toMatch(/<polygon\b/);
+		expect(pageSvelte).not.toMatch(/<circle\b/);
 	});
 
-	test('chart has a polyline for the CPI trend', () => {
-		expect(pageSvelte).toContain('<polyline');
+	test('chart configures a series-aware Y-axis label', () => {
+		// yAxisLabel is computed from selectedSeries.indexType (e.g.
+		// "CPI-U Level"); fed into Plotly's layout.yaxis.title.
+		expect(pageSvelte).toContain('yAxisLabel');
+		expect(pageSvelte).toMatch(/title:\s*\{\s*text:\s*yAxisLabel/);
 	});
 
-	test('chart has an area fill under the line', () => {
-		expect(pageSvelte).toContain('<polygon');
-	});
-
-	test('chart has data point circles', () => {
-		expect(pageSvelte).toContain('<circle');
-	});
-
-	test('chart has Y-axis label "CPI-U Level"', () => {
-		expect(pageSvelte).toContain('CPI-U Level');
-	});
-
-	test('chart has grid lines', () => {
-		expect(pageSvelte).toContain('<line');
-	});
-
-	test('chart supports hover tooltips', () => {
-		expect(pageSvelte).toContain('hoveredIndex');
-		expect(pageSvelte).toContain('mouseenter');
-		expect(pageSvelte).toContain('mouseleave');
+	test('chart enables hover tooltips via Plotly hovermode', () => {
+		// Plotly handles tooltips via `hovermode: 'x unified'` and
+		// `hovertemplate`; no per-element mouseenter/mouseleave
+		// handlers needed (those were the SVG-era pattern).
+		expect(pageSvelte).toMatch(/hovermode:\s*'x unified'/);
+		expect(pageSvelte).toContain('hovertemplate');
 	});
 
 	test('renders a data table', () => {
@@ -86,9 +101,12 @@ describe('CPI Index page – component structure', () => {
 		expect(pageSvelte).toContain('Monthly Data');
 	});
 
-	test('table has columns: Date, CPI-U Level, Month-over-Month', () => {
-		expect(pageSvelte).toContain('Date');
-		expect(pageSvelte).toContain('CPI-U Level');
+	test('table column headers: Date, dynamic Y-axis label, Month-over-Month', () => {
+		// "CPI-U Level" used to be a hardcoded column header. Now the
+		// table renders `{yAxisLabel}` so the column adapts to the
+		// selected series (e.g. "CORE-CPI Level" when CORE_CPI selected).
+		expect(pageSvelte).toContain('<th>Date</th>');
+		expect(pageSvelte).toContain('<th>{yAxisLabel}</th>');
 		expect(pageSvelte).toContain('Month-over-Month');
 	});
 
@@ -115,8 +133,13 @@ describe('CPI Index page – component structure', () => {
 		expect(pageSvelte).toContain('notice');
 	});
 
-	test('data shape expects cpiData array with date and value', () => {
+	test('data shape expects cpiData with date+value plus selectedSeries', () => {
+		// Page-server now returns { allSeries, selectedSeries, cpiData,
+		// error } so the page can render any BLS series. The cpiData
+		// item shape is unchanged.
 		expect(pageSvelte).toContain('cpiData: Array<{ date: string; value: number }>');
+		expect(pageSvelte).toContain('selectedSeries: CpiSeries | null');
+		expect(pageSvelte).toContain('allSeries: CpiSeries[]');
 	});
 });
 
@@ -130,8 +153,15 @@ describe('CPI Index page – server data pipeline', () => {
 		expect(pageServer).toContain('export async function load');
 	});
 
-	test('uses CPI-U security UUID', () => {
-		expect(pageServer).toContain('c7c719a1-7bbc-5890-992d-7f6f3a4b3dca');
+	test('discovers CPI series via SecurityService (no hardcoded UUID)', () => {
+		// Server used to pin to a single hardcoded CPI-U UUID
+		// ('c7c719a1-7bbc-5890-992d-7f6f3a4b3dca'). Now it queries
+		// SecurityService for ASSET_CLASS=Index securities and filters
+		// to CPI-family index types — supports any BLS series the
+		// security service knows about.
+		expect(pageServer).toContain('SecurityService');
+		expect(pageServer).toContain("addEqualsFilter(FieldProto.ASSET_CLASS, 'Index')");
+		expect(pageServer).not.toContain('c7c719a1-7bbc-5890-992d-7f6f3a4b3dca');
 	});
 
 	test('connects to PriceService via broker (conn.url, no direct port)', () => {
@@ -157,11 +187,20 @@ describe('CPI Index page – server data pipeline', () => {
 		expect(pageServer).toContain("p.date.slice(0, 7)");
 	});
 
-	test('returns { cpiData, error } shape', () => {
-		expect(pageServer).toContain('return { cpiData, error: null }');
+	test('returns { allSeries, selectedSeries, cpiData, error } shape', () => {
+		// Page-server return shape grew to include the series catalog
+		// + the currently selected series so the page can render the
+		// dropdown and a series-aware chart/table.
+		expect(pageServer).toContain('allSeries');
+		expect(pageServer).toContain('selectedSeries');
+		expect(pageServer).toContain('cpiData');
+		expect(pageServer).toContain('error');
 	});
 
-	test('handles error gracefully with fallback data', () => {
+	test('handles error gracefully via error string + empty cpiData', () => {
+		// Was a hardcoded fallback-data array; now sets an error string
+		// and returns empty cpiData so the page renders the empty state
+		// + a notice. Simpler shape, no stale-data risk.
 		expect(pageServer).toContain('catch');
 		expect(pageServer).toContain('Price service unavailable');
 	});
@@ -172,68 +211,19 @@ describe('CPI Index page – server data pipeline', () => {
 });
 
 // =============================================================================
-// 4. Fallback data integrity — when price service is down
+// 4. (removed) Fallback-data integrity
+//
+// The page-server used to bake a multi-year hardcoded CPI-U array as
+// the catch-block fallback. That block was deleted in the rewrite —
+// errors now set an error string and return empty cpiData, with the
+// page rendering the empty state. The previous tests asserted the
+// hardcoded values (308.417, 314.175, etc.) which no longer exist;
+// removed entirely (as opposed to updated) because the underlying
+// behavior was deliberately retired.
 // =============================================================================
-describe('CPI Index page – fallback data', () => {
-	const pageServer = fs.readFileSync(path.join(ROUTE_DIR, '+page.server.ts'), 'utf-8');
-
-	// Extract fallback data from source
-	const fallbackMatch = pageServer.match(/cpiData:\s*\[([\s\S]*?)\]/);
-
-	test('fallback data exists in catch block', () => {
-		expect(fallbackMatch).not.toBeNull();
-	});
-
-	test('fallback data has at least 12 entries', () => {
-		const entries = fallbackMatch![1].match(/\{ date:/g);
-		expect(entries).not.toBeNull();
-		expect(entries!.length).toBeGreaterThanOrEqual(12);
-	});
-
-	test('fallback data uses expected CPI-U values', () => {
-		// Jan 2024 CPI-U should be ~308.4
-		expect(pageServer).toContain('308.417');
-		// Jun 2024 should be ~314.175
-		expect(pageServer).toContain('314.175');
-	});
-
-	test('fallback data covers 2024 and 2025', () => {
-		expect(pageServer).toContain("'2024-01'");
-		expect(pageServer).toContain("'2024-12'");
-		expect(pageServer).toContain("'2025-01'");
-	});
-
-	test('fallback dates are in YYYY-MM format', () => {
-		const dates = [...pageServer.matchAll(/date:\s*'(\d{4}-\d{2})'/g)].map(m => m[1]);
-		expect(dates.length).toBeGreaterThan(0);
-		for (const d of dates) {
-			expect(d).toMatch(/^\d{4}-\d{2}$/);
-		}
-	});
-
-	test('fallback values are valid CPI-U index levels (280-340 range)', () => {
-		const values = [...pageServer.matchAll(/value:\s*([\d.]+)/g)].map(m => parseFloat(m[1]));
-		expect(values.length).toBeGreaterThan(0);
-		for (const v of values) {
-			expect(v).toBeGreaterThan(280);
-			expect(v).toBeLessThan(340);
-		}
-	});
-
-	test('fallback values are in ascending order (CPI trends upward)', () => {
-		const entries = [...pageServer.matchAll(/\{\s*date:\s*'(\d{4}-\d{2})',\s*value:\s*([\d.]+)\s*\}/g)]
-			.map(m => ({ date: m[1], value: parseFloat(m[2]) }));
-		// Not strictly monotonic (some months may dip), but generally increasing
-		if (entries.length >= 2) {
-			const first = entries[0].value;
-			const last = entries[entries.length - 1].value;
-			expect(last).toBeGreaterThan(first);
-		}
-	});
-});
 
 // =============================================================================
-// 5. CSS contrast safety — CPI page-specific colors
+// 4. CSS contrast safety — CPI page-specific colors
 // =============================================================================
 describe('CPI Index page – CSS contrast', () => {
 	const pageSvelte = fs.readFileSync(path.join(ROUTE_DIR, '+page.svelte'), 'utf-8');
@@ -286,12 +276,12 @@ describe('CPI Index page – CSS contrast', () => {
 		expect(ratio).toBeGreaterThanOrEqual(2.0);
 	});
 
-	test('chart uses consistent accent color for line and dots', () => {
-		// Polyline stroke is hardcoded; circle fill uses the accent via template expression
-		expect(pageSvelte).toContain("stroke=\"#7cd2ba\"");
-		expect(pageSvelte).toContain("#7cd2ba");
-		// Circle hover fill references the accent color in a ternary
-		expect(pageSvelte).toContain("'#7cd2ba'");
+	test('Plotly trace uses the accent color', () => {
+		// Pre-rewrite the SVG used `stroke="#7cd2ba"` on the polyline.
+		// Plotly receives the same color via the trace's `line.color`
+		// option. The literal hex still appears in the page source.
+		expect(pageSvelte).toContain('#7cd2ba');
+		expect(pageSvelte).toMatch(/line:\s*\{\s*color:\s*'#7cd2ba'/);
 	});
 
 	test('text colors use theme variables (not hardcoded)', () => {

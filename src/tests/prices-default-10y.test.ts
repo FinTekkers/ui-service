@@ -38,22 +38,39 @@ describe('Prices page – identifier type selector + autocomplete', () => {
 		expect(pageSvelte).toContain('Price History');
 	});
 
-	test('renders an identifier-type <select> with CUSIP, Ticker, ISIN, Series ID options', () => {
-		expect(pageSvelte).toContain('<select');
-		expect(pageSvelte).toContain('value="cusip"');
-		expect(pageSvelte).toContain('value="ticker"');
-		expect(pageSvelte).toContain('value="isin"');
-		expect(pageSvelte).toContain('value="series"');
-		expect(pageSvelte).toContain('Series ID');
+	test('uses IdentifierFilter primitive with the four supported types', () => {
+		// Phase 2 of second-brain#226 (PR #130) replaced the inline <select>
+		// with the shared IdentifierFilter primitive. Internal state is the
+		// proto-enum name (IdentifierTypeName); the URL convention
+		// (?type=cusip|ticker|isin|series) is preserved at the boundary
+		// via PROTO_TO_URL / urlKeyToProto.
+		expect(pageSvelte).toContain('<IdentifierFilter');
+		expect(pageSvelte).toContain('PRICES_SUPPORTED_TYPES');
+		// Check the supportedTypes constant declares the four proto names.
+		expect(pageSvelte).toMatch(/PRICES_SUPPORTED_TYPES[\s\S]*'CUSIP'[\s\S]*'EXCH_TICKER'[\s\S]*'ISIN'[\s\S]*'SERIES_ID'/);
+		// URL boundary still translates to lowercase short keys for
+		// backward-compat with existing bookmarks.
+		expect(pageSvelte).toContain("CUSIP: 'cusip'");
+		expect(pageSvelte).toContain("EXCH_TICKER: 'ticker'");
+		expect(pageSvelte).toContain("ISIN: 'isin'");
+		expect(pageSvelte).toContain("SERIES_ID: 'series'");
 	});
 
-	test('switching the type clears the input', () => {
+	test('switching the type dismisses autocomplete suggestions', () => {
+		// IdentifierFilter handles input-clearing internally
+		// (clearOnTypeChange default); the page's handleTypeChange just
+		// needs to dismiss the suggestions UI.
 		expect(pageSvelte).toContain('handleTypeChange');
-		expect(pageSvelte).toMatch(/handleTypeChange[\s\S]*identifierInput\s*=\s*['"]['"]/);
+		expect(pageSvelte).toMatch(/handleTypeChange[\s\S]*showSuggestions\s*=\s*false/);
 	});
 
 	test('placeholder reflects the chosen identifier type', () => {
-		expect(pageSvelte).toContain('placeholderFor(identifierTypeChoice)');
+		// IdentifierFilter sources type-aware placeholders from
+		// IDENTIFIER_TYPE_PLACEHOLDERS in $lib/securityFilterTypes by
+		// default. The page passes through `identifierType` and the
+		// primitive picks the right placeholder; no per-page
+		// placeholderFor() function needed anymore.
+		expect(pageSvelte).toContain('bind:identifierType');
 	});
 
 	test('autocomplete is wrapped in {#await data.universe}', () => {
