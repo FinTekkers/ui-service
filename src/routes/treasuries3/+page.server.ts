@@ -6,7 +6,10 @@ export async function load({ locals }) {
   // Filter for December 2025: get all transactions up to December 31, 2025
   // Then filter client-side for December 2025 only
   const endDate = new Date('2026-01-01T00:59:59');
-  const transactions = await getTreasuryTransactions(endDate);
+  // Thread apiKey through so the underlying Position/Search call goes via
+  // the broker's authenticated route instead of UNAUTHENTICATED-failing.
+  // Surfaced as a /treasuries3 500 in PR #137's reviewer checklist.
+  const transactions = await getTreasuryTransactions(endDate, locals.user?.apiKey);
 
   // Filter for December 2025 transactions, excluding bills
   const december2025NonBills: TreasuryTransaction[] = (transactions || []).filter((txn) => {
