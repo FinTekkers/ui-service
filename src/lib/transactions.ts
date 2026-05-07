@@ -124,16 +124,48 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
   }
 };
 
-let FetchTransaction = async function FetchTransaction(apiKey?: string): Promise<TransactionData[]> {
+// Phase 3 PR-B of #226: optional tradeDate filter on /data/transactions.
+// Mirrors the operator vocabulary in positions.ts:FetchPosition so the
+// URL conventions stay consistent across the two pages.
+type TradeDateOperator = 'greater_than' | 'lesser_than' | 'lesser_than_or_equals';
+
+function applyTradeDateFilter(
+  filter: positionFilter.PositionFilter,
+  tradeDate?: string,
+  tradeDateOperator?: TradeDateOperator,
+): void {
+  if (!tradeDate || tradeDate.trim() === '' || !tradeDateOperator) return;
+  const tradeDateObj = new Date(tradeDate);
+  const operator =
+    tradeDateOperator === 'greater_than'
+      ? PositionFilterOperator.MORE_THAN
+      : tradeDateOperator === 'lesser_than_or_equals'
+        ? PositionFilterOperator.LESS_THAN_OR_EQUALS
+        : PositionFilterOperator.LESS_THAN;
+  filter.addFilter(FieldProto.TRADE_DATE, operator, tradeDateObj);
+}
+
+let FetchTransaction = async function FetchTransaction(
+  apiKey?: string,
+  tradeDate?: string,
+  tradeDateOperator?: TradeDateOperator,
+): Promise<TransactionData[]> {
   const filter = new positionFilter.PositionFilter();
   filter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
+  applyTradeDateFilter(filter, tradeDate, tradeDateOperator);
   return FetchTransactionWithFilter(filter, apiKey);
 };
 
-let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(portfolioId: string, apiKey?: string): Promise<TransactionData[]> {
+let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(
+  portfolioId: string,
+  apiKey?: string,
+  tradeDate?: string,
+  tradeDateOperator?: TradeDateOperator,
+): Promise<TransactionData[]> {
   const filter = new positionFilter.PositionFilter();
   const portfolioUuid = new UUID(UUID.fromString(portfolioId.trim()));
   filter.addFilter(FieldProto.PORTFOLIO_ID, PositionFilterOperator.EQUALS, portfolioUuid);
+  applyTradeDateFilter(filter, tradeDate, tradeDateOperator);
   const results = await FetchTransactionWithFilter(filter, apiKey);
   // Sort descending by trade date (most recent first)
   results.sort((a, b) => b.transactionTradeDate.localeCompare(a.transactionTradeDate));
@@ -141,4 +173,4 @@ let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(por
 };
 
 export { FetchTransactionWithFilter, FetchTransaction, FetchTransactionByPortfolio };
-export type { TransactionData };
+export type { TransactionData, TradeDateOperator };

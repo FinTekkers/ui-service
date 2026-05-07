@@ -13,6 +13,8 @@
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
   import SecurityTypeFilter from "../filters/SecurityTypeFilter.svelte";
   import AssetClassFilter from "../filters/AssetClassFilter.svelte";
+  import DateFilter from "../filters/DateFilter.svelte";
+  import type { DateOperator } from "../filters/DateFilter.svelte";
 
   // Phase 2/3 of second-brain#226: filter primitives now own their controls.
   // - Phase 2 (PR #130): identifier-type dropdown + value → IdentifierFilter.
@@ -36,8 +38,13 @@
 
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
+  // Phase 3 PR-B of #226: issueDate UX uses the shared DateFilter
+  // primitive. Operators restricted to greater_than / lesser_than —
+  // FetchSecurity in $lib/security only maps those two; widening the
+  // dropdown without backend support would surface a silent no-op.
   let issueDateInput: string = "";
-  let issueDateOperator: "greater_than" | "lesser_than" | "" = "";
+  let issueDateOperator: Extract<DateOperator, "greater_than" | "lesser_than"> | "" = "";
+  const ISSUE_DATE_OPERATORS = ["greater_than", "lesser_than"] as const satisfies readonly DateOperator[];
   let assetClassInput: AssetClassName | "" = "";
   let issuerNameInput: string = "";
   let securityTypeInput: SecurityTypeName | "" = "";
@@ -171,27 +178,16 @@
     </div>
   </div>
   <div class="security-select-container flex flex-col sm:flex-row gap-2 mt-2">
-    <div class="text-white">
+    <div class="text-white issue-date-filter-cell">
       <h4>Issue Date Filter:</h4>
-      <input
-        type="date"
-        id="issue-date-input"
-        bind:value={issueDateInput}
-        class="filter-input text-black"
+      <DateFilter
+        bind:date={issueDateInput}
+        bind:operator={issueDateOperator}
+        operators={ISSUE_DATE_OPERATORS}
+        inputClass="filter-input text-black"
+        selectClass="filter-select text-black"
+        inputId="issue-date-input"
       />
-    </div>
-    <div class="text-white">
-      <h4>Operator:</h4>
-      <select
-        id="issue-date-operator"
-        bind:value={issueDateOperator}
-        class="filter-select text-black"
-        disabled={!issueDateInput}
-      >
-        <option value="">Select operator...</option>
-        <option value="greater_than">Greater Than</option>
-        <option value="lesser_than">Lesser Than</option>
-      </select>
     </div>
     <div class="text-white flex items-end">
       <button class="security-button" on:click={fetchSecurities}>
