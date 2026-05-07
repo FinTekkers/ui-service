@@ -47,7 +47,7 @@
 			positionView: 'DEFAULT_VIEW',
 			positionType: 'TRANSACTION',
 			tradeDate: today,
-			tradeDateOperator: 'lesser_than_or_equals',
+			tradeDateOperator: 'LESS_THAN_OR_EQUALS',
 			hideZeros: 'true',
 		});
 		return `/data/positions?${params.toString()}`;

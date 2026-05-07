@@ -7,6 +7,7 @@ import {
   type SecurityTypeName,
 } from "$lib/security";
 import { deleteSecurity } from "$lib/security-delete";
+import { normalizeDateOperator } from "$lib/filters/dateOperator";
 
 // Backward-compat defaults: pre-#226 the page-server hardcoded these. New
 // /data/securities URLs can override either one to broaden the search.
@@ -31,7 +32,18 @@ export async function load({ locals, request }) {
       ? (rawIdType as IdentifierTypeName)
       : undefined;
   const issueDate = searchParams.get('issueDate');
-  const issueDateOperator = searchParams.get('issueDateOperator');
+  // FetchSecurity supports MORE_THAN / LESS_THAN on issueDate only.
+  // normalizeDateOperator handles the one-release shim from snake_case;
+  // anything resolving to LESS_THAN_OR_EQUALS (e.g. a stale bookmark)
+  // drops to undefined here so the backend doesn't see an unsupported
+  // operator.
+  const normalizedIssueOp = normalizeDateOperator(
+    searchParams.get('issueDateOperator'),
+    'issueDateOperator',
+  );
+  const issueDateOperator = normalizedIssueOp === 'MORE_THAN' || normalizedIssueOp === 'LESS_THAN'
+    ? normalizedIssueOp
+    : undefined;
   // assetClass / issuerName are now URL-driven. Empty string in the URL
   // (e.g. ?assetClass=) clears the filter so the user can broaden the
   // search across asset classes; absence of the param keeps the default.
@@ -55,7 +67,7 @@ export async function load({ locals, request }) {
         identifier || undefined,
         identifierType,
         issueDate || undefined,
-        issueDateOperator === 'greater_than' ? 'greater_than' : issueDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
+        issueDateOperator,
         locals.user?.apiKey,
         securityType
       );

@@ -17,7 +17,7 @@
  * Default-URL filter set (mirrored both in PortfolioGrid.getPositionsUrl and
  * step 4 of this test):
  *   - positionType=TRANSACTION (transaction-rolled-up state, not per tax lot).
- *   - tradeDate=<today> & tradeDateOperator=lesser_than_or_equals excludes
+ *   - tradeDate=<today> & tradeDateOperator=LESS_THAN_OR_EQUALS excludes
  *     future-dated trades while including those booked today, so the page
  *     reflects the as-of-now position.
  *   - hideZeros=true suppresses fully-zero rows.
@@ -83,7 +83,7 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
       `&positionView=DEFAULT_VIEW` +
       `&positionType=TRANSACTION` +
       `&tradeDate=${today}` +
-      `&tradeDateOperator=lesser_than_or_equals` +
+      `&tradeDateOperator=LESS_THAN_OR_EQUALS` +
       `&hideZeros=true`,
     );
 

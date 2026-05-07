@@ -7,7 +7,10 @@ import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/mod
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
-import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
+// PositionFilterOperator wrapper (ledger-models 0.1.135+); see positions.ts
+// for the migration rationale (#229).
+import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
+import type { DateOperator } from '$lib/filters/dateOperator';
 const { FieldProto } = pkg;
 
 /**
@@ -125,9 +128,9 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
 };
 
 // Phase 3 PR-B of #226: optional tradeDate filter on /data/transactions.
-// Mirrors the operator vocabulary in positions.ts:FetchPosition so the
-// URL conventions stay consistent across the two pages.
-type TradeDateOperator = 'greater_than' | 'lesser_than' | 'lesser_than_or_equals';
+// Operator vocabulary is the canonical DateOperator from $lib/filters/
+// dateOperator (proto enum names per #229).
+type TradeDateOperator = DateOperator;
 
 function applyTradeDateFilter(
   filter: positionFilter.PositionFilter,
@@ -136,12 +139,7 @@ function applyTradeDateFilter(
 ): void {
   if (!tradeDate || tradeDate.trim() === '' || !tradeDateOperator) return;
   const tradeDateObj = new Date(tradeDate);
-  const operator =
-    tradeDateOperator === 'greater_than'
-      ? PositionFilterOperator.MORE_THAN
-      : tradeDateOperator === 'lesser_than_or_equals'
-        ? PositionFilterOperator.LESS_THAN_OR_EQUALS
-        : PositionFilterOperator.LESS_THAN;
+  const operator = PositionFilterOperator.fromName(tradeDateOperator);
   filter.addFilter(FieldProto.TRADE_DATE, operator, tradeDateObj);
 }
 
@@ -164,7 +162,7 @@ let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(
 ): Promise<TransactionData[]> {
   const filter = new positionFilter.PositionFilter();
   const portfolioUuid = new UUID(UUID.fromString(portfolioId.trim()));
-  filter.addFilter(FieldProto.PORTFOLIO_ID, PositionFilterOperator.EQUALS, portfolioUuid);
+  filter.addFilter(FieldProto.PORTFOLIO_ID, PositionFilterOperator.fromName('EQUALS'), portfolioUuid);
   applyTradeDateFilter(filter, tradeDate, tradeDateOperator);
   const results = await FetchTransactionWithFilter(filter, apiKey);
   // Sort descending by trade date (most recent first)

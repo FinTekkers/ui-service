@@ -6,9 +6,9 @@
    * the transactions page (no equivalent UX existed previously). Mirrors
    * the URL conventions on /data/positions exactly:
    *   ?tradeDate=YYYY-MM-DD
-   *   &tradeDateOperator=greater_than|lesser_than|lesser_than_or_equals
-   * so users moving between the two pages don't have to relearn the
-   * filter shape.
+   *   &tradeDateOperator=MORE_THAN|LESS_THAN|LESS_THAN_OR_EQUALS
+   * (proto enum names, post-#229) so users moving between the two pages
+   * don't have to relearn the filter shape.
    *
    * portfolioId is preserved across re-submits via buildFilterUrl's
    * inheritKeys (matches the #220-class guard in PositionSelect): when
@@ -22,7 +22,10 @@
   import { onMount } from "svelte";
   import { buildFilterUrl } from "$lib/filters/urlState";
   import DateFilter from "../filters/DateFilter.svelte";
-  import type { DateOperator } from "../filters/DateFilter.svelte";
+  import {
+    type DateOperator,
+    normalizeDateOperator,
+  } from "$lib/filters/dateOperator";
 
   let tradeDateInput: string = "";
   let tradeDateOperator: DateOperator | "" = "";
@@ -57,13 +60,14 @@
     const tradeDateFromUrl = params.get("tradeDate");
     if (tradeDateFromUrl) tradeDateInput = tradeDateFromUrl;
 
-    const opFromUrl = params.get("tradeDateOperator");
-    if (
-      opFromUrl === "greater_than" ||
-      opFromUrl === "lesser_than" ||
-      opFromUrl === "lesser_than_or_equals"
-    ) {
-      tradeDateOperator = opFromUrl;
+    // Accepts canonical proto names + the deprecated snake_case shape
+    // (one-release shim post-#229).
+    const normalizedOperator = normalizeDateOperator(
+      params.get("tradeDateOperator"),
+      "tradeDateOperator",
+    );
+    if (normalizedOperator) {
+      tradeDateOperator = normalizedOperator;
     }
   });
 </script>

@@ -8,9 +8,12 @@
   import { buildFilterUrl } from "$lib/filters/urlState";
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
   import DateFilter from "../filters/DateFilter.svelte";
-  import type { DateOperator } from "../filters/DateFilter.svelte";
   import PortfolioFilter from "../filters/PortfolioFilter.svelte";
   import type { PortfolioOption } from "../filters/PortfolioFilter.svelte";
+  import {
+    type DateOperator,
+    normalizeDateOperator,
+  } from "$lib/filters/dateOperator";
   // Browser-safe import (security.ts pulls in @grpc/grpc-js).
   import {
     IDENTIFIER_TYPE_NAMES,
@@ -194,12 +197,16 @@
         tradeDateInput = tradeDateFromUrl;
       }
 
-      if (
-        tradeDateOperatorFromUrl === "greater_than" ||
-        tradeDateOperatorFromUrl === "lesser_than" ||
-        tradeDateOperatorFromUrl === "lesser_than_or_equals"
-      ) {
-        tradeDateOperator = tradeDateOperatorFromUrl;
+      // Accepts canonical proto names ('MORE_THAN' / 'LESS_THAN' /
+      // 'LESS_THAN_OR_EQUALS') and the deprecated snake_case shape from
+      // pre-#229 — the helper logs a warning on the latter so live URLs
+      // bookmark forward instead of silently breaking.
+      const normalizedOperator = normalizeDateOperator(
+        tradeDateOperatorFromUrl,
+        "tradeDateOperator",
+      );
+      if (normalizedOperator) {
+        tradeDateOperator = normalizedOperator;
       }
 
       if (assetClassInput) {

@@ -1,37 +1,22 @@
 <script lang="ts" context="module">
   /**
-   * Operator vocabulary for date filters. Currently sourced from the
-   * tradeDateOperator shape PositionSelect already used (preserved end-
-   * to-end for URL compat with /data/positions/+page.server.ts). PR-B
-   * (transactions + securities migrations) adopts the same set; if a
-   * future consumer needs `equals` / `greater_than_or_equals`, extend
-   * here and the dropdown picks them up automatically.
+   * Operator vocabulary for date filters. Sourced from
+   * `$lib/filters/dateOperator` so the URL convention, the wrapper
+   * names (PositionFilterOperator from ledger-models 0.1.135+), and the
+   * dropdown values stay in lock-step. Per second-brain#229 (cutover),
+   * the canonical names are the proto enum names — 'MORE_THAN',
+   * 'LESS_THAN', 'LESS_THAN_OR_EQUALS' — and the page-server's
+   * normalizeDateOperator() handles the one-release shim from the old
+   * snake_case shape.
    *
-   * Note on shape sharing with IdentifierFilter: IdentifierFilter sources
-   * its names from ledger-models's `Identifier.getAllTypeNames()` so a
-   * proto enum addition propagates without UI edits. Date operators
-   * have no proto enum to share — they're URL-string conventions in
-   * /data/*+page.server.ts, so a hand-typed union is the right shape.
-   * Documented for the Phase 3+ "shared operator-label list" thought:
-   * not factored because the two consumers (identifier-types vs date-
-   * operators) genuinely have different sources of truth.
+   * Re-exported here for backwards-compat with the small number of
+   * consumers that import these from the component module.
    */
-  export type DateOperator =
-    | 'greater_than'
-    | 'lesser_than'
-    | 'lesser_than_or_equals';
-
-  export const DEFAULT_DATE_OPERATORS: readonly DateOperator[] = [
-    'greater_than',
-    'lesser_than',
-    'lesser_than_or_equals',
-  ] as const;
-
-  export const DEFAULT_DATE_OPERATOR_LABELS: Record<DateOperator, string> = {
-    greater_than: 'Greater Than',
-    lesser_than: 'Lesser Than',
-    lesser_than_or_equals: 'Lesser Than or Equal',
-  };
+  export {
+    type DateOperator,
+    DEFAULT_DATE_OPERATORS,
+    DEFAULT_DATE_OPERATOR_LABELS,
+  } from '$lib/filters/dateOperator';
 </script>
 
 <script lang="ts">
@@ -59,6 +44,12 @@
    * this primitive form-scoped means each page's URL can evolve without
    * touching shared code.
    */
+
+  import {
+    type DateOperator,
+    DEFAULT_DATE_OPERATORS,
+    DEFAULT_DATE_OPERATOR_LABELS,
+  } from '$lib/filters/dateOperator';
 
   // Two-way bindings — parent owns the state.
   export let date: string = '';

@@ -31,18 +31,18 @@ describe('DateFilter', () => {
   test('default operators render in declared order with friendly labels', () => {
     const { container } = render(DateFilter, { props: { date: '2026-05-06' } });
     const options = Array.from(container.querySelectorAll('option')) as HTMLOptionElement[];
-    // [Select operator..., Greater Than, Lesser Than, Lesser Than or Equal]
+    // Values are proto enum names per #229; labels stay friendly.
     expect(options.map((o) => o.value)).toEqual([
       '',
-      'greater_than',
-      'lesser_than',
-      'lesser_than_or_equals',
+      'MORE_THAN',
+      'LESS_THAN',
+      'LESS_THAN_OR_EQUALS',
     ]);
     expect(options.map((o) => o.text)).toEqual([
       'Select operator...',
-      'Greater Than',
-      'Lesser Than',
-      'Lesser Than or Equal',
+      'Greater than',
+      'Less than',
+      'Less than or equals',
     ]);
   });
 
@@ -50,23 +50,23 @@ describe('DateFilter', () => {
     const { container } = render(DateFilter, {
       props: {
         date: '2026-05-06',
-        operators: ['greater_than'] as readonly DateOperator[],
+        operators: ['MORE_THAN'] as readonly DateOperator[],
       },
     });
     const operatorOptions = (Array.from(container.querySelectorAll('option')) as HTMLOptionElement[])
       .filter((o) => o.value !== '');
-    expect(operatorOptions.map((o) => o.value)).toEqual(['greater_than']);
+    expect(operatorOptions.map((o) => o.value)).toEqual(['MORE_THAN']);
   });
 
   test('operatorLabels prop overrides specific operator labels', () => {
     const { container } = render(DateFilter, {
       props: {
         date: '2026-05-06',
-        operatorLabels: { greater_than: 'After' },
+        operatorLabels: { MORE_THAN: 'After' },
       },
     });
     const greaterThanOption = (Array.from(container.querySelectorAll('option')) as HTMLOptionElement[])
-      .find((o) => o.value === 'greater_than');
+      .find((o) => o.value === 'MORE_THAN');
     expect(greaterThanOption?.text).toBe('After');
   });
 
@@ -82,8 +82,8 @@ describe('DateFilter', () => {
       props: { date: '2026-05-06', operator: '' as DateOperator | '' },
     });
     const select = container.querySelector('select') as HTMLSelectElement;
-    await fireEvent.change(select, { target: { value: 'lesser_than_or_equals' } });
-    expect(select.value).toBe('lesser_than_or_equals');
+    await fireEvent.change(select, { target: { value: 'LESS_THAN_OR_EQUALS' } });
+    expect(select.value).toBe('LESS_THAN_OR_EQUALS');
   });
 
   test('inputClass / selectClass / inputId pass through to the rendered nodes', () => {

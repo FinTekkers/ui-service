@@ -14,7 +14,10 @@
   import SecurityTypeFilter from "../filters/SecurityTypeFilter.svelte";
   import AssetClassFilter from "../filters/AssetClassFilter.svelte";
   import DateFilter from "../filters/DateFilter.svelte";
-  import type { DateOperator } from "../filters/DateFilter.svelte";
+  import {
+    type DateOperator,
+    normalizeDateOperator,
+  } from "$lib/filters/dateOperator";
 
   // Phase 2/3 of second-brain#226: filter primitives now own their controls.
   // - Phase 2 (PR #130): identifier-type dropdown + value → IdentifierFilter.
@@ -39,12 +42,12 @@
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
   // Phase 3 PR-B of #226: issueDate UX uses the shared DateFilter
-  // primitive. Operators restricted to greater_than / lesser_than —
-  // FetchSecurity in $lib/security only maps those two; widening the
-  // dropdown without backend support would surface a silent no-op.
+  // primitive. Operators restricted to MORE_THAN / LESS_THAN —
+  // FetchSecurity in $lib/security only supports those two; widening
+  // the dropdown without backend support would surface a silent no-op.
   let issueDateInput: string = "";
-  let issueDateOperator: Extract<DateOperator, "greater_than" | "lesser_than"> | "" = "";
-  const ISSUE_DATE_OPERATORS = ["greater_than", "lesser_than"] as const satisfies readonly DateOperator[];
+  let issueDateOperator: Extract<DateOperator, "MORE_THAN" | "LESS_THAN"> | "" = "";
+  const ISSUE_DATE_OPERATORS = ["MORE_THAN", "LESS_THAN"] as const satisfies readonly DateOperator[];
   let assetClassInput: AssetClassName | "" = "";
   let issuerNameInput: string = "";
   let securityTypeInput: SecurityTypeName | "" = "";
@@ -105,12 +108,16 @@
     const issueDateFromUrl = urlParams.get("issueDate");
     if (issueDateFromUrl) issueDateInput = issueDateFromUrl;
 
-    const issueDateOperatorFromUrl = urlParams.get("issueDateOperator");
-    if (
-      issueDateOperatorFromUrl === "greater_than" ||
-      issueDateOperatorFromUrl === "lesser_than"
-    ) {
-      issueDateOperator = issueDateOperatorFromUrl;
+    // Accepts canonical proto names + the deprecated snake_case shape.
+    // The dropdown only renders MORE_THAN / LESS_THAN, so a normalized
+    // 'LESS_THAN_OR_EQUALS' (e.g. from a stale bookmark) is dropped to
+    // empty rather than appearing as an unselectable value.
+    const normalizedOperator = normalizeDateOperator(
+      urlParams.get("issueDateOperator"),
+      "issueDateOperator",
+    );
+    if (normalizedOperator === "MORE_THAN" || normalizedOperator === "LESS_THAN") {
+      issueDateOperator = normalizedOperator;
     }
 
     const assetClassFromUrl = urlParams.get("assetClass");

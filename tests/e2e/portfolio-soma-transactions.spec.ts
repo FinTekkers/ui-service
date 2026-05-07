@@ -81,14 +81,14 @@ test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
     // operator dropdown must be enabled because the date is set.
     await page.goto(
       `/data/transactions?portfolioId=${portfolioId}` +
-      `&tradeDate=2026-05-06&tradeDateOperator=lesser_than_or_equals`,
+      `&tradeDate=2026-05-06&tradeDateOperator=LESS_THAN_OR_EQUALS`,
     );
 
     const dateInput = page.locator('#trade-date-input');
     await expect(dateInput).toBeVisible({ timeout: 10_000 });
     await expect(dateInput).toHaveValue('2026-05-06');
     const opSelect = page.getByLabel('Date operator');
-    await expect(opSelect).toHaveValue('lesser_than_or_equals');
+    await expect(opSelect).toHaveValue('LESS_THAN_OR_EQUALS');
     await expect(opSelect).toBeEnabled();
 
     // Click Filter → the form re-emits the same URL shape; portfolioId
@@ -98,7 +98,7 @@ test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
 
     const params = new URL(page.url()).searchParams;
     expect(params.get('tradeDate')).toBe('2026-05-06');
-    expect(params.get('tradeDateOperator')).toBe('lesser_than_or_equals');
+    expect(params.get('tradeDateOperator')).toBe('LESS_THAN_OR_EQUALS');
     expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
   });
 

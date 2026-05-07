@@ -121,7 +121,7 @@ test.describe('/data/positions IdentifierFilter (#227)', () => {
 
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
-      `&tradeDate=${PROBE_TRADE_DATE}&tradeDateOperator=lesser_than_or_equals` +
+      `&tradeDate=${PROBE_TRADE_DATE}&tradeDateOperator=LESS_THAN_OR_EQUALS` +
       `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
     );
 
@@ -133,7 +133,7 @@ test.describe('/data/positions IdentifierFilter (#227)', () => {
     await expect(dateInput, 'tradeDate populates DateFilter input').toHaveValue(PROBE_TRADE_DATE);
     const opSelect = page.getByLabel('Date operator');
     await expect(opSelect, 'tradeDateOperator populates DateFilter select')
-      .toHaveValue('lesser_than_or_equals');
+      .toHaveValue('LESS_THAN_OR_EQUALS');
     await expect(opSelect, 'operator select enabled when date is set').toBeEnabled();
 
     await page.getByRole('button', { name: 'Fetch' }).click();
@@ -142,7 +142,38 @@ test.describe('/data/positions IdentifierFilter (#227)', () => {
     const params = new URL(page.url()).searchParams;
     expect(params.get('tradeDate'), 'tradeDate re-emitted').toBe(PROBE_TRADE_DATE);
     expect(params.get('tradeDateOperator'), 'tradeDateOperator re-emitted')
-      .toBe('lesser_than_or_equals');
+      .toBe('LESS_THAN_OR_EQUALS');
+    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
+  });
+
+  test('deprecated snake_case tradeDateOperator is shimmed and re-emitted as proto name (#229)', async ({ page }) => {
+    // Pre-#229 URL convention: ?tradeDateOperator=lesser_than_or_equals.
+    // The page-server's normalizeDateOperator + the Select's onMount
+    // both accept the old shape (logging a deprecation warning), and
+    // the form re-emits the canonical proto name on next Fetch so
+    // bookmarks self-heal across the cutover. Drop this test one
+    // release after the shim is removed.
+    const portfolioId = await resolvePortfolioId(page);
+
+    await page.goto(
+      `/data/positions?portfolioId=${portfolioId}` +
+      `&tradeDate=${PROBE_TRADE_DATE}&tradeDateOperator=lesser_than_or_equals` +
+      `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
+    );
+
+    const dateInput = page.locator('#trade-date-input');
+    await expect(dateInput).toBeVisible({ timeout: 10_000 });
+    await expect(dateInput).toHaveValue(PROBE_TRADE_DATE);
+    const opSelect = page.getByLabel('Date operator');
+    await expect(opSelect, 'old snake_case mapped to canonical LESS_THAN_OR_EQUALS')
+      .toHaveValue('LESS_THAN_OR_EQUALS');
+
+    await page.getByRole('button', { name: 'Fetch' }).click();
+    await page.waitForURL(/\/data\/positions\?.*tradeDate=/, { timeout: 10_000 });
+
+    const params = new URL(page.url()).searchParams;
+    expect(params.get('tradeDateOperator'), 'shim → canonical proto name on re-emit')
+      .toBe('LESS_THAN_OR_EQUALS');
     expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
   });
 

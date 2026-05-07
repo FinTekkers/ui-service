@@ -22,8 +22,13 @@ import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/nod
 import { pack } from '@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
-import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
+// PositionFilterOperator wrapper (ledger-models 0.1.135+) replaces the
+// hand-rolled URL-string → proto-enum switch we used to do here. Static
+// references like `EQUALS` go through the same `fromName` API so the
+// wrapper stays the single mapping point.
+import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
 import type { IdentifierTypeName } from '$lib/securityFilterTypes';
+import type { DateOperator } from '$lib/filters/dateOperator';
 
 function searchPositions(request: ReturnType<QueryPositionRequest['toProto']>, apiKey?: string): Promise<Position[]> {
     const conn = getServiceConnection(apiKey);
@@ -47,7 +52,7 @@ export async function FetchPosition(
     sortDirection: 'asc' | 'desc' = 'asc',
     identifier?: string,
     tradeDate?: string,
-    tradeDateOperator?: 'greater_than' | 'lesser_than' | 'lesser_than_or_equals',
+    tradeDateOperator?: DateOperator,
     assetClass?: string,
     portfolioId?: string,
     apiKey?: string,
@@ -67,15 +72,12 @@ export async function FetchPosition(
         positionFilter.addObjectFilter(FieldProto.IDENTIFIER, identifierObj);
     }
 
-    // Add TRADE_DATE filter if provided
+    // Add TRADE_DATE filter if provided. tradeDateOperator is the proto
+    // enum name ('MORE_THAN' / 'LESS_THAN' / 'LESS_THAN_OR_EQUALS' per
+    // #229); the wrapper resolves it to the numeric enum value.
     if (tradeDate && tradeDate.trim() !== "" && tradeDateOperator) {
         const tradeDateObj = new Date(tradeDate);
-        const operator =
-            tradeDateOperator === 'greater_than'
-                ? PositionFilterOperator.MORE_THAN
-                : tradeDateOperator === 'lesser_than_or_equals'
-                    ? PositionFilterOperator.LESS_THAN_OR_EQUALS
-                    : PositionFilterOperator.LESS_THAN;
+        const operator = PositionFilterOperator.fromName(tradeDateOperator);
         positionFilter.addFilter(FieldProto.TRADE_DATE, operator, tradeDateObj);
     }
 
@@ -83,7 +85,7 @@ export async function FetchPosition(
     // Must use addFilter with fieldValue (not fieldValueString) so pack() wraps the
     // string in google.protobuf.StringValue and the entry is serialised as field_value_packed.
     if (assetClass && assetClass.trim() !== "") {
-        positionFilter.addFilter(FieldProto.ASSET_CLASS, PositionFilterOperator.EQUALS, assetClass.trim());
+        positionFilter.addFilter(FieldProto.ASSET_CLASS, PositionFilterOperator.fromName('EQUALS'), assetClass.trim());
     }
 
     // Add PORTFOLIO_ID filter if provided.
@@ -91,7 +93,7 @@ export async function FetchPosition(
     // UUID string to a UUID wrapper object; pack() serialises it as UUIDProto in an Any.
     if (portfolioId && portfolioId.trim() !== "") {
         const portfolioUuid = new UUID(UUID.fromString(portfolioId.trim()));
-        positionFilter.addFilter(FieldProto.PORTFOLIO_ID, PositionFilterOperator.EQUALS, portfolioUuid);
+        positionFilter.addFilter(FieldProto.PORTFOLIO_ID, PositionFilterOperator.fromName('EQUALS'), portfolioUuid);
     }
 
     const request = new QueryPositionRequest(

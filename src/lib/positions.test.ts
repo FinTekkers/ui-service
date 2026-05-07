@@ -90,11 +90,15 @@ vi.mock('@fintekkers/ledger-models/node/wrappers/models/security/identifier', ()
 	Identifier: vi.fn(),
 }));
 
-vi.mock('@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js', () => ({
+// PositionFilterOperator wrapper (ledger-models 0.1.135+, #229). The
+// mocked fromName echoes the proto enum NAME back so existing assertions
+// like `addFilter` having been called with 'EQUALS' continue to read
+// naturally — we're testing positions.ts's filter assembly, not the
+// wrapper's enum resolution.
+vi.mock('@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator', () => ({
 	PositionFilterOperator: {
-		EQUALS: 'EQUALS',
-		MORE_THAN: 'MORE_THAN',
-		LESS_THAN: 'LESS_THAN',
+		fromName: (name: string) => name,
+		getAllTypeNames: () => ['EQUALS', 'MORE_THAN', 'LESS_THAN', 'LESS_THAN_OR_EQUALS'],
 	},
 }));
 

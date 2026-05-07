@@ -13,9 +13,12 @@ import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/t
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
-import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
+// PositionFilterOperator wrapper (ledger-models 0.1.135+); see positions.ts
+// for the migration rationale (#229).
+import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
+import type { DateOperator } from '$lib/filters/dateOperator';
 
 const { FieldProto } = pkg;
 
@@ -96,7 +99,10 @@ export async function FetchSecurity(
   identifier?: string,
   identifierType?: IdentifierTypeName,
   issueDate?: string,
-  issueDateOperator?: 'greater_than' | 'lesser_than',
+  // Backend supports MORE_THAN / LESS_THAN on issueDate; LESS_THAN_OR_EQUALS
+  // is intentionally excluded (the SecuritySelect dropdown enforces the
+  // same subset client-side).
+  issueDateOperator?: Extract<DateOperator, 'MORE_THAN' | 'LESS_THAN'>,
   apiKey?: string,
   securityType?: SecurityTypeName,
 ): Promise<securityData[]> {
@@ -118,9 +124,7 @@ export async function FetchSecurity(
 
   if (issueDate && issueDate.trim() !== "" && issueDateOperator) {
     const issueDateObj = new Date(issueDate);
-    const operator = issueDateOperator === 'greater_than'
-      ? PositionFilterOperator.MORE_THAN
-      : PositionFilterOperator.LESS_THAN;
+    const operator = PositionFilterOperator.fromName(issueDateOperator);
     filterSecurity.addFilter(FieldProto.ISSUE_DATE, operator, issueDateObj);
   }
 
