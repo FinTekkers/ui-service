@@ -22,7 +22,7 @@ dependencies. Move to Playwright only when the test genuinely needs a browser.
 npm run test:e2e
 
 # Single file
-npx playwright test src/tests/e2e/prices.spec.ts
+npx playwright test tests/e2e/prices.spec.ts
 
 # UI mode — recommended for writing/debugging new tests
 npx playwright test --ui
@@ -63,7 +63,7 @@ To rotate the session (e.g. after broker auth changes), delete
 ## Adding a test
 
 ```ts
-// src/tests/e2e/something.spec.ts
+// tests/e2e/something.spec.ts
 import { test, expect } from '@playwright/test';
 
 test('something', async ({ page }) => {
