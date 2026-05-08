@@ -1,5 +1,6 @@
 import { FetchTransaction, FetchTransactionByPortfolio } from "$lib/transactions";
 import { deleteEntity } from '$lib/entity-delete';
+import { FetchPortfolioUniverse, type PortfolioUniverseEntry } from "$lib/portfolios";
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, url }) {
@@ -10,6 +11,18 @@ export async function load({ locals, url }) {
   // dump every transaction across every portfolio onto the page.
   const portfolioId = url.searchParams.get('portfolioId');
   const apiKey = locals.user?.apiKey;
+
+  // Phase 3 of #226 (PR-B): PortfolioFilter primitive needs the
+  // (id, name) universe + the resolved display name for the inbound
+  // portfolioId. Mirrors the /data/positions wiring shipped in PR #146.
+  // The universe is cached for 5 min in $lib/portfolios so the
+  // per-load cost is bounded. Empty universe (e.g. portfolio service
+  // unavailable) leaves the autocomplete empty but doesn't break the
+  // page.
+  const portfolioUniverse: PortfolioUniverseEntry[] =
+    await FetchPortfolioUniverse(apiKey).catch(() => []);
+  const portfolioName =
+    portfolioId && portfolioUniverse.find((p) => p.portfolioId === portfolioId)?.portfolioName || '';
 
   // Phase 3 PR-B of #226: optional tradeDate filter. URL convention
   // mirrors /data/positions exactly (?tradeDate=YYYY-MM-DD&
@@ -27,6 +40,8 @@ export async function load({ locals, url }) {
   return {
     transactions,
     portfolioId: portfolioId || null,
+    portfolioName,
+    portfolioUniverse,
     user: locals.user
   };
 }
