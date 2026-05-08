@@ -48,7 +48,11 @@
   }
 </script>
 
-<TransactionSelect />
+<TransactionSelect
+  portfolioUniverse={data.portfolioUniverse ?? []}
+  initialPortfolioId={data.portfolioId ?? ''}
+  initialPortfolioName={data.portfolioName ?? ''}
+/>
 
 {#if deleteSuccess}
   <div class="success-banner">{deleteSuccess}</div>

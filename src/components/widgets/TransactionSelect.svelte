@@ -10,10 +10,11 @@
    * (PositionFilterOperator names, post-#229) so users moving between
    * the two pages don't have to relearn the filter shape.
    *
-   * portfolioId is preserved across re-submits via buildFilterUrl's
-   * inheritKeys (matches the #220-class guard in PositionSelect): when
-   * the user lands here from /data/portfolios with ?portfolioId=…, that
-   * scope survives the Filter button click.
+   * portfolio scope flows through PortfolioFilter (Phase 3 PR-B of
+   * #226). The form is authoritative — portfolioId is no longer in
+   * buildFilterUrl's inheritKeys; the page-server hydrates the form's
+   * initial state from the inbound URL so re-submits preserve scope,
+   * matching PositionSelect's PR #146 wiring.
    *
    * The filter is a coupled (date, operator) pair — emit both or neither
    * so the page-server doesn't apply a half-formed filter (matches the
@@ -22,9 +23,22 @@
   import { onMount } from "svelte";
   import { buildFilterUrl } from "$lib/filters/urlState";
   import DateFilter from "../filters/DateFilter.svelte";
+  import PortfolioFilter from "../filters/PortfolioFilter.svelte";
+  import type { PortfolioOption } from "../filters/PortfolioFilter.svelte";
+
+  // Phase 3 of #226 PR-B: PortfolioFilter primitive. Page-server
+  // provides the (id, name) universe + the resolved name for the
+  // inbound URL portfolioId. Both flow through here as defaults so
+  // the form starts populated when the user lands via /data/portfolios
+  // (Txns link) or any other portfolioId-bearing URL.
+  export let portfolioUniverse: readonly PortfolioOption[] = [];
+  export let initialPortfolioId: string = "";
+  export let initialPortfolioName: string = "";
 
   let tradeDateInput: string = "";
   let tradeDateOperator: string = "";
+  let portfolioIdInput: string = initialPortfolioId;
+  let portfolioNameInput: string = initialPortfolioName;
 
   function fetchTransactions() {
     if (typeof window === "undefined") return;
@@ -35,17 +49,28 @@
     const tradeDateOperatorOverride =
       trimmedTradeDate && tradeDateOperator ? tradeDateOperator : undefined;
 
+    // Portfolio scope is now form-driven via PortfolioFilter (#226 PR-B).
+    // Trimmed-empty input emits null (explicit removal — the user
+    // cleared the autocomplete) so a stale bookmark doesn't ride
+    // through. portfolioId is no longer in inheritKeys for the same
+    // reason: the form owns it now, so inherit + override would be
+    // redundant. Mirrors PositionSelect's PR #146 wiring.
+    const trimmedPortfolioId = portfolioIdInput.trim();
+    const portfolioIdOverride = trimmedPortfolioId === '' ? null : trimmedPortfolioId;
+
     const url = buildFilterUrl(
       "/data/transactions",
       new URLSearchParams(window.location.search),
       {
         tradeDate: tradeDateOverride,
         tradeDateOperator: tradeDateOperatorOverride,
+        portfolioId: portfolioIdOverride,
       },
-      // Carry through the inbound portfolio scope so the Filter button
-      // doesn't silently widen a portfolio-scoped view back to the
-      // global transaction list (#220-class guard).
-      ["portfolioId"],
+      // No more inheritKeys — every form field is form-driven now,
+      // including portfolioId. The original #220-class concern is
+      // addressed by initial-state hydration from the page-server,
+      // not URL passthrough.
+      [],
     );
 
     window.location.href = url;
@@ -66,6 +91,16 @@
 </script>
 
 <div class="transaction-select-container mt-6 mx-10 flex flex-col sm:flex-row gap-2">
+  <div class="text-white portfolio-filter-cell">
+    <h4>Portfolio:</h4>
+    <PortfolioFilter
+      bind:portfolioId={portfolioIdInput}
+      bind:portfolioName={portfolioNameInput}
+      universe={portfolioUniverse}
+      inputClass="transaction-select-input text-black"
+      inputId="transaction-portfolio-input"
+    />
+  </div>
   <div class="text-white date-filter-cell">
     <h4>Trade Date Filter:</h4>
     <DateFilter
