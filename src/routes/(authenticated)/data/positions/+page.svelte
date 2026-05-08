@@ -74,7 +74,11 @@
   </div>
 {/if}
 
-<PositionSelect />
+<PositionSelect
+  portfolioUniverse={data.portfolioUniverse ?? []}
+  initialPortfolioId={data.portfolioId ?? ''}
+  initialPortfolioName={data.portfolioName ?? ''}
+/>
 
 {#if $navigating}
   <div class="loading-container">

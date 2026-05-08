@@ -9,6 +9,8 @@
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
   import DateFilter from "../filters/DateFilter.svelte";
   import type { DateOperator } from "../filters/DateFilter.svelte";
+  import PortfolioFilter from "../filters/PortfolioFilter.svelte";
+  import type { PortfolioOption } from "../filters/PortfolioFilter.svelte";
   // Browser-safe import (security.ts pulls in @grpc/grpc-js).
   import {
     IDENTIFIER_TYPE_NAMES,
@@ -44,6 +46,15 @@
   export let selectedPositionType: string[] = ["Transaction"];
   export let selectedPositionView: string[] = ["Default View"];
 
+  // Phase 3 of #226 PR-A: PortfolioFilter primitive. Page-server
+  // provides the (id, name) universe + the resolved name for the
+  // inbound URL portfolioId. Both flow through here as defaults so
+  // the form starts populated when the user lands via /data/portfolios
+  // or any other portfolioId-bearing URL.
+  export let portfolioUniverse: readonly PortfolioOption[] = [];
+  export let initialPortfolioId: string = "";
+  export let initialPortfolioName: string = "";
+
   // Phase 3 of second-brain#226 (issue #227): identifier UX uses the shared
   // IdentifierFilter primitive. Was CUSIP-only (cusipInput + ?cusip=...);
   // now matches /data/securities and /data/prices.
@@ -57,6 +68,10 @@
   let tradeDateOperator: DateOperator | "" = "";
   let assetClassInput: string = "";
   let hideZeros: boolean = false;
+  // Phase 3 of #226 PR-A: portfolio scope is now form-driven (no
+  // longer just inheritKeys from the URL).
+  let portfolioIdInput: string = initialPortfolioId;
+  let portfolioNameInput: string = initialPortfolioName;
 
   // Function to format names for display
   function formatName(name: string) {
@@ -86,6 +101,16 @@
     // tradeDateOperator: a type without a value is meaningless on the URL.
     const trimmedIdentifier = identifierInput.trim();
 
+    // Phase 3 of #226 PR-A: portfolio scope now flows through the
+    // PortfolioFilter primitive, so the form is authoritative for
+    // portfolioId. Trimmed-empty input emits null (explicit removal —
+    // the user cleared the autocomplete) so a stale bookmark doesn't
+    // ride through. portfolioId is no longer in inheritKeys for the
+    // same reason: the form owns it now, so inherit + override would
+    // be redundant.
+    const trimmedPortfolioId = portfolioIdInput.trim();
+    const portfolioIdOverride = trimmedPortfolioId === '' ? null : trimmedPortfolioId;
+
     const url = buildFilterUrl(
       "/data/positions",
       new URLSearchParams(window.location.search),
@@ -96,19 +121,18 @@
         measures: selectedMeasures.map(unformatName).join(","),
         identifier: trimmedIdentifier || undefined,
         identifierType: trimmedIdentifier ? identifierType : undefined,
-        // No legacy ?cusip= override needed: buildFilterUrl only carries
-        // forward keys in inheritKeys (just portfolioId), so a stale
-        // ?cusip= bookmark naturally disappears on re-submit.
+        // No legacy ?cusip= override needed: a stale ?cusip= bookmark
+        // naturally disappears on re-submit (no inheritKeys carries it).
         tradeDate: tradeDateOverride,
         tradeDateOperator: tradeDateOperatorOverride,
         assetClass: assetClassInput.trim() || undefined,
         hideZeros: hideZeros ? "true" : undefined,
+        portfolioId: portfolioIdOverride,
       },
-      // Inherit portfolioId so re-submitting the form keeps the search
-      // scoped to the portfolio the user navigated in from (second-brain#220
-      // / PR #123). The list of inheritKeys is the only place this rule
-      // lives now — adding more ambient context in future is one-line.
-      ["portfolioId"],
+      // No more inheritKeys — every form field is form-driven now,
+      // including portfolioId (the original #220-class concern is
+      // now addressed by initial-state hydration, not URL passthrough).
+      [],
     );
 
     window.location.href = url;
@@ -247,6 +271,16 @@
     </div>
   </div>
   <div class="position-select-container flex flex-col sm:flex-row gap-2 mt-2">
+    <div class="text-white portfolio-filter-cell">
+      <h4>Portfolio:</h4>
+      <PortfolioFilter
+        bind:portfolioId={portfolioIdInput}
+        bind:portfolioName={portfolioNameInput}
+        universe={portfolioUniverse}
+        inputClass="position-select-input text-black"
+        inputId="position-portfolio-input"
+      />
+    </div>
     <div class="text-white identifier-filter-cell">
       <h4>Identifier:</h4>
       <IdentifierFilter

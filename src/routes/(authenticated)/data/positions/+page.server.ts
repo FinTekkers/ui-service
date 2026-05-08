@@ -7,6 +7,7 @@ const { MeasureProto } = measure_pkg;
 
 import { FetchPosition } from "$lib/positions";
 import { IDENTIFIER_TYPE_NAMES, type IdentifierTypeName } from "$lib/securityFilterTypes";
+import { FetchPortfolioUniverse, type PortfolioUniverseEntry } from "$lib/portfolios";
 
 import position_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js';
 const { PositionViewProto, PositionTypeProto } = position_pkg;
@@ -97,18 +98,43 @@ export async function load({ locals, request }) {
   const sortBy = searchParams.get('sortBy');
   const sortDirection = searchParams.get('sortDirection') || 'asc';
 
+  // Phase 3 of #226 (PR-A): PortfolioFilter primitive needs the
+  // (id, name) universe + the resolved display name for the inbound
+  // portfolioId. The universe is cached for 5 min in $lib/portfolios so
+  // the per-Fetch cost is bounded; we await it here so a single render
+  // pass has both the autocomplete data and the resolved name. Empty
+  // universe (e.g. portfolio service unavailable) leaves the autocomplete
+  // empty but doesn't break the page.
+  const portfolioUniverse: PortfolioUniverseEntry[] = await FetchPortfolioUniverse(locals.user?.apiKey).catch(
+    () => [],
+  );
+  const portfolioName =
+    portfolioId && portfolioUniverse.find((p) => p.portfolioId === portfolioId)?.portfolioName || '';
+
   const positionViewEnumValue = PositionViewProto[positionView as keyof typeof PositionViewProto];
   const positionTypeEnumValue = PositionTypeProto[positionType as keyof typeof PositionTypeProto];
 
   if (!positionView || !positionType || !fields || !measures) {
     console.log('Required parameters missing. No request will be made.');
-    return { positions: [] }; // Return an empty array or appropriate value
+    return {
+      positions: [],
+      portfolioId: portfolioId || null,
+      portfolioName,
+      portfolioUniverse,
+      user: locals.user,
+    };
   }
 
   // If either fields or measures is missing, return early
   if (!fields || !measures) {
     console.log("Fields or measures missing. No request will be made.");
-    return { positions: [] }; // Return an empty array or appropriate value
+    return {
+      positions: [],
+      portfolioId: portfolioId || null,
+      portfolioName,
+      portfolioUniverse,
+      user: locals.user,
+    };
   }
 
   const fieldMeasure = { fields, measures };
@@ -189,6 +215,8 @@ export async function load({ locals, request }) {
     fieldMeasure: fieldMeasure,
     metadata: metadata,
     portfolioId: portfolioId || null,
+    portfolioName,
+    portfolioUniverse,
     user: locals.user
   };
 }
