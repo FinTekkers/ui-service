@@ -2,7 +2,6 @@
   import MultiSelect from "svelte-multiselect";
 
   import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
-  import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
   import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
   import { onMount } from "svelte";
   import { buildFilterUrl } from "$lib/filters/urlState";
@@ -10,6 +9,8 @@
   import DateFilter from "../filters/DateFilter.svelte";
   import PortfolioFilter from "../filters/PortfolioFilter.svelte";
   import type { PortfolioOption } from "../filters/PortfolioFilter.svelte";
+  import MeasureMultiselectFilter from "../filters/MeasureMultiselectFilter.svelte";
+  import HideZerosToggle from "../filters/HideZerosToggle.svelte";
   // Browser-safe import (security.ts pulls in @grpc/grpc-js).
   import {
     IDENTIFIER_TYPE_NAMES,
@@ -17,21 +18,6 @@
   } from "$lib/securityFilterTypes";
 
   const { FieldProto } = pkg;
-
-  const { MeasureProto } = measure_pkg;
-
-  const VALUATION_ONLY_MEASURES = new Set([
-    'PRESENT_VALUE_CASHFLOWS',
-    'PRESENT_VALUE',
-    'REAL_YIELD',
-    'INFLATION_ADJUSTED_PRINCIPAL',
-    'DISCOUNT_MARGIN',
-    'SPREAD_DURATION',
-  ]);
-
-  const positionMeasureOptions = Object.keys(MeasureProto)
-    .filter(k => !VALUATION_ONLY_MEASURES.has(k))
-    .map(formatName);
 
   const { PositionTypeProto, PositionViewProto } = position_pkg;
 
@@ -117,7 +103,10 @@
         positionView: selectedPositionView.map(unformatName).join(","),
         positionType: selectedPositionType.map(unformatName).join(","),
         fields: selectedFields.map(unformatName).join(","),
-        measures: selectedMeasures.map(unformatName).join(","),
+        // selectedMeasures is already proto names (the
+        // MeasureMultiselectFilter primitive's external API; the
+        // friendly labels live inside that component).
+        measures: selectedMeasures.join(","),
         identifier: trimmedIdentifier || undefined,
         identifierType: trimmedIdentifier ? identifierType : undefined,
         // No legacy ?cusip= override needed: a stale ?cusip= bookmark
@@ -157,7 +146,8 @@
       }
 
       if (selectedMeasuresFromUrl) {
-        selectedMeasures = selectedMeasuresFromUrl.split(",").map(formatName);
+        // URL value is already proto names — no conversion needed.
+        selectedMeasures = selectedMeasuresFromUrl.split(",");
       }
 
       if (selectedPositionTypeFromUrl) {
@@ -229,14 +219,11 @@
     </div>
     <div class="text-white">
       <h4>Measures:</h4>
-      <div class="multiselect-wrapper text-black">
-        <MultiSelect
-          id="measures-multiselect"
-          options={positionMeasureOptions}
-          placeholder="Select measures..."
-          bind:selected={selectedMeasures}
-        />
-      </div>
+      <MeasureMultiselectFilter
+        id="measures-multiselect"
+        bind:value={selectedMeasures}
+        containerClass="multiselect-wrapper text-black"
+      />
     </div>
     <div class="text-white">
       <h4>Position Type:</h4>
@@ -315,15 +302,8 @@
       </button>
     </div>
   </div>
-  <div class="px-10 mt-2">
-    <label class="inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        bind:checked={hideZeros}
-        class="form-checkbox h-4 w-4 text-green-600"
-      />
-      <span class="ml-2 text-white">Hide zeros</span>
-    </label>
+  <div class="px-10 mt-2 text-white">
+    <HideZerosToggle bind:value={hideZeros} label="Hide zeros" />
   </div>
 </div>
 
