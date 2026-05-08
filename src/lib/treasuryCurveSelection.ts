@@ -66,6 +66,38 @@ function daysBetween(a: Date, b: Date): number {
 }
 
 /**
+ * Per-bucket candidate matcher — extracted as a pure helper so the
+ * bucket-aware zero-coupon rule (#232) can be unit-tested without
+ * mocking the gRPC stack. Generic on the candidate shape: only
+ * issueDate / maturityDate / couponRate are read here.
+ *
+ * Bucket-aware zero-coupon rule (#232 amend after review feedback):
+ * T-bills (bucket ≤ 12 months) are LEGITIMATELY zero-coupon —
+ * they're discount instruments, not coupon-bearing. The original
+ * universal couponRate > 0 filter wrongly excluded them. Notes /
+ * bonds (bucket > 12 months) should always have a coupon, so a
+ * zero-coupon candidate there is a Treasury STRIP slipping in via
+ * the BOND_SECURITY type. Stopgap maturity-bucket heuristic; the
+ * long-term fix is a proper STRIPS_SECURITY / T_BILL distinction
+ * in ledger-models, tracked upstream alongside this issue.
+ */
+export function pickBestForBucket<C extends { issueDate: Date; maturityDate: Date; couponRate: number }>(
+  candidates: readonly C[],
+  bucket: { label: string; months: number },
+  asOfDate: Date,
+): C | null {
+  const targetMaturity = addMonths(asOfDate, bucket.months);
+  const toleranceDays = getToleranceDays(bucket.months);
+
+  const matches = candidates
+    .filter((c) => Math.abs(daysBetween(targetMaturity, c.maturityDate)) <= toleranceDays)
+    .filter((c) => bucket.months <= 12 || c.couponRate > 0)
+    .sort((a, b) => b.issueDate.getTime() - a.issueDate.getTime());
+
+  return matches[0] ?? null;
+}
+
+/**
  * Fetch all Fixed Income / US Government securities and pick one on-the-run
  * bond per tenor bucket. Returns one entry per bucket; entries with `bond=null`
  * mean no candidate within tolerance.
@@ -129,22 +161,15 @@ export async function selectOnTheRunBonds(asOfDate: Date, apiKey?: string): Prom
     .filter((c) => c.issueDate <= asOfDate && c.maturityDate > asOfDate);
 
   return TENOR_BUCKETS.map((bucket) => {
-    const targetMaturity = addMonths(asOfDate, bucket.months);
-    const toleranceDays = getToleranceDays(bucket.months);
+    const best = pickBestForBucket(candidates, bucket, asOfDate);
 
-    const matches = candidates
-      .filter((c) => Math.abs(daysBetween(targetMaturity, c.maturityDate)) <= toleranceDays)
-      .sort((a, b) => b.issueDate.getTime() - a.issueDate.getTime());
-
-    if (matches.length === 0) {
+    if (!best) {
       return {
         tenor: bucket.label, months: bucket.months,
         bond: null, cusip: '', issueDate: null, maturityDate: null,
         couponRate: 0, productType: '',
       };
     }
-
-    const best = matches[0];
     return {
       tenor: bucket.label,
       months: bucket.months,
