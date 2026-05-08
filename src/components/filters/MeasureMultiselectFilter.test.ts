@@ -1,5 +1,6 @@
 import { render, fireEvent } from '@testing-library/svelte';
 import { describe, expect, test } from 'vitest';
+import { Measure } from '@fintekkers/ledger-models/node/wrappers/models/position/measure';
 import MeasureMultiselectFilter, {
   DEFAULT_MEASURE_NAMES,
   DEFAULT_MEASURE_LABELS,
@@ -33,6 +34,19 @@ describe('MeasureMultiselectFilter', () => {
       'DISCOUNT_MARGIN',
       'SPREAD_DURATION',
     ]));
+  });
+
+  test('DEFAULT_MEASURE_NAMES is wrapper-driven: every entry comes from Measure.getAllTypeNames()', () => {
+    // Adopting the Measure wrapper (ledger-models 0.1.138, PR #194)
+    // means a new proto enum entry upstream auto-propagates here
+    // without a UI-side edit. This assertion locks in the contract.
+    const wrapperNames = new Set(Measure.getAllTypeNames());
+    for (const name of DEFAULT_MEASURE_NAMES) {
+      expect(
+        wrapperNames.has(name),
+        `${name} should come from Measure.getAllTypeNames(); UI no longer hand-rolls the list`,
+      ).toBe(true);
+    }
   });
 
   test('DEFAULT_MEASURE_LABELS title-cases proto names', () => {
