@@ -1,31 +1,9 @@
-<script lang="ts" context="module">
-  /**
-   * Operator vocabulary for date filters. Sourced from
-   * `$lib/filters/dateOperator` so the URL convention, the wrapper
-   * names (PositionFilterOperator from ledger-models 0.1.135+), and the
-   * dropdown values stay in lock-step. Per second-brain#229 (cutover),
-   * the canonical names are the proto enum names — 'MORE_THAN',
-   * 'LESS_THAN', 'LESS_THAN_OR_EQUALS' — and the page-server's
-   * normalizeDateOperator() handles the one-release shim from the old
-   * snake_case shape.
-   *
-   * Re-exported here for backwards-compat with the small number of
-   * consumers that import these from the component module.
-   */
-  export {
-    type DateOperator,
-    DEFAULT_DATE_OPERATORS,
-    DEFAULT_DATE_OPERATOR_LABELS,
-  } from '$lib/filters/dateOperator';
-</script>
-
 <script lang="ts">
   /**
    * Phase 3 of second-brain#226 — second composable filter primitive.
    * Matches IdentifierFilter's API conventions (Phase 2): two-way bound
    * state, no URL knowledge, class pass-through, optional slot below
-   * the value input. See IdentifierFilter.svelte for the full Phase 2
-   * design rationale.
+   * the value input.
    *
    * Owns: ISO-date input + (optional) operator dropdown.
    *
@@ -34,44 +12,39 @@
    *     ?tradeDate=…&tradeDateOperator=…) and binds the result here.
    *   - The (date, operator) coupling rule — both required for a valid
    *     filter, neither alone is meaningful. The parent enforces that
-   *     when emitting to URL (see PositionSelect.fetchPositions for
-   *     the canonical pattern).
-   *
-   * URL/serialization staying outside is consistent with IdentifierFilter:
-   * /data/positions, /data/transactions, /data/securities each name their
-   * date param differently (tradeDate vs issueDate vs settlementDate),
-   * and the operator-naming convention may diverge in the future. Keeping
-   * this primitive form-scoped means each page's URL can evolve without
-   * touching shared code.
+   *     when emitting to URL.
+   *   - Operator names. The dropdown's option values come from the
+   *     ledger-models PositionFilterOperator wrapper directly (no
+   *     UI-side enum / label map / shadow translation — #229 review).
+   *     Friendly per-operator descriptions belong upstream in
+   *     ledger-models; until that lands, options render the proto
+   *     enum name verbatim.
    */
 
-  import {
-    type DateOperator,
-    DEFAULT_DATE_OPERATORS,
-    DEFAULT_DATE_OPERATOR_LABELS,
-  } from '$lib/filters/dateOperator';
+  import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
 
-  // Two-way bindings — parent owns the state.
+  // Two-way bindings — parent owns the state. operator is the proto
+  // enum name string (e.g. 'MORE_THAN'); empty string means "no
+  // operator selected".
   export let date: string = '';
-  export let operator: DateOperator | '' = '';
+  export let operator: string = '';
 
   // Optional: render only the date input, no operator. Useful when the
   // consumer wants an absolute equals-this-date filter without exposing
   // the operator switcher.
   export let withOperator: boolean = true;
 
-  // Operator subset + label override. Defaults match the existing
-  // /data/positions tradeDateOperator vocabulary.
-  export let operators: readonly DateOperator[] = DEFAULT_DATE_OPERATORS;
-  export let operatorLabels: Partial<Record<DateOperator, string>> = {};
+  // Operator set for the dropdown. Defaults to the full
+  // PositionFilterOperator runtime list (proto declaration order,
+  // sentinel UNKNOWN_OPERATOR excluded). Adding a new proto entry
+  // automatically widens the dropdown — no UI edit required.
+  export let operators: readonly string[] = PositionFilterOperator.getAllTypeNames();
 
   // Class pass-through (matches IdentifierFilter). Consumer supplies
   // its own page-specific styling on the rendered <input>/<select>.
   export let inputClass: string = '';
   export let selectClass: string = '';
   export let inputId: string = 'date-filter-value';
-
-  $: resolvedLabels = { ...DEFAULT_DATE_OPERATOR_LABELS, ...operatorLabels };
 </script>
 
 <div class="date-filter">
@@ -96,7 +69,7 @@
       >
         <option value="">Select operator...</option>
         {#each operators as op}
-          <option value={op}>{resolvedLabels[op]}</option>
+          <option value={op}>{op}</option>
         {/each}
       </select>
     </div>

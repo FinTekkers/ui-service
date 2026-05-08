@@ -10,7 +10,6 @@ import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid'
 // PositionFilterOperator wrapper (ledger-models 0.1.135+); see positions.ts
 // for the migration rationale (#229).
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
-import type { DateOperator } from '$lib/filters/dateOperator';
 const { FieldProto } = pkg;
 
 /**
@@ -128,14 +127,12 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
 };
 
 // Phase 3 PR-B of #226: optional tradeDate filter on /data/transactions.
-// Operator vocabulary is the canonical DateOperator from $lib/filters/
-// dateOperator (proto enum names per #229).
-type TradeDateOperator = DateOperator;
-
+// Operator is a proto enum name string (validated by
+// PositionFilterOperator.fromName below).
 function applyTradeDateFilter(
   filter: positionFilter.PositionFilter,
   tradeDate?: string,
-  tradeDateOperator?: TradeDateOperator,
+  tradeDateOperator?: string,
 ): void {
   if (!tradeDate || tradeDate.trim() === '' || !tradeDateOperator) return;
   const tradeDateObj = new Date(tradeDate);
@@ -146,7 +143,7 @@ function applyTradeDateFilter(
 let FetchTransaction = async function FetchTransaction(
   apiKey?: string,
   tradeDate?: string,
-  tradeDateOperator?: TradeDateOperator,
+  tradeDateOperator?: string,
 ): Promise<TransactionData[]> {
   const filter = new positionFilter.PositionFilter();
   filter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
@@ -158,7 +155,7 @@ let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(
   portfolioId: string,
   apiKey?: string,
   tradeDate?: string,
-  tradeDateOperator?: TradeDateOperator,
+  tradeDateOperator?: string,
 ): Promise<TransactionData[]> {
   const filter = new positionFilter.PositionFilter();
   const portfolioUuid = new UUID(UUID.fromString(portfolioId.trim()));
@@ -171,4 +168,4 @@ let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(
 };
 
 export { FetchTransactionWithFilter, FetchTransaction, FetchTransactionByPortfolio };
-export type { TransactionData, TradeDateOperator };
+export type { TransactionData };

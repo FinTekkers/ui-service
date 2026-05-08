@@ -28,7 +28,6 @@ import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid'
 // wrapper stays the single mapping point.
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
 import type { IdentifierTypeName } from '$lib/securityFilterTypes';
-import type { DateOperator } from '$lib/filters/dateOperator';
 
 function searchPositions(request: ReturnType<QueryPositionRequest['toProto']>, apiKey?: string): Promise<Position[]> {
     const conn = getServiceConnection(apiKey);
@@ -52,7 +51,7 @@ export async function FetchPosition(
     sortDirection: 'asc' | 'desc' = 'asc',
     identifier?: string,
     tradeDate?: string,
-    tradeDateOperator?: DateOperator,
+    tradeDateOperator?: string,
     assetClass?: string,
     portfolioId?: string,
     apiKey?: string,

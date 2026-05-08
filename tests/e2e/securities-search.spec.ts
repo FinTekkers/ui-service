@@ -101,10 +101,9 @@ test.describe('/data/securities filter extension', () => {
 
   // Phase 3 PR-B of #226: issueDate DateFilter on /data/securities.
   test('issueDate + issueDateOperator round-trip through Fetch with other params preserved', async ({ page }) => {
-    // #229 standardized URL operator vocabulary on proto enum names.
-    // SecuritySelect's DateFilter is restricted via the `operators`
-    // prop to MORE_THAN / LESS_THAN — a UX choice, not a backend
-    // limitation (the security search supports the full set).
+    // #229: URL operator vocabulary is the full PositionFilterOperator
+    // set, dropdown is wrapper-driven, no UI-side narrowing or
+    // normalization.
     await page.goto(
       '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER' +
       '&issueDate=2024-01-15&issueDateOperator=MORE_THAN',
@@ -129,51 +128,31 @@ test.describe('/data/securities filter extension', () => {
     expect(params.get('identifierType')).toBe('EXCH_TICKER');
   });
 
-  test('issueDate operator dropdown is narrowed to MORE_THAN / LESS_THAN (UX choice)', async ({ page }) => {
-    // SecuritySelect's DateFilter has `operators={ISSUE_DATE_OPERATORS}`
-    // pinning the dropdown to the two operators users actually want
-    // for issueDate searches. This is a UX decision — FetchSecurity
-    // and the backend accept the full PositionFilterOperator set
-    // (see the LESS_THAN_OR_EQUALS pass-through test below).
-    await page.goto('/data/securities?issueDate=2024-01-15&issueDateOperator=MORE_THAN');
+  test('issueDate dropdown surfaces the full PositionFilterOperator set', async ({ page }) => {
+    // #229 review: the dropdown is wrapper-driven, no UI-side narrowing.
+    // Bookmarks carrying any wrapper-known operator (e.g.
+    // LESS_THAN_OR_EQUALS, EQUALS, NOT_EQUALS, MORE_THAN_OR_EQUALS) load
+    // the value into the dropdown directly — the operator round-trips
+    // cleanly through the backend without any silent drop.
+    await page.goto('/data/securities?issueDate=2024-01-15&issueDateOperator=LESS_THAN_OR_EQUALS');
     await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
       timeout: 15_000,
     });
 
-    // Inspect the operator <select>'s options. Should be exactly 3:
-    // the empty placeholder + MORE_THAN + LESS_THAN.
-    const opValues = await page.getByLabel('Date operator').evaluate((el) => {
+    const opSelect = page.getByLabel('Date operator');
+    await expect(opSelect, 'wrapper-known operator selected from URL')
+      .toHaveValue('LESS_THAN_OR_EQUALS');
+
+    // The dropdown's option set MUST include every wrapper-known
+    // operator. Hand-asserting the four in-tree operators today;
+    // PositionFilterOperator.getAllTypeNames() drives the runtime
+    // list so a new proto entry shows up here automatically.
+    const opValues = await opSelect.evaluate((el) => {
       const select = el as HTMLSelectElement;
       return Array.from(select.options).map((o) => o.value);
     });
-    expect(opValues).toEqual(['', 'MORE_THAN', 'LESS_THAN']);
-  });
-
-  test('issueDateOperator=LESS_THAN_OR_EQUALS passes through to the backend (#229 review)', async ({ page }) => {
-    // Regression for the user-flagged smell on PR #144: the page-
-    // server used to silently drop any operator outside the dropdown's
-    // narrowed UX set, on the (false) belief that the backend rejected
-    // it. Backend supports the full PositionFilterOperator set, so a
-    // direct URL hit / bookmark with LESS_THAN_OR_EQUALS must reach
-    // the backend cleanly — not 500, not silently get reset to no
-    // filter. This test asserts the page renders without error; the
-    // backend application of the filter is implicit (no 5xx response,
-    // and the dropdown remains in the narrowed-UX empty state because
-    // the value isn't in its option list).
-    const response = await page.goto(
-      '/data/securities?issueDate=2024-01-15&issueDateOperator=LESS_THAN_OR_EQUALS',
-    );
-    expect(response, 'load() returned a response').not.toBeNull();
-    expect(response!.status(), 'no 500 — operator passed through').toBeLessThan(500);
-
-    await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
-      timeout: 15_000,
-    });
-    // The dropdown is narrowed to MORE_THAN / LESS_THAN, so this
-    // operator value isn't a selectable option — the form's onMount
-    // leaves the bound state empty. That's the expected UX behaviour;
-    // the backend still received the operator on the initial load.
-    const opSelect = page.getByLabel('Date operator');
-    await expect(opSelect).toHaveValue('');
+    expect(opValues).toEqual(expect.arrayContaining([
+      '', 'EQUALS', 'LESS_THAN', 'LESS_THAN_OR_EQUALS', 'MORE_THAN',
+    ]));
   });
 });

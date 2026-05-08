@@ -14,10 +14,6 @@
   import SecurityTypeFilter from "../filters/SecurityTypeFilter.svelte";
   import AssetClassFilter from "../filters/AssetClassFilter.svelte";
   import DateFilter from "../filters/DateFilter.svelte";
-  import {
-    type DateOperator,
-    normalizeDateOperator,
-  } from "$lib/filters/dateOperator";
 
   // Phase 2/3 of second-brain#226: filter primitives now own their controls.
   // - Phase 2 (PR #130): identifier-type dropdown + value → IdentifierFilter.
@@ -42,15 +38,11 @@
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
   // Phase 3 PR-B of #226: issueDate UX uses the shared DateFilter
-  // primitive. Operators restricted to MORE_THAN / LESS_THAN — this
-  // is a UX choice (narrow the picker to the two operators users
-  // actually want for issueDate searches), NOT a backend constraint:
-  // the security search supports the full PositionFilterOperator set.
-  // Bookmarks carrying any other valid operator pass through the
-  // page-server to the backend; the dropdown just won't render them.
+  // primitive. Dropdown shows the full PositionFilterOperator set
+  // (post-#229 review): the security search backend supports every
+  // operator, so the UI exposes every operator.
   let issueDateInput: string = "";
-  let issueDateOperator: Extract<DateOperator, "MORE_THAN" | "LESS_THAN"> | "" = "";
-  const ISSUE_DATE_OPERATORS = ["MORE_THAN", "LESS_THAN"] as const satisfies readonly DateOperator[];
+  let issueDateOperator: string = "";
   let assetClassInput: AssetClassName | "" = "";
   let issuerNameInput: string = "";
   let securityTypeInput: SecurityTypeName | "" = "";
@@ -111,16 +103,11 @@
     const issueDateFromUrl = urlParams.get("issueDate");
     if (issueDateFromUrl) issueDateInput = issueDateFromUrl;
 
-    // Accepts canonical proto names + the deprecated snake_case shape.
-    // The dropdown only renders MORE_THAN / LESS_THAN, so a normalized
-    // 'LESS_THAN_OR_EQUALS' (e.g. from a stale bookmark) is dropped to
-    // empty rather than appearing as an unselectable value.
-    const normalizedOperator = normalizeDateOperator(
-      urlParams.get("issueDateOperator"),
-      "issueDateOperator",
-    );
-    if (normalizedOperator === "MORE_THAN" || normalizedOperator === "LESS_THAN") {
-      issueDateOperator = normalizedOperator;
+    // Operator passes through untransformed — the wrapper validates
+    // at filter-application time (#229 review: no UI-side normalization).
+    const opFromUrl = urlParams.get("issueDateOperator");
+    if (opFromUrl) {
+      issueDateOperator = opFromUrl;
     }
 
     const assetClassFromUrl = urlParams.get("assetClass");
@@ -193,7 +180,6 @@
       <DateFilter
         bind:date={issueDateInput}
         bind:operator={issueDateOperator}
-        operators={ISSUE_DATE_OPERATORS}
         inputClass="filter-input text-black"
         selectClass="filter-select text-black"
         inputId="issue-date-input"

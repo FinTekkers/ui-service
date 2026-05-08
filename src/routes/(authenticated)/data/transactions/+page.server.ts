@@ -1,6 +1,5 @@
 import { FetchTransaction, FetchTransactionByPortfolio } from "$lib/transactions";
 import { deleteEntity } from '$lib/entity-delete';
-import { normalizeDateOperator } from '$lib/filters/dateOperator';
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, url }) {
@@ -14,14 +13,13 @@ export async function load({ locals, url }) {
 
   // Phase 3 PR-B of #226: optional tradeDate filter. URL convention
   // mirrors /data/positions exactly (?tradeDate=YYYY-MM-DD&
-  // tradeDateOperator=MORE_THAN|LESS_THAN|LESS_THAN_OR_EQUALS — proto
-  // enum names per #229). Both URL params required for the filter to
-  // apply — half-formed shapes drop both, matching the form's emit
-  // guard. normalizeDateOperator handles the one-release shim from
-  // the old snake_case shape.
+  // tradeDateOperator=<proto enum name from PositionFilterOperator>).
+  // Both URL params required for the filter to apply — half-formed
+  // shapes drop both, matching the form's emit guard. The wrapper's
+  // fromName (in $lib/transactions) is the only validator (#229
+  // review: no UI-side normalization).
   const tradeDate = url.searchParams.get('tradeDate') ?? undefined;
-  const tradeDateOperator =
-    normalizeDateOperator(url.searchParams.get('tradeDateOperator'), 'tradeDateOperator') ?? undefined;
+  const tradeDateOperator = url.searchParams.get('tradeDateOperator') ?? undefined;
 
   const transactions = portfolioId
     ? await FetchTransactionByPortfolio(portfolioId, apiKey, tradeDate, tradeDateOperator)

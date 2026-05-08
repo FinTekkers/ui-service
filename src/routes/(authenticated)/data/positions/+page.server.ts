@@ -8,7 +8,6 @@ const { MeasureProto } = measure_pkg;
 import { FetchPosition } from "$lib/positions";
 import { IDENTIFIER_TYPE_NAMES, type IdentifierTypeName } from "$lib/securityFilterTypes";
 import { FetchPortfolioUniverse, type PortfolioUniverseEntry } from "$lib/portfolios";
-import { normalizeDateOperator } from "$lib/filters/dateOperator";
 
 import position_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js';
 const { PositionViewProto, PositionTypeProto } = position_pkg;
@@ -92,13 +91,9 @@ export async function load({ locals, request }) {
     identifierType = identifierType ?? 'CUSIP';
   }
   const tradeDate = searchParams.get('tradeDate');
-  // Operator vocabulary is the proto enum names per #229. The shim
-  // logs a deprecation warning when it sees the old snake_case shape so
-  // we can audit live traffic before removing the fallback.
-  const tradeDateOperator = normalizeDateOperator(
-    searchParams.get('tradeDateOperator'),
-    'tradeDateOperator',
-  );
+  // Operator passes through untransformed — PositionFilterOperator's
+  // fromName (in $lib/positions) is the only validator (#229 review).
+  const tradeDateOperator = searchParams.get('tradeDateOperator');
   const assetClass = searchParams.get('assetClass');
   const portfolioId = searchParams.get('portfolioId');
   // Sort is now handled client-side, but we keep these for backward compatibility

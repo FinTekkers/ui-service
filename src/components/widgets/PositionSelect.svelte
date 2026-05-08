@@ -10,10 +10,6 @@
   import DateFilter from "../filters/DateFilter.svelte";
   import PortfolioFilter from "../filters/PortfolioFilter.svelte";
   import type { PortfolioOption } from "../filters/PortfolioFilter.svelte";
-  import {
-    type DateOperator,
-    normalizeDateOperator,
-  } from "$lib/filters/dateOperator";
   // Browser-safe import (security.ts pulls in @grpc/grpc-js).
   import {
     IDENTIFIER_TYPE_NAMES,
@@ -68,7 +64,7 @@
   // `tradeDateInput` and `tradeDateOperator` flow through the same
   // fetchPositions/loadSelectedValues paths as before.
   let tradeDateInput: string = "";
-  let tradeDateOperator: DateOperator | "" = "";
+  let tradeDateOperator: string = "";
   let assetClassInput: string = "";
   let hideZeros: boolean = false;
   // Phase 3 of #226 PR-A: portfolio scope is now form-driven (no
@@ -197,16 +193,11 @@
         tradeDateInput = tradeDateFromUrl;
       }
 
-      // Accepts canonical proto names ('MORE_THAN' / 'LESS_THAN' /
-      // 'LESS_THAN_OR_EQUALS') and the deprecated snake_case shape from
-      // pre-#229 — the helper logs a warning on the latter so live URLs
-      // bookmark forward instead of silently breaking.
-      const normalizedOperator = normalizeDateOperator(
-        tradeDateOperatorFromUrl,
-        "tradeDateOperator",
-      );
-      if (normalizedOperator) {
-        tradeDateOperator = normalizedOperator;
+      // Operator passes through untransformed — the wrapper validates
+      // at filter-application time. Empty / null URL value leaves the
+      // dropdown unselected (#229 review: no UI-side normalization).
+      if (tradeDateOperatorFromUrl) {
+        tradeDateOperator = tradeDateOperatorFromUrl;
       }
 
       if (assetClassInput) {

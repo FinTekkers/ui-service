@@ -7,7 +7,6 @@ import {
   type SecurityTypeName,
 } from "$lib/security";
 import { deleteSecurity } from "$lib/security-delete";
-import { normalizeDateOperator } from "$lib/filters/dateOperator";
 
 // Backward-compat defaults: pre-#226 the page-server hardcoded these. New
 // /data/securities URLs can override either one to broaden the search.
@@ -32,17 +31,10 @@ export async function load({ locals, request }) {
       ? (rawIdType as IdentifierTypeName)
       : undefined;
   const issueDate = searchParams.get('issueDate');
-  // FetchSecurity accepts the full PositionFilterOperator set;
-  // normalizeDateOperator handles the one-release shim from snake_case
-  // and returns undefined for unrecognized values. (The SecuritySelect
-  // dropdown narrows the *UX* to MORE_THAN / LESS_THAN today via
-  // DateFilter's `operators` prop — that's a UI choice, not a backend
-  // limitation, and bookmarks carrying any other valid operator name
-  // pass straight through.)
-  const issueDateOperator = normalizeDateOperator(
-    searchParams.get('issueDateOperator'),
-    'issueDateOperator',
-  ) ?? undefined;
+  // FetchSecurity accepts the full PositionFilterOperator set; the
+  // wrapper's fromName (in $lib/security) is the only validator
+  // (#229 review: no UI-side normalization).
+  const issueDateOperator = searchParams.get('issueDateOperator') ?? undefined;
   // assetClass / issuerName are now URL-driven. Empty string in the URL
   // (e.g. ?assetClass=) clears the filter so the user can broaden the
   // search across asset classes; absence of the param keeps the default.
