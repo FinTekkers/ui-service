@@ -2,23 +2,27 @@
  * Regression for second-brain#227 (PositionSelect → IdentifierFilter)
  * AND second-brain#226 phase 3 PR-A (PositionSelect → DateFilter).
  *
- * Five cases:
+ * Four cases:
  *   1. CUSIP — ?identifier+identifierType=CUSIP loads into the form,
  *      Fetch round-trips the URL with portfolioId carried via inheritKeys
  *      (#220-style guard).
  *   2. EXCH_TICKER — same flow with identifierType=EXCH_TICKER.
- *   3. Legacy ?cusip=… bookmark loads into the IdentifierFilter input
- *      and re-emits as canonical (?identifier+identifierType=CUSIP) on
- *      next Fetch, with no ?cusip= residue.
- *   4. tradeDate + tradeDateOperator — both URL params load into
+ *   3. tradeDate + tradeDateOperator — both URL params load into
  *      DateFilter, Fetch round-trips both with portfolioId preserved.
- *   5. tradeDate alone (no operator) — the date populates the DateFilter
+ *   4. tradeDate alone (no operator) — the date populates the DateFilter
  *      input, the operator select stays empty (and disabled). Fetch
  *      doesn't crash; the half-applied filter guard in
  *      PositionSelect.fetchPositions drops both params on re-emit (a
  *      type-without-value or value-without-type filter is meaningless
  *      to the page-server). Documented behavior; not a UX regression
  *      for this PR.
+ *
+ * Pre-existing case removed: the "legacy ?cusip= bookmark migrates"
+ * test covered the PR #134 deprecation shim that's been removed
+ * post-#239 — see the chore: drop-deprecation-shims commit. The
+ * "no legacy ?cusip= re-emitted" negative assertions on the canonical
+ * cases are kept as harmless regression guards (still meaningful: the
+ * form must not accidentally emit ?cusip= on its own).
  *
  * Why URL-load instead of dropdown-then-fill: testing via the dropdown
  * triggers IdentifierFilter's clearOnTypeChange handler, whose bind
@@ -91,29 +95,6 @@ test.describe('/data/positions IdentifierFilter (#227)', () => {
     expect(params.get('identifierType'), 'identifierType pinned to EXCH_TICKER').toBe('EXCH_TICKER');
     expect(params.get('cusip'), 'no legacy ?cusip= re-emitted').toBeNull();
     expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
-  });
-
-  test('legacy ?cusip= bookmark migrates to canonical shape on Fetch', async ({ page }) => {
-    const portfolioId = await resolvePortfolioId(page);
-
-    await page.goto(
-      `/data/positions?portfolioId=${portfolioId}` +
-      `&cusip=${PROBE_CUSIP}` +
-      `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
-    );
-    const idInput = page.locator('#position-identifier-input');
-    await expect(idInput).toBeVisible({ timeout: 10_000 });
-    await expect(idInput, 'legacy cusip value populates IdentifierFilter input').toHaveValue(PROBE_CUSIP);
-    await expect(page.getByLabel('Identifier type'), 'legacy entry pins type=CUSIP').toHaveValue('CUSIP');
-
-    await page.getByRole('button', { name: 'Fetch' }).click();
-    await page.waitForURL(/\/data\/positions\?.*identifier=/, { timeout: 10_000 });
-
-    const params = new URL(page.url()).searchParams;
-    expect(params.get('identifier')).toBe(PROBE_CUSIP);
-    expect(params.get('identifierType'), 'legacy entry re-emits with type=CUSIP').toBe('CUSIP');
-    expect(params.get('cusip'), 'legacy ?cusip= must be gone after re-emission').toBeNull();
-    expect(params.get('portfolioId')).toBe(portfolioId);
   });
 
   test('tradeDate + tradeDateOperator round-trip through Fetch with portfolio scope', async ({ page }) => {
