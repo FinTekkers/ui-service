@@ -109,8 +109,6 @@
         measures: selectedMeasures.join(","),
         identifier: trimmedIdentifier || undefined,
         identifierType: trimmedIdentifier ? identifierType : undefined,
-        // No legacy ?cusip= override needed: a stale ?cusip= bookmark
-        // naturally disappears on re-submit (no inheritKeys carries it).
         tradeDate: tradeDateOverride,
         tradeDateOperator: tradeDateOperatorOverride,
         assetClass: assetClassInput.trim() || undefined,
@@ -136,7 +134,6 @@
       const selectedPositionViewFromUrl = urlParams.get("positionView");
       const identifierFromUrl = urlParams.get("identifier");
       const identifierTypeFromUrl = urlParams.get("identifierType");
-      const legacyCusipFromUrl = urlParams.get("cusip");
       const tradeDateFromUrl = urlParams.get("tradeDate");
       const tradeDateOperatorFromUrl = urlParams.get("tradeDateOperator");
       const assetClassFromUrl = urlParams.get("assetClass");
@@ -162,10 +159,10 @@
           .map(formatName);
       }
 
-      // Identifier load order: canonical (?identifier=…&identifierType=…)
-      // wins; fall back to the legacy ?cusip=… bookmark and pin the type
-      // to CUSIP. The page-server emits a deprecation warning when it
-      // sees the legacy shape, so users still get a signal.
+      // Identifier load: canonical (?identifier=…&identifierType=…)
+      // shape only. The pre-#227 ?cusip=<value> shim was dropped after
+      // its one-release window; see /data/positions/+page.server.ts
+      // for the rationale.
       if (identifierFromUrl) {
         identifierInput = identifierFromUrl;
         if (
@@ -174,9 +171,6 @@
         ) {
           identifierType = identifierTypeFromUrl as IdentifierTypeName;
         }
-      } else if (legacyCusipFromUrl) {
-        identifierInput = legacyCusipFromUrl;
-        identifierType = "CUSIP";
       }
 
       if (tradeDateFromUrl) {

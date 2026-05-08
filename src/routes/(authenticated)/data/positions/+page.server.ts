@@ -72,24 +72,18 @@ export async function load({ locals, request }) {
   const measures = searchParams.get('measures');
   // Identifier filter — second-brain#227. Canonical shape:
   //   ?identifier=<value>&identifierType=<CUSIP|ISIN|EXCH_TICKER|…>
-  // Backward-compat shim: ?cusip=<value> is treated as
-  // ?identifier=<value>&identifierType=CUSIP for one release. The
-  // deprecation warning logs once per request hit; remove the shim in a
-  // future release once stale bookmarks are unlikely.
-  let identifier = searchParams.get('identifier');
+  // The pre-#227 ?cusip=<value> shim shipped in PR #134 with an
+  // explicit one-release plan and was dropped in this commit (the
+  // window has long since elapsed: shim shipped on ledger-models
+  // v0.1.133, current is v0.1.137). A stale bookmark with ?cusip=
+  // now no-ops at this layer — the page renders the default-landing
+  // state without crashing.
+  const identifier = searchParams.get('identifier');
   const rawIdentifierType = searchParams.get('identifierType');
-  let identifierType: IdentifierTypeName | undefined =
+  const identifierType: IdentifierTypeName | undefined =
     rawIdentifierType && (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(rawIdentifierType)
       ? (rawIdentifierType as IdentifierTypeName)
       : undefined;
-  const legacyCusip = searchParams.get('cusip');
-  if (!identifier && legacyCusip) {
-    console.warn(
-      "[deprecation] /data/positions ?cusip=… is deprecated; use ?identifier=…&identifierType=CUSIP. (#227 backward-compat shim)",
-    );
-    identifier = legacyCusip;
-    identifierType = identifierType ?? 'CUSIP';
-  }
   const tradeDate = searchParams.get('tradeDate');
   // Operator passes through untransformed — PositionFilterOperator's
   // fromName (in $lib/positions) is the only validator (#229 review).
