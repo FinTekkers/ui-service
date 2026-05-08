@@ -91,5 +91,16 @@ test.describe('/data/portfolios index (#221)', () => {
     await expect(somaRow, 'SOMA row present').toHaveCount(1, { timeout: 10_000 });
     await expect(probeRow, 'fresh probe portfolio renders post-#221 fix')
       .toHaveCount(1, { timeout: 10_000 });
+
+    // As Of column renders post-#221 amend (column header + a YYYY-MM-DD
+    // date for our freshly-created probe portfolio). The probe was
+    // just created so its asOf is today (or yesterday-UTC if the test
+    // runs near midnight); assert the YYYY-MM-DD shape rather than a
+    // specific date.
+    await expect(page.getByRole('button', { name: /^As Of/ }), 'As Of header renders')
+      .toBeVisible();
+    const probeAsOfCell = probeRow.locator('td').last();
+    await expect(probeAsOfCell, 'fresh portfolio renders a YYYY-MM-DD asOf cell')
+      .toContainText(/^\d{4}-\d{2}-\d{2}$/);
   });
 });

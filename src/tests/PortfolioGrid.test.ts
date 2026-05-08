@@ -37,12 +37,15 @@ describe('PortfolioGrid', () => {
 		}
 	});
 
-	test('renders column headers for Portfolio, ID, and Created (AsOf)', () => {
+	test('renders column headers for Portfolio, ID, and As Of', () => {
 		const headers = screen.getAllByRole('button');
 		const headerTexts = headers.map((h) => h.textContent?.trim());
 		expect(headerTexts).toContain('Portfolio');
 		expect(headerTexts).toContain('ID');
-		expect(headerTexts).toContain('Created (AsOf)');
+		// Renamed from "Created (AsOf)" — the column now shows just the
+		// UTC date (formatted via PortfolioGrid.formatAsOf), not a
+		// timestamp; the legacy label was misleading.
+		expect(headerTexts).toContain('As Of');
 	});
 
 	test('each row contains links with the correct positions URL', () => {
@@ -156,5 +159,41 @@ describe('PortfolioGrid with empty rows', () => {
 		const rows = screen.getAllByRole('row');
 		// Only the header row
 		expect(rows.length).toBe(1);
+	});
+});
+
+describe('PortfolioGrid As Of formatting', () => {
+	test('renders ZonedDateTime "YYYY/MM/DD HH:MM:SS" as plain UTC YYYY-MM-DD', () => {
+		render(PortfolioGrid, {
+			props: {
+				rows: [{
+					portfolioName: 'Test',
+					portfolioId: 'p-1',
+					// Shape produced by the wrappers' ZonedDateTime.toString()
+					portfolioAsOf: '2026/05/08 12:34:56',
+				}],
+			},
+		});
+		expect(screen.getByText('2026-05-08')).toBeInTheDocument();
+		// Time-of-day component is dropped.
+		expect(screen.queryByText(/12:34:56/)).toBeNull();
+	});
+
+	test('renders em-dash for empty/missing asOf (per-row guard fallback)', () => {
+		render(PortfolioGrid, {
+			props: {
+				rows: [{ portfolioName: 'Test', portfolioId: 'p-2', portfolioAsOf: '' }],
+			},
+		});
+		expect(screen.getByText('—')).toBeInTheDocument();
+	});
+
+	test('renders em-dash for malformed asOf', () => {
+		render(PortfolioGrid, {
+			props: {
+				rows: [{ portfolioName: 'Test', portfolioId: 'p-3', portfolioAsOf: 'not-a-date' }],
+			},
+		});
+		expect(screen.getByText('—')).toBeInTheDocument();
 	});
 });

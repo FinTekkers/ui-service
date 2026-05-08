@@ -56,10 +56,31 @@
 	let sortField: keyof PortfolioData | null = null;
 	let sortDirection: SortDirection = "asc";
 
-	const columns: Array<{ label: string; key: keyof PortfolioData }> = [
+	// Column-level renderer override. PortfolioData.portfolioAsOf comes
+	// from ZonedDateTime.toString() ("YYYY/MM/DD HH:MM:SS" UTC) — too
+	// noisy for an index column. Format to plain UTC YYYY-MM-DD; em-dash
+	// for missing/malformed (the per-row guard from #221's
+	// safe()-wrapped page-server may emit '' here when getAsOf()
+	// throws).
+	function formatAsOf(raw: string | undefined): string {
+		if (!raw) return '—';
+		// Accept either "YYYY/MM/DD ..." (the wrapper's output) or
+		// "YYYY-MM-DD" (test fixtures already in target shape) or any
+		// other ISO-ish prefix. Anything we don't recognize → em-dash.
+		const m = raw.match(/^(\d{4})[-/](\d{2})[-/](\d{2})/);
+		return m ? `${m[1]}-${m[2]}-${m[3]}` : '—';
+	}
+
+	type Column = {
+		label: string;
+		key: keyof PortfolioData;
+		format?: (raw: string) => string;
+	};
+
+	const columns: Array<Column> = [
 		{ label: "Portfolio", key: "portfolioName" },
 		{ label: "ID", key: "portfolioId" },
-		{ label: "Created (AsOf)", key: "portfolioAsOf" },
+		{ label: "As Of", key: "portfolioAsOf", format: formatAsOf },
 	];
 
 	$: sortedRows = sortData(rows, sortField, sortDirection);
@@ -119,7 +140,7 @@
 						{#each columns as column}
 							<td class="table-cell px-4 py-2">
 								<a href={getPositionsUrl(row.portfolioId)} class="row-link">
-									{row[column.key]}
+									{column.format ? column.format(row[column.key] ?? '') : row[column.key]}
 								</a>
 							</td>
 						{/each}
