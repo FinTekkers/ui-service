@@ -18,14 +18,22 @@
    * is already proto names, so a malformed URL just produces an
    * unselected option in the dropdown.
    */
-  import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
-  const { MeasureProto } = measure_pkg;
+  // Measure wrapper from ledger-models 0.1.138+ (PR #194). Same
+  // consumer pattern as IDENTIFIER_TYPE_NAMES (#188), SECURITY_TYPE_NAMES
+  // / ASSET_CLASS_NAMES (#189), PositionFilterOperator (#190). The
+  // wrapper's getAllTypeNames() is the source-of-truth for "every
+  // known measure name (sentinel UNKNOWN_MEASURE excluded)" — adding
+  // a new proto entry upstream auto-propagates to this dropdown.
+  import { Measure } from '@fintekkers/ledger-models/node/wrappers/models/position/measure';
 
   // Valuation-only measures are excluded by default — they require a
   // RunValuation call rather than the Position search the basic
   // /data/positions page hits, so showing them in the multiselect
   // would surface a silent no-op. Consumers that want them (a future
   // valuations page) can pass a different supportedMeasures list.
+  // This is a UI policy choice on which measures belong on which
+  // page, not a claim about the vocabulary itself — the vocabulary
+  // lives upstream in ledger-models.
   const VALUATION_ONLY_MEASURES = new Set([
     'PRESENT_VALUE_CASHFLOWS',
     'PRESENT_VALUE',
@@ -36,12 +44,11 @@
   ]);
 
   /**
-   * The default proto-name allowlist: every MeasureProto enum entry
-   * minus the valuation-only set. Drives the dropdown options when
-   * the consumer doesn't pass a custom `supportedMeasures` prop.
+   * The default proto-name allowlist: every Measure entry from the
+   * wrapper minus the valuation-only set.
    */
-  export const DEFAULT_MEASURE_NAMES: readonly string[] = Object.keys(MeasureProto)
-    .filter((k) => typeof (MeasureProto as Record<string, unknown>)[k] === 'number')
+  export const DEFAULT_MEASURE_NAMES: readonly string[] = Measure
+    .getAllTypeNames()
     .filter((k) => !VALUATION_ONLY_MEASURES.has(k));
 
   function titleCase(name: string): string {
