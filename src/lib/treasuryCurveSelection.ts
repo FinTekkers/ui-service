@@ -126,7 +126,18 @@ export async function selectOnTheRunBonds(asOfDate: Date, apiKey?: string): Prom
     })
     .filter((c): c is NonNullable<typeof c> => c !== null)
     // Issued on/before as-of and not yet matured
-    .filter((c) => c.issueDate <= asOfDate && c.maturityDate > asOfDate);
+    .filter((c) => c.issueDate <= asOfDate && c.maturityDate > asOfDate)
+    // Exclude zero-coupon securities (Treasury STRIPS). Their maturities
+    // cluster at the long end and they otherwise fall into the 30Y bucket
+    // alongside conventional 30Y bonds, biasing the on-the-run pick.
+    // Per second-brain#232 (investigated in valuation-service PR #45):
+    // the picker is the right layer for this filter — the calculator
+    // handles STRIPS correctly when properly tagged; this is a
+    // presentation-tier "what does on-the-run mean" decision. couponRate
+    // = 0 is the canonical signal (STRIPS by definition); checking
+    // couponType separately is belt-and-braces against a wrapper that
+    // can throw on getCouponType(), so we trust the rate alone.
+    .filter((c) => c.couponRate > 0);
 
   return TENOR_BUCKETS.map((bucket) => {
     const targetMaturity = addMonths(asOfDate, bucket.months);
