@@ -39,6 +39,14 @@ test.describe('/data/positions PortfolioFilter (#226 Phase 3 PR-A)', () => {
     const portfolioInput = page.locator('#position-portfolio-input');
     await expect(portfolioInput).toBeVisible({ timeout: 15_000 });
     await expect(portfolioInput, 'starts empty when URL has no portfolioId').toHaveValue('');
+    // Wait for the universe data load to finish before typing —
+    // PortfolioFilter's `universe` prop comes from page-server data,
+    // and a fast `.fill()` against an empty universe produces a
+    // suggestion list with zero entries. Under parallel-suite load
+    // this raced with the locator poll and produced intermittent
+    // 5s-timeout failures. networkidle is the cheap signal that SSR
+    // streaming + initial XHRs have settled.
+    await page.waitForLoadState('networkidle');
 
     // Fill 'Federal' — fires a single input event after Playwright sets
     // the value. The primitive's onInput handler runs and (after the
@@ -48,8 +56,12 @@ test.describe('/data/positions PortfolioFilter (#226 Phase 3 PR-A)', () => {
     await portfolioInput.click();
     await portfolioInput.fill('Federal');
 
+    // 10s timeout (was 5s) — the suggestion render is fast in
+    // isolation but full-suite parallel pressure occasionally pushed
+    // first-paint past the 5s budget. Bumping leaves headroom without
+    // hiding real regressions.
     const suggestion = page.locator('.suggestion', { hasText: SOMA_NAME });
-    await expect(suggestion, 'autocomplete surfaces SOMA').toBeVisible({ timeout: 5_000 });
+    await expect(suggestion, 'autocomplete surfaces SOMA').toBeVisible({ timeout: 10_000 });
 
     // Click the suggestion (use mousedown via .click — Playwright
     // dispatches mousedown before click, which is what the primitive
