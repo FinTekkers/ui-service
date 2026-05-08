@@ -61,7 +61,7 @@ describe('PortfolioGrid', () => {
 				positionView: 'DEFAULT_VIEW',
 				positionType: 'TRANSACTION',
 				tradeDate: today,
-				tradeDateOperator: 'lesser_than_or_equals',
+				tradeDateOperator: 'LESS_THAN_OR_EQUALS',
 				hideZeros: 'true',
 			});
 			const expectedUrl = `/data/positions?${expectedParams.toString()}`;
@@ -92,7 +92,7 @@ describe('PortfolioGrid', () => {
 		expect(params.get('positionView')).toBe('DEFAULT_VIEW');
 		expect(params.get('positionType')).toBe('TRANSACTION');
 		expect(params.get('tradeDate')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-		expect(params.get('tradeDateOperator')).toBe('lesser_than_or_equals');
+		expect(params.get('tradeDateOperator')).toBe('LESS_THAN_OR_EQUALS');
 		expect(params.get('hideZeros')).toBe('true');
 	});
 

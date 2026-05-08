@@ -103,14 +103,14 @@ describe('buildFilterUrl', () => {
         measures: 'DIRECTED_QUANTITY',
         cusip: undefined,
         tradeDate: '2026-05-06',
-        tradeDateOperator: 'lesser_than_or_equals',
+        tradeDateOperator: 'LESS_THAN_OR_EQUALS',
         assetClass: undefined,
         hideZeros: 'true',
       },
       ['portfolioId'],
     );
     expect(url).toBe(
-      '/data/positions?positionView=DEFAULT_VIEW&positionType=TRANSACTION&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY&tradeDate=2026-05-06&tradeDateOperator=lesser_than_or_equals&hideZeros=true&portfolioId=soma-uuid',
+      '/data/positions?positionView=DEFAULT_VIEW&positionType=TRANSACTION&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY&tradeDate=2026-05-06&tradeDateOperator=LESS_THAN_OR_EQUALS&hideZeros=true&portfolioId=soma-uuid',
     );
   });
 });

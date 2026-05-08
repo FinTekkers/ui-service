@@ -31,7 +31,10 @@ export async function load({ locals, request }) {
       ? (rawIdType as IdentifierTypeName)
       : undefined;
   const issueDate = searchParams.get('issueDate');
-  const issueDateOperator = searchParams.get('issueDateOperator');
+  // FetchSecurity accepts the full PositionFilterOperator set; the
+  // wrapper's fromName (in $lib/security) is the only validator
+  // (#229 review: no UI-side normalization).
+  const issueDateOperator = searchParams.get('issueDateOperator') ?? undefined;
   // assetClass / issuerName are now URL-driven. Empty string in the URL
   // (e.g. ?assetClass=) clears the filter so the user can broaden the
   // search across asset classes; absence of the param keeps the default.
@@ -55,7 +58,7 @@ export async function load({ locals, request }) {
         identifier || undefined,
         identifierType,
         issueDate || undefined,
-        issueDateOperator === 'greater_than' ? 'greater_than' : issueDateOperator === 'lesser_than' ? 'lesser_than' : undefined,
+        issueDateOperator,
         locals.user?.apiKey,
         securityType
       );

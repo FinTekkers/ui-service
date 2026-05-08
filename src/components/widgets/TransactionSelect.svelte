@@ -6,9 +6,9 @@
    * the transactions page (no equivalent UX existed previously). Mirrors
    * the URL conventions on /data/positions exactly:
    *   ?tradeDate=YYYY-MM-DD
-   *   &tradeDateOperator=greater_than|lesser_than|lesser_than_or_equals
-   * so users moving between the two pages don't have to relearn the
-   * filter shape.
+   *   &tradeDateOperator=<proto enum name>
+   * (PositionFilterOperator names, post-#229) so users moving between
+   * the two pages don't have to relearn the filter shape.
    *
    * portfolioId is preserved across re-submits via buildFilterUrl's
    * inheritKeys (matches the #220-class guard in PositionSelect): when
@@ -22,10 +22,9 @@
   import { onMount } from "svelte";
   import { buildFilterUrl } from "$lib/filters/urlState";
   import DateFilter from "../filters/DateFilter.svelte";
-  import type { DateOperator } from "../filters/DateFilter.svelte";
 
   let tradeDateInput: string = "";
-  let tradeDateOperator: DateOperator | "" = "";
+  let tradeDateOperator: string = "";
 
   function fetchTransactions() {
     if (typeof window === "undefined") return;
@@ -57,12 +56,10 @@
     const tradeDateFromUrl = params.get("tradeDate");
     if (tradeDateFromUrl) tradeDateInput = tradeDateFromUrl;
 
+    // Operator passes through untransformed — the wrapper validates at
+    // filter-application time (#229 review: no UI-side normalization).
     const opFromUrl = params.get("tradeDateOperator");
-    if (
-      opFromUrl === "greater_than" ||
-      opFromUrl === "lesser_than" ||
-      opFromUrl === "lesser_than_or_equals"
-    ) {
+    if (opFromUrl) {
       tradeDateOperator = opFromUrl;
     }
   });

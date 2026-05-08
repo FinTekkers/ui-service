@@ -121,7 +121,7 @@ test.describe('/data/positions IdentifierFilter (#227)', () => {
 
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
-      `&tradeDate=${PROBE_TRADE_DATE}&tradeDateOperator=lesser_than_or_equals` +
+      `&tradeDate=${PROBE_TRADE_DATE}&tradeDateOperator=LESS_THAN_OR_EQUALS` +
       `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
     );
 
@@ -133,7 +133,7 @@ test.describe('/data/positions IdentifierFilter (#227)', () => {
     await expect(dateInput, 'tradeDate populates DateFilter input').toHaveValue(PROBE_TRADE_DATE);
     const opSelect = page.getByLabel('Date operator');
     await expect(opSelect, 'tradeDateOperator populates DateFilter select')
-      .toHaveValue('lesser_than_or_equals');
+      .toHaveValue('LESS_THAN_OR_EQUALS');
     await expect(opSelect, 'operator select enabled when date is set').toBeEnabled();
 
     await page.getByRole('button', { name: 'Fetch' }).click();
@@ -142,7 +142,7 @@ test.describe('/data/positions IdentifierFilter (#227)', () => {
     const params = new URL(page.url()).searchParams;
     expect(params.get('tradeDate'), 'tradeDate re-emitted').toBe(PROBE_TRADE_DATE);
     expect(params.get('tradeDateOperator'), 'tradeDateOperator re-emitted')
-      .toBe('lesser_than_or_equals');
+      .toBe('LESS_THAN_OR_EQUALS');
     expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
   });
 

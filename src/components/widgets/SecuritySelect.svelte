@@ -14,7 +14,6 @@
   import SecurityTypeFilter from "../filters/SecurityTypeFilter.svelte";
   import AssetClassFilter from "../filters/AssetClassFilter.svelte";
   import DateFilter from "../filters/DateFilter.svelte";
-  import type { DateOperator } from "../filters/DateFilter.svelte";
 
   // Phase 2/3 of second-brain#226: filter primitives now own their controls.
   // - Phase 2 (PR #130): identifier-type dropdown + value → IdentifierFilter.
@@ -39,12 +38,11 @@
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
   // Phase 3 PR-B of #226: issueDate UX uses the shared DateFilter
-  // primitive. Operators restricted to greater_than / lesser_than —
-  // FetchSecurity in $lib/security only maps those two; widening the
-  // dropdown without backend support would surface a silent no-op.
+  // primitive. Dropdown shows the full PositionFilterOperator set
+  // (post-#229 review): the security search backend supports every
+  // operator, so the UI exposes every operator.
   let issueDateInput: string = "";
-  let issueDateOperator: Extract<DateOperator, "greater_than" | "lesser_than"> | "" = "";
-  const ISSUE_DATE_OPERATORS = ["greater_than", "lesser_than"] as const satisfies readonly DateOperator[];
+  let issueDateOperator: string = "";
   let assetClassInput: AssetClassName | "" = "";
   let issuerNameInput: string = "";
   let securityTypeInput: SecurityTypeName | "" = "";
@@ -105,12 +103,11 @@
     const issueDateFromUrl = urlParams.get("issueDate");
     if (issueDateFromUrl) issueDateInput = issueDateFromUrl;
 
-    const issueDateOperatorFromUrl = urlParams.get("issueDateOperator");
-    if (
-      issueDateOperatorFromUrl === "greater_than" ||
-      issueDateOperatorFromUrl === "lesser_than"
-    ) {
-      issueDateOperator = issueDateOperatorFromUrl;
+    // Operator passes through untransformed — the wrapper validates
+    // at filter-application time (#229 review: no UI-side normalization).
+    const opFromUrl = urlParams.get("issueDateOperator");
+    if (opFromUrl) {
+      issueDateOperator = opFromUrl;
     }
 
     const assetClassFromUrl = urlParams.get("assetClass");
@@ -183,7 +180,6 @@
       <DateFilter
         bind:date={issueDateInput}
         bind:operator={issueDateOperator}
-        operators={ISSUE_DATE_OPERATORS}
         inputClass="filter-input text-black"
         selectClass="filter-select text-black"
         inputId="issue-date-input"

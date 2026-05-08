@@ -8,7 +8,6 @@
   import { buildFilterUrl } from "$lib/filters/urlState";
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
   import DateFilter from "../filters/DateFilter.svelte";
-  import type { DateOperator } from "../filters/DateFilter.svelte";
   import PortfolioFilter from "../filters/PortfolioFilter.svelte";
   import type { PortfolioOption } from "../filters/PortfolioFilter.svelte";
   // Browser-safe import (security.ts pulls in @grpc/grpc-js).
@@ -65,7 +64,7 @@
   // `tradeDateInput` and `tradeDateOperator` flow through the same
   // fetchPositions/loadSelectedValues paths as before.
   let tradeDateInput: string = "";
-  let tradeDateOperator: DateOperator | "" = "";
+  let tradeDateOperator: string = "";
   let assetClassInput: string = "";
   let hideZeros: boolean = false;
   // Phase 3 of #226 PR-A: portfolio scope is now form-driven (no
@@ -194,11 +193,10 @@
         tradeDateInput = tradeDateFromUrl;
       }
 
-      if (
-        tradeDateOperatorFromUrl === "greater_than" ||
-        tradeDateOperatorFromUrl === "lesser_than" ||
-        tradeDateOperatorFromUrl === "lesser_than_or_equals"
-      ) {
+      // Operator passes through untransformed — the wrapper validates
+      // at filter-application time. Empty / null URL value leaves the
+      // dropdown unselected (#229 review: no UI-side normalization).
+      if (tradeDateOperatorFromUrl) {
         tradeDateOperator = tradeDateOperatorFromUrl;
       }
 

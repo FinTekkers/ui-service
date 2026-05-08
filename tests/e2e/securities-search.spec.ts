@@ -101,12 +101,12 @@ test.describe('/data/securities filter extension', () => {
 
   // Phase 3 PR-B of #226: issueDate DateFilter on /data/securities.
   test('issueDate + issueDateOperator round-trip through Fetch with other params preserved', async ({ page }) => {
-    // Backend supports greater_than / lesser_than only on issueDate
-    // (FetchSecurity in $lib/security maps just these two). DateFilter
-    // is restricted via the `operators` prop to match.
+    // #229: URL operator vocabulary is the full PositionFilterOperator
+    // set, dropdown is wrapper-driven, no UI-side narrowing or
+    // normalization.
     await page.goto(
       '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER' +
-      '&issueDate=2024-01-15&issueDateOperator=greater_than',
+      '&issueDate=2024-01-15&issueDateOperator=MORE_THAN',
     );
     await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
       timeout: 15_000,
@@ -115,7 +115,7 @@ test.describe('/data/securities filter extension', () => {
     const dateInput = page.locator('#issue-date-input');
     await expect(dateInput).toHaveValue('2024-01-15');
     const opSelect = page.getByLabel('Date operator');
-    await expect(opSelect).toHaveValue('greater_than');
+    await expect(opSelect).toHaveValue('MORE_THAN');
     await expect(opSelect).toBeEnabled();
 
     await page.getByRole('button', { name: /Fetch Securities/ }).click();
@@ -123,28 +123,36 @@ test.describe('/data/securities filter extension', () => {
 
     const params = new URL(page.url()).searchParams;
     expect(params.get('issueDate')).toBe('2024-01-15');
-    expect(params.get('issueDateOperator')).toBe('greater_than');
+    expect(params.get('issueDateOperator')).toBe('MORE_THAN');
     expect(params.get('identifier'), 'other params preserved').toBe('AAPL');
     expect(params.get('identifierType')).toBe('EXCH_TICKER');
   });
 
-  test('issueDate operator dropdown excludes lesser_than_or_equals (backend-supported subset)', async ({ page }) => {
-    // FetchSecurity's signature only accepts 'greater_than' | 'lesser_than'.
-    // DateFilter's `operators` prop on /data/securities trims the third
-    // option (lesser_than_or_equals) so the dropdown can't surface a
-    // selection the page-server would silently drop.
-    await page.goto('/data/securities?issueDate=2024-01-15&issueDateOperator=greater_than');
+  test('issueDate dropdown surfaces the full PositionFilterOperator set', async ({ page }) => {
+    // #229 review: the dropdown is wrapper-driven, no UI-side narrowing.
+    // Bookmarks carrying any wrapper-known operator (e.g.
+    // LESS_THAN_OR_EQUALS, EQUALS, NOT_EQUALS, MORE_THAN_OR_EQUALS) load
+    // the value into the dropdown directly — the operator round-trips
+    // cleanly through the backend without any silent drop.
+    await page.goto('/data/securities?issueDate=2024-01-15&issueDateOperator=LESS_THAN_OR_EQUALS');
     await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
       timeout: 15_000,
     });
 
-    // Inspect the operator <select>'s options. Should be exactly 3:
-    // the empty placeholder + greater_than + lesser_than. No
-    // lesser_than_or_equals option.
-    const opValues = await page.getByLabel('Date operator').evaluate((el) => {
+    const opSelect = page.getByLabel('Date operator');
+    await expect(opSelect, 'wrapper-known operator selected from URL')
+      .toHaveValue('LESS_THAN_OR_EQUALS');
+
+    // The dropdown's option set MUST include every wrapper-known
+    // operator. Hand-asserting the four in-tree operators today;
+    // PositionFilterOperator.getAllTypeNames() drives the runtime
+    // list so a new proto entry shows up here automatically.
+    const opValues = await opSelect.evaluate((el) => {
       const select = el as HTMLSelectElement;
       return Array.from(select.options).map((o) => o.value);
     });
-    expect(opValues).toEqual(['', 'greater_than', 'lesser_than']);
+    expect(opValues).toEqual(expect.arrayContaining([
+      '', 'EQUALS', 'LESS_THAN', 'LESS_THAN_OR_EQUALS', 'MORE_THAN',
+    ]));
   });
 });

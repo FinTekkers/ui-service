@@ -91,6 +91,8 @@ export async function load({ locals, request }) {
     identifierType = identifierType ?? 'CUSIP';
   }
   const tradeDate = searchParams.get('tradeDate');
+  // Operator passes through untransformed — PositionFilterOperator's
+  // fromName (in $lib/positions) is the only validator (#229 review).
   const tradeDateOperator = searchParams.get('tradeDateOperator');
   const assetClass = searchParams.get('assetClass');
   const portfolioId = searchParams.get('portfolioId');
@@ -195,13 +197,7 @@ export async function load({ locals, request }) {
     validSortDirection,
     identifier || undefined,
     tradeDate || undefined,
-    tradeDateOperator === 'greater_than'
-      ? 'greater_than'
-      : tradeDateOperator === 'lesser_than_or_equals'
-        ? 'lesser_than_or_equals'
-        : tradeDateOperator === 'lesser_than'
-          ? 'lesser_than'
-          : undefined,
+    tradeDateOperator ?? undefined,
     assetClass || undefined,
     portfolioId || undefined,
     locals.user?.apiKey,
