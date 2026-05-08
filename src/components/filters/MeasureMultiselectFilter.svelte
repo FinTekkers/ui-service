@@ -25,31 +25,46 @@
   // known measure name (sentinel UNKNOWN_MEASURE excluded)" — adding
   // a new proto entry upstream auto-propagates to this dropdown.
   import { Measure } from '@fintekkers/ledger-models/node/wrappers/models/position/measure';
+  import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
+  // The runtime destructure gives us the value namespace
+  // (MeasureProto.PRESENT_VALUE etc.); the type-only alias lets us
+  // annotate `Set<MeasureProtoType>` without the value-vs-type
+  // collision. Same pattern as FieldProto / FieldProtoType in
+  // positions.ts and elsewhere.
+  import type { MeasureProto as MeasureProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
+  const { MeasureProto } = measure_pkg;
 
   // Valuation-only measures are excluded by default — they require a
   // RunValuation call rather than the Position search the basic
   // /data/positions page hits, so showing them in the multiselect
   // would surface a silent no-op. Consumers that want them (a future
   // valuations page) can pass a different supportedMeasures list.
-  // This is a UI policy choice on which measures belong on which
-  // page, not a claim about the vocabulary itself — the vocabulary
-  // lives upstream in ledger-models.
-  const VALUATION_ONLY_MEASURES = new Set([
-    'PRESENT_VALUE_CASHFLOWS',
-    'PRESENT_VALUE',
-    'REAL_YIELD',
-    'INFLATION_ADJUSTED_PRINCIPAL',
-    'DISCOUNT_MARGIN',
-    'SPREAD_DURATION',
+  //
+  // Set keyed by MeasureProto enum *values* (not name strings) so
+  // TypeScript catches drift if any of these proto entries gets
+  // renamed/removed upstream — the static reference fails to compile
+  // rather than silently no-op'ing at runtime. Per #154 review
+  // feedback: prefer strongly-typed enum members over string
+  // literals when the comparison target is a proto identity.
+  const VALUATION_ONLY_MEASURES = new Set<MeasureProtoType>([
+    MeasureProto.PRESENT_VALUE_CASHFLOWS,
+    MeasureProto.PRESENT_VALUE,
+    MeasureProto.REAL_YIELD,
+    MeasureProto.INFLATION_ADJUSTED_PRINCIPAL,
+    MeasureProto.DISCOUNT_MARGIN,
+    MeasureProto.SPREAD_DURATION,
   ]);
 
   /**
    * The default proto-name allowlist: every Measure entry from the
-   * wrapper minus the valuation-only set.
+   * wrapper minus the valuation-only set. The set lookup goes via
+   * Measure.fromName so the (string-name-from-getAllTypeNames) →
+   * (numeric-enum-value-in-Set) translation always uses the wrapper
+   * — keeping ledger-models as the single point of name resolution.
    */
   export const DEFAULT_MEASURE_NAMES: readonly string[] = Measure
     .getAllTypeNames()
-    .filter((k) => !VALUATION_ONLY_MEASURES.has(k));
+    .filter((name) => !VALUATION_ONLY_MEASURES.has(Measure.fromName(name)));
 
   function titleCase(name: string): string {
     return name
