@@ -16,11 +16,17 @@ import { test, expect } from '@playwright/test';
 
 test.describe('/data/securities filter extension', () => {
   test('search by EXCH_TICKER returns AAPL', async ({ page }) => {
-    // assetClass=Equity unblocks the equity universe (default is Fixed
-    // Income for backward compat); issuerName cleared so any equity issuer
-    // is accepted.
+    // M5 / #260: assetClass param dropped — pre-M5 the seed stored
+    // 'Equity' as the asset_class wire-field value (legacy free-form
+    // string), and the post-M5 filter validates against the
+    // hierarchy.json tree names ('EQUITY'). Until M3 reseeds the
+    // existing data with hierarchy-canonical names, an asset_class
+    // filter would mismatch live data. The TICKER+identifier path
+    // alone resolves AAPL without needing the class filter.
+    // issuerName cleared so the page-server's default
+    // 'US Government' doesn't exclude AAPL.
     await page.goto(
-      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&assetClass=Equity&issuerName=',
+      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&issuerName=',
     );
 
     // SecuritySelect's Fetch button always renders, regardless of which
@@ -65,24 +71,81 @@ test.describe('/data/securities filter extension', () => {
     expect(params.get('identifierType')).toBe('EXCH_TICKER');
   });
 
-  test('SecurityTypeFilter — ?securityType=BOND_SECURITY round-trips through Fetch', async ({ page }) => {
+  // M5 / #260: ?securityType= retired, ?productType= replaces it.
+  // BOND_SECURITY enum value retired entirely; the v0.2.1 hierarchy
+  // has per-leaf product types (TREASURY_NOTE / TIPS / TREASURY_FRN
+  // / TBILL / etc.). This test exercises a representative leaf to
+  // confirm the new URL param round-trips through the form.
+  test('ProductTypeFilter — ?productType=TREASURY_NOTE round-trips through Fetch', async ({ page }) => {
     await page.goto(
-      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&securityType=BOND_SECURITY',
+      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&productType=TREASURY_NOTE',
     );
     await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
       timeout: 15_000,
     });
 
-    const stSelect = page.locator('#security-type-select');
-    await expect(stSelect, 'SecurityTypeFilter loaded the URL value').toHaveValue('BOND_SECURITY');
+    const ptSelect = page.locator('#product-type-select');
+    await expect(ptSelect, 'ProductTypeFilter loaded the URL value').toHaveValue('TREASURY_NOTE');
 
     await page.getByRole('button', { name: /Fetch Securities/ }).click();
-    await page.waitForURL(/\/data\/securities\?.*securityType=BOND_SECURITY/, { timeout: 10_000 });
+    await page.waitForURL(/\/data\/securities\?.*productType=TREASURY_NOTE/, { timeout: 10_000 });
 
     const params = new URL(page.url()).searchParams;
-    expect(params.get('securityType')).toBe('BOND_SECURITY');
+    expect(params.get('productType')).toBe('TREASURY_NOTE');
     expect(params.get('identifier'), 'other params preserved').toBe('AAPL');
     expect(params.get('identifierType')).toBe('EXCH_TICKER');
+    // Legacy ?securityType= URL key gone — confirm the form doesn't
+    // accidentally re-emit it.
+    expect(params.get('securityType'), 'legacy securityType param dropped').toBeNull();
+  });
+
+  // M5 / #260: new InstrumentTypeFilter primitive. URL round-trip
+  // smoke test mirroring the ProductTypeFilter case above.
+  test('InstrumentTypeFilter — ?instrumentType=CASH round-trips through Fetch', async ({ page }) => {
+    await page.goto(
+      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&instrumentType=CASH',
+    );
+    await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    const itSelect = page.locator('#instrument-type-select');
+    await expect(itSelect, 'InstrumentTypeFilter loaded the URL value').toHaveValue('CASH');
+
+    await page.getByRole('button', { name: /Fetch Securities/ }).click();
+    await page.waitForURL(/\/data\/securities\?.*instrumentType=CASH/, { timeout: 10_000 });
+
+    expect(new URL(page.url()).searchParams.get('instrumentType')).toBe('CASH');
+  });
+
+  // M5 / #260: tree-aware AssetClassFilter. Selecting FIXED_INCOME
+  // (an internal node) should match descendants RATES / CREDIT on
+  // the page-server side. The URL round-trip preserves the user's
+  // pick verbatim — the descendant expansion is server-side post-
+  // filter logic, not URL serialization.
+  test('AssetClassFilter — ?assetClass=FIXED_INCOME (internal node) round-trips and shows tree-indented options', async ({ page }) => {
+    await page.goto('/data/securities?assetClass=FIXED_INCOME');
+    await expect(page.getByRole('button', { name: /Fetch Securities/ })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    const acSelect = page.locator('#asset-class-input');
+    await expect(acSelect, 'internal-node selection loaded from URL').toHaveValue('FIXED_INCOME');
+
+    // Tree-shape check: RATES is rendered as a depth-1 indented
+    // option. The component uses U+00A0 (non-breaking space) for
+    // indentation because plain spaces inside <option> text collapse
+    // per the HTML spec — match the NBSP explicitly.
+    const optionLabels = await acSelect.evaluate((el) => {
+      return Array.from((el as HTMLSelectElement).options).map((o) => o.text);
+    });
+    const ratesOption = optionLabels.find((l) => l.trim() === 'RATES' || l.trim() === 'Rates');
+    expect(ratesOption, 'RATES is rendered as a tree option').toBeDefined();
+    expect(ratesOption!.charCodeAt(0), 'RATES is indented under FIXED_INCOME via NBSP').toBe(0x00a0);
+
+    await page.getByRole('button', { name: /Fetch Securities/ }).click();
+    await page.waitForURL(/\/data\/securities\?.*assetClass=FIXED_INCOME/, { timeout: 10_000 });
+    expect(new URL(page.url()).searchParams.get('assetClass')).toBe('FIXED_INCOME');
   });
 
   test('legacy ?identifier=...&identifierType=CUSIP URL shape still works', async ({ page }) => {

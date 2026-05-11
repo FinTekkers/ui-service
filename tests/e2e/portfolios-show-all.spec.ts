@@ -15,7 +15,6 @@
 import { test, expect } from '@playwright/test';
 import grpc from '@grpc/grpc-js';
 
-const SOMA_NAME = 'Federal Reserve SOMA Holdings';
 const LEDGER_URL = 'localhost:8082';
 
 async function createPortfolio(name: string): Promise<void> {
@@ -73,9 +72,12 @@ async function createPortfolio(name: string): Promise<void> {
 }
 
 test.describe('/data/portfolios index (#221)', () => {
-  test('lists every portfolio (the SOMA-only filter is gone)', async ({ page }) => {
-    // Seed a fresh portfolio so the assertion is deterministic
-    // regardless of what's already on the backend.
+  test('lists every portfolio (no hardcoded name filter on the search call)', async ({ page }) => {
+    // Seed a fresh portfolio so the test has a row it owns to assert
+    // against, regardless of seed contents. (Pre-M5 this also
+    // verified SOMA's continued presence; M5's clean-slate migration
+    // dropped SOMA from the seed so the assertion now just checks
+    // "more than one row" + "the fresh probe is among them".)
     const probeName = `qa-221-probe-${Date.now().toString(36)}`;
     await createPortfolio(probeName);
 
@@ -84,19 +86,23 @@ test.describe('/data/portfolios index (#221)', () => {
       timeout: 15_000,
     });
 
-    // Both rows must render. Pre-fix, the hardcoded SOMA filter would
-    // have hidden the probe portfolio entirely.
-    const somaRow = page.locator('table tbody tr', { hasText: SOMA_NAME });
+    // Multiple rows render — pre-#221 the hardcoded
+    // PORTFOLIO_NAME=='Federal Reserve SOMA Holdings' filter would
+    // have truncated to one row. (At minimum 2 rows: the probe we
+    // just created + at least one other from the seed / accumulated
+    // test runs.)
+    const allRows = page.locator('table tbody tr');
+    await expect(allRows, 'more than one portfolio renders post-#221').toHaveCount(
+      await allRows.count(), // resolves to a static number first, then asserts ≥ 2 below
+    );
+    const rowCount = await allRows.count();
+    expect(rowCount, 'multiple portfolios render').toBeGreaterThanOrEqual(2);
+
     const probeRow = page.locator('table tbody tr', { hasText: probeName });
-    await expect(somaRow, 'SOMA row present').toHaveCount(1, { timeout: 10_000 });
     await expect(probeRow, 'fresh probe portfolio renders post-#221 fix')
       .toHaveCount(1, { timeout: 10_000 });
 
-    // As Of column renders post-#221 amend (column header + a YYYY-MM-DD
-    // date for our freshly-created probe portfolio). The probe was
-    // just created so its asOf is today (or yesterday-UTC if the test
-    // runs near midnight); assert the YYYY-MM-DD shape rather than a
-    // specific date.
+    // As Of column renders post-#221 amend.
     await expect(page.getByRole('button', { name: /^As Of/ }), 'As Of header renders')
       .toBeVisible();
     const probeAsOfCell = probeRow.locator('td').last();

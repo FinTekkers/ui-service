@@ -5,7 +5,7 @@ import { ProductInput, BondInput, TipsInput, FrnInput } from '@fintekkers/ledger
 import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
 import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
 import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js';
-import { SecurityTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb.js';
+import { ProductTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js';
 import { CouponTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb.js';
 import { CouponFrequencyProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb.js';
 import index_type_pkg from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb.js';
@@ -209,7 +209,14 @@ function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
   security.setVersion('0.0.1');
   security.setUuid(UUID.random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
-  security.setSecurityType(SecurityTypeProto.BOND_SECURITY);
+  // M5 / #260: BOND_SECURITY retired. The bond calculator's
+  // synthetic Security represents a generic coupon-paying treasury
+  // note (it carries a coupon rate + face value + maturity, no
+  // bills/TIPS/FRN-specific fields). TREASURY_NOTE is the
+  // narrowest accurate leaf — calculator dispatches off product
+  // type, and TREASURY_NOTE is what the engine's bond pricer
+  // expects.
+  security.setProductType(ProductTypeProto.TREASURY_NOTE);
   security.setAssetClass('Fixed Income');
 
   if (inputs.issuerName) {
@@ -367,7 +374,7 @@ function buildManualTipsSecurityProto(inputs: TipsCalculatorInputs): SecurityPro
   security.setVersion('0.0.1');
   security.setUuid(UUID.random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
-  security.setSecurityType(SecurityTypeProto.TIPS);
+  security.setProductType(ProductTypeProto.TIPS);
   security.setAssetClass('Fixed Income');
   security.setIssuerName('US Government');
 
@@ -482,7 +489,9 @@ function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto
   security.setVersion('0.0.1');
   security.setUuid(UUID.random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
-  security.setSecurityType(SecurityTypeProto.FRN);
+  // M5 / #260: FRN → TREASURY_FRN (the FRN proto enum was renamed
+  // to match the GOV_BOND-leaf convention).
+  security.setProductType(ProductTypeProto.TREASURY_FRN);
   security.setAssetClass('Fixed Income');
 
   if (inputs.faceValue) {

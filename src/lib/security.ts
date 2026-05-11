@@ -7,8 +7,14 @@ import Security from "@fintekkers/ledger-models/node/wrappers/models/security/se
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { getServiceConnection } from "$lib/grpc-auth";
-import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
-import { SecurityType } from "@fintekkers/ledger-models/node/wrappers/models/security/security_type";
+// M5 / #260: ProductTypeProto + product_hierarchy registry. SecurityType
+// wrapper retired in 0.2.1; consumer-side filtering is by productType
+// (name string) via the wrapper.
+import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb";
+import {
+  assetClassDescendantsOf,
+  instrumentTypeOf,
+} from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy";
 import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
@@ -42,7 +48,11 @@ export interface securityData {
   faceValue?: string;
   datedDate?: string;
   asOf: string;
-  securityType?: number;
+  // M5 / #260: numeric ProductTypeProto value, for code paths that need
+  // to dispatch on enum equality (e.g. /data/calculators picking TIPS
+  // vs TREASURY_FRN buckets). `productType: string` above carries the
+  // name form for display + URL serialization.
+  productTypeEnum?: number;
 }
 
 /**
@@ -56,17 +66,21 @@ export interface securityData {
 // platform currently models. The names + iteration order live in
 // $lib/securityFilterTypes (browser-safe, no grpc deps); we re-export them
 // here so existing callers of $lib/security keep working.
+// M5 / #260: SecurityTypeName retired; ProductTypeName is the new
+// per-leaf vocabulary.
 import {
   IDENTIFIER_TYPE_NAMES,
-  SECURITY_TYPE_NAMES,
+  PRODUCT_TYPE_NAMES,
   type IdentifierTypeName,
-  type SecurityTypeName,
+  type ProductTypeName,
+  type InstrumentTypeName,
 } from './securityFilterTypes';
 export {
   IDENTIFIER_TYPE_NAMES,
-  SECURITY_TYPE_NAMES,
+  PRODUCT_TYPE_NAMES,
   type IdentifierTypeName,
-  type SecurityTypeName,
+  type ProductTypeName,
+  type InstrumentTypeName,
 };
 
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
@@ -80,16 +94,6 @@ function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProt
     case 'CUSIP':
     default: return IdentifierTypeProto.CUSIP;
   }
-}
-
-// SecurityType.fromName (ledger-models 0.1.134+) replaces the local
-// proto-name → enum switch. Throws on unknown name; the call site
-// passes a value that's already constrained to the SecurityTypeName
-// union, so the throw is unreachable at runtime — but the wrapper's
-// error message still lists valid names if a malformed cast slips
-// through.
-function securityTypeNameToProto(name: SecurityTypeName): number {
-  return SecurityType.fromName(name);
 }
 
 export async function FetchSecurity(
@@ -107,13 +111,34 @@ export async function FetchSecurity(
   // not by trimming the type here.
   issueDateOperator?: string,
   apiKey?: string,
-  securityType?: SecurityTypeName,
+  productType?: ProductTypeName,
+  instrumentType?: InstrumentTypeName,
 ): Promise<securityData[]> {
   const filterSecurity = new PositionFilter();
 
   if (assetClass) {
+    // M5 / #260: assetClass is tree-aware. Selecting an internal
+    // node (FIXED_INCOME) matches its descendant set
+    // (RATES, CREDIT). Selecting a leaf (RATES) matches just that
+    // leaf. The PositionFilter today only supports addEqualsFilter
+    // (single value); we walk the descendants set and rely on the
+    // post-filter below to cover the multi-match case, since the
+    // gRPC filter currently can't express IN.
+    //
+    // For a leaf input, descendants is [], so the eq-filter alone
+    // is correct. For an internal node, we pass the node itself to
+    // the eq-filter (best-effort server-side narrowing) and the
+    // post-filter widens to the descendant set.
     filterSecurity.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass);
   }
+
+  // Compute the asset-class match set up front. Empty array means
+  // "no asset-class post-filter applied". Includes the input itself
+  // PLUS descendants when the input is an internal node.
+  const assetClassMatchSet: ReadonlySet<string> =
+    assetClass
+      ? new Set([assetClass, ...assetClassDescendantsOf(assetClass)])
+      : new Set<string>();
 
   if (issuerName) {
     filterSecurity.addEqualsFilter(FieldProto.SECURITY_ISSUER_NAME, issuerName);
@@ -131,15 +156,17 @@ export async function FetchSecurity(
     filterSecurity.addFilter(FieldProto.ISSUE_DATE, operator, issueDateObj);
   }
 
-  // securityType is post-filtered after streaming. The PositionFilter proto
-  // has no SECURITY_TYPE field today, so we can't push the filter to the
-  // server; instead we filter the streamed results below by
-  // security.proto.getSecurityType(). The result set for /data/securities
-  // is already capped (universe loop uses ~1000/class), so post-filter cost
-  // is bounded.
-  const securityTypeProtoValue = securityType
-    ? securityTypeNameToProto(securityType)
-    : null;
+  // productType + instrumentType are post-filtered after streaming.
+  // The PositionFilter proto has no PRODUCT_TYPE / INSTRUMENT_TYPE
+  // field today, so we can't push these filters server-side; instead
+  // we filter the streamed results below by
+  // security.proto.getProductType() / instrumentTypeOf(productType).
+  // The result set for /data/securities is already capped (universe
+  // loop uses ~1000/class), so post-filter cost is bounded.
+  const productTypeProtoValue: number | null =
+    productType !== undefined && productType !== null
+      ? ((ProductTypeProto as unknown as Record<string, number>)[productType] ?? null)
+      : null;
 
   try {
     const conn = getServiceConnection(apiKey);
@@ -172,16 +199,35 @@ export async function FetchSecurity(
     return securities.reduce(
       (acc: securityData[], security: Security) => {
        try {
-        // Post-filter on securityType (no SECURITY_TYPE FieldProto, so the
-        // gRPC search can't narrow this server-side). Bond product variants
-        // — TIPS / FRN — are distinct proto values from BOND_SECURITY, so
-        // a 'BOND_SECURITY' filter does NOT also match TIPS/FRN. Callers
-        // wanting "all bonds" should pass assetClass=Fixed Income instead.
+        // Post-filter on productType (M5 / #260: no PRODUCT_TYPE
+        // FieldProto, so the gRPC search can't narrow server-side).
         if (
-          securityTypeProtoValue !== null &&
-          security.proto.getSecurityType() !== securityTypeProtoValue
+          productTypeProtoValue !== null &&
+          security.proto.getProductType() !== productTypeProtoValue
         ) {
           return acc;
+        }
+
+        // Post-filter on instrumentType — wrapper resolves the leaf
+        // productType to its instrument_type via hierarchy.json.
+        const productTypeName = security.getProductType();
+        if (
+          instrumentType &&
+          instrumentTypeOf(productTypeName) !== instrumentType
+        ) {
+          return acc;
+        }
+
+        // Tree-aware asset-class post-filter. If the user picked an
+        // internal node like FIXED_INCOME, the eq-filter sent to the
+        // server narrowed to that exact value; widen the match here to
+        // include descendants too (RATES, CREDIT) so server-side
+        // results that came back as 'RATES' (for instance) still pass.
+        if (assetClassMatchSet.size > 0) {
+          const rowAssetClass = security.getAssetClass();
+          if (rowAssetClass && !assetClassMatchSet.has(rowAssetClass)) {
+            return acc;
+          }
         }
         const issuanceList = security.proto.getIssuanceInfoList();
         const issuance =
@@ -239,9 +285,14 @@ export async function FetchSecurity(
           const maturityDateStr = maturityDate.getTime() === 0 ? '' : maturityDate.toISOString().slice(0, 10).replace(/-/g, '/');
           const asOfStr = security.getAsOf().toString().split(' ')[0]; // Format: "YYYY/MM/DD"
 
-          // Check if it's a bond security to get additional fields
-          const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY || security.proto.getSecurityType() === SecurityTypeProto.TIPS || security.proto.getSecurityType() === SecurityTypeProto.FRN;
-          const bondSecurity = isBond ? (security as BondSecurity) : null;
+          // M5 / #260: bond detection now goes through the wrapper's
+          // type-guard helper, which checks against ProductTypeProto.
+          // TREASURY_NOTE / TIPS / TREASURY_FRN. TBILL and STRIPS have
+          // different pricing mechanics and are intentionally excluded
+          // from the bond-shape getters; surfacing their bond-like
+          // fields here would silently drag the calculator-side
+          // assumptions onto incompatible products.
+          const bondSecurity = security.isBond() ? (security as BondSecurity) : null;
 
           // Serialize UUID for delete support
           const uuidProto = security.proto.getUuid();
@@ -260,9 +311,14 @@ export async function FetchSecurity(
             outstandingAmount,
             issuerName: security.getIssuerName(),
             assetClass: security.getAssetClass(),
-            productType: bondSecurity?.getProductType() ?? '',
+            // M5 / #260: getProductType() now returns the proto enum
+            // NAME string (e.g. 'TREASURY_NOTE'). Use the wrapper's
+            // canonical accessor — available on every Security, not
+            // just BondSecurity, since productType is now on the
+            // base Security proto.
+            productType: security.getProductType(),
             asOf: asOfStr,
-            securityType: security.proto.getSecurityType(),
+            productTypeEnum: security.proto.getProductType(),
           };
 
           try {
@@ -348,9 +404,8 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
     const uuidProto = security.proto.getUuid();
     const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
     const uuidStr = security.getID().toString();
-    const isBond = [SecurityTypeProto.BOND_SECURITY, SecurityTypeProto.TIPS, SecurityTypeProto.FRN]
-      .includes(security.proto.getSecurityType());
-    const bondSecurity = isBond ? (security as BondSecurity) : null;
+    // M5 / #260: same wrapper-driven bond narrowing as above.
+    const bondSecurity = security.isBond() ? (security as BondSecurity) : null;
 
     const result: securityData = {
       identifier: id,
@@ -364,9 +419,9 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
       outstandingAmount: '0',
       issuerName: security.getIssuerName(),
       assetClass: security.getAssetClass(),
-      productType: bondSecurity?.getProductType() ?? '',
+      productType: security.getProductType(),
       asOf: security.getAsOf().toString().split(' ')[0],
-      securityType: security.proto.getSecurityType(),
+      productTypeEnum: security.proto.getProductType(),
     };
 
     if (bondSecurity) {

@@ -1,7 +1,6 @@
 import { RunValuation, RunTipsValuation, RunFrnValuation } from '$lib/valuation';
 import type { BondCalculatorInputs, TipsCalculatorInputs, FrnCalculatorInputs } from '$lib/valuation';
 import { FetchSecurity } from '$lib/security';
-import { SecurityTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb.js';
 
 type SecurityItem = { cusip: string; issuerName: string; couponRate?: string; maturityDate: string };
 
@@ -12,7 +11,12 @@ export async function load({ locals, request }) {
 
   // Stream securities in the background — page renders immediately,
   // autocomplete dropdowns populate when the fetch completes.
-  const securitiesPromise = FetchSecurity('Fixed Income', 'US Government', undefined, undefined, undefined, undefined, apiKey)
+  // M5 / #260: scope to asset_class=RATES (GOV_BOND leaves all
+  // carry RATES per hierarchy.json), issuer=US Government. The
+  // tree-aware AssetClassFilter would let FIXED_INCOME widen to
+  // {RATES, CREDIT}, but for the calculator's Treasury-specific
+  // dropdowns the narrower RATES is correct.
+  const securitiesPromise = FetchSecurity('RATES', 'US Government', undefined, undefined, undefined, undefined, apiKey)
     .then(allSecurities => {
       const today = new Date().toISOString().slice(0, 10).replace(/-/g, '/');
       const bondSecurities: SecurityItem[] = [];
@@ -22,8 +26,11 @@ export async function load({ locals, request }) {
       for (const s of allSecurities) {
         if (s.maturityDate < today) continue;
         const item: SecurityItem = { cusip: s.cusip, issuerName: s.issuerName, couponRate: s.couponRate, maturityDate: s.maturityDate };
-        if (s.securityType === SecurityTypeProto.TIPS) tipsSecurities.push(item);
-        else if (s.securityType === SecurityTypeProto.FRN) frnSecurities.push(item);
+        // M5 / #260: dispatch by productType *name* (proto enum name
+        // string) so we don't have to import ProductTypeProto here.
+        // 'FRN' became 'TREASURY_FRN' in the v0.2.1 product registry.
+        if (s.productType === 'TIPS') tipsSecurities.push(item);
+        else if (s.productType === 'TREASURY_FRN') frnSecurities.push(item);
         else bondSecurities.push(item);
       }
       return { bondSecurities, tipsSecurities, frnSecurities };

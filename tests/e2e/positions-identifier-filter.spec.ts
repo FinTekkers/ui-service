@@ -37,14 +37,22 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 
-const PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
 const PROBE_CUSIP = 'ZZZZZZZZZ';
 const PROBE_TICKER = 'ZZTOP';
 const PROBE_TRADE_DATE = '2026-05-06';
 
+// M5 / #260: pre-M5 this helper looked specifically for
+// 'Federal Reserve SOMA Holdings' (the deterministic seed name).
+// Clean-slate migration regenerated the seed; helper now picks the
+// first portfolio in the table. These tests only need a valid
+// portfolioId as scope context — they don't assert SOMA-specific
+// behaviour.
 async function resolvePortfolioId(page: Page): Promise<string> {
   await page.goto('/data/portfolios');
-  const link = page.getByRole('link', { name: PORTFOLIO_NAME });
+  await expect(page.getByRole('heading', { name: 'Portfolios' })).toBeVisible({ timeout: 15_000 });
+  const firstRow = page.locator('table tbody tr').first();
+  await expect(firstRow, 'at least one portfolio in seed').toBeVisible({ timeout: 10_000 });
+  const link = firstRow.getByRole('link').filter({ hasNotText: /^(Txns|Delete)$/ }).first();
   const href = await link.getAttribute('href');
   expect(href).toMatch(/portfolioId=[0-9a-f-]{36}/);
   return new URL(href!, page.url()).searchParams.get('portfolioId')!;

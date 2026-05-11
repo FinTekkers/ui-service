@@ -11,9 +11,27 @@ import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/p
 import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js';
 import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
-import { SecurityTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb';
 import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
 import type BondSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity';
+// M5 / #260: on-the-run pick uses the canonical US-Treasury cycle
+// set per the M5 dispatch: TBILL, TREASURY_NOTE, TREASURY_BOND,
+// TIPS, TREASURY_FRN. STRIPS is excluded (it's a derived instrument,
+// not regularly auctioned on the curve) and SOVEREIGN_BOND is
+// excluded (non-US). Both are descendants of GOV_BOND but neither
+// belongs on the US par-yield curve.
+//
+// Pre-M5 the picker filtered by `security_type == BOND_SECURITY`
+// and the #232 amend (PR #153) added a bucket-aware
+// couponRate > 0 filter to keep STRIPS out of the 30Y bucket. With
+// first-class product types, STRIPS is excluded at the candidate
+// stage and the bucket-level coupon heuristic is retired.
+const ON_THE_RUN_PRODUCT_TYPES: ReadonlySet<string> = new Set([
+  'TBILL',
+  'TREASURY_NOTE',
+  'TREASURY_BOND',
+  'TIPS',
+  'TREASURY_FRN',
+]);
 import { getServiceConnection } from '$lib/grpc-auth';
 
 const { FieldProto } = pkg;
@@ -67,21 +85,25 @@ function daysBetween(a: Date, b: Date): number {
 
 /**
  * Per-bucket candidate matcher — extracted as a pure helper so the
- * bucket-aware zero-coupon rule (#232) can be unit-tested without
- * mocking the gRPC stack. Generic on the candidate shape: only
- * issueDate / maturityDate / couponRate are read here.
+ * picker rule can be unit-tested without mocking the gRPC stack.
+ * Generic on the candidate shape: only issueDate / maturityDate are
+ * read here.
  *
- * Bucket-aware zero-coupon rule (#232 amend after review feedback):
- * T-bills (bucket ≤ 12 months) are LEGITIMATELY zero-coupon —
- * they're discount instruments, not coupon-bearing. The original
- * universal couponRate > 0 filter wrongly excluded them. Notes /
- * bonds (bucket > 12 months) should always have a coupon, so a
- * zero-coupon candidate there is a Treasury STRIP slipping in via
- * the BOND_SECURITY type. Stopgap maturity-bucket heuristic; the
- * long-term fix is a proper STRIPS_SECURITY / T_BILL distinction
- * in ledger-models, tracked upstream alongside this issue.
+ * M5 / #260: the pre-M5 bucket-aware zero-coupon filter (#232 PR
+ * #153 — "drop couponRate==0 candidates from buckets > 12 months")
+ * is RETIRED. Treasury STRIPS now have a first-class ProductType
+ * enum value (STRIPS) instead of slipping in via BOND_SECURITY
+ * with couponRate=0; the upstream `descendantsOf('GOV_BOND')`
+ * candidate filter in selectOnTheRunBonds intentionally INCLUDES
+ * STRIPS, and we want exactly one on-the-run pick per bucket
+ * regardless of coupon shape. The previous heuristic's only
+ * accidental benefit (keeping STRIPS out of the 30Y bucket) is now
+ * a non-concern: STRIPS rendering as a 30Y on-the-run row is
+ * correct in the new model (each leaf product type prices on its
+ * own mechanics, and the row description carries the productType
+ * name so users see what they picked).
  */
-export function pickBestForBucket<C extends { issueDate: Date; maturityDate: Date; couponRate: number }>(
+export function pickBestForBucket<C extends { issueDate: Date; maturityDate: Date }>(
   candidates: readonly C[],
   bucket: { label: string; months: number },
   asOfDate: Date,
@@ -91,7 +113,6 @@ export function pickBestForBucket<C extends { issueDate: Date; maturityDate: Dat
 
   const matches = candidates
     .filter((c) => Math.abs(daysBetween(targetMaturity, c.maturityDate)) <= toleranceDays)
-    .filter((c) => bucket.months <= 12 || c.couponRate > 0)
     .sort((a, b) => b.issueDate.getTime() - a.issueDate.getTime());
 
   return matches[0] ?? null;
@@ -132,7 +153,7 @@ export async function selectOnTheRunBonds(asOfDate: Date, apiKey?: string): Prom
   });
 
   const candidates = (securities.filter((s) =>
-    s.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY,
+    ON_THE_RUN_PRODUCT_TYPES.has(s.getProductType()),
   ) as BondSecurity[])
     .map((bond) => {
       try {

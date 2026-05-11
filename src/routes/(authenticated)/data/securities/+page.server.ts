@@ -2,17 +2,21 @@ import {
   FetchSecurity,
   FetchSecurityByUuid,
   IDENTIFIER_TYPE_NAMES,
-  SECURITY_TYPE_NAMES,
+  PRODUCT_TYPE_NAMES,
   type IdentifierTypeName,
-  type SecurityTypeName,
+  type ProductTypeName,
+  type InstrumentTypeName,
 } from "$lib/security";
+import { INSTRUMENT_TYPE_NAMES, ASSET_CLASS_NAMES } from '$lib/securityFilterTypes';
 import { deleteSecurity } from "$lib/security-delete";
 
-// Backward-compat defaults: pre-#226 the page-server hardcoded these. New
-// /data/securities URLs can override either one to broaden the search.
-// Existing bookmarks (?identifier=...&identifierType=CUSIP) keep working
-// because both params default to today's behavior.
-const DEFAULT_ASSET_CLASS = 'Fixed Income';
+// Backward-compat default for issuerName only — the legacy hard-coded
+// 'Fixed Income' asset class default is dropped post-M5 (#260): the
+// tree-aware AssetClassFilter requires that selecting nothing means
+// "all asset classes", consistent with all other dropdowns. The
+// hierarchy.json asset_class names are 'RATES', 'EQUITY', etc., not
+// 'Fixed Income' — applying a legacy default would only confuse
+// post-cutover users.
 const DEFAULT_ISSUER_NAME = 'US Government';
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
@@ -35,32 +39,48 @@ export async function load({ locals, request }) {
   // wrapper's fromName (in $lib/security) is the only validator
   // (#229 review: no UI-side normalization).
   const issueDateOperator = searchParams.get('issueDateOperator') ?? undefined;
-  // assetClass / issuerName are now URL-driven. Empty string in the URL
-  // (e.g. ?assetClass=) clears the filter so the user can broaden the
-  // search across asset classes; absence of the param keeps the default.
+  // assetClass / issuerName are URL-driven. M5 / #260: asset class is
+  // tree-aware — selecting an internal node (FIXED_INCOME) widens
+  // server-side. The allowlist validates against the hierarchy tree
+  // set (allAssetClasses()).
   const rawAssetClass = searchParams.get('assetClass');
-  const assetClass = rawAssetClass === null ? DEFAULT_ASSET_CLASS : rawAssetClass;
+  const assetClass: string | null =
+    rawAssetClass && (ASSET_CLASS_NAMES as readonly string[]).includes(rawAssetClass)
+      ? rawAssetClass
+      : null;
   const rawIssuerName = searchParams.get('issuerName');
   const issuerName = rawIssuerName === null ? DEFAULT_ISSUER_NAME : rawIssuerName;
-  // securityType (post-filtered in FetchSecurity since FieldProto has no
-  // SECURITY_TYPE today). Allowlist guards against typo'd URLs.
-  const rawSecurityType = searchParams.get('securityType');
-  const securityType: SecurityTypeName | undefined =
-    rawSecurityType && (SECURITY_TYPE_NAMES as readonly string[]).includes(rawSecurityType)
-      ? (rawSecurityType as SecurityTypeName)
+
+  // productType (M5 / #260: replaces ?securityType=). Post-filtered in
+  // FetchSecurity since PositionFilter has no PRODUCT_TYPE today.
+  // Allowlist sourced from product_hierarchy.activeProductTypes().
+  const rawProductType = searchParams.get('productType');
+  const productType: ProductTypeName | undefined =
+    rawProductType && (PRODUCT_TYPE_NAMES as readonly string[]).includes(rawProductType)
+      ? (rawProductType as ProductTypeName)
+      : undefined;
+
+  // instrumentType (NEW in M5 / #260) — CASH / DERIVATIVE /
+  // REFERENCE_INDEX, sourced from product_hierarchy.allInstrumentTypes().
+  // Post-filtered via hierarchy.json's per-leaf instrument_type mapping.
+  const rawInstrumentType = searchParams.get('instrumentType');
+  const instrumentType: InstrumentTypeName | undefined =
+    rawInstrumentType && (INSTRUMENT_TYPE_NAMES as readonly string[]).includes(rawInstrumentType)
+      ? (rawInstrumentType as InstrumentTypeName)
       : undefined;
 
   const security = uuid
     ? await FetchSecurityByUuid(uuid, locals.user?.apiKey)
     : await FetchSecurity(
-        assetClass || null,
+        assetClass,
         issuerName || null,
         identifier || undefined,
         identifierType,
         issueDate || undefined,
         issueDateOperator,
         locals.user?.apiKey,
-        securityType
+        productType,
+        instrumentType,
       );
 
   return {

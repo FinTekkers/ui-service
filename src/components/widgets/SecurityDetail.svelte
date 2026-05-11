@@ -13,7 +13,7 @@
     outstandingAmount: string;
     issuerName: string;
     assetClass: string;
-    securityType?: number;
+    productTypeEnum?: number;
     productType: string;
     productClass?: string;
     tenor?: string;
@@ -29,32 +29,37 @@
 
   const dispatch = createEventDispatcher();
 
-  const SECURITY_TYPE_LABELS: Record<number, string> = {
-    1: 'Cash',
-    2: 'Equity',
-    3: 'Bond',
-    4: 'TIPS',
-    5: 'FRN',
-    6: 'Index',
-    8: 'Equity Index',
+  // M5 / #260: badge driven by productType name. The CSS classes map
+  // a leaf product type to a badge color; defaults to 'badge-bond'
+  // for unmapped leaves so a new GOV_BOND child renders sensibly
+  // without a UI edit. Map kept terse because the productType name
+  // itself is the label — no friendly-string lookup needed.
+  const PRODUCT_TYPE_BADGE_CLASSES: Record<string, string> = {
+    CURRENCY: 'badge-cash',
+    MONEY_MARKET_FUND: 'badge-cash',
+    COMMON_STOCK: 'badge-equity',
+    PREFERRED_STOCK: 'badge-equity',
+    ADR: 'badge-equity',
+    ETF: 'badge-equity',
+    TREASURY_NOTE: 'badge-bond',
+    TREASURY_BOND: 'badge-bond',
+    TBILL: 'badge-bond',
+    STRIPS: 'badge-bond',
+    SOVEREIGN_BOND: 'badge-bond',
+    CORP_BOND: 'badge-bond',
+    MUNI_BOND: 'badge-bond',
+    TIPS: 'badge-tips',
+    TREASURY_FRN: 'badge-frn',
+    EQUITY_INDEX: 'badge-index',
+    BOND_INDEX: 'badge-index',
+    COMMODITY_INDEX: 'badge-index',
+    VIX_SPOT: 'badge-index',
+    CPI_SERIES: 'badge-index',
+    SOFR_SERIES: 'badge-index',
   };
 
-  const SECURITY_TYPE_CLASSES: Record<number, string> = {
-    1: 'badge-cash',
-    2: 'badge-equity',
-    3: 'badge-bond',
-    4: 'badge-tips',
-    5: 'badge-frn',
-    6: 'badge-index',
-    8: 'badge-index',
-  };
-
-  $: securityTypeLabel = security.securityType != null
-    ? (SECURITY_TYPE_LABELS[security.securityType] ?? String(security.securityType))
-    : null;
-
-  $: securityTypeBadgeClass = security.securityType != null
-    ? (SECURITY_TYPE_CLASSES[security.securityType] ?? 'badge-bond')
+  $: productTypeBadgeClass = security.productType
+    ? (PRODUCT_TYPE_BADGE_CLASSES[security.productType] ?? 'badge-bond')
     : 'badge-bond';
 
   $: couponDisplay = security.couponRate
@@ -86,8 +91,8 @@
       <div class="identifier-row">
         <span class="identifier-value">{security.identifier}</span>
         <span class="id-type-tag">{security.identifierType}</span>
-        {#if securityTypeLabel}
-          <span class="badge {securityTypeBadgeClass}">{securityTypeLabel}</span>
+        {#if security.productType}
+          <span class="badge {productTypeBadgeClass}">{security.productType}</span>
         {/if}
       </div>
       <div class="issuer-name">{security.issuerName}</div>

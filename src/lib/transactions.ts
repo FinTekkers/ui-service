@@ -3,7 +3,10 @@ import * as datetime from "@fintekkers/ledger-models/node/wrappers/models/utils/
 import * as positionFilter from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Transaction from "@fintekkers/ledger-models/node/wrappers/models/transaction/transaction";
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
-import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
+// M5 / #260: bond detection via Security.isBond() wrapper helper.
+// The SecurityType wrapper + SecurityTypeProto were retired in 0.2.1;
+// the wrapper now narrows on the ProductTypeProto leaves
+// TREASURY_NOTE / TIPS / TREASURY_FRN.
 import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
@@ -90,7 +93,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
     for (const element of results) {
       try {
         const security: Security = element.getSecurity();
-        const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY;
+        const isBond = security.isBond();
         const bondSecurity = isBond ? (security as BondSecurity) : null;
 
         const txnUuid = element.proto?.getUuid?.();
