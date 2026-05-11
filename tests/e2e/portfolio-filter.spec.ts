@@ -15,61 +15,60 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 
-const SOMA_NAME = 'Federal Reserve SOMA Holdings';
-
-async function resolveSomaPortfolioId(page: Page): Promise<string> {
+/**
+ * Resolve a portfolio for autocomplete testing. Pre-M5 the seed was
+ * known to contain a 'Federal Reserve SOMA Holdings' entry; the M5
+ * clean-slate migration (#256) regenerated the seed with whatever
+ * test-runs accumulate, so the helper now picks the first portfolio
+ * in the table rather than SOMA-specifically. Returns {id, name} so
+ * tests can match the autocomplete suggestion against the actual
+ * name. Skip-with-warn if /data/portfolios is empty entirely (which
+ * shouldn't happen on a healthy backend but is worth surfacing).
+ */
+async function resolveFirstPortfolio(page: Page): Promise<{ id: string; name: string }> {
   await page.goto('/data/portfolios');
-  const link = page.getByRole('link', { name: SOMA_NAME });
+  // Wait for the table to render before reading rows — page-server
+  // streams the search response.
+  await expect(page.getByRole('heading', { name: 'Portfolios' })).toBeVisible({ timeout: 15_000 });
+  const firstRow = page.locator('table tbody tr').first();
+  await expect(firstRow, 'at least one portfolio in seed').toBeVisible({ timeout: 10_000 });
+  // The Portfolio-column link carries the portfolioId and the row
+  // text contains the portfolio name. Pull both off the row.
+  const link = firstRow.getByRole('link').filter({ hasNotText: /^(Txns|Delete)$/ }).first();
   const href = await link.getAttribute('href');
   expect(href).toMatch(/portfolioId=[0-9a-f-]{36}/);
-  return new URL(href!, page.url()).searchParams.get('portfolioId')!;
+  const name = (await link.textContent())?.trim() ?? '';
+  expect(name.length, 'portfolio has a non-empty name').toBeGreaterThan(0);
+  return {
+    id: new URL(href!, page.url()).searchParams.get('portfolioId')!,
+    name,
+  };
 }
 
 test.describe('/data/positions PortfolioFilter (#226 Phase 3 PR-A)', () => {
-  test('typing "Federal" suggests SOMA; selecting sets ?portfolioId on Fetch', async ({ page }) => {
-    const expectedPortfolioId = await resolveSomaPortfolioId(page);
+  test('typing the first portfolio prefix surfaces the autocomplete suggestion; selecting sets ?portfolioId on Fetch', async ({ page }) => {
+    const { id: expectedPortfolioId, name: portfolioName } = await resolveFirstPortfolio(page);
+    // M5 / #260: pre-M5 the seed deterministically contained
+    // 'Federal Reserve SOMA Holdings'. M2's clean-slate migration
+    // wiped + regenerated; we now type a prefix of whatever the
+    // first portfolio name is.
+    const prefix = portfolioName.slice(0, Math.min(4, portfolioName.length));
 
-    // Land on /data/positions WITHOUT a portfolioId AND without
-    // fields/measures so the page-server early-returns `positions: []`
-    // (avoids the unscoped FetchPosition path, which can be slow on
-    // the full SOMA seed). The form still renders, the universe is
-    // still loaded, and we exercise the autocomplete + URL emission
-    // — which is all this test cares about.
     await page.goto('/data/positions');
     const portfolioInput = page.locator('#position-portfolio-input');
     await expect(portfolioInput).toBeVisible({ timeout: 15_000 });
     await expect(portfolioInput, 'starts empty when URL has no portfolioId').toHaveValue('');
-    // Wait for the universe data load to finish before typing —
-    // PortfolioFilter's `universe` prop comes from page-server data,
-    // and a fast `.fill()` against an empty universe produces a
-    // suggestion list with zero entries. Under parallel-suite load
-    // this raced with the locator poll and produced intermittent
-    // 5s-timeout failures. networkidle is the cheap signal that SSR
-    // streaming + initial XHRs have settled.
     await page.waitForLoadState('networkidle');
 
-    // Fill 'Federal' — fires a single input event after Playwright sets
-    // the value. The primitive's onInput handler runs and (after the
-    // 250ms debounce) opens the suggestion list. .type() with per-char
-    // delays was flaky here; .fill() is the same UX outcome (typed
-    // text + onInput fired) without the multi-event timing surface.
     await portfolioInput.click();
-    await portfolioInput.fill('Federal');
+    await portfolioInput.fill(prefix);
 
-    // 10s timeout (was 5s) — the suggestion render is fast in
-    // isolation but full-suite parallel pressure occasionally pushed
-    // first-paint past the 5s budget. Bumping leaves headroom without
-    // hiding real regressions.
-    const suggestion = page.locator('.suggestion', { hasText: SOMA_NAME });
-    await expect(suggestion, 'autocomplete surfaces SOMA').toBeVisible({ timeout: 10_000 });
+    const suggestion = page.locator('.suggestion', { hasText: portfolioName });
+    await expect(suggestion, 'autocomplete surfaces the first portfolio').toBeVisible({ timeout: 10_000 });
 
-    // Click the suggestion (use mousedown via .click — Playwright
-    // dispatches mousedown before click, which is what the primitive
-    // listens to).
     await suggestion.click();
-    await expect(portfolioInput).toHaveValue(SOMA_NAME);
+    await expect(portfolioInput).toHaveValue(portfolioName);
 
-    // Click Fetch — URL re-emits with portfolioId set to the SOMA UUID.
     await page.getByRole('button', { name: 'Fetch position' }).click();
     await page.waitForURL(/\/data\/positions\?.*portfolioId=/, { timeout: 10_000 });
 
@@ -79,7 +78,7 @@ test.describe('/data/positions PortfolioFilter (#226 Phase 3 PR-A)', () => {
   });
 
   test('?portfolioId=<uuid> hydrates the input with the resolved name', async ({ page }) => {
-    const portfolioId = await resolveSomaPortfolioId(page);
+    const { id: portfolioId, name: portfolioName } = await resolveFirstPortfolio(page);
 
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
@@ -89,7 +88,7 @@ test.describe('/data/positions PortfolioFilter (#226 Phase 3 PR-A)', () => {
 
     const portfolioInput = page.locator('#position-portfolio-input');
     await expect(portfolioInput, 'page-server resolves UUID → portfolio name')
-      .toHaveValue(SOMA_NAME, { timeout: 15_000 });
+      .toHaveValue(portfolioName, { timeout: 15_000 });
 
     // Round-trip through Fetch — the form is now authoritative for
     // portfolioId (no inheritKeys). Should re-emit the same UUID.

@@ -1,21 +1,29 @@
 /**
- * Unit tests for the bucket-aware zero-coupon rule in
- * pickBestForBucket (second-brain#232 amend after review feedback).
+ * Unit tests for pickBestForBucket — the per-bucket on-the-run picker
+ * helper.
  *
- * The original PR #153 universally filtered couponRate > 0, which
- * wrongly excluded T-bills (legitimately zero-coupon discount
- * instruments). The amended rule applies the filter only to buckets
- * > 12 months, where notes/bonds live and a couponRate=0 entry is a
- * Treasury STRIP slipping in via the BOND_SECURITY type.
+ * Pre-M5 / #260: this file exercised the bucket-aware couponRate > 0
+ * filter from PR #153 (#232 amend) which kept Treasury STRIPS out of
+ * the 30Y bucket by detecting their zero-coupon shape.
  *
- * pickBestForBucket is generic on the candidate shape — it reads
- * only issueDate / maturityDate / couponRate — so tests feed in
- * minimal plain objects and don't need the gRPC mocking surface.
+ * Post-M5: STRIPS has its own first-class ProductType enum value
+ * (along with TBILL / TREASURY_NOTE / TREASURY_BOND / TIPS /
+ * TREASURY_FRN); the candidate-build stage in selectOnTheRunBonds
+ * filters by product type, so the bucket-level helper no longer has
+ * to reason about coupon shape. The helper's contract simplified to
+ * "pick the most recently issued candidate whose maturity is within
+ * tolerance of the bucket's target".
+ *
+ * These tests now exercise that simplified contract. The "STRIPS
+ * excluded" behavior is enforced one layer up (the canonical
+ * ON_THE_RUN_PRODUCT_TYPES set in selectOnTheRunBonds) and covered
+ * by the e2e regression in
+ * tests/e2e/treasury-curve-strips-filter.spec.ts.
  */
 import { describe, expect, test } from 'vitest';
 import { pickBestForBucket, TENOR_BUCKETS } from '$lib/treasuryCurveSelection';
 
-const ASOF = new Date('2026-05-08T12:00:00Z');
+const ASOF = new Date('2026-05-11T12:00:00Z');
 
 function addMonths(asOf: Date, n: number): Date {
   const d = new Date(asOf);
@@ -33,128 +41,76 @@ type Candidate = {
   cusip: string;
   issueDate: Date;
   maturityDate: Date;
-  couponRate: number;
 };
 
-describe('pickBestForBucket — T-bills (≤12m) accept zero-coupon', () => {
-  test('a zero-coupon ~6m bill IS picked into the 6M bucket', () => {
-    const bill: Candidate = {
-      cusip: 'BILL-123',
-      issueDate: addMonths(ASOF, -1),
-      maturityDate: addMonths(ASOF, 6),
-      couponRate: 0,
-    };
-    const best = pickBestForBucket([bill], bucket('6M'), ASOF);
-    expect(best?.cusip).toBe('BILL-123');
-  });
-
-  test('a zero-coupon ~3m bill IS picked into the 3M bucket', () => {
-    const bill: Candidate = {
-      cusip: 'BILL-3M',
-      issueDate: addMonths(ASOF, -1),
-      maturityDate: addMonths(ASOF, 3),
-      couponRate: 0,
-    };
-    const best = pickBestForBucket([bill], bucket('3M'), ASOF);
-    expect(best?.cusip).toBe('BILL-3M');
-  });
-
-  test('a zero-coupon ~12m bill IS picked into the 1Y bucket (boundary)', () => {
-    const bill: Candidate = {
-      cusip: 'BILL-1Y',
-      issueDate: addMonths(ASOF, -1),
-      maturityDate: addMonths(ASOF, 12),
-      couponRate: 0,
-    };
-    const best = pickBestForBucket([bill], bucket('1Y'), ASOF);
-    expect(best?.cusip).toBe('BILL-1Y');
-  });
-});
-
-describe('pickBestForBucket — Notes/Bonds (>12m) reject zero-coupon (STRIPS)', () => {
-  test('a zero-coupon ~30y STRIPS-shape candidate is NOT picked into the 30Y bucket', () => {
-    const strips: Candidate = {
-      cusip: 'STRIPS-XYZ',
+describe('pickBestForBucket — picks the most-recently-issued in-tolerance candidate', () => {
+  test('single candidate at the target maturity is picked', () => {
+    const c: Candidate = {
+      cusip: 'BOND-30Y',
       issueDate: addMonths(ASOF, -1),
       maturityDate: addMonths(ASOF, 360),
-      couponRate: 0,
     };
-    expect(pickBestForBucket([strips], bucket('30Y'), ASOF)).toBeNull();
+    expect(pickBestForBucket([c], bucket('30Y'), ASOF)?.cusip).toBe('BOND-30Y');
   });
 
-  test('a zero-coupon ~10y STRIPS-shape candidate is NOT picked into the 10Y bucket', () => {
-    const strips: Candidate = {
-      cusip: 'STRIPS-10Y',
-      issueDate: addMonths(ASOF, -1),
-      maturityDate: addMonths(ASOF, 120),
-      couponRate: 0,
-    };
-    expect(pickBestForBucket([strips], bucket('10Y'), ASOF)).toBeNull();
-  });
-
-  test('conventional 30Y bond (couponRate>0) IS picked into the 30Y bucket', () => {
-    const bond: Candidate = {
-      cusip: 'BOND-ABC',
-      issueDate: addMonths(ASOF, -1),
-      maturityDate: addMonths(ASOF, 360),
-      couponRate: 4.25,
-    };
-    const best = pickBestForBucket([bond], bucket('30Y'), ASOF);
-    expect(best?.cusip).toBe('BOND-ABC');
-  });
-
-  test('mixed 30Y bucket: STRIPS dropped, conventional bond picked even if STRIPS is more recently issued', () => {
-    const conventional: Candidate = {
-      cusip: 'BOND-ABC',
-      issueDate: addMonths(ASOF, -2),
-      maturityDate: addMonths(ASOF, 360),
-      couponRate: 4.25,
-    };
-    const strips: Candidate = {
-      // More recently issued — would win the most-recent tiebreak
-      // pre-fix, biasing the curve.
-      cusip: 'STRIPS-XYZ',
-      issueDate: addMonths(ASOF, -1),
-      maturityDate: addMonths(ASOF, 360),
-      couponRate: 0,
-    };
-    const best = pickBestForBucket([conventional, strips], bucket('30Y'), ASOF);
-    expect(best?.cusip).toBe('BOND-ABC');
-  });
-});
-
-describe('pickBestForBucket — most-recent tiebreak still applies within each filter regime', () => {
-  test('6M bucket: most-recently-issued bill wins (both zero-coupon)', () => {
-    const older: Candidate = {
-      cusip: 'BILL-OLD',
-      issueDate: addMonths(ASOF, -2),
-      maturityDate: addMonths(ASOF, 6),
-      couponRate: 0,
-    };
-    const newer: Candidate = {
-      cusip: 'BILL-NEW',
-      issueDate: addMonths(ASOF, -1),
-      maturityDate: addMonths(ASOF, 6),
-      couponRate: 0,
-    };
-    const best = pickBestForBucket([older, newer], bucket('6M'), ASOF);
-    expect(best?.cusip).toBe('BILL-NEW');
-  });
-
-  test('30Y bucket: most-recently-issued conventional bond wins (both have coupon)', () => {
+  test('30Y bucket: most-recently-issued wins when two candidates match', () => {
     const older: Candidate = {
       cusip: 'BOND-OLD',
       issueDate: addMonths(ASOF, -3),
       maturityDate: addMonths(ASOF, 360),
-      couponRate: 4.0,
     };
     const newer: Candidate = {
       cusip: 'BOND-NEW',
       issueDate: addMonths(ASOF, -1),
       maturityDate: addMonths(ASOF, 360),
-      couponRate: 4.25,
     };
-    const best = pickBestForBucket([older, newer], bucket('30Y'), ASOF);
-    expect(best?.cusip).toBe('BOND-NEW');
+    expect(pickBestForBucket([older, newer], bucket('30Y'), ASOF)?.cusip).toBe('BOND-NEW');
+  });
+
+  test('6M bucket: most-recently-issued bill wins', () => {
+    const older: Candidate = {
+      cusip: 'BILL-OLD',
+      issueDate: addMonths(ASOF, -2),
+      maturityDate: addMonths(ASOF, 6),
+    };
+    const newer: Candidate = {
+      cusip: 'BILL-NEW',
+      issueDate: addMonths(ASOF, -1),
+      maturityDate: addMonths(ASOF, 6),
+    };
+    expect(pickBestForBucket([older, newer], bucket('6M'), ASOF)?.cusip).toBe('BILL-NEW');
+  });
+
+  test('returns null when no candidate falls within tolerance', () => {
+    // 30Y bucket targets ~360 months out; a 60-month-out candidate
+    // is way outside the long-tenor tolerance.
+    const wayOff: Candidate = {
+      cusip: 'NOT-A-MATCH',
+      issueDate: addMonths(ASOF, -1),
+      maturityDate: addMonths(ASOF, 60),
+    };
+    expect(pickBestForBucket([wayOff], bucket('30Y'), ASOF)).toBeNull();
+  });
+
+  test('empty candidate list returns null', () => {
+    expect(pickBestForBucket([], bucket('10Y'), ASOF)).toBeNull();
+  });
+});
+
+describe('pickBestForBucket — M5 / #260: no longer applies a coupon-shape filter', () => {
+  // Pre-M5 the bucket-level filter dropped couponRate=0 candidates
+  // from buckets > 12 months. Post-M5 STRIPS is filtered at the
+  // candidate stage in selectOnTheRunBonds via
+  // ON_THE_RUN_PRODUCT_TYPES, so the helper trusts that what it
+  // receives belongs in the bucket. This test locks in the
+  // simplification — the generic constraint no longer requires
+  // couponRate.
+  test('a candidate with no coupon-rate field is picked when its maturity matches', () => {
+    const c: Candidate = {
+      cusip: 'BOND-30Y',
+      issueDate: addMonths(ASOF, -1),
+      maturityDate: addMonths(ASOF, 360),
+    };
+    expect(pickBestForBucket([c], bucket('30Y'), ASOF)?.cusip).toBe('BOND-30Y');
   });
 });

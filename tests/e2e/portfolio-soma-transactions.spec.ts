@@ -24,7 +24,13 @@ test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
     await page.goto('/data/portfolios');
     await expect(page.getByRole('heading', { name: 'Portfolios' })).toBeVisible();
 
+    // M5 / #260: skip if SOMA not in seed. See comment in
+    // portfolio-soma-positions.spec.ts for the rationale.
     const somaRow = page.locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first();
+    if ((await somaRow.count()) === 0) {
+      test.skip(true, "SOMA not in seed (M5 clean-slate migration). Reseed via M3 to re-enable.");
+      return;
+    }
     await expect(somaRow).toBeVisible();
 
     // The Txns button is an <a> with class .txn-btn — find it inside the SOMA
@@ -70,9 +76,12 @@ test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
   // Phase 3 PR-B of #226: tradeDate DateFilter on /data/transactions.
   test('tradeDate + tradeDateOperator round-trip through Filter with portfolioId preserved', async ({ page }) => {
     await page.goto('/data/portfolios');
-    const txnsLink = page
-      .locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first()
-      .getByRole('link', { name: /^Txns$/ });
+    const somaRow = page.locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first();
+    if ((await somaRow.count()) === 0) {
+      test.skip(true, "SOMA not in seed (M5 clean-slate migration).");
+      return;
+    }
+    const txnsLink = somaRow.getByRole('link', { name: /^Txns$/ });
     const href = await txnsLink.getAttribute('href');
     const portfolioId = new URL(href!, page.url()).searchParams.get('portfolioId')!;
 
@@ -104,9 +113,12 @@ test.describe('/data/portfolios → /data/transactions (SOMA)', () => {
 
   test('tradeDate without operator: filter dropped on re-emit (half-applied guard)', async ({ page }) => {
     await page.goto('/data/portfolios');
-    const txnsLink = page
-      .locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first()
-      .getByRole('link', { name: /^Txns$/ });
+    const somaRow = page.locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first();
+    if ((await somaRow.count()) === 0) {
+      test.skip(true, "SOMA not in seed (M5 clean-slate migration).");
+      return;
+    }
+    const txnsLink = somaRow.getByRole('link', { name: /^Txns$/ });
     const href = await txnsLink.getAttribute('href');
     const portfolioId = new URL(href!, page.url()).searchParams.get('portfolioId')!;
 

@@ -13,15 +13,25 @@ import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintek
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
 import type BondSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity';
-// M5 / #260: on-the-run pick filters by descendants of GOV_BOND
-// (TBILL, TREASURY_NOTE, TREASURY_BOND, TIPS, TREASURY_FRN, STRIPS,
-// SOVEREIGN_BOND) via the wrapper helper — replaces the pre-M5
-// security_type == BOND_SECURITY heuristic and supersedes the #232
-// zero-coupon bucket-aware filter (PR #153). Each product type now
-// has its own first-class enum value, so STRIPS no longer slips into
-// the 30Y bucket via the bond-shape heuristic and T-bills are
-// naturally selectable via the registry rather than special-cased.
-import { descendantsOf } from '@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy';
+// M5 / #260: on-the-run pick uses the canonical US-Treasury cycle
+// set per the M5 dispatch: TBILL, TREASURY_NOTE, TREASURY_BOND,
+// TIPS, TREASURY_FRN. STRIPS is excluded (it's a derived instrument,
+// not regularly auctioned on the curve) and SOVEREIGN_BOND is
+// excluded (non-US). Both are descendants of GOV_BOND but neither
+// belongs on the US par-yield curve.
+//
+// Pre-M5 the picker filtered by `security_type == BOND_SECURITY`
+// and the #232 amend (PR #153) added a bucket-aware
+// couponRate > 0 filter to keep STRIPS out of the 30Y bucket. With
+// first-class product types, STRIPS is excluded at the candidate
+// stage and the bucket-level coupon heuristic is retired.
+const ON_THE_RUN_PRODUCT_TYPES: ReadonlySet<string> = new Set([
+  'TBILL',
+  'TREASURY_NOTE',
+  'TREASURY_BOND',
+  'TIPS',
+  'TREASURY_FRN',
+]);
 import { getServiceConnection } from '$lib/grpc-auth';
 
 const { FieldProto } = pkg;
@@ -142,13 +152,8 @@ export async function selectOnTheRunBonds(asOfDate: Date, apiKey?: string): Prom
     });
   });
 
-  // M5 / #260: filter by ProductType ∈ descendants(GOV_BOND).
-  // The set is sourced from hierarchy.json so adding a new
-  // GOV_BOND-tree leaf upstream (e.g. a future TIPS-style variant)
-  // auto-propagates here without a UI-side edit.
-  const govBondTypes = new Set(descendantsOf('GOV_BOND'));
   const candidates = (securities.filter((s) =>
-    govBondTypes.has(s.getProductType()),
+    ON_THE_RUN_PRODUCT_TYPES.has(s.getProductType()),
   ) as BondSecurity[])
     .map((bond) => {
       try {
