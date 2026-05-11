@@ -16,12 +16,17 @@ import { test, expect } from '@playwright/test';
 
 test.describe('/data/securities filter extension', () => {
   test('search by EXCH_TICKER returns AAPL', async ({ page }) => {
-    // M5 / #260: asset class names switched to hierarchy.json's tree
-    // vocabulary — 'EQUITY' not the legacy 'Equity' string. issuerName
-    // cleared so any equity issuer is accepted (the page-server still
-    // defaults issuerName to 'US Government' otherwise).
+    // M5 / #260: assetClass param dropped — pre-M5 the seed stored
+    // 'Equity' as the asset_class wire-field value (legacy free-form
+    // string), and the post-M5 filter validates against the
+    // hierarchy.json tree names ('EQUITY'). Until M3 reseeds the
+    // existing data with hierarchy-canonical names, an asset_class
+    // filter would mismatch live data. The TICKER+identifier path
+    // alone resolves AAPL without needing the class filter.
+    // issuerName cleared so the page-server's default
+    // 'US Government' doesn't exclude AAPL.
     await page.goto(
-      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&assetClass=EQUITY&issuerName=',
+      '/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&issuerName=',
     );
 
     // SecuritySelect's Fetch button always renders, regardless of which
@@ -128,17 +133,15 @@ test.describe('/data/securities filter extension', () => {
     await expect(acSelect, 'internal-node selection loaded from URL').toHaveValue('FIXED_INCOME');
 
     // Tree-shape check: RATES is rendered as a depth-1 indented
-    // option (two spaces prefix). The exact whitespace check is
-    // tied to the indentFor() implementation — kept loose by
-    // matching " RATES" within the option label rather than the
-    // exact prefix bytes.
+    // option. The component uses U+00A0 (non-breaking space) for
+    // indentation because plain spaces inside <option> text collapse
+    // per the HTML spec — match the NBSP explicitly.
     const optionLabels = await acSelect.evaluate((el) => {
       return Array.from((el as HTMLSelectElement).options).map((o) => o.text);
     });
     const ratesOption = optionLabels.find((l) => l.trim() === 'RATES' || l.trim() === 'Rates');
     expect(ratesOption, 'RATES is rendered as a tree option').toBeDefined();
-    expect(ratesOption?.startsWith(' ') || ratesOption?.startsWith('  '),
-      'RATES is indented under FIXED_INCOME').toBe(true);
+    expect(ratesOption!.charCodeAt(0), 'RATES is indented under FIXED_INCOME via NBSP').toBe(0x00a0);
 
     await page.getByRole('button', { name: /Fetch Securities/ }).click();
     await page.waitForURL(/\/data\/securities\?.*assetClass=FIXED_INCOME/, { timeout: 10_000 });

@@ -63,7 +63,11 @@ test.describe('/data/positions PortfolioFilter (#226 Phase 3 PR-A)', () => {
     await portfolioInput.click();
     await portfolioInput.fill(prefix);
 
-    const suggestion = page.locator('.suggestion', { hasText: portfolioName });
+    // .first() because the seed accumulated many test-runner portfolios
+    // with duplicate names (e.g. multiple 'Test portfolio' entries) —
+    // any of them clicking through is enough to prove the
+    // autocomplete-and-emit path.
+    const suggestion = page.locator('.suggestion', { hasText: portfolioName }).first();
     await expect(suggestion, 'autocomplete surfaces the first portfolio').toBeVisible({ timeout: 10_000 });
 
     await suggestion.click();
