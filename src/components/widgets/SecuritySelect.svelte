@@ -4,36 +4,27 @@
   // Browser-safe import (security.ts pulls in @grpc/grpc-js which crashes
   // in the client bundle).
   import {
-    SECURITY_TYPE_NAMES,
+    PRODUCT_TYPE_NAMES,
     ASSET_CLASS_NAMES,
+    INSTRUMENT_TYPE_NAMES,
     type IdentifierTypeName,
-    type SecurityTypeName,
+    type ProductTypeName,
     type AssetClassName,
+    type InstrumentTypeName,
   } from "$lib/securityFilterTypes";
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
-  import SecurityTypeFilter from "../filters/SecurityTypeFilter.svelte";
+  import ProductTypeFilter from "../filters/ProductTypeFilter.svelte";
   import AssetClassFilter from "../filters/AssetClassFilter.svelte";
+  import InstrumentTypeFilter from "../filters/InstrumentTypeFilter.svelte";
   import DateFilter from "../filters/DateFilter.svelte";
 
-  // Phase 2/3 of second-brain#226: filter primitives now own their controls.
-  // - Phase 2 (PR #130): identifier-type dropdown + value → IdentifierFilter.
-  // - Phase 3 (this PR): assetClass <input> → AssetClassFilter; securityType
-  //   <select> → SecurityTypeFilter. Both emit proto-enum names via URL
-  //   (FIXED_INCOME / BOND_SECURITY / …); page-server still treats the
-  //   value as a free-form string so legacy URLs like ?assetClass=Equity
-  //   continue to filter correctly server-side.
-
-  // Legacy free-form → proto-enum normalization for assetClass URL load.
-  // Pre-Phase-3 URLs (e.g. tests using ?assetClass=Equity) carried free-
-  // form labels; this lets the dropdown round-trip them onto the
-  // canonical enum value so the user sees their filter selected and a
-  // subsequent Fetch re-emits the canonical shape.
-  const ASSET_CLASS_FREEFORM_TO_ENUM: Record<string, AssetClassName> = {
-    'fixed income': 'FIXED_INCOME',
-    'equity': 'EQUITY',
-    'cash': 'CASH_ASSET_CLASS',
-    'index': 'INDEX',
-  };
+  // M5 / #260: SecurityType → ProductType rename. The pre-M5
+  // ?securityType= URL key is gone; new key is ?productType=.
+  // AssetClassFilter is now tree-aware (selecting FIXED_INCOME matches
+  // descendants RATES + CREDIT via the page-server). New
+  // InstrumentTypeFilter primitive surfaces the CASH / DERIVATIVE /
+  // REFERENCE_INDEX dimension. No legacy URL shim — clean-slate
+  // migration per #256 (Postgres data already wiped in M2).
 
   let identifierInput: string = "";
   let identifierType: IdentifierTypeName = "CUSIP";
@@ -45,7 +36,8 @@
   let issueDateOperator: string = "";
   let assetClassInput: AssetClassName | "" = "";
   let issuerNameInput: string = "";
-  let securityTypeInput: SecurityTypeName | "" = "";
+  let productTypeInput: ProductTypeName | "" = "";
+  let instrumentTypeInput: InstrumentTypeName | "" = "";
 
   function fetchSecurities() {
     if (typeof window === "undefined") return;
@@ -71,7 +63,8 @@
         issueDateOperator: issueDateOperatorOverride,
         assetClass: assetClassInput || undefined,
         issuerName: issuerNameInput.trim() || undefined,
-        securityType: securityTypeInput || undefined,
+        productType: productTypeInput || undefined,
+        instrumentType: instrumentTypeInput || undefined,
       },
     );
 
@@ -112,25 +105,25 @@
 
     const assetClassFromUrl = urlParams.get("assetClass");
     if (assetClassFromUrl !== null && assetClassFromUrl !== "") {
-      // Canonical: a proto-enum name (FIXED_INCOME, EQUITY, …).
+      // M5 / #260: hierarchy-tree names sourced from
+      // product_hierarchy.allAssetClasses(). Unknown values drop to
+      // empty (clean-slate migration; no legacy free-form shim).
       if ((ASSET_CLASS_NAMES as readonly string[]).includes(assetClassFromUrl)) {
         assetClassInput = assetClassFromUrl as AssetClassName;
-      } else {
-        // Legacy free-form (Equity, Fixed Income, …) — map to enum so
-        // the dropdown round-trips on the next Fetch. Falls through to
-        // empty if the value isn't recognized; the page-server still
-        // sees the original URL param and applies it as a string filter.
-        const normalized = ASSET_CLASS_FREEFORM_TO_ENUM[assetClassFromUrl.toLowerCase()];
-        if (normalized) assetClassInput = normalized;
       }
     }
 
     const issuerNameFromUrl = urlParams.get("issuerName");
     if (issuerNameFromUrl !== null) issuerNameInput = issuerNameFromUrl;
 
-    const securityTypeFromUrl = urlParams.get("securityType");
-    if (securityTypeFromUrl && (SECURITY_TYPE_NAMES as readonly string[]).includes(securityTypeFromUrl)) {
-      securityTypeInput = securityTypeFromUrl as SecurityTypeName;
+    const productTypeFromUrl = urlParams.get("productType");
+    if (productTypeFromUrl && (PRODUCT_TYPE_NAMES as readonly string[]).includes(productTypeFromUrl)) {
+      productTypeInput = productTypeFromUrl as ProductTypeName;
+    }
+
+    const instrumentTypeFromUrl = urlParams.get("instrumentType");
+    if (instrumentTypeFromUrl && (INSTRUMENT_TYPE_NAMES as readonly string[]).includes(instrumentTypeFromUrl)) {
+      instrumentTypeInput = instrumentTypeFromUrl as InstrumentTypeName;
     }
   });
 </script>
@@ -166,15 +159,23 @@
       />
     </div>
     <div class="text-white">
-      <h4>Security Type:</h4>
-      <SecurityTypeFilter
-        bind:value={securityTypeInput}
+      <h4>Product Type:</h4>
+      <ProductTypeFilter
+        bind:value={productTypeInput}
         selectClass="filter-select text-black"
-        selectId="security-type-select"
+        selectId="product-type-select"
       />
     </div>
   </div>
   <div class="security-select-container flex flex-col sm:flex-row gap-2 mt-2">
+    <div class="text-white">
+      <h4>Instrument Type:</h4>
+      <InstrumentTypeFilter
+        bind:value={instrumentTypeInput}
+        selectClass="filter-select text-black"
+        selectId="instrument-type-select"
+      />
+    </div>
     <div class="text-white issue-date-filter-cell">
       <h4>Issue Date Filter:</h4>
       <DateFilter

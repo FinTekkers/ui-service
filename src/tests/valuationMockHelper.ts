@@ -17,8 +17,11 @@ const MP = {
 	SPREAD_DURATION: 14,
 };
 
-const TIPS_SECURITY_TYPE = 4;
-const FRN_SECURITY_TYPE = 5;
+// M5 / #260: ProductTypeProto enum values. TIPS = 4 in both the old
+// SecurityTypeProto and the new ProductTypeProto (numeric stability
+// across rename); TREASURY_FRN = 5 (was FRN).
+const TIPS_PRODUCT_TYPE = 4;
+const TREASURY_FRN_PRODUCT_TYPE = 5;
 
 // CouponFrequencyProto values
 const COUPON_FREQ = {
@@ -171,9 +174,9 @@ export function createValuationClientMock() {
 				const faceValue = parseFloat(sec?.getFaceValue?.()?.getArbitraryPrecisionValue?.() ?? '1000');
 				const couponRatePct = parseFloat(sec?.getCouponRate?.()?.getArbitraryPrecisionValue?.() ?? '5');
 				const couponRate = couponRatePct / 100;
-				const secType = sec?.getSecurityType?.();
-				const isTips = secType === TIPS_SECURITY_TYPE;
-				const isFrn = secType === FRN_SECURITY_TYPE;
+				const productType = sec?.getProductType?.();
+				const isTips = productType === TIPS_PRODUCT_TYPE;
+				const isFrn = productType === TREASURY_FRN_PRODUCT_TYPE;
 
 				const { periods: bondPeriods, matDate } = countPeriods(sec?.getMaturityDate?.());
 				const priceAbs = price * faceValue / 100;

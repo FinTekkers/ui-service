@@ -19,7 +19,10 @@
     outstandingAmount: string;
     issuerName: string;
     assetClass: string;
-    securityType?: number;
+    // M5 / #260: numeric proto enum value (ProductTypeProto). Kept
+    // optional for legacy rows. Prefer the productType name field
+    // below for display.
+    productTypeEnum?: number;
     productType: string;
     productClass?: string;
     tenor?: string;
@@ -31,15 +34,12 @@
     asOf: string;
   };
 
-  const SECURITY_TYPE_LABELS: Record<number, string> = {
-    1: 'Cash',
-    2: 'Equity',
-    3: 'Bond',
-    4: 'TIPS',
-    5: 'FRN',
-    6: 'Index',
-    8: 'Equity Index',
-  };
+  // M5 / #260: SECURITY_TYPE_LABELS retired — the productType column
+  // now renders the proto enum NAME string directly (e.g. TBILL,
+  // TREASURY_NOTE, TIPS). Friendly labels live in PRODUCT_TYPE_LABELS
+  // (sourced from hierarchy.json's `label` field) but aren't applied
+  // to the grid because the grid is a power-user view that benefits
+  // from showing the canonical name.
 
   export let rows: Array<SecurityData>;
 
@@ -54,7 +54,6 @@
     { label: "ID Type", key: "identifierType" },
     { label: "Issuer Name", key: "issuerName" },
     { label: "Asset Class", key: "assetClass" },
-    { label: "Security Type", key: "securityType" },
     { label: "Product Type", key: "productType" },
     { label: "Product Class", key: "productClass" },
     { label: "Issue Date", key: "issueDate" },
@@ -83,9 +82,6 @@
 
   function formatCellValue(row: SecurityData, key: keyof SecurityData): string {
     const value = row[key];
-    if (key === "securityType") {
-      return value != null ? (SECURITY_TYPE_LABELS[value as number] ?? String(value)) : '-';
-    }
     if (key === "faceValue" || key === "outstandingAmount") {
       return value ? formatAmount(String(value)) : '-';
     }

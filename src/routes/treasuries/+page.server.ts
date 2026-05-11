@@ -23,7 +23,8 @@ import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/m
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
-import { SecurityTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb";
+// M5 / #260: SecurityTypeProto retired. Bond narrowing via wrapper
+// helper; product-type display string via Security.getProductType().
 
 /**
  * Creates a PositionFilter for recent treasury transactions
@@ -173,8 +174,7 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
       }
 
       // Extract security details
-      const isBond = security.proto.getSecurityType() === SecurityTypeProto.BOND_SECURITY;
-      const bondSecurity = isBond ? (security as BondSecurity) : null;
+      const bondSecurity = security.isBond() ? (security as BondSecurity) : null;
 
       const asOfDate = new Date();
 
@@ -185,9 +185,14 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
         transactionIssuerName: security.getIssuerName() ?? '',
         transactionIssueDate: security.getIssueDate()?.toString() ?? '',
         transactionQuantity: quantity?.toString() ?? '0',
-        transactionProductType: bondSecurity?.getProductType() ?? '',
+        transactionProductType: security.getProductType() ?? '',
         transactionProductClass: security.proto.getAssetClass() ?? '',
-        transactionSecurityType: SecurityTypeProto[security.proto.getSecurityType()] ?? security.proto.getSecurityType().toString(),
+        // M5 / #260: this field historically duplicated productType
+        // for legacy consumers. Now that productType IS the canonical
+        // name, this slot just mirrors it. Field-name kept for the
+        // existing UI binding; deprecated in favour of
+        // transactionProductType.
+        transactionSecurityType: security.getProductType() ?? '',
         transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
         transactionTenor: bondSecurity?.getTenor(asOfDate).getTenorDescription() ?? '',
