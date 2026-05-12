@@ -21,6 +21,11 @@ if os.path.exists(_env_path):
 
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+# Contact-form SMTP creds — Gmail App Password, NOT the account password.
+# Empty by default; the contact form fails-soft when unset (see
+# src/routes/contactus/+page.server.ts).
+CONTACT_GMAIL_USER = os.getenv("CONTACT_GMAIL_USER", "")
+CONTACT_GMAIL_APP_PASSWORD = os.getenv("CONTACT_GMAIL_APP_PASSWORD", "")
 
 
 SERVICE_NAME = "fintekkers-ui-service"
@@ -113,10 +118,15 @@ def deploy_code_to_instance(instance_id: str) -> bool:
         # The load balancer on AWS will add the encryption/certificate termination and forward
         # to this port. We could expose to port 80, but the broker is already using that port
         # Run the production server
+        # CONTACT_GMAIL_APP_PASSWORD contains spaces (the 4×4 group
+        # format Google emits), so single-quote-wrap it inside the
+        # outer double-quoted pm2 start argument.
         'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=https://www.fintekkers.org pm2 start "GOOGLE_CLIENT_ID='
         + GOOGLE_CLIENT_ID
         + " GOOGLE_CLIENT_SECRET="
         + GOOGLE_CLIENT_SECRET
+        + f" CONTACT_GMAIL_USER='{CONTACT_GMAIL_USER}'"
+        + f" CONTACT_GMAIL_APP_PASSWORD='{CONTACT_GMAIL_APP_PASSWORD}'"
         + ' npm run dev"',  # Needs sudo to expose host; currently running dev because the build fails... unsure why!!!
     ]
 
