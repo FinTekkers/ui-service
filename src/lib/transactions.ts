@@ -47,6 +47,8 @@ function formatDateToISO(date: any): string {
 interface TransactionData {
   transactionId: string;
   uuidHex?: string;
+  transactionPortfolioId: string;
+  transactionPortfolioName: string;
   transactionSettlementDate: string;
   transactionIssuerName: string;
   transactionIssueDate: string;
@@ -102,6 +104,11 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         transactionData.push({
           transactionId: safe(() => security.getSecurityID().getIdentifierValue().toString(), ''),
           uuidHex,
+          // M6 #263 bug 4: surface the embedded portfolio so /data/transactions
+          // shows which portfolio each row belongs to. TransactionProto embeds
+          // a full PortfolioProto, so this is read directly from the wrapper.
+          transactionPortfolioId: safe(() => element.getPortfolio().getID().toString(), ''),
+          transactionPortfolioName: safe(() => element.getPortfolio().getPortfolioName(), ''),
           transactionSettlementDate: safe(() => formatDateToISO(element.getSettlementDate()), ''),
           transactionIssuerName: safe(() => element.getIssuerName().toString(), ''),
           transactionIssueDate: safe(() => formatDateToISO(security.getIssueDate()), ''),

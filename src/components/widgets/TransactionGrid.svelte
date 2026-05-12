@@ -23,9 +23,27 @@
   let sortField: keyof TransactionData | null = null;
   let sortDirection: SortDirection = "asc";
 
+  // M6 #263 bug 4: track which Portfolio ID cells the user has clicked to
+  // expand to the full UUID. Keyed by row.transactionPortfolioId so two rows
+  // for the same portfolio expand together (and the toggle survives a sort).
+  let expandedPortfolioIds = new Set<string>();
+  function togglePortfolioId(id: string) {
+    if (!id) return;
+    const next = new Set(expandedPortfolioIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    expandedPortfolioIds = next;
+  }
+  function compactUuid(id: string): string {
+    if (!id) return "";
+    return id.length > 8 ? `${id.slice(0, 8)}…` : id;
+  }
+
   // Column definitions with their corresponding TransactionData keys
   const columns: Array<{ label: string; key: keyof TransactionData }> = [
     { label: "ID", key: "transactionId" },
+    { label: "Portfolio", key: "transactionPortfolioName" },
+    { label: "Portfolio ID", key: "transactionPortfolioId" },
     { label: "Issuer Name", key: "transactionIssuerName" },
     { label: "Issue Date", key: "transactionIssueDate" },
     { label: "Maturity Date", key: "transactionMaturityDate" },
@@ -93,6 +111,19 @@
               <td class="table-cell px-4 py-2">
                 {#if column.key === "transactionQuantity"}
                   {formatAmount(row[column.key])}
+                {:else if column.key === "transactionPortfolioId"}
+                  {#if row.transactionPortfolioId}
+                    <button
+                      type="button"
+                      class="portfolio-id-toggle"
+                      title={expandedPortfolioIds.has(row.transactionPortfolioId)
+                        ? "Click to collapse"
+                        : row.transactionPortfolioId}
+                      on:click|stopPropagation={() => togglePortfolioId(row.transactionPortfolioId)}
+                    >{expandedPortfolioIds.has(row.transactionPortfolioId)
+                        ? row.transactionPortfolioId
+                        : compactUuid(row.transactionPortfolioId)}</button>
+                  {/if}
                 {:else}
                   {row[column.key]}
                 {/if}
@@ -168,6 +199,20 @@
 
   thead .action-col {
     background-color: #0c3a46;
+  }
+
+  .portfolio-id-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #2563eb;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline dotted;
+
+    &:hover { color: #1d4ed8; }
+    &:focus { outline: 2px solid #3b82f6; outline-offset: 2px; }
   }
 
   .delete-btn {
