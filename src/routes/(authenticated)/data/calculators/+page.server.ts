@@ -2,7 +2,15 @@ import { RunValuation, RunTipsValuation, RunFrnValuation } from '$lib/valuation'
 import type { BondCalculatorInputs, TipsCalculatorInputs, FrnCalculatorInputs } from '$lib/valuation';
 import { FetchSecurity } from '$lib/security';
 
-type SecurityItem = { cusip: string; issuerName: string; couponRate?: string; maturityDate: string };
+type SecurityItem = {
+  cusip: string;
+  issuerName: string;
+  couponRate?: string;
+  maturityDate: string;
+  // #266: TIPS-only — auto-populates the Reference CPI input on CUSIP
+  // pick. Undefined for non-TIPS items.
+  baseCpi?: string;
+};
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
@@ -25,7 +33,13 @@ export async function load({ locals, request }) {
 
       for (const s of allSecurities) {
         if (s.maturityDate < today) continue;
-        const item: SecurityItem = { cusip: s.cusip, issuerName: s.issuerName, couponRate: s.couponRate, maturityDate: s.maturityDate };
+        const item: SecurityItem = {
+          cusip: s.cusip,
+          issuerName: s.issuerName,
+          couponRate: s.couponRate,
+          maturityDate: s.maturityDate,
+          baseCpi: s.baseCpi,
+        };
         // M5 / #260: dispatch by productType *name* (proto enum name
         // string) so we don't have to import ProductTypeProto here.
         // 'FRN' became 'TREASURY_FRN' in the v0.2.1 product registry.
