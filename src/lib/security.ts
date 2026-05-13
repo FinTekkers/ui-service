@@ -47,6 +47,12 @@ export interface securityData {
   couponFrequency?: string;
   faceValue?: string;
   datedDate?: string;
+  // #266: TIPS-only field. Populated for TREASURY_TIPS securities whose
+  // tips_details.base_cpi (or legacy flat base_cpi) is set on the wire.
+  // The TIPS calculator auto-fills its Reference CPI input from this
+  // value when the user picks a CUSIP — manual override (PR #164) stays
+  // as the fallback when the field is absent.
+  baseCpi?: string;
   asOf: string;
   // M5 / #260: numeric ProductTypeProto value, for code paths that need
   // to dispatch on enum equality (e.g. /data/calculators picking TIPS
@@ -119,6 +125,28 @@ export function productTypeNameOf(security: Security): string {
 // flat `SecurityProto.coupon_rate` legacy field. Returns 0 when neither is
 // populated, which is the correct semantic for TBILL (zero-coupon by
 // definition).
+// #266: reference (base) CPI for a TIPS Security. Reads canonical
+// `tips_details.base_cpi` first (data-sourcing-dev's market-data-inputs
+// PR #17 populates it from TreasuryDirect's RefCPIDatedDate) and falls
+// back to the legacy flat `SecurityProto.base_cpi` field. Returns
+// `undefined` (NOT 0) when neither is populated — so the TIPS pricer
+// can distinguish "auto-populate the input" from "leave the input
+// empty and let the user supply a manual override". The raw string is
+// preserved (full DecimalValueProto precision) — the calculator parses
+// to number when it needs to compute, the display reads the string.
+export function baseCpiOf(security: Security): string | undefined {
+  const proto: any = security.proto;
+  const tipsBaseCpi = proto.getTipsDetails?.()?.getBaseCpi?.()?.getArbitraryPrecisionValue?.();
+  if (tipsBaseCpi !== undefined && tipsBaseCpi !== null && tipsBaseCpi !== '') {
+    return tipsBaseCpi;
+  }
+  const flatBaseCpi = proto.getBaseCpi?.()?.getArbitraryPrecisionValue?.();
+  if (flatBaseCpi !== undefined && flatBaseCpi !== null && flatBaseCpi !== '') {
+    return flatBaseCpi;
+  }
+  return undefined;
+}
+
 export function couponRateOf(security: Security): number {
   const parseRate = (rate: { getArbitraryPrecisionValue?: () => string } | undefined): number | undefined => {
     if (!rate) return undefined;
@@ -433,6 +461,17 @@ export async function FetchSecurity(
             } catch (e) {
               // Dated date might not be available
             }
+
+            // #266: base_cpi for TIPS auto-populate. baseCpiOf reads via
+            // tips_details.base_cpi (the canonical post-market-data-inputs
+            // PR #17 path) with a flat-field fallback. Other product types
+            // return undefined here, which `securityData.baseCpi` accepts.
+            try {
+              result.baseCpi = baseCpiOf(security);
+            } catch {
+              // Defensive — proto access shouldn't throw, but stale codegen
+              // could surface a missing accessor.
+            }
           }
 
           acc.push(result);
@@ -497,6 +536,7 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
         const dd = bondSecurity.getDatedDate();
         if (dd) result.datedDate = dd.toDate().toISOString().slice(0, 10).replace(/-/g, '/');
       } catch {}
+      try { result.baseCpi = baseCpiOf(security); } catch {}
     }
 
     acc.push(result);

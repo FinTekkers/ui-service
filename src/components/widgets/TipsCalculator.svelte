@@ -3,7 +3,19 @@
   import type { CashflowEntry } from '$lib/valuation';
 
   export let result: import('$lib/valuation').TipsValuationResult | null = null;
-  export let securities: { cusip: string; issuerName: string; couponRate?: string; maturityDate: string }[] = [];
+  // #266: `baseCpi` carries the canonical TIPS reference CPI from the
+  // Security record (data-sourcing-dev's market-data-inputs PR #17
+  // populates it from TreasuryDirect's RefCPIDatedDate). When the user
+  // picks a CUSIP whose item has `baseCpi`, the Reference CPI input
+  // auto-fills from this value. Manual override (PR #164) stays as the
+  // fallback for records where baseCpi is undefined.
+  export let securities: {
+    cusip: string;
+    issuerName: string;
+    couponRate?: string;
+    maturityDate: string;
+    baseCpi?: string;
+  }[] = [];
 
   type Mode = 'cusip' | 'manual';
   let mode: Mode = 'cusip';
@@ -18,16 +30,51 @@
   let showSuggestions = false;
   let selectedIndex = -1;
 
+  // #266: indicator state for Reference CPI.
+  //   'auto'   — populated from the picked Security's TipsDetailsProto.base_cpi
+  //   'manual' — user typed a value (override, or no Security match available)
+  //   'empty'  — nothing entered yet
+  type ReferenceCpiSource = 'auto' | 'manual' | 'empty';
+  let referenceCpiSource: ReferenceCpiSource = 'empty';
+
   $: filteredSecurities = cusip.length > 0
     ? securities.filter(s =>
         s.cusip.toUpperCase().startsWith(cusip.toUpperCase())
       ).slice(0, 8)
     : [];
 
+  function autofillReferenceCpiFor(pickedCusip: string): void {
+    // Skip when the user has manually overridden — the PR #164 fallback
+    // escape hatch must survive a subsequent CUSIP pick. Only fire when
+    // the input is in 'empty' or 'auto' state.
+    if (referenceCpiSource === 'manual') return;
+    // Match exactly on cusip — autocomplete only ever passes a value from
+    // the suggestion list, but defensive equality keeps the auto path
+    // from firing on a partial typed string that happens to match a
+    // CUSIP prefix.
+    const sec = securities.find((s) => s.cusip === pickedCusip);
+    if (sec?.baseCpi && sec.baseCpi.trim() !== '') {
+      referenceCpi = sec.baseCpi;
+      referenceCpiSource = 'auto';
+    }
+  }
+
   function selectCusip(value: string) {
     cusip = value;
     showSuggestions = false;
     selectedIndex = -1;
+    autofillReferenceCpiFor(value);
+  }
+
+  // Manual edits to Reference CPI flip the indicator to 'manual' so a
+  // subsequent CUSIP pick doesn't silently clobber the override. Empty
+  // input resets to 'empty' so picking a CUSIP can auto-fill again.
+  // Coerce to string first — `bind:value` on a `type="number"` input
+  // surfaces the bound variable as `number` once the user types, so
+  // calling `.trim()` directly would throw on that path.
+  function handleReferenceCpiInput(): void {
+    const v = String(referenceCpi ?? '');
+    referenceCpiSource = v.trim() === '' ? 'empty' : 'manual';
   }
 
   function handleCusipKeydown(e: KeyboardEvent) {
@@ -71,9 +118,28 @@
     realCouponRate = params.get('realCouponRate') ?? '';
     couponFrequency = params.get('tipsCouponFrequency') ?? 'SEMIANNUALLY';
     referenceCpi = params.get('referenceCpi') ?? '';
+    // #266: if the URL supplied an explicit referenceCpi (= the user
+    // manually overrode it on the prior page render), that wins —
+    // mark it 'manual' so the auto-fill reactive below doesn't clobber
+    // it. If empty, leave 'empty'; the reactive will auto-fill when
+    // `securities` resolves.
+    referenceCpiSource = String(referenceCpi ?? '').trim() === '' ? 'empty' : 'manual';
     maturityDate = params.get('tipsMaturityDate') ?? '';
     issueDate = params.get('tipsIssueDate') ?? '';
   });
+
+  // #266: auto-fill when `securities` arrives (it's streamed) and the
+  // current `cusip` matches a record carrying `baseCpi`. Guarded on
+  // referenceCpiSource === 'empty' so a manual override or an already-
+  // auto-populated value is never silently overwritten.
+  $: if (
+    mode === 'cusip' &&
+    cusip &&
+    referenceCpiSource === 'empty' &&
+    securities.length > 0
+  ) {
+    autofillReferenceCpiFor(cusip);
+  }
 
   function calculate() {
     const params = new URLSearchParams({
@@ -212,8 +278,26 @@
       {/if}
 
       <div class="field-group">
-        <label for="referenceCpi">Reference CPI (at issuance)</label>
-        <input id="referenceCpi" type="number" step="0.001" bind:value={referenceCpi} placeholder="e.g. 258.446" />
+        <label for="referenceCpi">
+          Reference CPI (at issuance)
+          {#if referenceCpiSource === 'auto'}
+            <span class="cpi-source cpi-source-auto" title="Populated from the Security record (TipsDetailsProto.base_cpi)">
+              from Security master
+            </span>
+          {:else if referenceCpiSource === 'manual'}
+            <span class="cpi-source cpi-source-manual" title="Manually overridden — auto-fill from the Security record is disabled until this field is cleared">
+              manual override
+            </span>
+          {/if}
+        </label>
+        <input
+          id="referenceCpi"
+          type="number"
+          step="0.001"
+          bind:value={referenceCpi}
+          on:input={handleReferenceCpiInput}
+          placeholder="e.g. 258.446"
+        />
       </div>
       <div class="field-group">
         <label for="currentCpi">Current CPI</label>
@@ -310,6 +394,28 @@
 
 <style lang="scss">
   @import "../../styles/grid-table";
+
+  // #266 Reference-CPI source indicator pill — sits inline with the
+  // field label, kept visually subtle (small + muted) so it doesn't
+  // compete with the input for attention.
+  .cpi-source {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border-radius: 10px;
+    vertical-align: 1px;
+    letter-spacing: 0.02em;
+  }
+  .cpi-source-auto {
+    background-color: rgba(34, 197, 94, 0.18);
+    color: #86efac;
+  }
+  .cpi-source-manual {
+    background-color: rgba(245, 158, 11, 0.18);
+    color: #fde68a;
+  }
 
   // Sticky inputs+results so the user keeps parameters visible while
   // scrolling a long cashflow schedule (#223 calc-page amendment). See
