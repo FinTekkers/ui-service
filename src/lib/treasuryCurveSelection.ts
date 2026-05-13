@@ -38,7 +38,7 @@ import { getServiceConnection } from '$lib/grpc-auth';
 // actually matches. Pre-fix, BondSecurity instances returned
 // 'BILL' / 'NOTE' / 'BOND' which is not in ON_THE_RUN_PRODUCT_TYPES,
 // silently rejecting every candidate from the on-the-run set.
-import { productTypeNameOf } from '$lib/security';
+import { productTypeNameOf, couponRateOf } from '$lib/security';
 
 const { FieldProto } = pkg;
 
@@ -171,11 +171,14 @@ export async function selectOnTheRunBonds(asOfDate: Date, apiKey?: string): Prom
           ? bond.getSecurityID().getIdentifierValue()
           : bond.getID().toString();
 
-        let couponRate = 0;
-        try {
-          const cr = bond.getCouponRate();
-          couponRate = cr ? parseFloat(cr.getArbitraryPrecisionValue()) : 0;
-        } catch { /* no coupon rate */ }
+        // couponRateOf reads from the bond/tips/frn details oneof (or the
+        // flat SecurityProto.coupon_rate fallback). Necessary because
+        // `Security.create()` returns a plain Security (not BondSecurity)
+        // for TREASURY_BOND / TBILL / STRIPS / SOVEREIGN_BOND, so calling
+        // (bond as BondSecurity).getCouponRate() on those throws and the
+        // 20Y on-the-run (a TREASURY_BOND) silently rendered 0% — M6 #263
+        // bug 3 second-round regression.
+        const couponRate = couponRateOf(bond);
 
         // productTypeNameOf — same reason as the filter above: avoid
         // the BondSecurity tenor-derived 'BILL'/'NOTE'/'BOND' override.

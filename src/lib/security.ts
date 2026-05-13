@@ -103,6 +103,43 @@ export function productTypeNameOf(security: Security): string {
   return found?.[0] ?? 'UNKNOWN_PRODUCT_TYPE';
 }
 
+// M6 #263 bug 3 (second round): the ledger-models 0.2.4 `Security.create()`
+// factory wraps only TREASURY_NOTE / TIPS / TREASURY_FRN as a BondSecurity.
+// TREASURY_BOND, TBILL, STRIPS, and SOVEREIGN_BOND fall through to the base
+// `Security` wrapper — which has no `getCouponRate()`. Anything that calls
+// `(security as BondSecurity).getCouponRate()` on those leaves hits a
+// "...not a function" TypeError; the typical try/catch wrappers around the
+// call swallow it and surface `couponRate = 0` in the UI. That's how
+// /data/treasury_curve shows 0% for the 20Y on-the-run (a TREASURY_BOND
+// with a real 4.x% coupon on the wire).
+//
+// Read coupon_rate from the proto directly, preferring the bond_details /
+// tips_details / frn_details oneof (the modern path that data-sourcing-dev
+// writes — see #263 face_value + coupon backfill) and falling back to the
+// flat `SecurityProto.coupon_rate` legacy field. Returns 0 when neither is
+// populated, which is the correct semantic for TBILL (zero-coupon by
+// definition).
+export function couponRateOf(security: Security): number {
+  const parseRate = (rate: { getArbitraryPrecisionValue?: () => string } | undefined): number | undefined => {
+    if (!rate) return undefined;
+    const raw = rate.getArbitraryPrecisionValue?.();
+    if (raw === undefined || raw === null || raw === '') return undefined;
+    const n = parseFloat(raw);
+    return Number.isFinite(n) ? n : undefined;
+  };
+  const proto: any = security.proto;
+  const details =
+    proto.getBondDetails?.() ||
+    proto.getTipsDetails?.() ||
+    proto.getFrnDetails?.() ||
+    undefined;
+  return (
+    parseRate(details?.getCouponRate?.()) ??
+    parseRate(proto.getCouponRate?.()) ??
+    0
+  );
+}
+
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
   switch (name) {
     case 'ISIN': return IdentifierTypeProto.ISIN;
