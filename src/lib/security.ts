@@ -83,6 +83,26 @@ export {
   type InstrumentTypeName,
 };
 
+// M6 #263 bug 3: BondSecurity.getProductType() in ledger-models 0.2.1
+// overrides the base Security wrapper and returns a tenor-derived
+// coarse string ('BILL' / 'NOTE' / 'BOND'), instead of the proto's
+// canonical leaf name. Because Security.create() returns BondSecurity
+// for TREASURY_NOTE / TIPS / TREASURY_FRN, calling getProductType() on
+// any of those instances loses the leaf identity — a 30Y TIPS shows up
+// as 'BOND', a 10Y note as 'NOTE', etc. That mis-display also breaks
+// downstream lookups in product_hierarchy (instrumentTypeOf,
+// ON_THE_RUN_PRODUCT_TYPES set membership) that key on leaf names.
+//
+// Sidestep the override by resolving the numeric proto enum to its
+// canonical name directly. Exported for treasuryCurveSelection + the
+// transaction grid which both need leaf-accurate product types.
+export function productTypeNameOf(security: Security): string {
+  const value = security.proto.getProductType();
+  const entries = Object.entries(ProductTypeProto) as Array<[string, number]>;
+  const found = entries.find(([, v]) => v === value);
+  return found?.[0] ?? 'UNKNOWN_PRODUCT_TYPE';
+}
+
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
   switch (name) {
     case 'ISIN': return IdentifierTypeProto.ISIN;
@@ -210,7 +230,12 @@ export async function FetchSecurity(
 
         // Post-filter on instrumentType — wrapper resolves the leaf
         // productType to its instrument_type via hierarchy.json.
-        const productTypeName = security.getProductType();
+        // M6 #263 bug 3: must use productTypeNameOf, not
+        // security.getProductType(), because the latter is overridden
+        // on BondSecurity to return tenor-derived 'BILL'/'NOTE'/'BOND'
+        // which aren't keys in product_hierarchy → would always return
+        // null and silently drop bond rows.
+        const productTypeName = productTypeNameOf(security);
         if (
           instrumentType &&
           instrumentTypeOf(productTypeName) !== instrumentType
@@ -311,12 +336,13 @@ export async function FetchSecurity(
             outstandingAmount,
             issuerName: security.getIssuerName(),
             assetClass: security.getAssetClass(),
-            // M5 / #260: getProductType() now returns the proto enum
-            // NAME string (e.g. 'TREASURY_NOTE'). Use the wrapper's
-            // canonical accessor — available on every Security, not
-            // just BondSecurity, since productType is now on the
-            // base Security proto.
-            productType: security.getProductType(),
+            // M6 #263 bug 3: resolve from the proto enum directly.
+            // BondSecurity overrides getProductType() to return a
+            // tenor-derived 'BILL' / 'NOTE' / 'BOND' string, which
+            // hides the actual leaf (TREASURY_NOTE, TIPS, TREASURY_FRN)
+            // for ~all bond-shape rows and produces phantom 'BOND'
+            // entries that don't exist on the wire.
+            productType: productTypeNameOf(security),
             asOf: asOfStr,
             productTypeEnum: security.proto.getProductType(),
           };
@@ -419,7 +445,9 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
       outstandingAmount: '0',
       issuerName: security.getIssuerName(),
       assetClass: security.getAssetClass(),
-      productType: security.getProductType(),
+      // M6 #263 bug 3: see productTypeNameOf docs — bypasses the
+      // BondSecurity tenor-derived override.
+      productType: productTypeNameOf(security),
       asOf: security.getAsOf().toString().split(' ')[0],
       productTypeEnum: security.proto.getProductType(),
     };
