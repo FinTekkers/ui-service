@@ -431,6 +431,25 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
       ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
       : buildManualTipsSecurityProto(inputs);
 
+    // Reference CPI (base_cpi) override. The form's Reference CPI input is
+    // rendered in both CUSIP and manual modes; the user may need to supply
+    // it in CUSIP mode too because some TIPS records on the wire don't yet
+    // have base_cpi populated (data-sourcing-dev's #263 face_value +
+    // coupon_rate backfills didn't cover base_cpi). Pre-fix the CUSIP path
+    // dropped the form value and valuation-service rejected the request
+    // with "Missing required field: base_cpi". When the form supplies one,
+    // we overlay it on the security proto regardless of mode — on BOTH the
+    // flat field and the tips_details oneof, since valuation-service may
+    // read either depending on which one is populated on the wire.
+    if (inputs.referenceCpi && inputs.referenceCpi.trim()) {
+      const baseCpiOverride = decimalValue(inputs.referenceCpi.trim());
+      securityProto.setBaseCpi(baseCpiOverride);
+      const tipsDetails = (securityProto as any).getTipsDetails?.();
+      if (tipsDetails && typeof tipsDetails.setBaseCpi === 'function') {
+        tipsDetails.setBaseCpi(decimalValue(inputs.referenceCpi.trim()));
+      }
+    }
+
     const productInput = new ProductInput().setTips(
       new TipsInput()
         .setSecurity(securityProto)
@@ -442,8 +461,15 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
 
     const result: TipsValuationResult = {};
 
-    // Compute index ratio client-side from CPI inputs
-    const referenceCpi = inputs.mode === 'manual' ? parseFloat(inputs.referenceCpi ?? '0') : 0;
+    // Compute index ratio client-side from CPI inputs. Use the form's
+    // referenceCpi when supplied (works for both modes after the override
+    // above); otherwise fall back to the security proto's base_cpi for
+    // CUSIP mode where the wire populated it.
+    const formReferenceCpi = parseFloat(inputs.referenceCpi ?? '');
+    const protoBaseCpiStr = securityProto.getBaseCpi?.()?.getArbitraryPrecisionValue?.();
+    const referenceCpi = Number.isFinite(formReferenceCpi) && formReferenceCpi > 0
+      ? formReferenceCpi
+      : parseFloat(protoBaseCpiStr ?? '0');
     const currentCpi = parseFloat(inputs.currentCpi);
     if (referenceCpi > 0 && currentCpi > 0) {
       result.indexRatio = (currentCpi / referenceCpi).toString();
