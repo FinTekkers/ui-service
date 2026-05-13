@@ -80,6 +80,12 @@
   initialPortfolioName={data.portfolioName ?? ''}
 />
 
+{#if data.error}
+  <div class="error-banner" role="alert">
+    {data.error}
+  </div>
+{/if}
+
 {#if $navigating}
   <div class="loading-container">
     <div class="spinner" />
@@ -144,5 +150,14 @@
     padding: 4rem 1rem;
     color: #94a3b8;
     font-size: 1.1rem;
+  }
+
+  .error-banner {
+    margin: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: #7f1d1d;
+    color: #fecaca;
+    border-radius: 4px;
+    font-size: 0.9rem;
   }
 </style>

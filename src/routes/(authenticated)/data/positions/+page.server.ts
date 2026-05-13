@@ -183,20 +183,38 @@ export async function load({ locals, request }) {
     validSortDirection = sortDirection === 'desc' ? 'desc' : 'asc';
   }
 
-  const positions = await FetchPosition(
-    requestData,
-    positionViewEnumValue,
-    positionTypeEnumValue,
-    mappedSortBy,
-    validSortDirection,
-    identifier || undefined,
-    tradeDate || undefined,
-    tradeDateOperator ?? undefined,
-    assetClass || undefined,
-    portfolioId || undefined,
-    locals.user?.apiKey,
-    identifierType,
-  );
+  // The position-search aggregates measures via valuation-service, and
+  // valuation-service throws INVALID_ARGUMENT on partial security data
+  // (e.g. "FRN requires spread on security" when an FRN in the portfolio
+  // is missing its spread field). A single such security in the requested
+  // portfolio used to take down the whole page render with a SvelteKit
+  // 500 — surfaced as M6 #263 bug 1 (SOMA portfolio link). Catch the
+  // gRPC error here and surface it as a structured page-level message so
+  // the rest of the page (autocomplete, header, back link) still renders.
+  let positions: any = [];
+  let fetchError: string | null = null;
+  try {
+    positions = await FetchPosition(
+      requestData,
+      positionViewEnumValue,
+      positionTypeEnumValue,
+      mappedSortBy,
+      validSortDirection,
+      identifier || undefined,
+      tradeDate || undefined,
+      tradeDateOperator ?? undefined,
+      assetClass || undefined,
+      portfolioId || undefined,
+      locals.user?.apiKey,
+      identifierType,
+    );
+  } catch (e: any) {
+    const detail = e?.details || e?.message || String(e);
+    console.error('Error fetching positions:', detail);
+    fetchError = detail
+      ? `Could not load positions: ${detail}`
+      : 'Could not load positions (backend returned an empty error).';
+  }
 
   const metadata = { fields: userFields, measures: userMeasures };
   return {
@@ -207,6 +225,7 @@ export async function load({ locals, request }) {
     portfolioId: portfolioId || null,
     portfolioName,
     portfolioUniverse,
+    error: fetchError,
     user: locals.user
   };
 }
