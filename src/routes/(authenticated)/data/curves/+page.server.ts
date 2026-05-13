@@ -1,19 +1,18 @@
 /**
- * Live yield curves on /data/curves (Phase 3 of #203).
+ * Live yield curves on /data/curves (Phase 3 of #203 + term-forward view #264).
  *
  * Pipeline:
  *   1. Pick on-the-run bonds via SecurityService for the selected as-of date.
- *      (Same selection logic /data/treasury_curve uses — lifted to
- *      $lib/treasuryCurveSelection.)
  *   2. Fetch the latest clean price ≤ as-of for each bond from PriceService.
- *   3. Build CurveRequestProto with `asof_datetime = asOf 23:59:59.9999Z`,
- *      `curve_types = [PAR_YIELD, SPOT_YIELD, FORWARD_YIELD]`, and one
- *      CurveInputProto per bond carrying `security` (issue + maturity dates
- *      populated) and `clean_price` — server runs YTM internally and
- *      computes tenor from `(maturity − asof)`. No tenor override sent.
+ *   3. Build CurveRequestProto with `asof_datetime`, the three curve types,
+ *      and (if a term is selected) `forward_term_years = T`. With the term set,
+ *      the FORWARD_YIELD result is the term-forward series f(t, t+T) at annual
+ *      starting points t ∈ [0, T_max − T] rather than the legacy single-line
+ *      forward curve.
  *   4. Call ValuationClient.runCurve via the broker.
- *   5. Map CurveResultProto[] → {par, spot, forward}: each is
- *      Array<{tenor, years, yield}> where `tenor` is a UI label like "1Y".
+ *   5. Map CurveResultProto[] → {par, spot, forward}. Tenor labels are
+ *      decimal years (e.g. "9.95Y") — no bucket snapping, the chart axis
+ *      is the source of truth.
  */
 import { ValuationClient } from '@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js';
 import { CurveRequestProto, CurveInputProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_request_pb.js';
@@ -25,12 +24,18 @@ import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/ut
 import { getServiceConnection } from '$lib/grpc-auth';
 import { selectOnTheRunBonds, type CurveBondPick } from '$lib/treasuryCurveSelection';
 import { fetchPricesForSecurity, priceAsOf } from '$lib/curvePrices';
+import {
+  formatYears,
+  parseForwardTerm,
+  type ForwardTermYears,
+} from '$lib/curveForwardTerm';
 
 const { MeasureProto } = measure_pkg;
 
 export interface CurvePoint {
-  tenor: string;   // UI label — derived from years
-  years: number;   // numeric (decimal years)
+  tenor: string;   // decimal-year display label (e.g. "9.95Y")
+  years: number;   // numeric (decimal years). For the term-forward trace this is
+                   //   the *starting* year t, not the maturity tenor.
   yield: number;   // percent (e.g. 4.25 means 4.25%)
 }
 
@@ -39,28 +44,9 @@ interface PageData {
   spot: CurvePoint[];
   forward: CurvePoint[];
   curveDate: string;
+  termYears: ForwardTermYears;
   warnings: string[];
   error: string | null;
-}
-
-/**
- * Format decimal years as a UI tenor label. Server-derived tenors don't snap
- * exactly to "10Y" — a 10Y on-the-run bond has ~9.95Y to maturity by the time
- * it's traded — so we round to the nearest standard bucket within tolerance.
- */
-function tenorLabel(years: number): string {
-  const months = years * 12;
-  if (months <= 1.5) return '1M';
-  if (months <= 4) return '3M';
-  if (months <= 9) return '6M';
-  if (months <= 18) return '1Y';
-  if (months <= 30) return '2Y';
-  if (months <= 48) return '3Y';
-  if (months <= 72) return '5Y';
-  if (months <= 102) return '7Y';
-  if (months <= 168) return '10Y';
-  if (months <= 300) return '20Y';
-  return '30Y';
 }
 
 function decimal(value: string): DecimalValueProto {
@@ -83,6 +69,7 @@ function buildCurveRequest(
   picks: CurveBondPick[],
   pricesByCusip: Map<string, number>,
   asOf: Date,
+  termYears: ForwardTermYears,
 ): { request: CurveRequestProto; warnings: string[] } {
   const warnings: string[] = [];
   const request = new CurveRequestProto();
@@ -94,6 +81,10 @@ function buildCurveRequest(
     MeasureProto.SPOT_YIELD,
     MeasureProto.FORWARD_YIELD,
   ]);
+  // With forward_term_years set, the FORWARD_YIELD result is the term-forward
+  // series f(t, t+T) at annual t — replaces the legacy single-line forward
+  // curve. Added on ledger-models@0.2.4 (valuation-service PR #50).
+  request.setForwardTermYears(termYears);
 
   for (const pick of picks) {
     if (!pick.bond) {
@@ -141,7 +132,7 @@ function parseCurveResponse(response: CurveResponseProto): {
       // Backend returns yield in decimal (0-1 scale) per CurveResponseProto
       // doc: "decimal, 0-1 scale; e.g. 0.045 = 4.50%". UI displays percent.
       const yieldPct = parseFloat(yieldStr) * 100;
-      const cp: CurvePoint = { tenor: tenorLabel(years), years, yield: yieldPct };
+      const cp: CurvePoint = { tenor: formatYears(years), years, yield: yieldPct };
       if (curveType === MeasureProto.PAR_YIELD) par.push(cp);
       else if (curveType === MeasureProto.SPOT_YIELD) spot.push(cp);
       else if (curveType === MeasureProto.FORWARD_YIELD) forward.push(cp);
@@ -159,13 +150,14 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
     ? new Date(dateParam + 'T12:00:00Z')
     : new Date();
   const curveDate = asOf.toISOString().slice(0, 10);
+  const termYears = parseForwardTerm(url.searchParams.get('term'));
 
   let picks: CurveBondPick[] = [];
   try {
     picks = await selectOnTheRunBonds(asOf, apiKey);
   } catch (e: any) {
     return {
-      par: [], spot: [], forward: [], curveDate,
+      par: [], spot: [], forward: [], curveDate, termYears,
       warnings: [],
       error: `Failed to load on-the-run bonds: ${e.message ?? e}`,
     };
@@ -190,11 +182,11 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
     if (price !== undefined) pricesByCusip.set(cusip, price);
   }
 
-  const { request, warnings } = buildCurveRequest(picks, pricesByCusip, asOf);
+  const { request, warnings } = buildCurveRequest(picks, pricesByCusip, asOf, termYears);
 
   if (request.getCurveInputsList().length < 2) {
     return {
-      par: [], spot: [], forward: [], curveDate,
+      par: [], spot: [], forward: [], curveDate, termYears,
       warnings,
       error: 'Insufficient curve inputs — need at least 2 bonds with prices to bootstrap a curve.',
     };
@@ -209,7 +201,7 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
     });
   } catch (e: any) {
     return {
-      par: [], spot: [], forward: [], curveDate, warnings,
+      par: [], spot: [], forward: [], curveDate, termYears, warnings,
       error: `RunCurve failed: ${e.details ?? e.message ?? e}`,
     };
   }
@@ -232,5 +224,5 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
     } catch { /* summary shape varies */ }
   }
 
-  return { par, spot, forward, curveDate, warnings, error: null };
+  return { par, spot, forward, curveDate, termYears, warnings, error: null };
 }

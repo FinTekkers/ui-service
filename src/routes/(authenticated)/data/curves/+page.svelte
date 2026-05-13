@@ -4,20 +4,40 @@
 
   type CurvePoint = { tenor: string; years: number; yield: number };
 
+  const ALLOWED_TERMS = [1, 2, 5, 10] as const;
+  type TermYears = typeof ALLOWED_TERMS[number];
+
   $: par = (data.par ?? []) as CurvePoint[];
   $: spot = (data.spot ?? []) as CurvePoint[];
+  // For the term-forward trace each point's `years` is the *starting* year t
+  // and `yield` is f(t, t+T). Server populated this via
+  // CurveRequestProto.forward_term_years = data.termYears.
   $: forward = (data.forward ?? []) as CurvePoint[];
   $: curveDate = (data.curveDate ?? '') as string;
+  $: termYears = ((data as any).termYears ?? 10) as TermYears;
 
   let asofInput: string = data.curveDate ?? new Date().toISOString().slice(0, 10);
 
+  function buildQuery(asof: string, term: TermYears): string {
+    return `/data/curves?asof=${asof}&term=${term}`;
+  }
+
   function handleAsofChange() {
     if (asofInput) {
-      window.location.href = `/data/curves?asof=${asofInput}`;
+      window.location.href = buildQuery(asofInput, termYears);
+    }
+  }
+
+  function handleTermChange(event: Event) {
+    const next = Number((event.target as HTMLSelectElement).value);
+    if ((ALLOWED_TERMS as readonly number[]).includes(next)) {
+      window.location.href = buildQuery(asofInput, next as TermYears);
     }
   }
 
   let chartEl: HTMLDivElement;
+
+  $: forwardTraceName = `${termYears}Y Fwd`;
 
   onMount(async () => {
     if (!chartEl || par.length === 0) return;
@@ -29,8 +49,7 @@
         mode: 'lines+markers',
         line: { color: '#60a5fa', width: 2.5 },
         marker: { color: '#60a5fa', size: 6 },
-        hovertemplate: '%{customdata}<br>Par: %{y:.3f}%<extra></extra>',
-        customdata: par.map((p) => p.tenor),
+        hovertemplate: '%{x:.2f}Y<br>Par: %{y:.3f}%<extra></extra>',
         name: 'Par',
       },
       {
@@ -39,7 +58,7 @@
         mode: 'lines+markers',
         line: { color: '#7cd2ba', width: 2.5, dash: 'dash' },
         marker: { color: '#7cd2ba', size: 6 },
-        hovertemplate: 'Spot: %{y:.3f}%<extra></extra>',
+        hovertemplate: '%{x:.2f}Y<br>Spot: %{y:.3f}%<extra></extra>',
         name: 'Spot',
       },
       {
@@ -48,8 +67,9 @@
         mode: 'lines+markers',
         line: { color: '#f59e0b', width: 2.5, dash: 'dot' },
         marker: { color: '#f59e0b', size: 6 },
-        hovertemplate: 'Fwd: %{y:.3f}%<extra></extra>',
-        name: 'Forward',
+        // x is the *starting* year t for the term-forward; y is f(t, t+T).
+        hovertemplate: `Starts %{x:.2f}Y<br>${termYears}Y Fwd: %{y:.3f}%<extra></extra>`,
+        name: forwardTraceName,
       },
     ];
     const layout = {
@@ -67,7 +87,7 @@
       },
       xaxis: {
         gridcolor: '#164e63',
-        title: { text: 'Tenor (years)', font: { color: '#a0adb7' } },
+        title: { text: 'Years', font: { color: '#a0adb7' } },
       },
       yaxis: {
         gridcolor: '#164e63',
@@ -78,19 +98,23 @@
     Plotly.newPlot(chartEl, traces, layout, { responsive: true, displayModeBar: false });
   });
 
-  // Build merged table data from par (primary) with spot and forward joined on years
-  $: tableData = par.map(p => {
-    const s = spot.find(sp => sp.years === p.years);
-    const f = forward.find(fp => fp.years === p.years);
+  // Build merged par/spot table by tenor (years). Forward gets its own
+  // table below since its x-axis means starting year, not maturity tenor.
+  $: parSpotTable = par.map((p) => {
+    const s = spot.find((sp) => sp.years === p.years);
     return {
       tenor: p.tenor,
       years: p.years,
       parYield: p.yield,
       spotRate: s?.yield,
-      forwardRate: f?.yield,
-      forwardTenor: f?.tenor,
     };
   });
+
+  $: forwardTable = forward.map((f) => ({
+    startYear: f.tenor,        // decimal-year label of t
+    years: f.years,
+    forwardRate: f.yield,
+  }));
 </script>
 
 <div class="portfolio_container px-10 py-7">
@@ -106,6 +130,17 @@
           on:change={handleAsofChange}
           max={new Date().toISOString().slice(0, 10)}
         />
+        <label for="forwardTerm">Forward term:</label>
+        <select
+          id="forwardTerm"
+          aria-label="Forward term"
+          value={termYears}
+          on:change={handleTermChange}
+        >
+          {#each ALLOWED_TERMS as t}
+            <option value={t}>{t}Y</option>
+          {/each}
+        </select>
       </div>
 
       {#if data.error}
@@ -127,31 +162,57 @@
         <div bind:this={chartEl} class="curves-chart" />
       </div>
 
-      <!-- Data table -->
+      <!-- Par/Spot table -->
       <div class="table-wrapper">
+        <h3 class="table-heading">Par & Spot Curves</h3>
         <table class="text-left">
           <thead class="border-b border-slate-400">
             <tr>
               <th class="text-semibold px-4 py-2">Tenor</th>
               <th class="text-semibold px-4 py-2 par-col">Par Yield (%)</th>
               <th class="text-semibold px-4 py-2 spot-col">Spot Rate (%)</th>
-              <th class="text-semibold px-4 py-2 fwd-col">Forward Rate (%)</th>
-              <th class="text-semibold px-4 py-2">Forward Period</th>
             </tr>
           </thead>
           <tbody>
-            {#each tableData as row}
+            {#each parSpotTable as row}
               <tr class="table-row border-b border-slate-400">
                 <td class="table-cell px-4 py-2"><strong>{row.tenor}</strong></td>
                 <td class="table-cell px-4 py-2 par-col">{row.parYield.toFixed(3)}</td>
                 <td class="table-cell px-4 py-2 spot-col">{row.spotRate?.toFixed(3) ?? '—'}</td>
-                <td class="table-cell px-4 py-2 fwd-col">{row.forwardRate?.toFixed(3) ?? '—'}</td>
-                <td class="table-cell px-4 py-2">{row.forwardTenor ?? '—'}</td>
               </tr>
             {/each}
           </tbody>
-    </table>
-  </div>
+        </table>
+      </div>
+
+      <!-- Term-forward table -->
+      <div class="table-wrapper">
+        <h3 class="table-heading">{termYears}Y Forward Rate by Start Year</h3>
+        <p class="table-subhead">
+          Market-implied {termYears}-year rate starting at each future year — i.e. f(t, t+{termYears}).
+        </p>
+        <table class="text-left">
+          <thead class="border-b border-slate-400">
+            <tr>
+              <th class="text-semibold px-4 py-2">Starting Year</th>
+              <th class="text-semibold px-4 py-2 fwd-col">{termYears}Y Fwd Rate (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each forwardTable as row}
+              <tr class="table-row border-b border-slate-400">
+                <td class="table-cell px-4 py-2"><strong>{row.startYear}</strong></td>
+                <td class="table-cell px-4 py-2 fwd-col">{row.forwardRate.toFixed(3)}</td>
+              </tr>
+            {/each}
+            {#if forwardTable.length === 0}
+              <tr class="table-row">
+                <td class="table-cell px-4 py-2" colspan="2">No forward points returned for {termYears}Y term.</td>
+              </tr>
+            {/if}
+          </tbody>
+        </table>
+      </div>
 </div>
 
 <style lang="scss">
@@ -174,7 +235,8 @@
       font-weight: 600;
     }
 
-    input[type="date"] {
+    input[type="date"],
+    select {
       padding: 6px 12px;
       border: 1px solid #ddd;
       border-radius: 4px;
@@ -183,6 +245,19 @@
       color: #05192a;
       height: 36px;
     }
+  }
+
+  .table-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 18px 0 6px;
+    color: #d8e0e6;
+  }
+
+  .table-subhead {
+    font-size: 0.8rem;
+    color: #a0adb7;
+    margin: 0 0 10px;
   }
 
   .error-banner {
