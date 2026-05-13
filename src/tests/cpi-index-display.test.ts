@@ -153,14 +153,19 @@ describe('CPI Index page – server data pipeline', () => {
 		expect(pageServer).toContain('export async function load');
 	});
 
-	test('discovers CPI series via SecurityService (no hardcoded UUID)', () => {
+	test('discovers CPI series via SecurityService scoped to ASSET_CLASS=RATES + product_type=CPI_SERIES (M6 #263 bug 6)', () => {
 		// Server used to pin to a single hardcoded CPI-U UUID
-		// ('c7c719a1-7bbc-5890-992d-7f6f3a4b3dca'). Now it queries
-		// SecurityService for ASSET_CLASS=Index securities and filters
-		// to CPI-family index types — supports any BLS series the
-		// security service knows about.
+		// ('c7c719a1-7bbc-5890-992d-7f6f3a4b3dca'). The follow-up rewrite
+		// queried by ASSET_CLASS='Index' — but 'Index' is the abstract
+		// product_type parent, not an asset_class value, so the search
+		// returned zero rows and the page rendered empty despite the
+		// ledger holding thousands of CPI prices. Post-fix the filter
+		// uses ASSET_CLASS='RATES' (where CPI_SERIES lives per
+		// hierarchy.json) with a post-filter on product_type=CPI_SERIES.
 		expect(pageServer).toContain('SecurityService');
-		expect(pageServer).toContain("addEqualsFilter(FieldProto.ASSET_CLASS, 'Index')");
+		expect(pageServer).toContain("addEqualsFilter(FieldProto.ASSET_CLASS, 'RATES')");
+		expect(pageServer).toContain('ProductTypeProto.CPI_SERIES');
+		expect(pageServer).not.toContain("addEqualsFilter(FieldProto.ASSET_CLASS, 'Index')");
 		expect(pageServer).not.toContain('c7c719a1-7bbc-5890-992d-7f6f3a4b3dca');
 	});
 

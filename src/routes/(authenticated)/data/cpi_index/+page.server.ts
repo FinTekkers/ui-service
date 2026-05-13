@@ -8,6 +8,12 @@ import type { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/
 import field_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
 import { IndexTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb';
+// M6 #263 bug 6: ProductTypeProto so we can post-filter on the CPI_SERIES
+// leaf. Pre-fix the server filter used asset_class='Index' (the abstract
+// parent product type, not a real asset_class), so the search matched
+// nothing and the page came back empty even though the ledger has
+// thousands of CPI prices for these series.
+import { ProductTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb';
 
 const { FieldProto } = field_pkg;
 
@@ -38,21 +44,32 @@ function indexTypeToString(t: number): string {
 }
 
 async function fetchCpiSeries(apiKey?: string): Promise<CpiSeries[]> {
+  // M6 #263 bug 6: CPI_SERIES has asset_class=RATES + product_type=CPI_SERIES
+  // in hierarchy.json. Narrow server-side to RATES so we don't stream the
+  // whole security universe, then post-filter to CPI_SERIES below. The
+  // pre-fix filter used ASSET_CLASS='Index' — that's the *parent
+  // product_type* string ('INDEX'), not an asset_class value, so the
+  // search matched nothing and the page came back empty despite
+  // data-sourcing-dev confirming 4,798 CPI prices in the ledger.
   const filter = new PositionFilter();
-  filter.addEqualsFilter(FieldProto.ASSET_CLASS, 'Index');
+  filter.addEqualsFilter(FieldProto.ASSET_CLASS, 'RATES');
 
   const service = new SecurityService(apiKey);
   const securities = await service.searchSecurityAsOfNow(filter);
 
   const series: CpiSeries[] = [];
   for (const sec of securities) {
+    // Drop non-CPI rates leaves (TBILL, TIPS, TREASURY_BOND, SOFR_SERIES, …)
+    // before touching downstream getters.
+    if (sec.proto.getProductType() !== ProductTypeProto.CPI_SERIES) continue;
+
     const idProto = sec.proto.getIdentifier();
     const idValue = idProto?.getIdentifierValue();
     const indexTypeNum = sec.proto.getIndexType();
     const indexTypeStr = indexTypeToString(indexTypeNum);
 
-    // Filter to CPI families. Other Index-class securities (e.g. SOFR) wouldn't
-    // belong on this page even if they were ASSET_CLASS=Index.
+    // Filter to CPI families. CPI_SERIES is the parent product type;
+    // index_type narrows to the specific CPI variant the BLS publishes.
     if (indexTypeStr !== 'CPI_U' && indexTypeStr !== 'CORE_CPI' && indexTypeStr !== 'CPI_W' && indexTypeStr !== 'PCE' && indexTypeStr !== 'HICP') continue;
     if (!idValue) continue;
 
