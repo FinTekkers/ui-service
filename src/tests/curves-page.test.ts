@@ -1,61 +1,64 @@
 /**
- * #203 Phase 3 — component test for /data/curves.
+ * Component tests for /data/curves — post-#264 term-forward view.
  *
- * Per the Step 9 e2e plan: feed +page.svelte the 2026-03-19 fixture from
- * `valuation-service/tests/scenarios/scenario_*_curve.md` and assert the
- * page-level shape (subtitle, table headers, per-tenor rows).
+ * Server-side concerns (CurveRequestProto.setForwardTermYears wiring,
+ * decimal-year tenor formatting, URL-param parsing) live in
+ * curves-server-helpers.test.ts. This file covers the rendered page.
  *
- * Plotly itself isn't exercised here — it's loaded in onMount via dynamic
- * import which Vitest's jsdom can't resolve cleanly (and we'd be testing
- * Plotly, not our code). The curve-render correctness assertion is on the
- * server side: `parseCurveResponse` mapping CurveResultProto → page shape,
- * which has its own unit coverage and is also exercised against the live
- * service in the manual smoke test attached to the PR.
+ * Plotly itself isn't exercised — it's loaded in onMount via dynamic import
+ * which jsdom can't resolve cleanly, and we'd be testing Plotly rather than
+ * our code. The chart-data correctness is asserted via the server-side
+ * parseCurveResponse unit coverage + the e2e spec.
  */
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, test, vi } from 'vitest';
 
-// Plotly is dynamic-imported in onMount; stub it so the chart container
-// doesn't blow up. We don't exercise Plotly's rendering — that's its own lib.
 vi.mock('plotly.js-dist', () => ({
   default: { newPlot: vi.fn() },
 }));
 
 import CurvesPage from '../routes/(authenticated)/data/curves/+page.svelte';
 
-// Fixture matching the 2026-03-19 scenario (par values from the existing
-// scenario fixtures — see #203 reference list).
+// Fixture: 2026-03-19 par/spot rows + a 10Y-forward series (f(t, t+10)).
+// Forward x-axis now means *starting* year t, not maturity tenor.
 const FIXTURE_2026_03_19 = {
   curveDate: '2026-03-19',
+  termYears: 10 as const,
   par: [
-    { tenor: '6M', years: 0.5, yield: 3.76 },
+    { tenor: '0.5Y', years: 0.5, yield: 3.76 },
     { tenor: '1Y', years: 1.0, yield: 3.73 },
     { tenor: '2Y', years: 2.0, yield: 3.79 },
     { tenor: '3Y', years: 3.0, yield: 3.79 },
     { tenor: '5Y', years: 5.0, yield: 3.88 },
     { tenor: '7Y', years: 7.0, yield: 4.06 },
-    { tenor: '10Y', years: 10.0, yield: 4.25 },
+    { tenor: '9.95Y', years: 9.95, yield: 4.25 },
     { tenor: '20Y', years: 20.0, yield: 4.82 },
-    { tenor: '30Y', years: 30.0, yield: 4.83 },
+    { tenor: '29.97Y', years: 29.97, yield: 4.83 },
   ],
   spot: [
-    { tenor: '6M', years: 0.5, yield: 3.760 },
+    { tenor: '0.5Y', years: 0.5, yield: 3.760 },
     { tenor: '1Y', years: 1.0, yield: 3.730 },
     { tenor: '2Y', years: 2.0, yield: 3.792 },
     { tenor: '5Y', years: 5.0, yield: 3.889 },
-    { tenor: '10Y', years: 10.0, yield: 4.312 },
-    { tenor: '30Y', years: 30.0, yield: 4.856 },
+    { tenor: '9.95Y', years: 9.95, yield: 4.312 },
+    { tenor: '29.97Y', years: 29.97, yield: 4.856 },
   ],
   forward: [
-    { tenor: '1Y', years: 1.0, yield: 3.699 },
-    { tenor: '2Y', years: 2.0, yield: 3.854 },
-    { tenor: '5Y', years: 5.0, yield: 4.036 },
-    { tenor: '10Y', years: 10.0, yield: 4.736 },
-    { tenor: '30Y', years: 30.0, yield: 5.128 },
+    // f(0, 10), f(1, 11), … f(20, 30) — 21 points for T=10
+    { tenor: '0Y', years: 0, yield: 4.31 },
+    { tenor: '1Y', years: 1, yield: 4.42 },
+    { tenor: '5Y', years: 5, yield: 4.61 },
+    { tenor: '10Y', years: 10, yield: 4.74 },
+    { tenor: '20Y', years: 20, yield: 4.99 },
   ],
   warnings: [],
   error: null,
-  user: undefined,
+  user: {
+    id: 'test',
+    name: 'Test User',
+    email: 'test@example.com',
+    apiKey: 'ftk_live_test',
+  },
 };
 
 describe('/data/curves component', () => {
@@ -69,26 +72,44 @@ describe('/data/curves component', () => {
     expect(screen.getByText(/2026-03-19/)).toBeInTheDocument();
   });
 
-  test('renders the data table with par/spot/forward rows for the 2026-03-19 fixture', () => {
+  test('forward-term selector exposes 1Y/2Y/5Y/10Y and defaults to data.termYears', () => {
+    render(CurvesPage, { props: { data: FIXTURE_2026_03_19 } });
+    const select = screen.getByLabelText('Forward term') as HTMLSelectElement;
+    expect(select).toBeInTheDocument();
+    expect(select.value).toBe('10');
+    const optionValues = Array.from(select.querySelectorAll('option')).map(
+      (o) => (o as HTMLOptionElement).value,
+    );
+    expect(optionValues).toEqual(['1', '2', '5', '10']);
+  });
+
+  test('par/spot table renders decimal-year tenors (no 9.95→10Y bucketing)', () => {
     render(CurvesPage, { props: { data: FIXTURE_2026_03_19 } });
 
-    // Headers
-    expect(screen.getByRole('columnheader', { name: 'Tenor' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /Par Yield/ })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /Spot Rate/ })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /Forward Rate/ })).toBeInTheDocument();
+    // The par/spot table heading + at least one decimal-year row.
+    expect(screen.getByText('Par & Spot Curves')).toBeInTheDocument();
+    const decimalCell = screen.getAllByText('9.95Y').find((el) => el.tagName === 'STRONG');
+    expect(decimalCell, '9.95Y tenor renders verbatim instead of being snapped to "10Y"').toBeInTheDocument();
+    expect(screen.getByText('4.250')).toBeInTheDocument();   // par 4.25
+    expect(screen.getByText('4.312')).toBeInTheDocument();   // spot 4.312
+  });
 
-    // 10Y row — par 4.25, spot 4.312, forward 4.736
-    const tenY = screen.getAllByText('10Y').find((el) => el.tagName === 'STRONG');
-    expect(tenY).toBeInTheDocument();
-    expect(screen.getByText('4.250')).toBeInTheDocument();
-    expect(screen.getByText('4.312')).toBeInTheDocument();
-    expect(screen.getByText('4.736')).toBeInTheDocument();
+  test('forward table renders one row per starting year for the selected term', () => {
+    render(CurvesPage, { props: { data: FIXTURE_2026_03_19 } });
+    expect(screen.getByText(/10Y Forward Rate by Start Year/)).toBeInTheDocument();
+    // Each forward fixture row's starting-year label should appear in the table.
+    expect(screen.getByText('4.310')).toBeInTheDocument();   // f(0, 10) = 4.31
+    expect(screen.getByText('4.420')).toBeInTheDocument();   // f(1, 11)
+    expect(screen.getByText('4.740')).toBeInTheDocument();   // f(10, 20)
+  });
 
-    // 30Y row — par 4.83, spot 4.856, forward 5.128
-    expect(screen.getByText('4.830')).toBeInTheDocument();
-    expect(screen.getByText('4.856')).toBeInTheDocument();
-    expect(screen.getByText('5.128')).toBeInTheDocument();
+  test('forward table shows empty-state when backend returns no forward points', () => {
+    render(CurvesPage, {
+      props: {
+        data: { ...FIXTURE_2026_03_19, forward: [] },
+      },
+    });
+    expect(screen.getByText(/No forward points returned for 10Y term/)).toBeInTheDocument();
   });
 
   test('shows error banner when load() failed', () => {
