@@ -91,10 +91,15 @@
       if (faceValue) params.set('tipsFaceValue', faceValue);
       if (realCouponRate) params.set('realCouponRate', realCouponRate);
       if (couponFrequency) params.set('tipsCouponFrequency', couponFrequency);
-      if (referenceCpi) params.set('referenceCpi', referenceCpi);
       if (maturityDate) params.set('tipsMaturityDate', maturityDate);
       if (issueDate) params.set('tipsIssueDate', issueDate);
     }
+    // Reference CPI applies to both modes — the input is rendered outside
+    // the mode-toggle block. In CUSIP mode, a form-supplied referenceCpi
+    // overrides the wire's base_cpi (which is missing on some pre-#263-
+    // backfill TIPS records, causing valuation-service to reject the
+    // request with "Missing required field: base_cpi").
+    if (referenceCpi) params.set('referenceCpi', referenceCpi);
 
     window.location.href = `/data/calculators?${params.toString()}`;
   }
