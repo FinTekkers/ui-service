@@ -82,7 +82,12 @@ describe('grpc-auth.ts – ESM-compatible credentials', () => {
 	test('getAuthClient also uses grpc.credentials.createInsecure()', () => {
 		const fnStart = src.indexOf('function getAuthClient');
 		expect(fnStart).toBeGreaterThan(-1);
-		const fnBody = src.slice(fnStart, fnStart + 600);
+		// 1000-char window: #267 Phase 1 added a comment block + a third
+		// constructor arg `{ interceptors: [getTenantInterceptor()] }`, which
+		// pushed `createInsecure()` past the prior 600-char slice. The
+		// substring assertion is unchanged — it still proves the auth
+		// client is built with insecure credentials.
+		const fnBody = src.slice(fnStart, fnStart + 1000);
 		expect(fnBody).toContain('grpc.credentials.createInsecure()');
 	});
 });

@@ -14,6 +14,22 @@ const AUTH_PROTO_PATH = path.resolve(
   process.env.BROKER_PROTO_PATH ?? path.join(process.env.HOME ?? '', 'projects/broker-service/proto/auth.proto')
 );
 
+/**
+ * Tenant header value sent on every outbound gRPC request from this
+ * service. Phase 1 of #267 — broker-service reads `x-fintekkers-tenant`
+ * and routes per-tenant; missing/unset header defaults to `production`
+ * on the broker side, but we always send the header explicitly so the
+ * routing is deterministic and visible in network captures.
+ *
+ * Resolved lazily on each access (NOT cached) so a test that sets the
+ * env var after this module loads (e.g. via process.env mutation or a
+ * vi.stubEnv) sees the new value without needing a module-cache reset.
+ */
+const TENANT_HEADER = 'x-fintekkers-tenant';
+export function getTenantHeaderValue(): string {
+  return process.env.FINTEKKERS_TENANT ?? 'production';
+}
+
 // --- Proto loading (dynamic, no compile needed) ---
 
 let authClient: any = null;
@@ -29,9 +45,15 @@ function getAuthClient(): any {
     oneofs: true,
   });
   const proto = grpc.loadPackageDefinition(packageDef) as any;
+  // Tenant header on register/login too — broker needs to resolve the
+  // tenant before validating credentials so a test-tenant login hits the
+  // test-tenant user table rather than production. The interceptor reads
+  // process.env at call time, so test stubs of FINTEKKERS_TENANT take
+  // effect without recreating this cached client.
   authClient = new proto.fintekkers.services.auth.Auth(
     BROKER_HOST,
-    grpc.credentials.createInsecure()
+    grpc.credentials.createInsecure(),
+    { interceptors: [getTenantInterceptor()] },
   );
   return authClient;
 }
@@ -212,6 +234,24 @@ export function getAuthenticatedInterceptor(apiKey: string): grpc.Interceptor {
 }
 
 /**
+ * gRPC interceptor that adds the tenant header to every outbound call.
+ * Phase 1 of #267 — paired with the auth interceptor in
+ * `getServiceConnection`, and also applied to the unauthenticated auth
+ * (register/login) client so the broker can resolve the tenant on those
+ * flows too.
+ */
+export function getTenantInterceptor(): grpc.Interceptor {
+  return (_options, nextCall) => {
+    return new grpc.InterceptingCall(nextCall(_options), {
+      start(metadata: grpc.Metadata, listener: grpc.Listener, next: Function) {
+        metadata.add(TENANT_HEADER, getTenantHeaderValue());
+        next(metadata, listener);
+      },
+    });
+  };
+}
+
+/**
  * Get the broker URL for routing all gRPC calls.
  */
 export function getBrokerURL(): string {
@@ -224,17 +264,22 @@ export function getBrokerURL(): string {
  * Otherwise falls back to direct service connection.
  */
 export function getServiceConnection(apiKey?: string): { url: string; credentials: grpc.ChannelCredentials; interceptors: grpc.Interceptor[] } {
+  // Tenant header goes on every call, authenticated or not — broker uses
+  // it to pick the right ledger-service URL. Order doesn't matter for
+  // metadata.add; we list tenant first as a habit so it's obvious it's
+  // unconditional.
+  const tenant = getTenantInterceptor();
   if (apiKey) {
     return {
       url: BROKER_HOST,
       credentials: grpc.credentials.createInsecure(),
-      interceptors: [getAuthenticatedInterceptor(apiKey)],
+      interceptors: [tenant, getAuthenticatedInterceptor(apiKey)],
     };
   }
   // No API key — route to broker anyway; it will return UNAUTHENTICATED (fail loudly)
   return {
     url: BROKER_HOST,
     credentials: grpc.credentials.createInsecure(),
-    interceptors: [],
+    interceptors: [tenant],
   };
 }
