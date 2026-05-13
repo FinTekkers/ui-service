@@ -33,6 +33,12 @@ const ON_THE_RUN_PRODUCT_TYPES: ReadonlySet<string> = new Set([
   'TREASURY_FRN',
 ]);
 import { getServiceConnection } from '$lib/grpc-auth';
+// M6 #263 bug 3: bypass BondSecurity's tenor-derived getProductType()
+// override so the leaf-name check below ('TBILL', 'TREASURY_NOTE', …)
+// actually matches. Pre-fix, BondSecurity instances returned
+// 'BILL' / 'NOTE' / 'BOND' which is not in ON_THE_RUN_PRODUCT_TYPES,
+// silently rejecting every candidate from the on-the-run set.
+import { productTypeNameOf } from '$lib/security';
 
 const { FieldProto } = pkg;
 
@@ -153,7 +159,7 @@ export async function selectOnTheRunBonds(asOfDate: Date, apiKey?: string): Prom
   });
 
   const candidates = (securities.filter((s) =>
-    ON_THE_RUN_PRODUCT_TYPES.has(s.getProductType()),
+    ON_THE_RUN_PRODUCT_TYPES.has(productTypeNameOf(s)),
   ) as BondSecurity[])
     .map((bond) => {
       try {
@@ -171,8 +177,9 @@ export async function selectOnTheRunBonds(asOfDate: Date, apiKey?: string): Prom
           couponRate = cr ? parseFloat(cr.getArbitraryPrecisionValue()) : 0;
         } catch { /* no coupon rate */ }
 
-        let productType = '';
-        try { productType = bond.getProductType() || ''; } catch { /* */ }
+        // productTypeNameOf — same reason as the filter above: avoid
+        // the BondSecurity tenor-derived 'BILL'/'NOTE'/'BOND' override.
+        const productType = productTypeNameOf(bond);
 
         return { bond, cusip, issueDate, maturityDate, couponRate, productType };
       } catch { return null; }

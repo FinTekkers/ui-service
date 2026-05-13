@@ -13,6 +13,10 @@ import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid'
 // PositionFilterOperator wrapper (ledger-models 0.1.135+); see positions.ts
 // for the migration rationale (#229).
 import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
+// M6 #263 bug 3: bypass the BondSecurity getProductType() override
+// (returns tenor-derived 'BILL' / 'NOTE' / 'BOND') so the transactions
+// grid shows the canonical leaf name (TREASURY_NOTE, TIPS, TREASURY_FRN).
+import { productTypeNameOf } from '$lib/security';
 const { FieldProto } = pkg;
 
 /**
@@ -113,7 +117,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
           transactionIssuerName: safe(() => element.getIssuerName().toString(), ''),
           transactionIssueDate: safe(() => formatDateToISO(security.getIssueDate()), ''),
           transactionQuantity: safe(() => element.getQuantity().toString(), ''),
-          transactionProductType: safe(() => bondSecurity?.getProductType() ?? security.getProductType() ?? '', ''),
+          transactionProductType: safe(() => productTypeNameOf(security), ''),
           transactionCouponRate: safe(() => security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '', ''),
           transactionCouponType: safe(() => bondSecurity?.getCouponType().name() ?? '', ''),
           transactionTenor: safe(() => bondSecurity?.getTenor().getTenorDescription() ?? '', ''),
