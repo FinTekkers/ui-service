@@ -87,9 +87,18 @@ function toCurveConstituent(security: Security, asOf: Date): CurveConstituent {
   try { issueDate = security.getIssueDate()?.toDate() ?? null; } catch { /* non-bond */ }
   try { maturityDate = security.getMaturityDate()?.toDate() ?? null; } catch { /* non-bond */ }
 
-  const cusip = security.getSecurityID()
-    ? security.getSecurityID().getIdentifierValue()
-    : security.getID().toString();
+  // Security.getSecurityID() throws "Identifier is required" when the
+  // underlying proto has no identifier (singular tag 40) and no
+  // identifiers[] (tag 42) populated. The TreasuryCurveResolver currently
+  // returns at least some constituents in that state — see second-brain#268
+  // for the upstream backfill task. Fall back to the bare UUID rather
+  // than blowing up the whole curve render.
+  let cusip: string;
+  try {
+    cusip = security.getSecurityID().getIdentifierValue();
+  } catch {
+    cusip = security.getID().toString();
+  }
 
   const monthsToMaturity = maturityDate ? monthsBetween(asOf, maturityDate) : 0;
   const bucket = bucketForMonths(monthsToMaturity);
