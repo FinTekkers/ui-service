@@ -64,7 +64,7 @@ function readBaseCpiFromLastRequest(): string | undefined {
   const last = capturedRequests[capturedRequests.length - 1];
   const tipsInput = last?.getProductInput?.()?.getTips?.();
   const sec = tipsInput?.getSecurity?.();
-  return sec?.getBaseCpi?.()?.getArbitraryPrecisionValue?.();
+  return sec?.getTipsExtension?.()?.getBaseCpi?.()?.getArbitraryPrecisionValue?.();
 }
 
 describe('RunTipsValuation — Reference CPI override (#263 bug 2)', () => {

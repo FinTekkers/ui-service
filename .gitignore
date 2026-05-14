@@ -35,3 +35,4 @@ AWSCLIV2.pkg
 /playwright-report/
 /playwright/.cache/
 /playwright/.auth/
+.claude/

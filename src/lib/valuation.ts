@@ -3,9 +3,8 @@ import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/servic
 import { ValuationRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js';
 import { ProductInput, BondInput, TipsInput, FrnInput } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js';
 import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
-import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
+import { SecurityProto, TipsExtensionProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
 import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js';
-import { ProductTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js';
 import { CouponTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb.js';
 import { CouponFrequencyProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb.js';
 import index_type_pkg from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb.js';
@@ -18,7 +17,11 @@ import { LocalDate } from '@fintekkers/ledger-models/node/wrappers/models/utils/
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
+import BondSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity';
+import TIPSBond from '@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond';
+import FloatingRateNote from '@fintekkers/ledger-models/node/wrappers/models/security/FloatingRateNote';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
+import { Decimal } from 'decimal.js';
 import { getServiceConnection } from '$lib/grpc-auth';
 
 const { MeasureProto } = measure_pkg;
@@ -153,10 +156,6 @@ function decimalValue(value: string): DecimalValueProto {
   return new DecimalValueProto().setArbitraryPrecisionValue(value);
 }
 
-function localDateFromString(dateStr: string): ReturnType<typeof LocalDate.from> {
-  return LocalDate.from(new Date(dateStr));
-}
-
 function parseCashflows(response: any): CashflowEntry[] {
   const cashflows: CashflowEntry[] = [];
   const cfList = response.getCashflowsList?.() ?? [];
@@ -203,52 +202,36 @@ async function buildSecurityProtoFromCusip(cusip: string, apiKey?: string): Prom
   return results[0];
 }
 
+const FREQUENCY_MAP: Record<string, CouponFrequencyProto> = {
+  ANNUALLY: CouponFrequencyProto.ANNUALLY,
+  SEMIANNUALLY: CouponFrequencyProto.SEMIANNUALLY,
+  QUARTERLY: CouponFrequencyProto.QUARTERLY,
+  MONTHLY: CouponFrequencyProto.MONTHLY,
+};
+
+function frequency(name: string | undefined, fallback: CouponFrequencyProto): CouponFrequencyProto {
+  return FREQUENCY_MAP[name ?? ''] ?? fallback;
+}
+
 function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
-  const security = new SecurityProto();
+  // BondSecurity.fromPricerInputs builds a TREASURY_NOTE-typed proto with
+  // the structured bond_details sub-message populated. Issuer name + UUID
+  // + asOf are envelope concerns the pricer doesn't need but we stamp
+  // them for consistency with the prior shape.
+  const security = BondSecurity.fromPricerInputs({
+    faceValue: new Decimal(inputs.faceValue ?? '0'),
+    couponRate: new Decimal(inputs.couponRate ?? '0'),
+    couponType: CouponTypeProto.FIXED,
+    couponFrequency: frequency(inputs.couponFrequency, CouponFrequencyProto.SEMIANNUALLY),
+    issueDate: LocalDate.from(new Date(inputs.issueDate ?? new Date().toISOString().slice(0, 10))),
+    maturityDate: LocalDate.from(new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10))),
+  });
   security.setObjectClass('Security');
   security.setVersion('0.0.1');
   security.setUuid(UUID.random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
-  // M5 / #260: BOND_SECURITY retired. The bond calculator's
-  // synthetic Security represents a generic coupon-paying treasury
-  // note (it carries a coupon rate + face value + maturity, no
-  // bills/TIPS/FRN-specific fields). TREASURY_NOTE is the
-  // narrowest accurate leaf — calculator dispatches off product
-  // type, and TREASURY_NOTE is what the engine's bond pricer
-  // expects.
-  security.setProductType(ProductTypeProto.TREASURY_NOTE);
   security.setAssetClass('Fixed Income');
-
-  if (inputs.issuerName) {
-    security.setIssuerName(inputs.issuerName);
-  }
-
-  if (inputs.faceValue) {
-    security.setFaceValue(decimalValue(inputs.faceValue));
-  }
-
-  if (inputs.couponRate) {
-    security.setCouponRate(decimalValue(inputs.couponRate));
-  }
-
-  security.setCouponType(CouponTypeProto.FIXED);
-
-  const freqMap: Record<string, CouponFrequencyProto> = {
-    ANNUALLY: CouponFrequencyProto.ANNUALLY,
-    SEMIANNUALLY: CouponFrequencyProto.SEMIANNUALLY,
-    QUARTERLY: CouponFrequencyProto.QUARTERLY,
-    MONTHLY: CouponFrequencyProto.MONTHLY,
-  };
-  security.setCouponFrequency(freqMap[inputs.couponFrequency ?? 'SEMIANNUALLY'] ?? CouponFrequencyProto.SEMIANNUALLY);
-
-  if (inputs.issueDate) {
-    security.setIssueDate(localDateFromString(inputs.issueDate).toProto());
-  }
-
-  if (inputs.maturityDate) {
-    security.setMaturityDate(localDateFromString(inputs.maturityDate).toProto());
-  }
-
+  if (inputs.issuerName) security.setIssuerName(inputs.issuerName);
   return security;
 }
 
@@ -369,45 +352,30 @@ export async function RunBondValuation(inputs: BondCalculatorInputs, apiKey?: st
 export const RunValuation = RunBondValuation;
 
 function buildManualTipsSecurityProto(inputs: TipsCalculatorInputs): SecurityProto {
-  const security = new SecurityProto();
+  const issueDate = LocalDate.from(new Date(inputs.issueDate ?? new Date().toISOString().slice(0, 10)));
+  const maturityDate = LocalDate.from(new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10)));
+
+  // US TIPS accrue off CPI-U; the inflation_index_type field is required on
+  // the structured TipsExtensionProto. indexDate defaults to the bond's
+  // issue date — the base CPI is fixed at issuance for vanilla TIPS, so the
+  // issue date is the natural reference.
+  const security = TIPSBond.fromPricerInputs({
+    faceValue: new Decimal(inputs.faceValue ?? '0'),
+    couponRate: new Decimal(inputs.realCouponRate ?? '0'),
+    couponType: CouponTypeProto.FIXED,
+    couponFrequency: frequency(inputs.couponFrequency, CouponFrequencyProto.SEMIANNUALLY),
+    issueDate,
+    maturityDate,
+    baseCpi: new Decimal(inputs.referenceCpi && inputs.referenceCpi.trim() !== '' ? inputs.referenceCpi : '0'),
+    indexDate: issueDate,
+    inflationIndexType: IndexTypeProto.CPI_U,
+  });
   security.setObjectClass('Security');
   security.setVersion('0.0.1');
   security.setUuid(UUID.random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
-  security.setProductType(ProductTypeProto.TIPS);
   security.setAssetClass('Fixed Income');
   security.setIssuerName('US Government');
-
-  if (inputs.faceValue) {
-    security.setFaceValue(decimalValue(inputs.faceValue));
-  }
-
-  if (inputs.realCouponRate) {
-    security.setCouponRate(decimalValue(inputs.realCouponRate));
-  }
-
-  security.setCouponType(CouponTypeProto.FIXED);
-
-  const freqMap: Record<string, CouponFrequencyProto> = {
-    ANNUALLY: CouponFrequencyProto.ANNUALLY,
-    SEMIANNUALLY: CouponFrequencyProto.SEMIANNUALLY,
-    QUARTERLY: CouponFrequencyProto.QUARTERLY,
-    MONTHLY: CouponFrequencyProto.MONTHLY,
-  };
-  security.setCouponFrequency(freqMap[inputs.couponFrequency ?? 'SEMIANNUALLY'] ?? CouponFrequencyProto.SEMIANNUALLY);
-
-  if (inputs.issueDate) {
-    security.setIssueDate(localDateFromString(inputs.issueDate).toProto());
-  }
-
-  if (inputs.maturityDate) {
-    security.setMaturityDate(localDateFromString(inputs.maturityDate).toProto());
-  }
-
-  if (inputs.referenceCpi) {
-    security.setBaseCpi(decimalValue(inputs.referenceCpi));
-  }
-
   return security;
 }
 
@@ -435,19 +403,17 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
     // rendered in both CUSIP and manual modes; the user may need to supply
     // it in CUSIP mode too because some TIPS records on the wire don't yet
     // have base_cpi populated (data-sourcing-dev's #263 face_value +
-    // coupon_rate backfills didn't cover base_cpi). Pre-fix the CUSIP path
-    // dropped the form value and valuation-service rejected the request
-    // with "Missing required field: base_cpi". When the form supplies one,
-    // we overlay it on the security proto regardless of mode — on BOTH the
-    // flat field and the tips_details oneof, since valuation-service may
-    // read either depending on which one is populated on the wire.
+    // coupon_rate backfills didn't cover base_cpi). The CUSIP-mode proto
+    // comes from a search and may or may not already carry a TipsExtension —
+    // re-use the existing one when present so we don't drop index_date /
+    // inflation_index_type, otherwise stamp a fresh CPI-U extension.
     if (inputs.referenceCpi && inputs.referenceCpi.trim()) {
-      const baseCpiOverride = decimalValue(inputs.referenceCpi.trim());
-      securityProto.setBaseCpi(baseCpiOverride);
-      const tipsDetails = (securityProto as any).getTipsDetails?.();
-      if (tipsDetails && typeof tipsDetails.setBaseCpi === 'function') {
-        tipsDetails.setBaseCpi(decimalValue(inputs.referenceCpi.trim()));
+      const tipsExt = securityProto.getTipsExtension() ?? new TipsExtensionProto();
+      tipsExt.setBaseCpi(decimalValue(inputs.referenceCpi.trim()));
+      if (tipsExt.getInflationIndexType() === IndexTypeProto.UNKNOWN_INDEX_TYPE) {
+        tipsExt.setInflationIndexType(IndexTypeProto.CPI_U);
       }
+      securityProto.setTipsExtension(tipsExt);
     }
 
     const productInput = new ProductInput().setTips(
@@ -466,7 +432,7 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
     // above); otherwise fall back to the security proto's base_cpi for
     // CUSIP mode where the wire populated it.
     const formReferenceCpi = parseFloat(inputs.referenceCpi ?? '');
-    const protoBaseCpiStr = securityProto.getBaseCpi?.()?.getArbitraryPrecisionValue?.();
+    const protoBaseCpiStr = securityProto.getTipsExtension()?.getBaseCpi()?.getArbitraryPrecisionValue();
     const referenceCpi = Number.isFinite(formReferenceCpi) && formReferenceCpi > 0
       ? formReferenceCpi
       : parseFloat(protoBaseCpiStr ?? '0');
@@ -509,52 +475,37 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
   }
 }
 
+const FRN_INDEX_MAP: Record<string, number> = {
+  SOFR: IndexTypeProto.SOFR,
+  T_BILL_13_WEEK: IndexTypeProto.T_BILL_13_WEEK,
+  FED_FUNDS: IndexTypeProto.FED_FUNDS,
+};
+
 function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto {
-  const security = new SecurityProto();
-  security.setObjectClass('Security');
-  security.setVersion('0.0.1');
-  security.setUuid(UUID.random().toUUIDProto());
-  security.setAsOf(ZonedDateTime.now().toProto());
-  // M5 / #260: FRN → TREASURY_FRN (the FRN proto enum was renamed
-  // to match the GOV_BOND-leaf convention).
-  security.setProductType(ProductTypeProto.TREASURY_FRN);
-  security.setAssetClass('Fixed Income');
-
-  if (inputs.faceValue) {
-    security.setFaceValue(decimalValue(inputs.faceValue));
-  }
-
-  if (inputs.spread) {
-    security.setSpread(decimalValue(inputs.spread));
-  }
-
   // FRN coupon rate = reference_rate + spread_in_percent
   // referenceRate is in % (e.g. "4"), spread is in bps (e.g. "50" = 0.50%)
   const refRate = parseFloat(inputs.referenceRate ?? '0');
   const spreadPct = parseFloat(inputs.spread ?? '0') / 100;
-  security.setCouponRate(decimalValue((refRate + spreadPct).toString()));
+  const effectiveCoupon = new Decimal((refRate + spreadPct).toString());
+  const couponFrequency = frequency(inputs.couponFrequency, CouponFrequencyProto.QUARTERLY);
+  const maturityDate = LocalDate.from(new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10)));
 
-  security.setCouponType(CouponTypeProto.FLOAT);
-
-  const freqMap: Record<string, CouponFrequencyProto> = {
-    ANNUALLY: CouponFrequencyProto.ANNUALLY,
-    SEMIANNUALLY: CouponFrequencyProto.SEMIANNUALLY,
-    QUARTERLY: CouponFrequencyProto.QUARTERLY,
-    MONTHLY: CouponFrequencyProto.MONTHLY,
-  };
-  security.setCouponFrequency(freqMap[inputs.couponFrequency ?? 'QUARTERLY'] ?? CouponFrequencyProto.QUARTERLY);
-
-  if (inputs.maturityDate) {
-    security.setMaturityDate(localDateFromString(inputs.maturityDate).toProto());
-  }
-
-  const indexMap: Record<string, number> = {
-    SOFR: IndexTypeProto.SOFR,
-    T_BILL_13_WEEK: IndexTypeProto.T_BILL_13_WEEK,
-    FED_FUNDS: IndexTypeProto.FED_FUNDS,
-  };
-  security.setReferenceRateIndex(indexMap[inputs.referenceRateIndex ?? 'SOFR'] ?? IndexTypeProto.SOFR);
-
+  const security = FloatingRateNote.fromPricerInputs({
+    faceValue: new Decimal(inputs.faceValue ?? '0'),
+    couponRate: effectiveCoupon,
+    couponType: CouponTypeProto.FLOAT,
+    couponFrequency,
+    issueDate: maturityDate,
+    maturityDate,
+    spread: new Decimal(inputs.spread ?? '0'),
+    referenceRateIndex: FRN_INDEX_MAP[inputs.referenceRateIndex ?? 'SOFR'] ?? IndexTypeProto.SOFR,
+    resetFrequency: couponFrequency,
+  });
+  security.setObjectClass('Security');
+  security.setVersion('0.0.1');
+  security.setUuid(UUID.random().toUUIDProto());
+  security.setAsOf(ZonedDateTime.now().toProto());
+  security.setAssetClass('Fixed Income');
   return security;
 }
 

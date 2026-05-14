@@ -18,7 +18,7 @@ import {
   fetchSecuritiesByUuids,
 } from '$lib/indexLookthrough';
 import { fetchPricesForSecurity, priceAsOf } from '$lib/curvePrices';
-import { couponRateOf, productTypeNameOf } from '$lib/security';
+import { identifierString, productTypeNameOf } from '$lib/security';
 import type Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
 import type BondSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity';
 
@@ -87,9 +87,18 @@ function toCurveConstituent(security: Security, asOf: Date): CurveConstituent {
   try { issueDate = security.getIssueDate()?.toDate() ?? null; } catch { /* non-bond */ }
   try { maturityDate = security.getMaturityDate()?.toDate() ?? null; } catch { /* non-bond */ }
 
-  const cusip = security.getSecurityID()
-    ? security.getSecurityID().getIdentifierValue()
-    : security.getID().toString();
+  const cusip = identifierString(security);
+
+  // BondSecurity.getCouponRate() returns the structured bond_details.coupon_rate
+  // value directly under v0.4.1. Non-bond Securities don't have that getter,
+  // so guard with the type predicate and treat anything else as zero-coupon
+  // (correct for the TBILL bucket).
+  let couponRate = 0;
+  if (security.isBond()) {
+    const raw = (security as BondSecurity).getCouponRate()?.getArbitraryPrecisionValue();
+    const n = raw !== undefined && raw !== null && raw !== '' ? parseFloat(raw) : NaN;
+    if (Number.isFinite(n)) couponRate = n;
+  }
 
   const monthsToMaturity = maturityDate ? monthsBetween(asOf, maturityDate) : 0;
   const bucket = bucketForMonths(monthsToMaturity);
@@ -101,7 +110,7 @@ function toCurveConstituent(security: Security, asOf: Date): CurveConstituent {
     cusip,
     issueDate,
     maturityDate,
-    couponRate: Math.round(couponRateOf(security) * 1000) / 1000,
+    couponRate: Math.round(couponRate * 1000) / 1000,
     productType: productTypeNameOf(security),
     cleanPrice: null,
   };

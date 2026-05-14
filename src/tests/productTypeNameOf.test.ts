@@ -15,13 +15,15 @@
 import { describe, expect, test } from 'vitest';
 import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
 import BondSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity';
+import TIPSBond from '@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond';
+import FloatingRateNote from '@fintekkers/ledger-models/node/wrappers/models/security/FloatingRateNote';
 import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb';
 import { ProductTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb';
 import { CouponTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb';
 import { CouponFrequencyProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb';
-import { LocalDateProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/local_date_pb';
-import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb';
-import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
+import { IndexTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb';
+import { LocalDate } from '@fintekkers/ledger-models/node/wrappers/models/utils/date';
+import { Decimal } from 'decimal.js';
 import { productTypeNameOf } from '$lib/security';
 
 function makeBondProto(opts: {
@@ -29,20 +31,38 @@ function makeBondProto(opts: {
   issueYear: number;
   maturityYear: number;
 }): SecurityProto {
-  const proto = new SecurityProto();
-  proto.setObjectClass('Security');
-  proto.setVersion('0.0.1');
-  proto.setUuid(UUID.random().toUUIDProto());
-  proto.setProductType(opts.productType);
-  proto.setAssetClass('RATES');
-  proto.setIssuerName('Test Issuer');
-  proto.setCouponType(CouponTypeProto.FIXED);
-  proto.setCouponFrequency(CouponFrequencyProto.SEMIANNUALLY);
-  proto.setCouponRate(new DecimalValueProto().setArbitraryPrecisionValue('0.05'));
-  proto.setFaceValue(new DecimalValueProto().setArbitraryPrecisionValue('1000'));
-  proto.setIssueDate(new LocalDateProto().setYear(opts.issueYear).setMonth(1).setDay(1));
-  proto.setMaturityDate(new LocalDateProto().setYear(opts.maturityYear).setMonth(1).setDay(1));
-  return proto;
+  const baseArgs = {
+    faceValue: new Decimal('1000'),
+    couponRate: new Decimal('0.05'),
+    couponType: CouponTypeProto.FIXED,
+    couponFrequency: CouponFrequencyProto.SEMIANNUALLY,
+    issueDate: LocalDate.from(new Date(opts.issueYear, 0, 1)),
+    maturityDate: LocalDate.from(new Date(opts.maturityYear, 0, 1)),
+  };
+  switch (opts.productType) {
+    case ProductTypeProto.TIPS:
+      return TIPSBond.fromPricerInputs({
+        ...baseArgs,
+        baseCpi: new Decimal('100'),
+        indexDate: baseArgs.issueDate,
+        inflationIndexType: IndexTypeProto.CPI_U,
+      });
+    case ProductTypeProto.TREASURY_FRN:
+      return FloatingRateNote.fromPricerInputs({
+        ...baseArgs,
+        couponType: CouponTypeProto.FLOAT,
+        spread: new Decimal('0.005'),
+        referenceRateIndex: IndexTypeProto.SOFR,
+        resetFrequency: CouponFrequencyProto.QUARTERLY,
+      });
+    default: {
+      // BondSecurity.fromPricerInputs always stamps TREASURY_NOTE; for
+      // TBILL / TREASURY_BOND override the product_type after building.
+      const proto = BondSecurity.fromPricerInputs(baseArgs);
+      proto.setProductType(opts.productType);
+      return proto;
+    }
+  }
 }
 
 describe('productTypeNameOf (M6 #263 bug 3)', () => {

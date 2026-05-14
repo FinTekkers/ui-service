@@ -193,7 +193,7 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
         // existing UI binding; deprecated in favour of
         // transactionProductType.
         transactionSecurityType: security.getProductType() ?? '',
-        transactionCouponRate: security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
+        transactionCouponRate: bondSecurity?.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
         transactionTenor: bondSecurity?.getTenor(asOfDate).getTenorDescription() ?? '',
         transactionCouponFrequency: bondSecurity?.getCouponFrequency()?.toString() ?? '',

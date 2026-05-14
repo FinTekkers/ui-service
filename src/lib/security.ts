@@ -2,9 +2,9 @@ import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
 import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js";
-import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
+import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { getServiceConnection } from "$lib/grpc-auth";
 // M5 / #260: ProductTypeProto + product_hierarchy registry. SecurityType
@@ -109,63 +109,20 @@ export function productTypeNameOf(security: Security): string {
   return found?.[0] ?? 'UNKNOWN_PRODUCT_TYPE';
 }
 
-// M6 #263 bug 3 (second round): the ledger-models 0.2.4 `Security.create()`
-// factory wraps only TREASURY_NOTE / TIPS / TREASURY_FRN as a BondSecurity.
-// TREASURY_BOND, TBILL, STRIPS, and SOVEREIGN_BOND fall through to the base
-// `Security` wrapper — which has no `getCouponRate()`. Anything that calls
-// `(security as BondSecurity).getCouponRate()` on those leaves hits a
-// "...not a function" TypeError; the typical try/catch wrappers around the
-// call swallow it and surface `couponRate = 0` in the UI. That's how
-// /data/treasury_curve shows 0% for the 20Y on-the-run (a TREASURY_BOND
-// with a real 4.x% coupon on the wire).
-//
-// Read coupon_rate from the proto directly, preferring the bond_details /
-// tips_details / frn_details oneof (the modern path that data-sourcing-dev
-// writes — see #263 face_value + coupon backfill) and falling back to the
-// flat `SecurityProto.coupon_rate` legacy field. Returns 0 when neither is
-// populated, which is the correct semantic for TBILL (zero-coupon by
-// definition).
-// #266: reference (base) CPI for a TIPS Security. Reads canonical
-// `tips_details.base_cpi` first (data-sourcing-dev's market-data-inputs
-// PR #17 populates it from TreasuryDirect's RefCPIDatedDate) and falls
-// back to the legacy flat `SecurityProto.base_cpi` field. Returns
-// `undefined` (NOT 0) when neither is populated — so the TIPS pricer
-// can distinguish "auto-populate the input" from "leave the input
-// empty and let the user supply a manual override". The raw string is
-// preserved (full DecimalValueProto precision) — the calculator parses
-// to number when it needs to compute, the display reads the string.
-export function baseCpiOf(security: Security): string | undefined {
-  const proto: any = security.proto;
-  const tipsBaseCpi = proto.getTipsDetails?.()?.getBaseCpi?.()?.getArbitraryPrecisionValue?.();
-  if (tipsBaseCpi !== undefined && tipsBaseCpi !== null && tipsBaseCpi !== '') {
-    return tipsBaseCpi;
-  }
-  const flatBaseCpi = proto.getBaseCpi?.()?.getArbitraryPrecisionValue?.();
-  if (flatBaseCpi !== undefined && flatBaseCpi !== null && flatBaseCpi !== '') {
-    return flatBaseCpi;
-  }
-  return undefined;
+// Identifier lookup helpers. The wrapper's typed lookup
+// `Security.getIdentifierByType(type)` returns `Identifier | undefined`,
+// which lets callers express the canonical "CUSIP, else ISIN, else
+// fall back to UUID" chain inline. These helpers package that chain so
+// the call sites stay short.
+export function primaryIdentifier(security: Security): Identifier | undefined {
+  return (
+    security.getIdentifierByType(IdentifierTypeProto.CUSIP) ??
+    security.getIdentifierByType(IdentifierTypeProto.ISIN)
+  );
 }
 
-export function couponRateOf(security: Security): number {
-  const parseRate = (rate: { getArbitraryPrecisionValue?: () => string } | undefined): number | undefined => {
-    if (!rate) return undefined;
-    const raw = rate.getArbitraryPrecisionValue?.();
-    if (raw === undefined || raw === null || raw === '') return undefined;
-    const n = parseFloat(raw);
-    return Number.isFinite(n) ? n : undefined;
-  };
-  const proto: any = security.proto;
-  const details =
-    proto.getBondDetails?.() ||
-    proto.getTipsDetails?.() ||
-    proto.getFrnDetails?.() ||
-    undefined;
-  return (
-    parseRate(details?.getCouponRate?.()) ??
-    parseRate(proto.getCouponRate?.()) ??
-    0
-  );
+export function identifierString(security: Security): string {
+  return primaryIdentifier(security)?.getIdentifierValue() ?? security.getID().toString();
 }
 
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
@@ -320,9 +277,9 @@ export async function FetchSecurity(
             return acc;
           }
         }
-        const issuanceList = security.proto.getIssuanceInfoList();
-        const issuance =
-          issuanceList && issuanceList.length > 0 ? issuanceList[0] : null;
+        const bondSec = security.isBond() ? (security as BondSecurity) : null;
+        const issuances = bondSec?.getIssuances() ?? [];
+        const issuance = issuances.length > 0 ? issuances[0] : null;
 
         // Equity / index / cash / currency securities have no maturity or issue date —
         // these getters throw. Default to a sentinel and let the per-class checks below
@@ -330,7 +287,7 @@ export async function FetchSecurity(
         let maturityDate: Date;
         let issueDate: Date;
         try { maturityDate = security.getMaturityDate().toDate(); } catch { maturityDate = new Date(0); }
-        try { issueDate = security.getIssueDate().toDate(); } catch { issueDate = new Date(0); }
+        try { issueDate = security.getIssueDate()?.toDate() ?? new Date(0); } catch { issueDate = new Date(0); }
 
         // Determine whether to include this security based on issuance info.
         // US Treasuries carry issuance auction records; non-US bonds (e.g. Gilts) do not.
@@ -345,16 +302,10 @@ export async function FetchSecurity(
         }
 
         {
-          const outstandingAmount = issuance
-            ? ProtoSerializationUtil.deserialize(issuance.getPostAuctionOutstandingQuantity()).toString()
-            : '0';
-          const id = security.getSecurityID()
-            ? security.getSecurityID().getIdentifierValue()
-            : security.getID().toString();
-
-          // Resolve identifier type
-          const idProto = security.proto.getIdentifier ? security.proto.getIdentifier() : null;
-          const idTypeNum = idProto?.getIdentifierType() ?? 0;
+          const outstandingAmount = issuance?.getPostAuctionOutstandingQuantity()?.toString() ?? '0';
+          const ident = primaryIdentifier(security);
+          const id = ident?.getIdentifierValue() ?? security.getID().toString();
+          const idTypeNum = ident?.getIdentifierType() ?? 0;
           const identifierTypeStr =
             idTypeNum === IdentifierTypeProto.CUSIP       ? 'CUSIP' :
             idTypeNum === IdentifierTypeProto.ISIN        ? 'ISIN'  :
@@ -384,7 +335,7 @@ export async function FetchSecurity(
           // from the bond-shape getters; surfacing their bond-like
           // fields here would silently drag the calculator-side
           // assumptions onto incompatible products.
-          const bondSecurity = security.isBond() ? (security as BondSecurity) : null;
+          const bondSecurity = bondSec;
 
           // Serialize UUID for delete support
           const uuidProto = security.proto.getUuid();
@@ -464,15 +415,14 @@ export async function FetchSecurity(
               // Dated date might not be available
             }
 
-            // #266: base_cpi for TIPS auto-populate. baseCpiOf reads via
-            // tips_details.base_cpi (the canonical post-market-data-inputs
-            // PR #17 path) with a flat-field fallback. Other product types
-            // return undefined here, which `securityData.baseCpi` accepts.
-            try {
-              result.baseCpi = baseCpiOf(security);
-            } catch {
-              // Defensive — proto access shouldn't throw, but stale codegen
-              // could surface a missing accessor.
+            // #266: TIPS-only base CPI for the calculator auto-populate.
+            // TIPSBond.getBaseCpi() returns a Decimal | null read from
+            // tips_extension.base_cpi (v0.4.1). Other bond subclasses
+            // don't carry it; the `instanceof` guard makes the narrowing
+            // explicit so TS picks the TIPSBond overload.
+            if (bondSecurity instanceof TIPSBond) {
+              const baseCpi = bondSecurity.getBaseCpi();
+              if (baseCpi) result.baseCpi = baseCpi.toString();
             }
           }
 
@@ -496,15 +446,13 @@ export async function FetchSecurity(
 function mapSecuritiesToData(securities: Security[]): securityData[] {
   return securities.reduce((acc: securityData[], security: Security) => {
     const maturityDate = security.getMaturityDate().toDate();
-    const issueDate = security.getIssueDate().toDate();
-    const idProto = security.proto.getIdentifier ? security.proto.getIdentifier() : null;
-    const idTypeNum = idProto?.getIdentifierType() ?? 0;
+    const issueDate = security.getIssueDate()?.toDate() ?? new Date(0);
+    const ident = primaryIdentifier(security);
+    const idTypeNum = ident?.getIdentifierType() ?? 0;
     const identifierTypeStr =
       idTypeNum === IdentifierTypeProto.CUSIP ? 'CUSIP' :
       idTypeNum === IdentifierTypeProto.ISIN  ? 'ISIN'  : 'UNKNOWN';
-    const id = security.getSecurityID()
-      ? security.getSecurityID().getIdentifierValue()
-      : security.getID().toString();
+    const id = ident?.getIdentifierValue() ?? security.getID().toString();
     const uuidProto = security.proto.getUuid();
     const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
     const uuidStr = security.getID().toString();
@@ -538,7 +486,10 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
         const dd = bondSecurity.getDatedDate();
         if (dd) result.datedDate = dd.toDate().toISOString().slice(0, 10).replace(/-/g, '/');
       } catch {}
-      try { result.baseCpi = baseCpiOf(security); } catch {}
+      if (bondSecurity instanceof TIPSBond) {
+        const baseCpi = bondSecurity.getBaseCpi();
+        if (baseCpi) result.baseCpi = baseCpi.toString();
+      }
     }
 
     acc.push(result);

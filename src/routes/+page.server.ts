@@ -5,7 +5,8 @@ const { FieldProto } = pkg;
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
-import { ProtoSerializationUtil } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization";
+import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
+import { identifierString } from "$lib/security";
 
 /** @type {import('./$types').PageServerLoad} */
 
@@ -43,29 +44,22 @@ export async function load({ locals }: { locals: App.Locals }) {
 
     //Map results into list of maps -> Date, Amount
     for (let index in securities) {
-      let security: Security = securities[index];
+      const security: Security = securities[index];
+      if (!security.isBond()) continue;
+      const bond = security as BondSecurity;
 
-      let issuanceList = security.proto.getIssuanceInfoList();
-      let issuance =
-        issuanceList && issuanceList.length > 0 ? issuanceList[0] : null;
+      const issuances = bond.getIssuances();
+      const issuance = issuances.length > 0 ? issuances[0] : null;
 
       if (issuance) {
-        if (
-          !issuance.getPostAuctionOutstandingQuantity() &&
-          security.getMaturityDate().toDate().getFullYear() > 2009
-        ) {
-        } else if (
-          !issuance.getPostAuctionOutstandingQuantity() &&
-          security.getMaturityDate().toDate().getFullYear() <= 2009
-        ) {
-          //Swallow this data gap. It's old and we don't mind
+        const qty = issuance.getPostAuctionOutstandingQuantity();
+        if (!qty && security.getMaturityDate().toDate().getFullYear() > 2009) {
+          // skip rows without outstanding quantity
+        } else if (!qty && security.getMaturityDate().toDate().getFullYear() <= 2009) {
+          // Swallow this data gap. It's old and we don't mind
         } else {
-          let postAuctionQuantity: number = <number>ProtoSerializationUtil.deserialize(
-            issuance.getPostAuctionOutstandingQuantity()
-          );
-          let id: string = security.getSecurityID()
-            ? security.getSecurityID().getIdentifierValue()
-            : security.getID().toString();
+          let postAuctionQuantity = qty ? Number(qty.toString()) : 0;
+          let id = identifierString(security);
 
           let result = {
             cusip: id,
