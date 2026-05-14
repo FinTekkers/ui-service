@@ -20,7 +20,6 @@ import {
 import { fetchPricesForSecurity, priceAsOf } from '$lib/curvePrices';
 import { identifierString, productTypeNameOf } from '$lib/security';
 import type Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
-import type BondSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity';
 
 export const EXPECTED_CONSTITUENT_COUNT = 11;
 
@@ -89,15 +88,12 @@ function toCurveConstituent(security: Security, asOf: Date): CurveConstituent {
 
   const cusip = identifierString(security);
 
-  // BondSecurity.getCouponRate() returns the structured bond_details.coupon_rate
-  // value directly under v0.4.1. Non-bond Securities don't have that getter,
-  // so guard with the type predicate and treat anything else as zero-coupon
-  // (correct for the TBILL bucket).
+  // BondSecurity.getCouponRate() returns Decimal|null in v0.4.3. Non-bond
+  // Securities don't have that getter, so guard with the type predicate and
+  // treat anything else as zero-coupon (correct for the TBILL bucket).
   let couponRate = 0;
   if (security.isBond()) {
-    const raw = (security as BondSecurity).getCouponRate()?.getArbitraryPrecisionValue();
-    const n = raw !== undefined && raw !== null && raw !== '' ? parseFloat(raw) : NaN;
-    if (Number.isFinite(n)) couponRate = n;
+    couponRate = security.getCouponRate()?.toNumber() ?? 0;
   }
 
   const monthsToMaturity = maturityDate ? monthsBetween(asOf, maturityDate) : 0;
@@ -106,7 +102,7 @@ function toCurveConstituent(security: Security, asOf: Date): CurveConstituent {
   return {
     tenor: bucket.label,
     bucketMonths: bucket.months,
-    bond: security as BondSecurity,
+    bond: security,
     cusip,
     issueDate,
     maturityDate,
