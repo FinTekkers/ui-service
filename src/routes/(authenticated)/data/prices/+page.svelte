@@ -26,6 +26,7 @@
     // supportedTypes prop below restricts the dropdown to the four above.
     OSI: 'osi',
     FIGI: 'figi',
+    INDEX_NAME: 'index',
     CASH: 'cash',
   };
   function urlKeyToProto(urlKey: string | undefined | null): IdentifierTypeName {

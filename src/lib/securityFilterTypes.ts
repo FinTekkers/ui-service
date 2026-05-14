@@ -47,6 +47,9 @@ export type IdentifierTypeName =
   | 'SERIES_ID'
   | 'OSI'
   | 'FIGI'
+  // ledger-models 0.2.5 added INDEX_NAME — used by the registered index
+  // resolvers (e.g. "US Treasury Curve" → TreasuryCurveResolver, #268).
+  | 'INDEX_NAME'
   | 'CASH';
 
 // Proto-declaration order: EXCH_TICKER, ISIN, CUSIP, OSI, FIGI, SERIES_ID, CASH.
@@ -66,6 +69,7 @@ export const IDENTIFIER_TYPE_LABELS: Record<IdentifierTypeName, string> = {
   SERIES_ID: 'Series ID',
   OSI: 'OSI',
   FIGI: 'FIGI',
+  INDEX_NAME: 'Index Name',
   CASH: 'Cash',
 };
 
@@ -79,6 +83,7 @@ export const IDENTIFIER_TYPE_PLACEHOLDERS: Record<IdentifierTypeName, string> = 
   SERIES_ID: 'e.g. CPIAUCSL',
   OSI: 'e.g. AAPL  240119C00150000',
   FIGI: 'e.g. BBG000B9XRY4',
+  INDEX_NAME: 'e.g. US Treasury Curve',
   CASH: 'e.g. USD',
 };
 
