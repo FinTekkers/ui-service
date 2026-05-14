@@ -53,6 +53,11 @@ const FIXTURE_2026_03_19 = {
   ],
   warnings: [],
   error: null,
+  // #268 latest-buildable-date defaults — fixture starts in the "loaded
+  // for an explicit date" shape (defaulted=false, no hint date). Tests
+  // for the hint UI clone-and-override these fields.
+  latestBuildableDate: null,
+  asofWasDefaulted: false,
   user: {
     id: 'test',
     name: 'Test User',
@@ -135,5 +140,57 @@ describe('/data/curves component', () => {
       },
     });
     expect(screen.getByText(/1 warning/)).toBeInTheDocument();
+  });
+
+  // #268: latest-buildable-date hint surfaces the most-recent date with a
+  // fully-priced curve. Renders only when the resolver could find one and
+  // the user isn't already viewing it (otherwise the hint is noise).
+  test('shows latest-buildable-date hint with link when user is viewing an older date', () => {
+    render(CurvesPage, {
+      props: {
+        data: {
+          ...FIXTURE_2026_03_19,
+          latestBuildableDate: '2026-05-12',
+          asofWasDefaulted: false,
+        },
+      },
+    });
+    const hint = screen.getByTestId('latest-hint');
+    expect(hint).toBeInTheDocument();
+    expect(hint.textContent).toMatch(/2026-05-12/);
+    // anchor links to the latest date so a single click recovers
+    const anchor = hint.querySelector('a');
+    expect(anchor).not.toBeNull();
+    expect(anchor?.getAttribute('href')).toMatch(/asof=2026-05-12/);
+  });
+
+  test('latest-buildable-date hint renders as text only when it matches the current curveDate', () => {
+    render(CurvesPage, {
+      props: {
+        data: {
+          ...FIXTURE_2026_03_19,
+          curveDate: '2026-05-12',
+          latestBuildableDate: '2026-05-12',
+          asofWasDefaulted: true,
+        },
+      },
+    });
+    const hint = screen.getByTestId('latest-hint');
+    expect(hint).toBeInTheDocument();
+    // no anchor: the user is already on the latest date
+    expect(hint.querySelector('a')).toBeNull();
+  });
+
+  test('latest-buildable-date hint is absent when the loader could not find one', () => {
+    render(CurvesPage, {
+      props: {
+        data: {
+          ...FIXTURE_2026_03_19,
+          latestBuildableDate: null,
+          asofWasDefaulted: false,
+        },
+      },
+    });
+    expect(screen.queryByTestId('latest-hint')).toBeNull();
   });
 });

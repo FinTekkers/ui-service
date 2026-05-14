@@ -5,7 +5,8 @@
     tenor: string; cusip: string; description: string;
     issueDate: string; maturityDate: string; couponRate: number;
     cleanPrice: number | null;
-  }>; selectedDate: string; user?: any };
+  }>; selectedDate: string; latestBuildableDate: string | null;
+    asofWasDefaulted: boolean; user?: any };
 
   $: curveData = data.curveData ?? [];
   $: selectedDate = data.selectedDate ?? new Date().toISOString().slice(0, 10);
@@ -74,6 +75,13 @@
       on:change={handleDateChange}
       max={new Date().toISOString().slice(0, 10)}
     />
+    {#if data.latestBuildableDate && data.latestBuildableDate !== selectedDate}
+      <span class="latest-hint" data-testid="latest-hint">
+        Latest fully-priced: <a href="/data/treasury_curve?date={data.latestBuildableDate}">{data.latestBuildableDate}</a>
+      </span>
+    {:else if data.latestBuildableDate}
+      <span class="latest-hint" data-testid="latest-hint">Latest fully-priced: {data.latestBuildableDate}</span>
+    {/if}
   </div>
 
   {#if !hasData}
@@ -164,6 +172,16 @@
       color: #05192a;
       height: 36px;
       box-sizing: border-box;
+    }
+  }
+
+  .latest-hint {
+    font-size: 0.78rem;
+    color: $ltgrey;
+
+    a {
+      color: #7cd2ba;
+      text-decoration: underline;
     }
   }
 

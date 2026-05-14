@@ -175,6 +175,7 @@ function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProt
     case 'SERIES_ID': return IdentifierTypeProto.SERIES_ID;
     case 'OSI': return IdentifierTypeProto.OSI;
     case 'FIGI': return IdentifierTypeProto.FIGI;
+    case 'INDEX_NAME': return IdentifierTypeProto.INDEX_NAME;
     case 'CASH': return IdentifierTypeProto.CASH;
     case 'CUSIP':
     default: return IdentifierTypeProto.CUSIP;
@@ -361,6 +362,7 @@ export async function FetchSecurity(
             idTypeNum === IdentifierTypeProto.FIGI        ? 'FIGI' :
             idTypeNum === IdentifierTypeProto.SERIES_ID   ? 'SERIES_ID' :
             idTypeNum === IdentifierTypeProto.OSI         ? 'OSI' :
+            idTypeNum === IdentifierTypeProto.INDEX_NAME  ? 'INDEX_NAME' :
             idTypeNum === IdentifierTypeProto.CASH        ? 'CASH' : 'UNKNOWN';
 
           // Resolve settlement currency

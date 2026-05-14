@@ -130,6 +130,13 @@
           on:change={handleAsofChange}
           max={new Date().toISOString().slice(0, 10)}
         />
+        {#if data.latestBuildableDate && data.latestBuildableDate !== curveDate}
+          <span class="latest-hint" data-testid="latest-hint">
+            Latest fully-priced: <a href={buildQuery(data.latestBuildableDate, termYears)}>{data.latestBuildableDate}</a>
+          </span>
+        {:else if data.latestBuildableDate}
+          <span class="latest-hint" data-testid="latest-hint">Latest fully-priced: {data.latestBuildableDate}</span>
+        {/if}
         <label for="forwardTerm">Forward term:</label>
         <select
           id="forwardTerm"
@@ -297,6 +304,16 @@
   // No overflow-x here: page-level wrapper owns scrolling (second-brain#223).
   .table-wrapper {
     width: 100%;
+  }
+
+  .latest-hint {
+    font-size: 0.78rem;
+    color: #a0adb7;
+
+    a {
+      color: #7cd2ba;
+      text-decoration: underline;
+    }
   }
 
   .par-col { color: #60a5fa; font-weight: 600; font-variant-numeric: tabular-nums; }

@@ -1,29 +1,37 @@
 /**
  * Live yield curves on /data/curves (Phase 3 of #203 + term-forward view #264).
  *
+ * #268 migration: drops the client-side `selectOnTheRunBonds` helper in
+ * favour of the server-side index resolver (ledger-service PR #43). The
+ * Treasury Curve index Security carries its on-the-run constituents via
+ * `SecurityService.GetByIds(uuid, lookthrough=true)`; the UI just consumes.
+ *
  * Pipeline:
- *   1. Pick on-the-run bonds via SecurityService for the selected as-of date.
- *   2. Fetch the latest clean price ≤ as-of for each bond from PriceService.
+ *   1. Resolve constituents + latest prices via `loadTreasuryCurveBundle`
+ *      (calls SecurityService.GetByIds with lookthrough + a follow-up
+ *      GetByIds for full bodies + PriceService.search per constituent).
+ *   2. When the user lands without `?asof=`, scan backward day-by-day
+ *      (cap 30) for the latest date with a fully-priced curve — surfaces
+ *      as the URL default + a "latest available" hint (#268 Bug 4 UX).
  *   3. Build CurveRequestProto with `asof_datetime`, the three curve types,
- *      and (if a term is selected) `forward_term_years = T`. With the term set,
- *      the FORWARD_YIELD result is the term-forward series f(t, t+T) at annual
- *      starting points t ∈ [0, T_max − T] rather than the legacy single-line
- *      forward curve.
+ *      and (if a term is selected) `forward_term_years = T`.
  *   4. Call ValuationClient.runCurve via the broker.
- *   5. Map CurveResultProto[] → {par, spot, forward}. Tenor labels are
- *      decimal years (e.g. "9.95Y") — no bucket snapping, the chart axis
- *      is the source of truth.
+ *   5. Map CurveResultProto[] → {par, spot, forward}.
  */
 import { ValuationClient } from '@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js';
 import { CurveRequestProto, CurveInputProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_request_pb.js';
 import type { CurveResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_response_pb.js';
 import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js';
-import { PriceProto } from '@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js';
 import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import { getServiceConnection } from '$lib/grpc-auth';
-import { selectOnTheRunBonds, type CurveBondPick } from '$lib/treasuryCurveSelection';
-import { fetchPricesForSecurity, priceAsOf } from '$lib/curvePrices';
+import {
+  EXPECTED_CONSTITUENT_COUNT,
+  findLatestBuildableDate,
+  loadTreasuryCurveBundle,
+  type ConstituentBundle,
+  type CurveConstituent,
+} from '$lib/treasuryCurveData';
 import {
   formatYears,
   parseForwardTerm,
@@ -31,6 +39,8 @@ import {
 } from '$lib/curveForwardTerm';
 
 const { MeasureProto } = measure_pkg;
+
+const LATEST_DATE_SCAN_DAYS = 30;
 
 export interface CurvePoint {
   tenor: string;   // decimal-year display label (e.g. "9.95Y")
@@ -47,6 +57,10 @@ interface PageData {
   termYears: ForwardTermYears;
   warnings: string[];
   error: string | null;
+  /** Latest date with a fully-priced curve; null if scan returned nothing. */
+  latestBuildableDate: string | null;
+  /** True when the loader auto-defaulted the asOf (no `?asof=` URL param). */
+  asofWasDefaulted: boolean;
 }
 
 function decimal(value: string): DecimalValueProto {
@@ -66,8 +80,7 @@ function endOfDayProto(asOf: Date) {
 }
 
 function buildCurveRequest(
-  picks: CurveBondPick[],
-  pricesByCusip: Map<string, number>,
+  constituents: CurveConstituent[],
   asOf: Date,
   termYears: ForwardTermYears,
 ): { request: CurveRequestProto; warnings: string[] } {
@@ -81,34 +94,16 @@ function buildCurveRequest(
     MeasureProto.SPOT_YIELD,
     MeasureProto.FORWARD_YIELD,
   ]);
-  // With forward_term_years set, the FORWARD_YIELD result is the term-forward
-  // series f(t, t+T) at annual t — replaces the legacy single-line forward
-  // curve. Added on ledger-models@0.2.4 (valuation-service PR #50).
   request.setForwardTermYears(termYears);
 
-  for (const pick of picks) {
-    if (!pick.bond) {
-      warnings.push(`No on-the-run bond found for ${pick.tenor} bucket`);
+  for (const c of constituents) {
+    if (c.cleanPrice === null) {
+      warnings.push(`No price available for ${c.cusip} (${c.tenor})`);
       continue;
     }
-    const price = pricesByCusip.get(pick.cusip);
-    if (price === undefined) {
-      warnings.push(`No price available for ${pick.cusip} (${pick.tenor})`);
-      continue;
-    }
-
-    // Each input carries the SecurityProto (with issue + maturity dates that
-    // the server uses for tenor) and the clean price (the server runs YTM
-    // internally to convert it to a yield). No `tenor` override — that's the
-    // entire point of Phase 2.
     const input = new CurveInputProto();
-    input.setSecurity(pick.bond.proto);
-
-    // Server expects clean_price either directly on CurveInputProto.clean_price
-    // (Phase 2 server reads this preferentially) or wrapped in a PriceProto on
-    // the legacy `price` field. Use the new direct field.
-    input.setCleanPrice(decimal(price.toString()));
-
+    input.setSecurity((c.bond as any).proto);
+    input.setCleanPrice(decimal(c.cleanPrice.toString()));
     request.addCurveInputs(input);
   }
 
@@ -129,8 +124,6 @@ function parseCurveResponse(response: CurveResponseProto): {
       const yieldStr = point.getYield()?.getArbitraryPrecisionValue();
       if (!tenorStr || !yieldStr) continue;
       const years = parseFloat(tenorStr);
-      // Backend returns yield in decimal (0-1 scale) per CurveResponseProto
-      // doc: "decimal, 0-1 scale; e.g. 0.045 = 4.50%". UI displays percent.
       const yieldPct = parseFloat(yieldStr) * 100;
       const cp: CurvePoint = { tenor: formatYears(years), years, yield: yieldPct };
       if (curveType === MeasureProto.PAR_YIELD) par.push(cp);
@@ -142,54 +135,98 @@ function parseCurveResponse(response: CurveResponseProto): {
   return { par, spot, forward };
 }
 
+function emptyPage(
+  curveDate: string,
+  termYears: ForwardTermYears,
+  warnings: string[],
+  error: string | null,
+  latestBuildableDate: string | null,
+  asofWasDefaulted: boolean,
+): PageData {
+  return {
+    par: [], spot: [], forward: [],
+    curveDate, termYears, warnings, error,
+    latestBuildableDate, asofWasDefaulted,
+  };
+}
+
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url, locals }: { url: URL; locals: App.Locals }): Promise<PageData> {
   const apiKey = locals.user?.apiKey;
   const dateParam = url.searchParams.get('asof');
-  const asOf: Date = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
-    ? new Date(dateParam + 'T12:00:00Z')
-    : new Date();
-  const curveDate = asOf.toISOString().slice(0, 10);
   const termYears = parseForwardTerm(url.searchParams.get('term'));
 
-  let picks: CurveBondPick[] = [];
-  try {
-    picks = await selectOnTheRunBonds(asOf, apiKey);
-  } catch (e: any) {
-    return {
-      par: [], spot: [], forward: [], curveDate, termYears,
-      warnings: [],
-      error: `Failed to load on-the-run bonds: ${e.message ?? e}`,
-    };
+  // Asof resolution. Explicit ?asof= → use it (no scan). Missing → scan
+  // backward from today for the latest fully-priced date. The scan also
+  // populates the hint shown unconditionally on the page.
+  let asOf: Date;
+  let bundle: ConstituentBundle;
+  let asofWasDefaulted: boolean;
+  let latestBuildableDateStr: string | null;
+
+  if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+    asOf = new Date(dateParam + 'T12:00:00Z');
+    asofWasDefaulted = false;
+    try {
+      bundle = await loadTreasuryCurveBundle(asOf, apiKey);
+    } catch (e: any) {
+      return emptyPage(
+        asOf.toISOString().slice(0, 10), termYears, [],
+        `Failed to resolve Treasury curve constituents: ${e.message ?? e}`,
+        null, false,
+      );
+    }
+    // Best-effort populate the hint without blocking the user-requested
+    // render — only scan if today differs from the user's pick.
+    latestBuildableDateStr = null;
+    try {
+      const today = new Date();
+      const latest = await findLatestBuildableDate(today, LATEST_DATE_SCAN_DAYS, apiKey);
+      latestBuildableDateStr = latest.date ? latest.date.toISOString().slice(0, 10) : null;
+    } catch { /* hint is non-critical */ }
+  } else {
+    asofWasDefaulted = true;
+    try {
+      const latest = await findLatestBuildableDate(new Date(), LATEST_DATE_SCAN_DAYS, apiKey);
+      asOf = latest.date ?? new Date();
+      bundle = latest.bundle ?? await loadTreasuryCurveBundle(asOf, apiKey);
+      latestBuildableDateStr = latest.date ? latest.date.toISOString().slice(0, 10) : null;
+    } catch (e: any) {
+      return emptyPage(
+        new Date().toISOString().slice(0, 10), termYears, [],
+        `Failed to resolve Treasury curve constituents: ${e.message ?? e}`,
+        null, true,
+      );
+    }
   }
 
-  // Fetch prices in parallel — one per bond pick that has a UUID.
-  const cusipToPriceEntries = await Promise.all(
-    picks.map(async (pick) => {
-      if (!pick.bond) return [pick.cusip, undefined] as const;
-      try {
-        const uuidStr = pick.bond.getID().toString();
-        const prices = await fetchPricesForSecurity(uuidStr, apiKey);
-        const latest = priceAsOf(prices, asOf);
-        return [pick.cusip, latest?.price] as const;
-      } catch {
-        return [pick.cusip, undefined] as const;
-      }
-    }),
-  );
-  const pricesByCusip = new Map<string, number>();
-  for (const [cusip, price] of cusipToPriceEntries) {
-    if (price !== undefined) pricesByCusip.set(cusip, price);
+  const curveDate = asOf.toISOString().slice(0, 10);
+
+  if (bundle.constituents.length === 0) {
+    return emptyPage(
+      curveDate, termYears, [],
+      'No Treasury curve constituents resolved for the selected date.',
+      latestBuildableDateStr, asofWasDefaulted,
+    );
   }
 
-  const { request, warnings } = buildCurveRequest(picks, pricesByCusip, asOf, termYears);
+  const { request, warnings } = buildCurveRequest(bundle.constituents, asOf, termYears);
+
+  if (bundle.pricedCount < EXPECTED_CONSTITUENT_COUNT) {
+    warnings.unshift(
+      `Curve has ${bundle.pricedCount}/${EXPECTED_CONSTITUENT_COUNT} priced constituents` +
+      (latestBuildableDateStr && latestBuildableDateStr !== curveDate
+        ? ` — latest fully-priced date is ${latestBuildableDateStr}.`
+        : '.'),
+    );
+  }
 
   if (request.getCurveInputsList().length < 2) {
-    return {
-      par: [], spot: [], forward: [], curveDate, termYears,
-      warnings,
-      error: 'Insufficient curve inputs — need at least 2 bonds with prices to bootstrap a curve.',
-    };
+    return emptyPage(
+      curveDate, termYears, warnings,
+      'Insufficient curve inputs — need at least 2 bonds with prices to bootstrap a curve.',
+      latestBuildableDateStr, asofWasDefaulted,
+    );
   }
 
   let response: CurveResponseProto;
@@ -200,23 +237,19 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
       client.runCurve(request, (err, resp) => (err ? reject(err) : resolve(resp)));
     });
   } catch (e: any) {
-    return {
-      par: [], spot: [], forward: [], curveDate, termYears, warnings,
-      error: `RunCurve failed: ${e.details ?? e.message ?? e}`,
-    };
+    return emptyPage(
+      curveDate, termYears, warnings,
+      `RunCurve failed: ${e.details ?? e.message ?? e}`,
+      latestBuildableDateStr, asofWasDefaulted,
+    );
   }
 
   const { par, spot, forward } = parseCurveResponse(response);
 
-  // Surface backend warnings (e.g. "Tenor gap between 7Y and 20Y…") alongside
-  // any client-side warnings (missing prices). WarningProto carries a
-  // `Message` detail; we render it textually if available.
   const summary = response.getSummary?.();
   if (summary) {
     try {
       for (const w of summary.getWarningsList?.() ?? []) {
-        // WarningProto has a `Message detail` field rather than a flat string.
-        // Fall back to the type name + code when no detail is set.
         const detail = (w as any).getDetail?.();
         const text = detail?.toString?.() ?? `Warning code ${(w as any).getCode?.()}`;
         if (text) warnings.push(text);
@@ -224,5 +257,9 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
     } catch { /* summary shape varies */ }
   }
 
-  return { par, spot, forward, curveDate, termYears, warnings, error: null };
+  return {
+    par, spot, forward, curveDate, termYears, warnings, error: null,
+    latestBuildableDate: latestBuildableDateStr,
+    asofWasDefaulted,
+  };
 }

@@ -1,13 +1,24 @@
 /**
  * /data/treasury_curve — on-the-run UST curve display.
  *
- * Foundation step for #203 Phase 3: in addition to the per-tenor bond
- * selection, fetch the latest clean price ≤ as-of for each bond and surface
- * it as `cleanPrice` on each row. The downstream /data/curves page consumes
- * the same data through `selectOnTheRunBonds` + `fetchPricesForSecurity`.
+ * #268: switched to the server-side index resolver. The on-the-run pick
+ * rule lives in ledger-service's TreasuryCurveResolver (PR #43); the UI
+ * fetches constituents via `SecurityService.GetByIds(uuid, lookthrough=true)`
+ * and a follow-up GetByIds for full bodies, then decorates with the latest
+ * clean price ≤ as-of per constituent.
+ *
+ * Tenor labels are derived per-row by mapping the security's months-to-
+ * maturity to the closest TENOR_BUCKETS entry (the resolver doesn't
+ * carry the bucket label on the wire — the pick rule alone defines the
+ * mapping).
  */
-import { selectOnTheRunBonds, type CurveBondPick } from '$lib/treasuryCurveSelection';
-import { fetchPricesForSecurity, priceAsOf } from '$lib/curvePrices';
+import {
+  findLatestBuildableDate,
+  loadTreasuryCurveBundle,
+  type ConstituentBundle,
+} from '$lib/treasuryCurveData';
+
+const LATEST_DATE_SCAN_DAYS = 30;
 
 export interface TreasuryCurveRow {
   tenor: string;
@@ -19,59 +30,75 @@ export interface TreasuryCurveRow {
   cleanPrice: number | null;  // null = no price found at/before as-of
 }
 
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ url, locals }: { url: URL; locals: App.Locals }) {
-  const apiKey = locals.user?.apiKey;
-  const dateParam = url.searchParams.get('date');
-  const asOfDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
-    ? new Date(dateParam + 'T12:00:00')
-    : new Date();
-  const selectedDate = asOfDate.toISOString().slice(0, 10);
+interface PageData {
+  curveData: TreasuryCurveRow[];
+  selectedDate: string;
+  latestBuildableDate: string | null;
+  asofWasDefaulted: boolean;
+}
 
-  let picks: CurveBondPick[];
-  try {
-    picks = await selectOnTheRunBonds(asOfDate, apiKey);
-  } catch (e: any) {
-    console.error('Error fetching securities for curve:', e?.message ?? e);
-    return { curveData: [] as TreasuryCurveRow[], selectedDate };
-  }
-
-  // Fetch latest price (≤ asOf) for each pick that has a bond.
-  const priceLookups = await Promise.all(
-    picks.map(async (pick) => {
-      if (!pick.bond) return [pick.tenor, null] as const;
-      try {
-        const uuidStr = pick.bond.getID().toString();
-        const prices = await fetchPricesForSecurity(uuidStr, apiKey);
-        const latest = priceAsOf(prices, asOfDate);
-        return [pick.tenor, latest?.price ?? null] as const;
-      } catch {
-        return [pick.tenor, null] as const;
-      }
-    }),
-  );
-  const priceByTenor = new Map<string, number | null>(priceLookups);
-
-  const curveData: TreasuryCurveRow[] = picks.map((pick) => {
-    if (!pick.bond) {
-      return {
-        tenor: pick.tenor, cusip: '', description: 'No matching bond',
-        issueDate: '', maturityDate: '', couponRate: 0, cleanPrice: null,
-      };
-    }
-    const description = pick.productType
-      ? `${pick.productType} ${pick.couponRate}% ${pick.maturityDate!.toISOString().slice(0, 10)}`
-      : `${pick.cusip} ${pick.couponRate}% ${pick.maturityDate!.toISOString().slice(0, 10)}`;
+function bundleToRows(bundle: ConstituentBundle): TreasuryCurveRow[] {
+  return bundle.constituents.map((c) => {
+    const maturity = c.maturityDate ? c.maturityDate.toISOString().slice(0, 10) : '';
+    const issue = c.issueDate ? c.issueDate.toISOString().slice(0, 10) : '';
+    const description = c.productType
+      ? `${c.productType} ${c.couponRate}% ${maturity}`
+      : `${c.cusip} ${c.couponRate}% ${maturity}`;
     return {
-      tenor: pick.tenor,
-      cusip: pick.cusip,
+      tenor: c.tenor,
+      cusip: c.cusip,
       description,
-      issueDate: pick.issueDate!.toISOString().slice(0, 10),
-      maturityDate: pick.maturityDate!.toISOString().slice(0, 10),
-      couponRate: pick.couponRate,
-      cleanPrice: priceByTenor.get(pick.tenor) ?? null,
+      issueDate: issue,
+      maturityDate: maturity,
+      couponRate: c.couponRate,
+      cleanPrice: c.cleanPrice,
     };
   });
+}
 
-  return { curveData, selectedDate };
+/** @type {import('./$types').PageServerLoad} */
+export async function load({ url, locals }: { url: URL; locals: App.Locals }): Promise<PageData> {
+  const apiKey = locals.user?.apiKey;
+  const dateParam = url.searchParams.get('date');
+
+  let asOfDate: Date;
+  let bundle: ConstituentBundle | null = null;
+  let asofWasDefaulted: boolean;
+  let latestBuildableDateStr: string | null = null;
+
+  if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+    asOfDate = new Date(dateParam + 'T12:00:00');
+    asofWasDefaulted = false;
+    try {
+      bundle = await loadTreasuryCurveBundle(asOfDate, apiKey);
+    } catch (e: any) {
+      console.error('Error fetching securities for curve:', e?.message ?? e);
+      bundle = { asOf: asOfDate, constituents: [], pricedCount: 0, fullyPriced: false };
+    }
+    try {
+      const latest = await findLatestBuildableDate(new Date(), LATEST_DATE_SCAN_DAYS, apiKey);
+      latestBuildableDateStr = latest.date ? latest.date.toISOString().slice(0, 10) : null;
+    } catch { /* hint is non-critical */ }
+  } else {
+    asofWasDefaulted = true;
+    try {
+      const latest = await findLatestBuildableDate(new Date(), LATEST_DATE_SCAN_DAYS, apiKey);
+      asOfDate = latest.date ?? new Date();
+      bundle = latest.bundle ?? await loadTreasuryCurveBundle(asOfDate, apiKey);
+      latestBuildableDateStr = latest.date ? latest.date.toISOString().slice(0, 10) : null;
+    } catch (e: any) {
+      console.error('Error scanning for latest curve date:', e?.message ?? e);
+      asOfDate = new Date();
+      bundle = { asOf: asOfDate, constituents: [], pricedCount: 0, fullyPriced: false };
+    }
+  }
+
+  const selectedDate = asOfDate.toISOString().slice(0, 10);
+
+  return {
+    curveData: bundleToRows(bundle),
+    selectedDate,
+    latestBuildableDate: latestBuildableDateStr,
+    asofWasDefaulted,
+  };
 }
