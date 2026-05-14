@@ -171,14 +171,30 @@ export function createValuationClientMock() {
 				const priceStr = priceProto?.getArbitraryPrecisionValue?.() ?? '100';
 				const price = parseFloat(priceStr);
 
-				const faceValue = parseFloat(sec?.getFaceValue?.()?.getArbitraryPrecisionValue?.() ?? '1000');
-				const couponRatePct = parseFloat(sec?.getCouponRate?.()?.getArbitraryPrecisionValue?.() ?? '5');
+				// v0.4.1 cutover (PR #170) moved face_value / coupon_rate /
+				// coupon_frequency / maturity_date off the flat SecurityProto
+				// fields into the bond_details sub-message. Read bond_details
+				// first; fall back to flat fields so this mock stays compatible
+				// with any pre-cutover caller that still sets them.
+				const bd = sec?.getBondDetails?.();
+				const faceValue = parseFloat(
+					bd?.getFaceValue?.()?.getArbitraryPrecisionValue?.()
+					?? sec?.getFaceValue?.()?.getArbitraryPrecisionValue?.()
+					?? '1000'
+				);
+				const couponRatePct = parseFloat(
+					bd?.getCouponRate?.()?.getArbitraryPrecisionValue?.()
+					?? sec?.getCouponRate?.()?.getArbitraryPrecisionValue?.()
+					?? '5'
+				);
 				const couponRate = couponRatePct / 100;
 				const productType = sec?.getProductType?.();
 				const isTips = productType === TIPS_PRODUCT_TYPE;
 				const isFrn = productType === TREASURY_FRN_PRODUCT_TYPE;
 
-				const { periods: bondPeriods, matDate } = countPeriods(sec?.getMaturityDate?.());
+				const { periods: bondPeriods, matDate } = countPeriods(
+					bd?.getMaturityDate?.() ?? sec?.getMaturityDate?.()
+				);
 				const priceAbs = price * faceValue / 100;
 
 				if (isFrn) {
@@ -186,7 +202,7 @@ export function createValuationClientMock() {
 					// Coupon per period = face × (refRate + spread/10000) / freq.
 					// Final period adds principal. Periods derived from maturity date
 					// using the security's coupon frequency (quarterly = 4/yr).
-					const freqEnum = sec?.getCouponFrequency?.() ?? COUPON_FREQ.QUARTERLY;
+					const freqEnum = bd?.getCouponFrequency?.() ?? sec?.getCouponFrequency?.() ?? COUPON_FREQ.QUARTERLY;
 					const ppy = periodsPerYear(freqEnum);
 					// Use ceil — a 2yr quarterly FRN with maturity 2028-01-15 from
 					// "today" 2026-03-19 has 7.34 raw periods; the convention is to
@@ -205,7 +221,13 @@ export function createValuationClientMock() {
 					const refRateLegacy = parseFloat(
 						request.getReferenceRateInput?.()?.getPrice?.()?.getArbitraryPrecisionValue?.() ?? '0.04',
 					);
-					const spreadBps = parseFloat(sec?.getSpread?.()?.getArbitraryPrecisionValue?.() ?? '50');
+					// FRN spread also moved to the frn_extension sub-message in v0.4.1.
+					const frnExt = sec?.getFrnExtension?.();
+					const spreadBps = parseFloat(
+						frnExt?.getSpread?.()?.getArbitraryPrecisionValue?.()
+						?? sec?.getSpread?.()?.getArbitraryPrecisionValue?.()
+						?? '50'
+					);
 					const couponPerPeriod = faceValue * (refRateLegacy + spreadBps / 10000) / ppy;
 
 					// At-coupon-reset valuation: PV ≈ price (the FRN identity at par).
