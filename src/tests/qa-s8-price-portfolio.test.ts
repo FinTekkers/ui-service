@@ -40,7 +40,6 @@ async function buildTestBondSecurity() {
 	const { ZonedDateTime } = await import(
 		'@fintekkers/ledger-models/node/wrappers/models/utils/datetime'
 	);
-	const { LocalDate } = await import('@fintekkers/ledger-models/node/wrappers/models/utils/date');
 	const { Decimal } = await import('decimal.js');
 
 	const security = (BondSecurity as any).fromPricerInputs({
@@ -48,8 +47,8 @@ async function buildTestBondSecurity() {
 		couponRate: new Decimal('5.0'),
 		couponType: (CouponTypeProto as any).FIXED,
 		couponFrequency: (CouponFrequencyProto as any).SEMIANNUALLY,
-		issueDate: LocalDate.from(new Date('2023-01-01')),
-		maturityDate: LocalDate.from(new Date('2033-01-01')),
+		issueDate: new Date('2023-01-01'),
+		maturityDate: new Date('2033-01-01'),
 	});
 	security.setObjectClass('Security');
 	security.setVersion('0.0.1');

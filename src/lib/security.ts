@@ -3,7 +3,6 @@ import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/p
 import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
 import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
-import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { getServiceConnection } from "$lib/grpc-auth";
@@ -277,7 +276,7 @@ export async function FetchSecurity(
             return acc;
           }
         }
-        const bondSec = security.isBond() ? (security as BondSecurity) : null;
+        const bondSec = security.isBond() ? security : null;
         const issuances = bondSec?.getIssuances() ?? [];
         const issuance = issuances.length > 0 ? issuances[0] : null;
 
@@ -381,8 +380,7 @@ export async function FetchSecurity(
             }
 
             try {
-              const couponRate = bondSecurity.getCouponRate();
-              result.couponRate = couponRate?.getArbitraryPrecisionValue() ?? undefined;
+              result.couponRate = bondSecurity.getCouponRate()?.toString() ?? undefined;
             } catch (e) {
               // Coupon rate might not be available
             }
@@ -400,8 +398,7 @@ export async function FetchSecurity(
             }
 
             try {
-              const faceValue = bondSecurity.getFaceValue();
-              result.faceValue = faceValue?.getArbitraryPrecisionValue() ?? undefined;
+              result.faceValue = bondSecurity.getFaceValue()?.toString() ?? undefined;
             } catch (e) {
               // Face value might not be available
             }
@@ -457,7 +454,7 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
     const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
     const uuidStr = security.getID().toString();
     // M5 / #260: same wrapper-driven bond narrowing as above.
-    const bondSecurity = security.isBond() ? (security as BondSecurity) : null;
+    const bondSecurity = security.isBond() ? security : null;
 
     const result: securityData = {
       identifier: id,
@@ -479,9 +476,9 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
     };
 
     if (bondSecurity) {
-      try { result.couponRate = bondSecurity.getCouponRate()?.getArbitraryPrecisionValue(); } catch {}
+      try { result.couponRate = bondSecurity.getCouponRate()?.toString(); } catch {}
       try { result.couponFrequency = bondSecurity.getCouponFrequency()?.toString(); } catch {}
-      try { result.faceValue = bondSecurity.getFaceValue()?.getArbitraryPrecisionValue(); } catch {}
+      try { result.faceValue = bondSecurity.getFaceValue()?.toString(); } catch {}
       try {
         const dd = bondSecurity.getDatedDate();
         if (dd) result.datedDate = dd.toDate().toISOString().slice(0, 10).replace(/-/g, '/');

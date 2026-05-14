@@ -22,7 +22,6 @@ import { ProductTypeProto } from '@fintekkers/ledger-models/node/fintekkers/mode
 import { CouponTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb';
 import { CouponFrequencyProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb';
 import { IndexTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb';
-import { LocalDate } from '@fintekkers/ledger-models/node/wrappers/models/utils/date';
 import { Decimal } from 'decimal.js';
 import { productTypeNameOf } from '$lib/security';
 
@@ -36,8 +35,8 @@ function makeBondProto(opts: {
     couponRate: new Decimal('0.05'),
     couponType: CouponTypeProto.FIXED,
     couponFrequency: CouponFrequencyProto.SEMIANNUALLY,
-    issueDate: LocalDate.from(new Date(opts.issueYear, 0, 1)),
-    maturityDate: LocalDate.from(new Date(opts.maturityYear, 0, 1)),
+    issueDate: new Date(opts.issueYear, 0, 1),
+    maturityDate: new Date(opts.maturityYear, 0, 1),
   };
   switch (opts.productType) {
     case ProductTypeProto.TIPS:

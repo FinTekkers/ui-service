@@ -2,7 +2,6 @@ import * as ts from "@fintekkers/ledger-models/node/wrappers/services/transactio
 import * as datetime from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import * as positionFilter from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Transaction from "@fintekkers/ledger-models/node/wrappers/models/transaction/transaction";
-import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 // M5 / #260: bond detection via Security.isBond() wrapper helper.
 // The SecurityType wrapper + SecurityTypeProto were retired in 0.2.1;
 // the wrapper now narrows on the ProductTypeProto leaves
@@ -99,8 +98,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
     for (const element of results) {
       try {
         const security: Security = element.getSecurity();
-        const isBond = security.isBond();
-        const bondSecurity = isBond ? (security as BondSecurity) : null;
+        const bondSecurity = security.isBond() ? security : null;
 
         const txnUuid = element.proto?.getUuid?.();
         const uuidHex = txnUuid ? Buffer.from(txnUuid.serializeBinary()).toString('hex') : undefined;
@@ -118,7 +116,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
           transactionIssueDate: safe(() => formatDateToISO(security.getIssueDate()), ''),
           transactionQuantity: safe(() => element.getQuantity().toString(), ''),
           transactionProductType: safe(() => productTypeNameOf(security), ''),
-          transactionCouponRate: safe(() => bondSecurity?.getCouponRate()?.getArbitraryPrecisionValue() ?? '', ''),
+          transactionCouponRate: safe(() => bondSecurity?.getCouponRate()?.toString() ?? '', ''),
           transactionCouponType: safe(() => bondSecurity?.getCouponType().name() ?? '', ''),
           transactionTenor: safe(() => bondSecurity?.getTenor().getTenorDescription() ?? '', ''),
           transactionCouponFrequency: safe(() => bondSecurity?.getCouponFrequency()?.toString() ?? '', ''),

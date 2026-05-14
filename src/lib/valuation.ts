@@ -13,7 +13,6 @@ import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/m
 import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
 import field_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import operation_pkg from '@fintekkers/ledger-models/node/fintekkers/requests/util/operation_pb.js';
-import { LocalDate } from '@fintekkers/ledger-models/node/wrappers/models/utils/date';
 import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
@@ -202,15 +201,8 @@ async function buildSecurityProtoFromCusip(cusip: string, apiKey?: string): Prom
   return results[0];
 }
 
-const FREQUENCY_MAP: Record<string, CouponFrequencyProto> = {
-  ANNUALLY: CouponFrequencyProto.ANNUALLY,
-  SEMIANNUALLY: CouponFrequencyProto.SEMIANNUALLY,
-  QUARTERLY: CouponFrequencyProto.QUARTERLY,
-  MONTHLY: CouponFrequencyProto.MONTHLY,
-};
-
 function frequency(name: string | undefined, fallback: CouponFrequencyProto): CouponFrequencyProto {
-  return FREQUENCY_MAP[name ?? ''] ?? fallback;
+  return CouponFrequencyProto[name as keyof typeof CouponFrequencyProto] ?? fallback;
 }
 
 function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
@@ -223,8 +215,8 @@ function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
     couponRate: new Decimal(inputs.couponRate ?? '0'),
     couponType: CouponTypeProto.FIXED,
     couponFrequency: frequency(inputs.couponFrequency, CouponFrequencyProto.SEMIANNUALLY),
-    issueDate: LocalDate.from(new Date(inputs.issueDate ?? new Date().toISOString().slice(0, 10))),
-    maturityDate: LocalDate.from(new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10))),
+    issueDate: new Date(inputs.issueDate ?? new Date().toISOString().slice(0, 10)),
+    maturityDate: new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10)),
   });
   security.setObjectClass('Security');
   security.setVersion('0.0.1');
@@ -352,8 +344,8 @@ export async function RunBondValuation(inputs: BondCalculatorInputs, apiKey?: st
 export const RunValuation = RunBondValuation;
 
 function buildManualTipsSecurityProto(inputs: TipsCalculatorInputs): SecurityProto {
-  const issueDate = LocalDate.from(new Date(inputs.issueDate ?? new Date().toISOString().slice(0, 10)));
-  const maturityDate = LocalDate.from(new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10)));
+  const issueDate = new Date(inputs.issueDate ?? new Date().toISOString().slice(0, 10));
+  const maturityDate = new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10));
 
   // US TIPS accrue off CPI-U; the inflation_index_type field is required on
   // the structured TipsExtensionProto. indexDate defaults to the bond's
@@ -475,12 +467,6 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
   }
 }
 
-const FRN_INDEX_MAP: Record<string, number> = {
-  SOFR: IndexTypeProto.SOFR,
-  T_BILL_13_WEEK: IndexTypeProto.T_BILL_13_WEEK,
-  FED_FUNDS: IndexTypeProto.FED_FUNDS,
-};
-
 function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto {
   // FRN coupon rate = reference_rate + spread_in_percent
   // referenceRate is in % (e.g. "4"), spread is in bps (e.g. "50" = 0.50%)
@@ -488,7 +474,7 @@ function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto
   const spreadPct = parseFloat(inputs.spread ?? '0') / 100;
   const effectiveCoupon = new Decimal((refRate + spreadPct).toString());
   const couponFrequency = frequency(inputs.couponFrequency, CouponFrequencyProto.QUARTERLY);
-  const maturityDate = LocalDate.from(new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10)));
+  const maturityDate = new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10));
 
   const security = FloatingRateNote.fromPricerInputs({
     faceValue: new Decimal(inputs.faceValue ?? '0'),
@@ -498,7 +484,7 @@ function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto
     issueDate: maturityDate,
     maturityDate,
     spread: new Decimal(inputs.spread ?? '0'),
-    referenceRateIndex: FRN_INDEX_MAP[inputs.referenceRateIndex ?? 'SOFR'] ?? IndexTypeProto.SOFR,
+    referenceRateIndex: IndexTypeProto[inputs.referenceRateIndex as keyof typeof IndexTypeProto] ?? IndexTypeProto.SOFR,
     resetFrequency: couponFrequency,
   });
   security.setObjectClass('Security');

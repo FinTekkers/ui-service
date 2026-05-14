@@ -5,7 +5,6 @@ const { FieldProto } = pkg;
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
-import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import { identifierString } from "$lib/security";
 
 /** @type {import('./$types').PageServerLoad} */
@@ -46,9 +45,8 @@ export async function load({ locals }: { locals: App.Locals }) {
     for (let index in securities) {
       const security: Security = securities[index];
       if (!security.isBond()) continue;
-      const bond = security as BondSecurity;
 
-      const issuances = bond.getIssuances();
+      const issuances = security.getIssuances();
       const issuance = issuances.length > 0 ? issuances[0] : null;
 
       if (issuance) {

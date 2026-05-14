@@ -22,7 +22,6 @@ import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/model
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
-import type BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 // M5 / #260: SecurityTypeProto retired. Bond narrowing via wrapper
 // helper; product-type display string via Security.getProductType().
 
@@ -174,7 +173,7 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
       }
 
       // Extract security details
-      const bondSecurity = security.isBond() ? (security as BondSecurity) : null;
+      const bondSecurity = security.isBond() ? security : null;
 
       const asOfDate = new Date();
 
@@ -193,7 +192,7 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
         // existing UI binding; deprecated in favour of
         // transactionProductType.
         transactionSecurityType: security.getProductType() ?? '',
-        transactionCouponRate: bondSecurity?.getCouponRate()?.getArbitraryPrecisionValue() ?? '',
+        transactionCouponRate: bondSecurity?.getCouponRate()?.toString() ?? '',
         transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
         transactionTenor: bondSecurity?.getTenor(asOfDate).getTenorDescription() ?? '',
         transactionCouponFrequency: bondSecurity?.getCouponFrequency()?.toString() ?? '',
