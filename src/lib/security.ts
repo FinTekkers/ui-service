@@ -126,17 +126,7 @@ export function identifierString(security: Security): string {
 }
 
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
-  switch (name) {
-    case 'ISIN': return IdentifierTypeProto.ISIN;
-    case 'EXCH_TICKER': return IdentifierTypeProto.EXCH_TICKER;
-    case 'SERIES_ID': return IdentifierTypeProto.SERIES_ID;
-    case 'OSI': return IdentifierTypeProto.OSI;
-    case 'FIGI': return IdentifierTypeProto.FIGI;
-    case 'INDEX_NAME': return IdentifierTypeProto.INDEX_NAME;
-    case 'CASH': return IdentifierTypeProto.CASH;
-    case 'CUSIP':
-    default: return IdentifierTypeProto.CUSIP;
-  }
+  return IdentifierTypeProto[name as keyof typeof IdentifierTypeProto] ?? IdentifierTypeProto.CUSIP;
 }
 
 export async function FetchSecurity(

@@ -202,15 +202,8 @@ async function buildSecurityProtoFromCusip(cusip: string, apiKey?: string): Prom
   return results[0];
 }
 
-const FREQUENCY_MAP: Record<string, CouponFrequencyProto> = {
-  ANNUALLY: CouponFrequencyProto.ANNUALLY,
-  SEMIANNUALLY: CouponFrequencyProto.SEMIANNUALLY,
-  QUARTERLY: CouponFrequencyProto.QUARTERLY,
-  MONTHLY: CouponFrequencyProto.MONTHLY,
-};
-
 function frequency(name: string | undefined, fallback: CouponFrequencyProto): CouponFrequencyProto {
-  return FREQUENCY_MAP[name ?? ''] ?? fallback;
+  return CouponFrequencyProto[(name ?? '') as keyof typeof CouponFrequencyProto] ?? fallback;
 }
 
 function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
@@ -475,12 +468,6 @@ export async function RunTipsValuation(inputs: TipsCalculatorInputs, apiKey?: st
   }
 }
 
-const FRN_INDEX_MAP: Record<string, number> = {
-  SOFR: IndexTypeProto.SOFR,
-  T_BILL_13_WEEK: IndexTypeProto.T_BILL_13_WEEK,
-  FED_FUNDS: IndexTypeProto.FED_FUNDS,
-};
-
 function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto {
   // FRN coupon rate = reference_rate + spread_in_percent
   // referenceRate is in % (e.g. "4"), spread is in bps (e.g. "50" = 0.50%)
@@ -489,6 +476,9 @@ function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto
   const effectiveCoupon = new Decimal((refRate + spreadPct).toString());
   const couponFrequency = frequency(inputs.couponFrequency, CouponFrequencyProto.QUARTERLY);
   const maturityDate = LocalDate.from(new Date(inputs.maturityDate ?? new Date().toISOString().slice(0, 10)));
+  const referenceRateIndex =
+    IndexTypeProto[(inputs.referenceRateIndex ?? 'SOFR') as keyof typeof IndexTypeProto] ??
+    IndexTypeProto.SOFR;
 
   const security = FloatingRateNote.fromPricerInputs({
     faceValue: new Decimal(inputs.faceValue ?? '0'),
@@ -498,7 +488,7 @@ function buildManualFrnSecurityProto(inputs: FrnCalculatorInputs): SecurityProto
     issueDate: maturityDate,
     maturityDate,
     spread: new Decimal(inputs.spread ?? '0'),
-    referenceRateIndex: FRN_INDEX_MAP[inputs.referenceRateIndex ?? 'SOFR'] ?? IndexTypeProto.SOFR,
+    referenceRateIndex,
     resetFrequency: couponFrequency,
   });
   security.setObjectClass('Security');
