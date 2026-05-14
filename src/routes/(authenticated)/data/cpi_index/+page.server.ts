@@ -5,9 +5,11 @@ import { getServiceConnection } from '$lib/grpc-auth';
 import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import type { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
+import IndexSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/IndexSecurity';
 import field_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
 import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
 import { IndexTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb';
+import { primaryIdentifier } from '$lib/security';
 // M6 #263 bug 6: ProductTypeProto so we can post-filter on the CPI_SERIES
 // leaf. Pre-fix the server filter used asset_class='Index' (the abstract
 // parent product type, not a real asset_class), so the search matched
@@ -63,9 +65,10 @@ async function fetchCpiSeries(apiKey?: string): Promise<CpiSeries[]> {
     // before touching downstream getters.
     if (sec.proto.getProductType() !== ProductTypeProto.CPI_SERIES) continue;
 
-    const idProto = sec.proto.getIdentifier();
-    const idValue = idProto?.getIdentifierValue();
-    const indexTypeNum = sec.proto.getIndexType();
+    const idValue = primaryIdentifier(sec)?.getIdentifierValue();
+    const indexTypeNum = sec instanceof IndexSecurity
+      ? sec.getIndexType()
+      : IndexTypeProto.UNKNOWN_INDEX_TYPE;
     const indexTypeStr = indexTypeToString(indexTypeNum);
 
     // Filter to CPI families. CPI_SERIES is the parent product type;

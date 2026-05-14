@@ -27,12 +27,8 @@ const PRICE_URL = 'localhost:8083';
 // ---------------------------------------------------------------------------
 
 async function buildTestBondSecurity() {
-	const { SecurityProto } = await import(
-		'@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js'
-	);
-	// M5 / #260: SecurityTypeProto retired; use ProductTypeProto.
-	const { ProductTypeProto } = await import(
-		'@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js'
+	const { default: BondSecurity } = await import(
+		'@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity'
 	);
 	const { CouponTypeProto } = await import(
 		'@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb.js'
@@ -40,33 +36,27 @@ async function buildTestBondSecurity() {
 	const { CouponFrequencyProto } = await import(
 		'@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb.js'
 	);
-	const { DecimalValueProto } = await import(
-		'@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js'
-	);
 	const { UUID } = await import('@fintekkers/ledger-models/node/wrappers/models/utils/uuid');
 	const { ZonedDateTime } = await import(
 		'@fintekkers/ledger-models/node/wrappers/models/utils/datetime'
 	);
 	const { LocalDate } = await import('@fintekkers/ledger-models/node/wrappers/models/utils/date');
+	const { Decimal } = await import('decimal.js');
 
-	const security = new (SecurityProto as any)();
+	const security = (BondSecurity as any).fromPricerInputs({
+		faceValue: new Decimal('1000'),
+		couponRate: new Decimal('5.0'),
+		couponType: (CouponTypeProto as any).FIXED,
+		couponFrequency: (CouponFrequencyProto as any).SEMIANNUALLY,
+		issueDate: LocalDate.from(new Date('2023-01-01')),
+		maturityDate: LocalDate.from(new Date('2033-01-01')),
+	});
 	security.setObjectClass('Security');
 	security.setVersion('0.0.1');
 	security.setUuid((UUID as any).random().toUUIDProto());
 	security.setAsOf(ZonedDateTime.now().toProto());
-	// M5 / #260: BOND_SECURITY → TREASURY_NOTE (a coupon-paying
-	// vanilla bond's leaf product type in the new hierarchy). Asset
-	// class on the wire field switches from 'Fixed Income' to 'RATES'
-	// (hierarchy.json's leaf for GOV_BOND descendants).
-	security.setProductType((ProductTypeProto as any).TREASURY_NOTE);
 	security.setAssetClass('RATES');
 	security.setIssuerName('QA Test Issuer');
-	security.setFaceValue(new (DecimalValueProto as any)().setArbitraryPrecisionValue('1000'));
-	security.setCouponRate(new (DecimalValueProto as any)().setArbitraryPrecisionValue('5.0'));
-	security.setCouponType((CouponTypeProto as any).FIXED);
-	security.setCouponFrequency((CouponFrequencyProto as any).SEMIANNUALLY);
-	security.setIssueDate(LocalDate.from(new Date('2023-01-01')).toProto());
-	security.setMaturityDate(LocalDate.from(new Date('2033-01-01')).toProto());
 
 	return security;
 }

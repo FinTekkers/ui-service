@@ -1,7 +1,7 @@
 /**
  * #266 — TipsCalculator auto-populates Reference CPI from the selected
- * Security's `baseCpi` (which the page-server lifts from
- * TipsDetailsProto.base_cpi via $lib/security.ts baseCpiOf).
+ * Security's `baseCpi` (the page-server lifts it off TIPSBond.getBaseCpi(),
+ * which reads the canonical TipsExtensionProto.base_cpi field).
  *
  * Asserts on three things:
  *  1. Picking a CUSIP from the autocomplete fills the Reference CPI

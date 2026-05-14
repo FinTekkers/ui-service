@@ -16,7 +16,7 @@ import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/
 // M6 #263 bug 3: bypass the BondSecurity getProductType() override
 // (returns tenor-derived 'BILL' / 'NOTE' / 'BOND') so the transactions
 // grid shows the canonical leaf name (TREASURY_NOTE, TIPS, TREASURY_FRN).
-import { productTypeNameOf } from '$lib/security';
+import { productTypeNameOf, identifierString } from '$lib/security';
 const { FieldProto } = pkg;
 
 /**
@@ -106,7 +106,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         const uuidHex = txnUuid ? Buffer.from(txnUuid.serializeBinary()).toString('hex') : undefined;
 
         transactionData.push({
-          transactionId: safe(() => security.getSecurityID().getIdentifierValue().toString(), ''),
+          transactionId: safe(() => identifierString(security), ''),
           uuidHex,
           // M6 #263 bug 4: surface the embedded portfolio so /data/transactions
           // shows which portfolio each row belongs to. TransactionProto embeds
@@ -118,7 +118,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
           transactionIssueDate: safe(() => formatDateToISO(security.getIssueDate()), ''),
           transactionQuantity: safe(() => element.getQuantity().toString(), ''),
           transactionProductType: safe(() => productTypeNameOf(security), ''),
-          transactionCouponRate: safe(() => security.proto.getCouponRate()?.getArbitraryPrecisionValue() ?? '', ''),
+          transactionCouponRate: safe(() => bondSecurity?.getCouponRate()?.getArbitraryPrecisionValue() ?? '', ''),
           transactionCouponType: safe(() => bondSecurity?.getCouponType().name() ?? '', ''),
           transactionTenor: safe(() => bondSecurity?.getTenor().getTenorDescription() ?? '', ''),
           transactionCouponFrequency: safe(() => bondSecurity?.getCouponFrequency()?.toString() ?? '', ''),
