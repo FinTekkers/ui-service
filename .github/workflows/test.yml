@@ -1,0 +1,33 @@
+name: tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: vitest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: npm ci
+        run: npm ci --ignore-scripts
+
+      - name: svelte-kit sync (generates .svelte-kit/tsconfig.json that root tsconfig extends)
+        run: npx svelte-kit sync
+
+      - name: vitest
+        run: npx vitest run --reporter=verbose

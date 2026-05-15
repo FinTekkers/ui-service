@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Full unit test suite. Must pass before push.
+# Bypassing with --no-verify is logged via process; see test-discipline.md.
+npx vitest run
