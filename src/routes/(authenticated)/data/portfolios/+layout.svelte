@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>{"Dashboard Portfolio"}</title>
+  <title>{"Dashboard Portfolios"}</title>
 </svelte:head>
 
 <div class="main_ui_menu grow">

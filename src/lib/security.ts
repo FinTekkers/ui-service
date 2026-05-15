@@ -13,6 +13,7 @@ import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/mode
 import {
   assetClassDescendantsOf,
   instrumentTypeOf,
+  allAssetClasses,
 } from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy";
 import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
@@ -156,6 +157,32 @@ export async function FetchSecurity(
   productType?: ProductTypeName,
   instrumentType?: InstrumentTypeName,
 ): Promise<securityData[]> {
+  // #306: ledger-service rejects an empty filter ("There was no UUID list
+  // nor security filter in the request"), so when EVERY user-driven filter
+  // is absent we fan out one request per legacy asset-class display name
+  // and concat. The set is the same one FetchSecurityUniverse uses for
+  // autocomplete (proven to round-trip with the server today). Without
+  // this fanout, dropping the legacy DEFAULT_ISSUER_NAME (#306) would
+  // leave the no-params landing view permanently broken.
+  const allUserFiltersAbsent =
+    !assetClass &&
+    !issuerName &&
+    (!identifier || identifier.trim() === '') &&
+    !productType &&
+    !instrumentType;
+  if (allUserFiltersAbsent) {
+    const perClass = await Promise.all(
+      UNIVERSE_ASSET_CLASSES.map((cls) =>
+        FetchSecurity(cls, null, identifier, identifierType, issueDate, issueDateOperator, apiKey, productType, instrumentType)
+          .catch((e: any) => {
+            console.warn(`FetchSecurity (no-filter fanout) failed for ${cls}: ${e?.message ?? e}`);
+            return [];
+          }),
+      ),
+    );
+    return perClass.flat();
+  }
+
   const filterSecurity = new PositionFilter();
 
   if (assetClass) {
@@ -512,7 +539,19 @@ const UNIVERSE_CAP_PER_CLASS = 1000;
 // The security service rejects an empty position filter, so we fan out one query per class.
 // Cap is per class so Fixed Income doesn't crowd out equities. Set generously since
 // universe is deduped to one entry per (identifierType, identifier).
-const UNIVERSE_ASSET_CLASSES = ['Fixed Income', 'Equity', 'Index', 'Cash', 'Currency'] as const;
+// #306: post-M5 (#260) the server's ASSET_CLASS field stores hierarchy
+// node names from product_hierarchy.json (RATES, EQUITY, CREDIT, ...).
+// In practice the running ledger is mid-cutover — some rows still use
+// legacy display strings ('Fixed Income', 'Equity'). Combining both
+// guarantees the no-filter fanout reaches every row regardless of
+// which storage shape its issuer-side writer used. Duplicates are
+// resolved downstream via dedupeLatestPerIdentifier.
+const M5_ASSET_CLASSES: readonly string[] = allAssetClasses();
+const LEGACY_ASSET_CLASSES: readonly string[] = ['Fixed Income', 'Equity', 'Index', 'Cash', 'Currency'];
+const UNIVERSE_ASSET_CLASSES: readonly string[] = [
+  ...M5_ASSET_CLASSES,
+  ...LEGACY_ASSET_CLASSES,
+];
 const universeCache = new Map<string, { value: UniverseEntry[]; fetchedAt: number }>();
 
 export function clearUniverseCache(): void {
