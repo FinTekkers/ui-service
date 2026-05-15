@@ -10,14 +10,13 @@ import {
 import { INSTRUMENT_TYPE_NAMES, ASSET_CLASS_NAMES } from '$lib/securityFilterTypes';
 import { deleteSecurity } from "$lib/security-delete";
 
-// Backward-compat default for issuerName only — the legacy hard-coded
-// 'Fixed Income' asset class default is dropped post-M5 (#260): the
-// tree-aware AssetClassFilter requires that selecting nothing means
-// "all asset classes", consistent with all other dropdowns. The
-// hierarchy.json asset_class names are 'RATES', 'EQUITY', etc., not
-// 'Fixed Income' — applying a legacy default would only confuse
-// post-cutover users.
-const DEFAULT_ISSUER_NAME = 'US Government';
+// #306: no default for issuerName either. Same reasoning as the
+// post-M5 (#260) drop of the 'Fixed Income' asset class default —
+// hard-coded landing-view filters silently hide real data (here:
+// every non-US-Government issuer, including all equities). Selecting
+// nothing must mean "all issuers", consistent with assetClass /
+// productType / every other dropdown on this page. Explicit
+// `?issuerName=US Government` still works as before.
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
@@ -48,8 +47,9 @@ export async function load({ locals, request }) {
     rawAssetClass && (ASSET_CLASS_NAMES as readonly string[]).includes(rawAssetClass)
       ? rawAssetClass
       : null;
-  const rawIssuerName = searchParams.get('issuerName');
-  const issuerName = rawIssuerName === null ? DEFAULT_ISSUER_NAME : rawIssuerName;
+  // #306: rawIssuerName === null means no issuer filter (all issuers),
+  // matching the assetClass null-default behavior post-M5.
+  const issuerName = searchParams.get('issuerName');
 
   // productType (M5 / #260: replaces ?securityType=). Post-filtered in
   // FetchSecurity since PositionFilter has no PRODUCT_TYPE today.
