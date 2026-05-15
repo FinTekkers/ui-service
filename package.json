@@ -20,7 +20,8 @@
 		"db:pull": "drizzle-kit introspect:sqlite",
 		"db:drop": "drizzle-kit drop",
 		"db:check": "drizzle-kit check:sqlite",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"@auth/core": "^0.27.0",
@@ -91,6 +92,7 @@
 		"eslint-plugin-svelte": "^2.26.0",
 		"esm": "^3.2.25",
 		"google-protobuf": "^4.0.2",
+		"husky": "^9.1.7",
 		"jest": "^29.7.0",
 		"jest-dom": "^4.0.0",
 		"jsdom": "^22.1.0",
