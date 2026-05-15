@@ -51,9 +51,16 @@ export async function load({ locals }: { locals: App.Locals }) {
 
       if (issuance) {
         const qty = issuance.getPostAuctionOutstandingQuantity();
-        if (!qty && security.getMaturityDate().toDate().getFullYear() > 2009) {
+        // #302: v0.4.x getMaturityDate / getIssueDate return Date | null
+        // directly. Bond rows always have both populated; if a row
+        // somehow lacks them, sentinel-default to epoch so the
+        // year-comparison falls through to the skip path rather than
+        // crashing the whole iteration.
+        const maturity = security.getMaturityDate() ?? new Date(0);
+        const issue = security.getIssueDate() ?? new Date(0);
+        if (!qty && maturity.getFullYear() > 2009) {
           // skip rows without outstanding quantity
-        } else if (!qty && security.getMaturityDate().toDate().getFullYear() <= 2009) {
+        } else if (!qty && maturity.getFullYear() <= 2009) {
           // Swallow this data gap. It's old and we don't mind
         } else {
           let postAuctionQuantity = qty ? Number(qty.toString()) : 0;
@@ -61,9 +68,9 @@ export async function load({ locals }: { locals: App.Locals }) {
 
           let result = {
             cusip: id,
-            issueDate: security.getIssueDate().toDate(),
+            issueDate: issue,
             outstandingAmount: postAuctionQuantity,
-            maturityDate: security.getMaturityDate().toDate(),
+            maturityDate: maturity,
           };
           results.push(result);
         }
