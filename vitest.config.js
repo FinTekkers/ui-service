@@ -29,6 +29,12 @@ export default defineConfig({
       "**/dist/**",
       "src/tests/*-e2e.test.ts",
       "src/tests/smoke.test.ts",
+      // QA Session 8 tests connect to real ledger-service / broker —
+      // pass-or-skip silently in CI (services unreachable → no-error path),
+      // hang locally on extreme cases (e.g. limit=100000 streams 100k rows).
+      // Belong in integration tier; tracked separately for proper
+      // describe.skipIf gating.
+      "src/tests/qa-s*-*.test.ts",
     ],
   },
 });
