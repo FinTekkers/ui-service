@@ -165,11 +165,27 @@ test.describe('/data/curves + /data/treasury_curve render real data (#302)', () 
     const rowCount = await rows.count();
     let anyParYieldRendered = false;
     let rowsWhereYieldDiffersFromCoupon = 0;
+    const pricedWithoutYield: { tenor: string; price: string }[] = [];
     for (let i = 0; i < rowCount; i++) {
       const row = rows.nth(i);
+      const tenor = (await row.locator('td').nth(0).innerText()).trim();
       const couponText = (await row.locator('td.yield-cell').innerText()).trim();
       const parText = (await row.locator('td.par-yield-cell').innerText()).trim();
+      const priceText = (await row.locator('td.price-cell').innerText()).trim();
+
+      // Coverage check — locks the #305-reopen gap fix. Pre-fix the
+      // join used canonical bucket years (1M=0.083, 30Y=30.0) but the
+      // fitter emits at the bond's actual maturity-derived years
+      // (1M Bill=0.21, 30Y Bond=29.76). Bonds whose actual maturity
+      // was >0.05y from the bucket label silently lost their parYield
+      // (1M, 3Y, 20Y, 30Y on 2026-05-14). Any priced row MUST now
+      // come back with a par yield — flag offenders loudly.
+      if (priceText !== '—' && parText === '—') {
+        pricedWithoutYield.push({ tenor, price: priceText });
+        continue;
+      }
       if (parText === '—') continue;
+
       anyParYieldRendered = true;
       const coupon = parseFloat(couponText.replace('%', ''));
       const par = parseFloat(parText.replace('%', ''));
@@ -185,6 +201,10 @@ test.describe('/data/curves + /data/treasury_curve render real data (#302)', () 
       rowsWhereYieldDiffersFromCoupon,
       'every priced row had parYield equal to couponRate — chart probably still plots coupon (#305 part B regression)',
     ).toBeGreaterThan(0);
+    expect(
+      pricedWithoutYield,
+      `priced constituents missing a par yield (#305-reopen gap regression): ${JSON.stringify(pricedWithoutYield)}`,
+    ).toEqual([]);
   });
 
   // #305 part C: POSTCUT01 (uuid dbd72c65-…) was a stray test fixture
