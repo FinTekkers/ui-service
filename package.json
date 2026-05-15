@@ -13,6 +13,7 @@
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
 		"test": "vitest",
+		"test:integration": "vitest run --config vitest.integration.config.js",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
 		"db:generate": "drizzle-kit generate:sqlite",
