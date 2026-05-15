@@ -56,29 +56,43 @@ function buildParYieldRequest(constituents: CurveConstituent[], asOf: Date): Cur
 
 /**
  * Map RunCurve par-yield points back to the input constituents by
- * matching on years-to-maturity (the wire response carries `tenor` in
- * decimal years; constituents carry a `bucketMonths` we convert the
- * same way). We round both sides to two decimals so float-precision
- * artefacts don't cause spurious misses.
+ * matching on years-to-maturity. The fitter emits at each bond's
+ * ACTUAL years-to-maturity (e.g. 0.2055 for a 1M bill that's 75 days
+ * out, 29.76 for a 30Y bond auctioned ~3 months ago), NOT at the
+ * canonical bucket year (1/12, 30, …). Joining by `bucketMonths/12`
+ * with a tight window left 4 of 9 priced constituents unmapped on
+ * 2026-05-14 (#305 reopen): 1M (delta 0.12), 3Y (0.08), 20Y (0.24),
+ * 30Y (0.24).
+ *
+ * Fix: compute each constituent's maturityYears from the actual
+ * maturityDate field and asOf, then pair to the closest fitter point.
+ * Tolerance widened to 0.5y — well under the smallest inter-bucket
+ * gap (1Y → 2Y, 6M → 1Y) so cross-matching adjacent buckets stays
+ * impossible, but loose enough to absorb day-count / end-of-day
+ * conventions on either side.
  */
-function joinByTenor(
+function joinByMaturityYears(
   constituents: CurveConstituent[],
   parPoints: Array<{ years: number; yieldPct: number }>,
+  asOf: Date,
 ): Map<string, number> {
   const out = new Map<string, number>();
+  const MS_PER_YEAR = 365.25 * 86400 * 1000;
   for (const c of constituents) {
-    const cMonths = c.bucketMonths;
-    const cYears = cMonths / 12;
-    // Find the closest point within 0.05 years (~ 18 days). The
-    // resolver's bucket labels (1M, 3M, 6M, 1Y, 2Y, 3Y, 5Y, 7Y, 10Y,
-    // 20Y, 30Y) are coarse enough that the closest point is unambiguous.
+    if (!c.maturityDate) continue;
+    const cYears = (c.maturityDate.getTime() - asOf.getTime()) / MS_PER_YEAR;
+    if (!Number.isFinite(cYears) || cYears <= 0) continue;
     let best: { years: number; yieldPct: number } | null = null;
     let bestDelta = Number.POSITIVE_INFINITY;
     for (const p of parPoints) {
       const d = Math.abs(p.years - cYears);
       if (d < bestDelta) { bestDelta = d; best = p; }
     }
-    if (best && bestDelta <= 0.05) out.set(c.tenor, best.yieldPct);
+    // 0.5y tolerance: smallest inter-bucket gap is 0.5y (6M → 1Y)
+    // so cross-matching adjacent buckets is impossible. Day-count /
+    // end-of-day conventions account for ~0.01y; a real fitter
+    // mismatch would be ≫ 0.5y.
+    if (best && bestDelta <= 0.5) out.set(c.tenor, best.yieldPct);
   }
   return out;
 }
@@ -130,5 +144,5 @@ export async function runCurveParYieldsByTenor(
     }
   }
 
-  return joinByTenor(constituents, parPoints);
+  return joinByMaturityYears(constituents, parPoints, asOf);
 }
