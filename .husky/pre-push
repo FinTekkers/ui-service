@@ -1,4 +1,18 @@
 #!/usr/bin/env sh
-# Full unit test suite. Must pass before push.
-# Bypassing with --no-verify is logged via process; see test-discipline.md.
+# See: ~/second-brain/processes/test-discipline.md
+# Bypassing with --no-verify is logged via process.
+
+# 1. Fix-upstream-first guard: warn (don't block) on consumer-side dep
+#    downgrades / new overrides. CI is the real gate; this is a heads-up
+#    before pushing. Requires Python 3.11+ for tomllib (skip if missing).
+if command -v python3 >/dev/null 2>&1 \
+   && python3 -c "import sys; sys.exit(0 if sys.version_info >= (3,11) else 1)" 2>/dev/null; then
+  if ! python3 .github/scripts/check-downgrades.py --base origin/main; then
+    echo "downgrade-detector: above will block CI. Add DOWNGRADE-EXCEPTION: <rationale> + <upstream-issue-url> to PR body, or revert."
+    # Warn only — CI is the gate. Comment the next line to make pre-push hard-fail too.
+    # exit 1
+  fi
+fi
+
+# 2. Full unit test suite — hard-fail.
 npx vitest run
