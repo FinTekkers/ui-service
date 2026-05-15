@@ -31,3 +31,20 @@ jobs:
 
       - name: vitest
         run: npx vitest run --reporter=verbose
+
+  downgrade-detector:
+    name: downgrade-detector (fix-upstream-first)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run downgrade-detector against base branch
+        run: python3 .github/scripts/check-downgrades.py --base "origin/${{ github.base_ref }}"

@@ -20,6 +20,7 @@ export default defineConfig({
     include: [
       "src/tests/*-e2e.test.ts",
       "src/tests/smoke.test.ts",
+      "src/tests/qa-s*-*.test.ts",
     ],
   },
 });
