@@ -36,7 +36,7 @@ function buildDeleteRequest(uuidHex: string, dryRun: boolean, force: boolean): a
 
 function getClient(apiKey?: string): any {
   const conn = getServiceConnection(apiKey);
-  return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+  return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
 }
 
 export async function deleteSecurity(uuidHex: string, dryRun: boolean, force = false, apiKey?: string): Promise<DeleteDryRunResult> {

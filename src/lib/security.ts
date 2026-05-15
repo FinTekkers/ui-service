@@ -2,6 +2,8 @@ import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
 import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js";
+import { GetFieldValuesRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/get_field_values_request_pb.js";
+import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb.js';
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
@@ -171,16 +173,33 @@ export async function FetchSecurity(
     !productType &&
     !instrumentType;
   if (allUserFiltersAbsent) {
-    const perClass = await Promise.all(
-      UNIVERSE_ASSET_CLASSES.map((cls) =>
-        FetchSecurity(cls, null, identifier, identifierType, issueDate, issueDateOperator, apiKey, productType, instrumentType)
-          .catch((e: any) => {
-            console.warn(`FetchSecurity (no-filter fanout) failed for ${cls}: ${e?.message ?? e}`);
-            return [];
-          }),
-      ),
-    );
-    return perClass.flat();
+    // #306-followup: ASSET_CLASS-only fanout returns ≤20 rows because
+    // ledger-service's `Fixed Income` filter response (12,734 rows ≈ 6.5
+    // MB) exceeds the broker→UI gRPC ceiling and surfaces as `ServiceError`.
+    // Fanning out per ISSUER instead — each issuer has ≪200 rows, well
+    // under the limit, and there are only ~525 distinct issuers in the
+    // current ledger.
+    const issuerNames = await fetchDistinctIssuerNames(apiKey);
+    if (issuerNames.length === 0) {
+      console.warn('[#306-fo] no distinct issuers found via getFieldValues — returning empty list');
+      return [];
+    }
+    const concurrency = 16;
+    const results: securityData[] = [];
+    for (let i = 0; i < issuerNames.length; i += concurrency) {
+      const slice = issuerNames.slice(i, i + concurrency);
+      const batches = await Promise.all(
+        slice.map((iss) =>
+          FetchSecurity(null, iss, identifier, identifierType, issueDate, issueDateOperator, apiKey, productType, instrumentType)
+            .catch((e: any) => {
+              console.warn(`[#306-fo] issuer=${JSON.stringify(iss)} failed: ${e?.message ?? e}`);
+              return [] as securityData[];
+            }),
+        ),
+      );
+      for (const b of batches) results.push(...b);
+    }
+    return results;
   }
 
   const filterSecurity = new PositionFilter();
@@ -239,7 +258,7 @@ export async function FetchSecurity(
 
   try {
     const conn = getServiceConnection(apiKey);
-    const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
     const searchRequest = new QuerySecurityRequestProto();
     searchRequest.setObjectClass('SecurityRequest');
     searchRequest.setVersion('0.0.1');
@@ -539,19 +558,69 @@ const UNIVERSE_CAP_PER_CLASS = 1000;
 // The security service rejects an empty position filter, so we fan out one query per class.
 // Cap is per class so Fixed Income doesn't crowd out equities. Set generously since
 // universe is deduped to one entry per (identifierType, identifier).
-// #306: post-M5 (#260) the server's ASSET_CLASS field stores hierarchy
-// node names from product_hierarchy.json (RATES, EQUITY, CREDIT, ...).
-// In practice the running ledger is mid-cutover — some rows still use
-// legacy display strings ('Fixed Income', 'Equity'). Combining both
-// guarantees the no-filter fanout reaches every row regardless of
-// which storage shape its issuer-side writer used. Duplicates are
-// resolved downstream via dedupeLatestPerIdentifier.
+// #306-followup: kept for FetchSecurityUniverse autocomplete only —
+// the per-asset-class fanout was the wrong axis once we discovered the
+// 6.5 MB / 4 MB broker-pipe ceiling. The no-filter landing now fans out
+// per issuer (see fetchDistinctIssuerNames below). UNIVERSE_ASSET_CLASSES
+// is unioned (M5 + legacy) so the autocomplete still surfaces every
+// asset_class string the running ledger has on the wire.
 const M5_ASSET_CLASSES: readonly string[] = allAssetClasses();
 const LEGACY_ASSET_CLASSES: readonly string[] = ['Fixed Income', 'Equity', 'Index', 'Cash', 'Currency'];
 const UNIVERSE_ASSET_CLASSES: readonly string[] = [
   ...M5_ASSET_CLASSES,
   ...LEGACY_ASSET_CLASSES,
 ];
+
+/**
+ * #306-followup: enumerate the distinct SECURITY_ISSUER_NAME values via
+ * SecurityAPI.GetFieldValues. Returns the canonical set of strings the
+ * server stores; the no-filter-fanout in FetchSecurity then issues one
+ * per-issuer search to side-step the 4 MB broker ceiling that an
+ * unfiltered or asset-class-only query would hit.
+ *
+ * Cached for the lifetime of the worker — issuers are added rarely and
+ * the cost of a slightly-stale cache (a brand-new issuer missing from
+ * the no-params landing for a few minutes) is much lower than the per-
+ * request gRPC round-trip.
+ */
+const ISSUER_NAMES_TTL_MS = 5 * 60 * 1000; // 5 min
+let issuerNamesCache: { value: string[]; fetchedAt: number } | null = null;
+
+async function fetchDistinctIssuerNames(apiKey?: string): Promise<string[]> {
+  if (issuerNamesCache && Date.now() - issuerNamesCache.fetchedAt < ISSUER_NAMES_TTL_MS) {
+    return issuerNamesCache.value;
+  }
+  try {
+    const conn = getServiceConnection(apiKey);
+    const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+    const req = new GetFieldValuesRequestProto();
+    req.setObjectClass('GetFieldValuesRequestProto');
+    req.setVersion('0.0.1');
+    req.setField(FieldProto.SECURITY_ISSUER_NAME);
+
+    const issuers: string[] = await new Promise((resolve, reject) => {
+      client.getFieldValues(req, (err: any, resp: any) => {
+        if (err) return reject(err);
+        const list = resp.getValuesList?.() ?? [];
+        const out: string[] = [];
+        for (const any of list) {
+          if (typeof any?.getTypeUrl === 'function' && any.getTypeUrl().endsWith('StringValue')) {
+            const sv = any.unpack(StringValue.deserializeBinary, 'google.protobuf.StringValue');
+            const v = sv?.getValue?.();
+            if (typeof v === 'string' && v.length > 0) out.push(v);
+          }
+        }
+        resolve(out);
+      });
+    });
+
+    issuerNamesCache = { value: issuers, fetchedAt: Date.now() };
+    return issuers;
+  } catch (e: any) {
+    console.warn(`[#306-fo] fetchDistinctIssuerNames failed: ${e?.message ?? e}`);
+    return [];
+  }
+}
 const universeCache = new Map<string, { value: UniverseEntry[]; fetchedAt: number }>();
 
 export function clearUniverseCache(): void {

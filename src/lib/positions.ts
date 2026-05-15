@@ -31,7 +31,7 @@ import type { IdentifierTypeName } from '$lib/securityFilterTypes';
 
 function searchPositions(request: ReturnType<QueryPositionRequest['toProto']>, apiKey?: string): Promise<Position[]> {
     const conn = getServiceConnection(apiKey);
-    const client = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    const client = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
     const listPositions: Position[] = [];
     const stream = client.search(request);
     return new Promise<Position[]>((resolve, reject) => {
@@ -152,7 +152,7 @@ export async function FetchPosition(
     } catch (error) {
         try {
             const validateConn = getServiceConnection(apiKey);
-            const validateClient = new PositionClient(validateConn.url, validateConn.credentials, { interceptors: validateConn.interceptors });
+            const validateClient = new PositionClient(validateConn.url, validateConn.credentials, { interceptors: validateConn.interceptors, ...validateConn.clientOptions });
             const summary = await new Promise<any>((resolve, reject) => {
                 validateClient.validateQueryRequest(request.toProto(), (err: any, res: any) => {
                     if (err) reject(err); else resolve(res);
