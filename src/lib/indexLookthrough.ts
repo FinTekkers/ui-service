@@ -37,7 +37,7 @@ export const TREASURY_CURVE_INDEX_UUID = '8a6dba91-832a-501c-8d78-dc887e3acb30';
 
 function newSecurityClient(apiKey?: string): SecurityClient {
   const conn = getServiceConnection(apiKey);
-  return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+  return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
 }
 
 function buildGetByIdsRequest(

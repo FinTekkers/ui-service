@@ -110,7 +110,7 @@ async function fetchPrices(uuidStr: string, apiKey?: string): Promise<CpiDataPoi
   request.setSearchPriceInput(filter.toProto());
 
   const conn = getServiceConnection(apiKey);
-  const client = new PriceClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+  const client = new PriceClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
 
   const prices: CpiDataPoint[] = await new Promise((resolve) => {
     const results: CpiDataPoint[] = [];

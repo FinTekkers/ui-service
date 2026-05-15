@@ -255,7 +255,7 @@ export async function getTreasuryTransactions(
     );
 
     const conn = getServiceConnection(apiKey);
-    const client = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    const client = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
 
     function streamSearch(): Promise<Position[]> {
         const listPositions: Position[] = [];

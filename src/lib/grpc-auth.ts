@@ -259,21 +259,52 @@ export function getBrokerURL(): string {
 }
 
 /**
+ * gRPC default max receive message size is 4 MB. Several ledger-service
+ * responses legitimately exceed that today — `?assetClass='Fixed Income'`
+ * (≈6.5 MB), `?issuerName='US Government'` (≈6.7 MB), and the no-filter
+ * fanout that combines them. Pre-fix, those calls ended in
+ * `Received message larger than max (6532239 vs 4194304)`, the stream
+ * error handler in security.ts swallowed it, and the page silently
+ * rendered the no-filter landing as 20-30 rows instead of 13k+
+ * (#306 follow-up). Bump to 64 MB across all consumer-side service
+ * calls — we're a server-side renderer, not a browser, so the memory
+ * cost is bounded and the silent-empty failure mode is far worse than
+ * a one-off large allocation.
+ */
+const GRPC_MAX_RECEIVE_MB = 64;
+const GRPC_CLIENT_OPTIONS: Record<string, number | string> = {
+  'grpc.max_receive_message_length': GRPC_MAX_RECEIVE_MB * 1024 * 1024,
+  'grpc.max_send_message_length': GRPC_MAX_RECEIVE_MB * 1024 * 1024,
+};
+
+/**
  * Get gRPC connection params for service calls.
  * When API key is available, routes through broker with auth metadata.
  * Otherwise falls back to direct service connection.
+ *
+ * The returned `clientOptions` MUST be spread into the third argument of
+ * every `new XxxClient(url, credentials, options)` constructor so the
+ * 64 MB ceiling applies. Pre-fix the construction sites passed only
+ * `{ interceptors }`, leaving the gRPC default 4 MB limit in place.
  */
-export function getServiceConnection(apiKey?: string): { url: string; credentials: grpc.ChannelCredentials; interceptors: grpc.Interceptor[] } {
+export function getServiceConnection(apiKey?: string): {
+  url: string;
+  credentials: grpc.ChannelCredentials;
+  interceptors: grpc.Interceptor[];
+  clientOptions: Record<string, number | string>;
+} {
   // Tenant header goes on every call, authenticated or not — broker uses
   // it to pick the right ledger-service URL. Order doesn't matter for
   // metadata.add; we list tenant first as a habit so it's obvious it's
   // unconditional.
   const tenant = getTenantInterceptor();
+  const clientOptions = { ...GRPC_CLIENT_OPTIONS };
   if (apiKey) {
     return {
       url: BROKER_HOST,
       credentials: grpc.credentials.createInsecure(),
       interceptors: [tenant, getAuthenticatedInterceptor(apiKey)],
+      clientOptions,
     };
   }
   // No API key — route to broker anyway; it will return UNAUTHENTICATED (fail loudly)
@@ -281,5 +312,6 @@ export function getServiceConnection(apiKey?: string): { url: string; credential
     url: BROKER_HOST,
     credentials: grpc.credentials.createInsecure(),
     interceptors: [tenant],
+    clientOptions,
   };
 }

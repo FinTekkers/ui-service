@@ -28,9 +28,9 @@ const entityTypeMap: Record<EntityType, number> = {
 function getClient(entityType: EntityType, apiKey?: string): any {
   const conn = getServiceConnection(apiKey);
   switch (entityType) {
-    case 'SECURITY': return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
-    case 'TRANSACTION': return new TransactionClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
-    case 'PORTFOLIO': return new PortfolioClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    case 'SECURITY': return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+    case 'TRANSACTION': return new TransactionClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+    case 'PORTFOLIO': return new PortfolioClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
   }
 }
 

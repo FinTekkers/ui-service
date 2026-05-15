@@ -178,7 +178,7 @@ async function buildSecurityProtoFromCusip(cusip: string, apiKey?: string): Prom
   filter.addObjectFilter(FieldProto.IDENTIFIER, new Identifier(identifierProto));
 
   const conn = getServiceConnection(apiKey);
-  const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+  const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
   const searchRequest = new QuerySecurityRequestProto();
   searchRequest.setObjectClass('SecurityRequest');
   searchRequest.setVersion('0.0.1');
@@ -250,7 +250,7 @@ async function runValuationCore(
   measures.forEach((m) => request.addMeasures(m));
 
   const conn = getServiceConnection(apiKey);
-  const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+  const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
 
   return new Promise((resolve, reject) => {
     client.runValuation(request, (err, response) => {

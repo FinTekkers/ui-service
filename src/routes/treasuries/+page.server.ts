@@ -63,8 +63,8 @@ function createTreasuryTransactionMaturityFilter(transactionType: TransactionTyp
 async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: string): Promise<TransactionData[]> {
   try {
     const conn = getServiceConnection(apiKey);
-    const positionClient = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
-    const securityClient = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    const positionClient = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+    const securityClient = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
     const now = ZonedDateTime.now();
 
     // Define fields to request: IDENTIFIER and TRANSACTION_TYPE as required

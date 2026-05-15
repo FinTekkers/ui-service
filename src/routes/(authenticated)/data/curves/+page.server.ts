@@ -232,7 +232,7 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
   let response: CurveResponseProto;
   try {
     const conn = getServiceConnection(apiKey);
-    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
     response = await new Promise<CurveResponseProto>((resolve, reject) => {
       client.runCurve(request, (err, resp) => (err ? reject(err) : resolve(resp)));
     });

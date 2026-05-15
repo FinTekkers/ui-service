@@ -42,7 +42,7 @@ export async function fetchPricesForSecurity(uuidStr: string, apiKey?: string): 
   request.setSearchPriceInput(filter.toProto());
 
   const conn = getServiceConnection(apiKey);
-  const client = new PriceClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+  const client = new PriceClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
 
   const prices: PricePoint[] = await new Promise((resolve) => {
     const out: PricePoint[] = [];
