@@ -81,10 +81,15 @@ function monthsBetween(from: Date, to: Date): number {
  * downstream code (RunCurve input build / display row) can skip those.
  */
 function toCurveConstituent(security: Security, asOf: Date): CurveConstituent {
-  let issueDate: Date | null = null;
-  let maturityDate: Date | null = null;
-  try { issueDate = security.getIssueDate()?.toDate() ?? null; } catch { /* non-bond */ }
-  try { maturityDate = security.getMaturityDate()?.toDate() ?? null; } catch { /* non-bond */ }
+  // #302: ledger-models v0.4.x getIssueDate / getMaturityDate now return
+  // `Date | null` directly (was `LocalDate` with `.toDate()` pre-v0.4).
+  // Calling `.toDate()` here threw `TypeError` for every bond, swallowed
+  // by the `catch { /* non-bond */ }` (the comment was wrong — the throw
+  // fired for every constituent), so the curve loader saw maturityDate=null
+  // for every row, defaulted monthsToMaturity to 0, collapsed everything
+  // into one bucket, and the curve fell back to "Insufficient curve inputs".
+  const issueDate: Date | null = security.getIssueDate() ?? null;
+  const maturityDate: Date | null = security.getMaturityDate() ?? null;
 
   const cusip = identifierString(security);
 

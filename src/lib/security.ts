@@ -280,13 +280,13 @@ export async function FetchSecurity(
         const issuances = bondSec?.getIssuances() ?? [];
         const issuance = issuances.length > 0 ? issuances[0] : null;
 
-        // Equity / index / cash / currency securities have no maturity or issue date —
-        // these getters throw. Default to a sentinel and let the per-class checks below
-        // skip the bond-specific filtering.
-        let maturityDate: Date;
-        let issueDate: Date;
-        try { maturityDate = security.getMaturityDate().toDate(); } catch { maturityDate = new Date(0); }
-        try { issueDate = security.getIssueDate()?.toDate() ?? new Date(0); } catch { issueDate = new Date(0); }
+        // #302: equity / index / cash / currency securities have no
+        // maturity or issue date — the v0.4.x wrapper returns `null`
+        // for those rather than throwing. Sentinel-default to epoch
+        // 1970 so the per-class checks below still work without
+        // null-guarding every comparison.
+        const maturityDate: Date = security.getMaturityDate() ?? new Date(0);
+        const issueDate: Date = security.getIssueDate() ?? new Date(0);
 
         // Determine whether to include this security based on issuance info.
         // US Treasuries carry issuance auction records; non-US bonds (e.g. Gilts) do not.
@@ -406,7 +406,8 @@ export async function FetchSecurity(
             try {
               const datedDate = bondSecurity.getDatedDate();
               if (datedDate) {
-                result.datedDate = datedDate.toDate().toISOString().slice(0, 10).replace(/-/g, '/');
+                // #302: v0.4.x getDatedDate() returns Date | null directly.
+                result.datedDate = datedDate.toISOString().slice(0, 10).replace(/-/g, '/');
               }
             } catch (e) {
               // Dated date might not be available
@@ -442,8 +443,10 @@ export async function FetchSecurity(
 
 function mapSecuritiesToData(securities: Security[]): securityData[] {
   return securities.reduce((acc: securityData[], security: Security) => {
-    const maturityDate = security.getMaturityDate().toDate();
-    const issueDate = security.getIssueDate()?.toDate() ?? new Date(0);
+    // #302: v0.4.x getMaturityDate / getIssueDate return Date | null
+    // directly. Sentinel epoch keeps downstream toISOString() safe.
+    const maturityDate = security.getMaturityDate() ?? new Date(0);
+    const issueDate = security.getIssueDate() ?? new Date(0);
     const ident = primaryIdentifier(security);
     const idTypeNum = ident?.getIdentifierType() ?? 0;
     const identifierTypeStr =
@@ -481,7 +484,8 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
       try { result.faceValue = bondSecurity.getFaceValue()?.toString(); } catch {}
       try {
         const dd = bondSecurity.getDatedDate();
-        if (dd) result.datedDate = dd.toDate().toISOString().slice(0, 10).replace(/-/g, '/');
+        // #302: v0.4.x getDatedDate() returns Date | null directly.
+        if (dd) result.datedDate = dd.toISOString().slice(0, 10).replace(/-/g, '/');
       } catch {}
       if (bondSecurity instanceof TIPSBond) {
         const baseCpi = bondSecurity.getBaseCpi();
