@@ -26,5 +26,8 @@ jobs:
       - name: npm ci
         run: npm ci --ignore-scripts
 
+      - name: svelte-kit sync (generates .svelte-kit/tsconfig.json that root tsconfig extends)
+        run: npx svelte-kit sync
+
       - name: vitest
         run: npx vitest run --reporter=verbose
