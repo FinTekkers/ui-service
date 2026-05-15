@@ -77,8 +77,15 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
       1000
     );
 
+    // ledger-models v0.4.x: Transaction.getTradeDate() returns Date | null
+    // directly (was LocalDate-with-toDate() pre-v0.4). Calling .toDate() on
+    // the Date itself throws TypeError, which previously bubbled to the
+    // outer try/catch and silently emptied the grid (#300). Sort nulls
+    // last by treating them as +Infinity.
     results.sort((a, b) => {
-      return a.getTradeDate().toDate().getTime() - b.getTradeDate().toDate().getTime();
+      const aTime = a.getTradeDate()?.getTime() ?? Number.POSITIVE_INFINITY;
+      const bTime = b.getTradeDate()?.getTime() ?? Number.POSITIVE_INFINITY;
+      return aTime - bTime;
     });
 
     // Map per-element and skip the row on any wrapper-side throw. The
@@ -100,8 +107,10 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         const security: Security = element.getSecurity();
         const bondSecurity = security.isBond() ? security : null;
 
-        const txnUuid = element.proto?.getUuid?.();
-        const uuidHex = txnUuid ? Buffer.from(txnUuid.serializeBinary()).toString('hex') : undefined;
+        // Wrapper-only access: Transaction.getID() returns the UUID
+        // wrapper; toUUIDProto() then surfaces the proto for the wire-format
+        // hex serialization the deletion / detail flows round-trip on.
+        const uuidHex = Buffer.from(element.getID().toUUIDProto().serializeBinary()).toString('hex');
 
         transactionData.push({
           transactionId: safe(() => identifierString(security), ''),
