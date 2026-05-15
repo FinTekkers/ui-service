@@ -5,6 +5,8 @@
     tenor: string; cusip: string; description: string;
     issueDate: string; maturityDate: string; couponRate: number;
     cleanPrice: number | null;
+    // #305 part B: par yield from RunCurve, joined by tenor.
+    parYield: number | null;
   }>; selectedDate: string; latestBuildableDate: string | null;
     asofWasDefaulted: boolean; user?: any };
 
@@ -30,14 +32,20 @@
   onMount(async () => {
     if (!chartEl || curveData.length === 0) return;
     const Plotly: any = (await import('plotly.js-dist') as any).default ?? (await import('plotly.js-dist'));
+    // #305 part B: plot real par yields from RunCurve, not the bond
+    // coupon rate (which is fixed at issuance and diverges from yield
+    // when bonds trade away from par). Skip rows whose parYield is
+    // null — typically Bills and any constituent that the fitter
+    // couldn't price (insufficient curve inputs).
+    const plotted = curveData.filter((d) => d.parYield !== null);
     const trace = {
-      x: curveData.map((d) => d.tenor),
-      y: curveData.map((d) => d.couponRate),
+      x: plotted.map((d) => d.tenor),
+      y: plotted.map((d) => d.parYield as number),
       mode: 'lines+markers',
       line: { color: '#7cd2ba', width: 2.5, shape: 'linear' },
       marker: { color: '#7cd2ba', size: 8 },
       hovertemplate: '%{x}: %{y:.3f}%<extra></extra>',
-      name: 'On-the-run',
+      name: 'Par yield',
     };
     const layout = {
       paper_bgcolor: '#0c3a46',
@@ -99,6 +107,7 @@
           <th>Issue Date</th>
           <th>Maturity Date</th>
           <th>Coupon Rate (%)</th>
+          <th>Par Yield (%)</th>
           <th>Clean Price</th>
         </tr>
       </thead>
@@ -115,6 +124,7 @@
             <td>{point.issueDate || '—'}</td>
             <td>{point.maturityDate || '—'}</td>
             <td class="yield-cell">{point.couponRate.toFixed(3)}%</td>
+            <td class="par-yield-cell">{point.parYield !== null && point.parYield !== undefined ? `${point.parYield.toFixed(3)}%` : '—'}</td>
             <td class="price-cell">{point.cleanPrice !== null && point.cleanPrice !== undefined ? point.cleanPrice.toFixed(4) : '—'}</td>
           </tr>
         {/each}

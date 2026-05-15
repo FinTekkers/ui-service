@@ -20,7 +20,12 @@
 import { test, expect } from '@playwright/test';
 
 const CURVES_URL = '/data/curves?asof=2026-05-15&term=10';
+// 2026-04-08 used for the row-count + non-Bill-coupon assertions (#302
+// repro lived on a stale historical day). #305 part B/C use a recent
+// date because RunCurve needs priced constituents and prices in the
+// running ledger only exist on the most recent days.
 const TREASURY_CURVE_URL = '/data/treasury_curve?date=2026-04-08';
+const TREASURY_CURVE_RECENT_URL = '/data/treasury_curve?date=2026-05-15';
 
 // EXPECTED_CONSTITUENT_COUNT in $lib/treasuryCurveData = 11
 // (TENOR_BUCKETS spans {1M, 3M, 6M, 1Y, 2Y, 3Y, 5Y, 7Y, 10Y, 20Y, 30Y}).
@@ -132,6 +137,70 @@ test.describe('/data/curves + /data/treasury_curve render real data (#302)', () 
     expect(
       offenders,
       `non-Bill tenors with zero/missing coupon (would have masked #302): ${JSON.stringify(offenders)}`,
+    ).toEqual([]);
+  });
+
+  // #305 part B: chart used to plot couponRate as the Y axis (Bills
+  // came out at 0%, notes flat-lined at their fixed coupons regardless
+  // of where they traded). Post-fix the page-server runs RunCurve and
+  // joins par yields per tenor; the chart Y series is parYield, NOT
+  // couponRate. This assertion locks that contract by reading the
+  // page payload's serialized parYield array and checking it differs
+  // from couponRate on at least one row.
+  test('/data/treasury_curve part B: par yields rendered (Y axis ≠ couponRate column)', async ({ page }) => {
+    const response = await page.goto(TREASURY_CURVE_RECENT_URL);
+    expect(response!.status()).toBeLessThan(500);
+
+    // Read the rendered table cells: column 5 = Coupon Rate (yield-cell),
+    // column 6 = Par Yield (par-yield-cell). Pre-#305-part-B the page
+    // didn't have a Par Yield column at all and the chart Y was driven
+    // off the coupon column; the contract this test locks is that the
+    // par-yield column exists, has at least one numeric value, and
+    // disagrees with the coupon column on at least one row (Bills:
+    // coupon=0%, par=~3-4%; off-par notes: coupon != par).
+    const rows = page.locator('table tbody tr');
+    await expect.poll(async () => rows.count(), { timeout: 15_000 })
+      .toBeGreaterThanOrEqual(EXPECTED_CONSTITUENT_COUNT_MIN);
+
+    const rowCount = await rows.count();
+    let anyParYieldRendered = false;
+    let rowsWhereYieldDiffersFromCoupon = 0;
+    for (let i = 0; i < rowCount; i++) {
+      const row = rows.nth(i);
+      const couponText = (await row.locator('td.yield-cell').innerText()).trim();
+      const parText = (await row.locator('td.par-yield-cell').innerText()).trim();
+      if (parText === '—') continue;
+      anyParYieldRendered = true;
+      const coupon = parseFloat(couponText.replace('%', ''));
+      const par = parseFloat(parText.replace('%', ''));
+      if (Number.isFinite(coupon) && Number.isFinite(par) && Math.abs(coupon - par) > 0.01) {
+        rowsWhereYieldDiffersFromCoupon++;
+      }
+    }
+    expect(
+      anyParYieldRendered,
+      'no row had a non-null Par Yield — RunCurve returned no usable curve, par-yield column hard-coded to "—"',
+    ).toBe(true);
+    expect(
+      rowsWhereYieldDiffersFromCoupon,
+      'every priced row had parYield equal to couponRate — chart probably still plots coupon (#305 part B regression)',
+    ).toBeGreaterThan(0);
+  });
+
+  // #305 part C: POSTCUT01 (uuid dbd72c65-…) was a stray test fixture
+  // that surfaced in an earlier on-the-run constituent. data-sourcing-dev
+  // owns the ledger cleanup; the UI-side assertion guards against any
+  // POST*/TEST* identifier ever resurfacing in the curve picker.
+  test('/data/treasury_curve part C: no POST*/TEST* identifiers in any row', async ({ page }) => {
+    const response = await page.goto(TREASURY_CURVE_RECENT_URL);
+    expect(response!.status()).toBeLessThan(500);
+
+    const html = await page.content();
+    const cusips = [...html.matchAll(/cusip:"([^"]+)"/g)].map((m) => m[1]);
+    const offenders = cusips.filter((id) => /^(POST|TEST)/i.test(id));
+    expect(
+      offenders,
+      `stray test/POSTCUT identifiers leaked into the curve picker: ${JSON.stringify(offenders)}`,
     ).toEqual([]);
   });
 });

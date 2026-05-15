@@ -17,6 +17,7 @@ import {
   loadTreasuryCurveBundle,
   type ConstituentBundle,
 } from '$lib/treasuryCurveData';
+import { runCurveParYieldsByTenor } from '$lib/runCurve';
 
 const LATEST_DATE_SCAN_DAYS = 30;
 
@@ -28,6 +29,10 @@ export interface TreasuryCurveRow {
   maturityDate: string;
   couponRate: number;
   cleanPrice: number | null;  // null = no price found at/before as-of
+  // #305 part B: par yield from RunCurve, joined by tenor. null when
+  // RunCurve had insufficient inputs (≪2 priced constituents) or the
+  // valuation service errored — chart + column degrade to '—'.
+  parYield: number | null;
 }
 
 interface PageData {
@@ -37,7 +42,7 @@ interface PageData {
   asofWasDefaulted: boolean;
 }
 
-function bundleToRows(bundle: ConstituentBundle): TreasuryCurveRow[] {
+function bundleToRows(bundle: ConstituentBundle, parYieldsByTenor: Map<string, number>): TreasuryCurveRow[] {
   return bundle.constituents.map((c) => {
     const maturity = c.maturityDate ? c.maturityDate.toISOString().slice(0, 10) : '';
     const issue = c.issueDate ? c.issueDate.toISOString().slice(0, 10) : '';
@@ -52,6 +57,7 @@ function bundleToRows(bundle: ConstituentBundle): TreasuryCurveRow[] {
       maturityDate: maturity,
       couponRate: c.couponRate,
       cleanPrice: c.cleanPrice,
+      parYield: parYieldsByTenor.get(c.tenor) ?? null,
     };
   });
 }
@@ -95,8 +101,20 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
 
   const selectedDate = asOfDate.toISOString().slice(0, 10);
 
+  // #305 part B: fit a par-yield curve via RunCurve from the priced
+  // constituents and join back per-tenor so the page can plot real
+  // yields instead of bond coupon rates. Failure mode is non-fatal —
+  // an empty map degrades the chart Y axis to '—' for every row, but
+  // the table + price column still render.
+  let parYieldsByTenor = new Map<string, number>();
+  try {
+    parYieldsByTenor = await runCurveParYieldsByTenor(bundle.constituents, asOfDate, apiKey);
+  } catch (e: any) {
+    console.warn('runCurveParYieldsByTenor threw:', e?.message ?? e);
+  }
+
   return {
-    curveData: bundleToRows(bundle),
+    curveData: bundleToRows(bundle, parYieldsByTenor),
     selectedDate,
     latestBuildableDate: latestBuildableDateStr,
     asofWasDefaulted,
