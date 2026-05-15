@@ -1,0 +1,47 @@
+name: playwright
+
+# Per-page render smokes — separate workflow file (kept out of test.yml
+# to avoid cross-branch noise; see PR #176 ownership boundary).
+#
+# Specs in tests/e2e/. The auth setup detects an unreachable broker and
+# the suite skips cleanly when no stack is provisioned (see
+# tests/e2e/auth.setup.ts). The job is wired in now so when CI-side
+# stack provisioning lands the smokes activate without further changes.
+#
+# See processes/test-discipline.md (UI per-page-render-smoke pattern,
+# second-brain#297 + #311).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: e2e per-page render smokes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: npm ci
+        run: npm ci --ignore-scripts
+
+      - name: Install Playwright browsers (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: svelte-kit sync
+        run: npx svelte-kit sync
+
+      - name: playwright test
+        run: npx playwright test --reporter=github
