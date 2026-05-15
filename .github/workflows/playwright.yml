@@ -1,21 +1,28 @@
 name: playwright
 
-# Per-page render smokes — separate workflow file (kept out of test.yml
-# to avoid cross-branch noise; see PR #176 ownership boundary).
+# Per-page render smokes (per-loader smoke equivalent for the UI; see
+# processes/test-discipline.md, second-brain#297 + #311).
 #
-# Specs in tests/e2e/. The auth setup detects an unreachable broker and
-# the suite skips cleanly when no stack is provisioned (see
-# tests/e2e/auth.setup.ts). The job is wired in now so when CI-side
-# stack provisioning lands the smokes activate without further changes.
+# Trigger is workflow_dispatch ONLY today. The specs in tests/e2e/ all
+# depend on the `auth.setup.ts` setup project, which writes
+# playwright/.auth/user.json after authenticating against a real broker
+# on 127.0.0.1:80. CI does not yet provision the gRPC stack
+# (postgres + 4 services + ui dev server), so the setup project skips
+# itself when the broker is unreachable, the storageState file is never
+# written, and every dependent spec fails with ENOENT — 63 noise
+# failures, no real signal.
 #
-# See processes/test-discipline.md (UI per-page-render-smoke pattern,
-# second-brain#297 + #311).
+# Wiring on `pull_request` is one PR away once CI gets the stack:
+# add `pull_request: { branches: [main] }` and `push: { branches:
+# [main] }` to the `on:` block. Until then, run on demand via the
+# Actions tab → "playwright" → "Run workflow", or locally against the
+# running services.sh stack.
+#
+# Manual run prerequisites: same as local — broker on :80, ui-service
+# on :443, ledger-service on :8082, valuation-service on :8080.
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
