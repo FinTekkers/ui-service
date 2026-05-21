@@ -33,9 +33,13 @@ if (!logFile) {
   // (which file is current vs. rotated) lives in the rotating-file-stream
   // module — we just write to it.
   const { createStream } = await import('rotating-file-stream');
+  // Size-triggered rotation with a hard 100 MB cap on the active file and
+  // a single retained rotated sibling — meets the #332 100 MB-per-service
+  // total target. rotating-file-stream supports `size` natively, so unlike
+  // the Rust services (tracing-appender, time-only) this is a hard cap.
   const stream = createStream(basename(logFile), {
-    interval: '1d',
-    maxFiles: 7,
+    size: '100M',
+    maxFiles: 1,
     path: dirname(logFile),
     compress: 'gzip',
   });
