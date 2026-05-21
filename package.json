@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev --host --port 443",
+		"dev:rotated": "node scripts/log-rotate.mjs vite dev --host --port 443",
 		"dev:debug": "node --inspect-brk=0.0.0.0:9229 ./node_modules/vite/bin/vite.js dev --host --port 443",
 		"build": "vite build",
 		"preview": "vite preview --host --port 443",
@@ -101,6 +102,7 @@
 		"postcss": "^8.4.32",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.8.1",
+		"rotating-file-stream": "^3.2.5",
 		"svelte": "^3.54.0",
 		"svelte-check": "^3.0.1",
 		"svelte-jester": "^3.0.0",
