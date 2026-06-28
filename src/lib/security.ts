@@ -111,20 +111,113 @@ export function productTypeNameOf(security: Security): string {
   return found?.[0] ?? 'UNKNOWN_PRODUCT_TYPE';
 }
 
-// Identifier lookup helpers. The wrapper's typed lookup
-// `Security.getIdentifierByType(type)` returns `Identifier | undefined`,
-// which lets callers express the canonical "CUSIP, else ISIN, else
-// fall back to UUID" chain inline. These helpers package that chain so
-// the call sites stay short.
+// Identifier helpers.
+//
+// `identifierString` is for display — it joins every identifier value
+// attached to the security (comma-separated). Single-identifier rows
+// look identical to the pre-fix behavior; multi-identifier rows (e.g. a
+// Treasury with both CUSIP and ISIN) surface both rather than picking
+// one and hiding the other. The UUID hex only appears when the security
+// genuinely has no identifiers — a data-hygiene marker, not a default.
+//
+// `primaryIdentifier` is for code paths that need a single identifier
+// (lookups, search filters, the per-row identifierType column on the
+// /data/securities grid). It dispatches per product family — bonds
+// prefer CUSIP→ISIN, equities prefer EXCH_TICKER, etc. — and falls back
+// to the first present identifier before returning undefined.
+//
+// #313: the pre-fix `identifierString` hardcoded CUSIP→ISIN→UUID, which
+// silently rendered the UUID hex on /data/securities + every downstream
+// consumer for every non-bond product (equities, indices, currencies).
+const BOND_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.CUSIP, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI];
+const EQUITY_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.EXCH_TICKER, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI, IdentifierTypeProto.CUSIP];
+const INDEX_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.SERIES_ID, IdentifierTypeProto.INDEX_NAME];
+const CURRENCY_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.CASH];
+const COMMODITY_OR_CRYPTO_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.EXCH_TICKER, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI];
+
+function preferenceOrderFor(productType: number): readonly IdentifierTypeProto[] {
+  switch (productType) {
+    // Bond family — CUSIP first (the US convention; non-US bonds in
+    // the ledger today still get CUSIPs from FedInvest / dealer feeds
+    // where present, ISIN as the international fallback).
+    case ProductTypeProto.TBILL:
+    case ProductTypeProto.TREASURY_NOTE:
+    case ProductTypeProto.TREASURY_BOND:
+    case ProductTypeProto.TIPS:
+    case ProductTypeProto.TREASURY_FRN:
+    case ProductTypeProto.STRIPS:
+    case ProductTypeProto.SOVEREIGN_BOND:
+    case ProductTypeProto.CORP_BOND:
+    case ProductTypeProto.MUNI_BOND:
+    case ProductTypeProto.MORTGAGE_BACKED:
+      return BOND_ORDER;
+    // Equity family — exchange ticker first.
+    case ProductTypeProto.COMMON_STOCK:
+    case ProductTypeProto.PREFERRED_STOCK:
+    case ProductTypeProto.ADR:
+    case ProductTypeProto.ETF:
+      return EQUITY_ORDER;
+    // Index family — SERIES_ID first, INDEX_NAME as the human-readable
+    // fallback for the few indices that don't carry a programmatic ID.
+    case ProductTypeProto.EQUITY_INDEX:
+    case ProductTypeProto.BOND_INDEX:
+    case ProductTypeProto.COMMODITY_INDEX:
+    case ProductTypeProto.VIX_SPOT:
+    case ProductTypeProto.CPI_SERIES:
+    case ProductTypeProto.SOFR_SERIES:
+      return INDEX_ORDER;
+    // Currency family — CASH identifier carries the 3-letter code.
+    case ProductTypeProto.CURRENCY:
+    case ProductTypeProto.FX_SPOT:
+    case ProductTypeProto.MONEY_MARKET_FUND:
+      return CURRENCY_ORDER;
+    // Crypto / commodity — exchange ticker is the dominant convention.
+    case ProductTypeProto.CRYPTOCURRENCY:
+    case ProductTypeProto.STABLECOIN:
+    case ProductTypeProto.GOLD:
+    case ProductTypeProto.SILVER:
+      return COMMODITY_OR_CRYPTO_ORDER;
+    default:
+      return BOND_ORDER;
+  }
+}
+
 export function primaryIdentifier(security: Security): Identifier | undefined {
-  return (
-    security.getIdentifierByType(IdentifierTypeProto.CUSIP) ??
-    security.getIdentifierByType(IdentifierTypeProto.ISIN)
-  );
+  // Skip the wrapper's typed lookup on link-mode Securities (it throws);
+  // index lookthrough fan-out hands us those mid-pipeline.
+  if (security.proto.getIsLink()) return undefined;
+
+  const productType = security.proto.getProductType();
+  const order = preferenceOrderFor(productType);
+
+  for (const type of order) {
+    const found = security.getIdentifierByType(type);
+    if (found) return found;
+  }
+
+  // Per-family preference list missed — try any other identifier present
+  // before falling back to the UUID. Catches off-convention writes (e.g.
+  // an equity row that only got an OSI for some reason) so the user
+  // sees a human-readable string instead of UUID hex.
+  const all = security.getIdentifiers();
+  if (all.length > 0) return all[0];
+  return undefined;
 }
 
 export function identifierString(security: Security): string {
-  return primaryIdentifier(security)?.getIdentifierValue() ?? security.getID().toString();
+  // Skip the typed-list lookup on link-mode Securities (wrapper throws);
+  // index lookthrough fan-out hands us those mid-pipeline. Fall through
+  // to the UUID, which is the only field a link-mode row carries.
+  if (security.proto.getIsLink()) return security.getID().toString();
+
+  const ids = security.getIdentifiers();
+  if (ids.length === 0) return security.getID().toString();
+  return ids.map((id) => id.getIdentifierValue()).join(', ');
 }
 
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
