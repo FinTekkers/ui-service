@@ -8,6 +8,7 @@ import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/mod
 import { CouponTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb.js';
 import { CouponFrequencyProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb.js';
 import index_type_pkg from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb.js';
+import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb.js';
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb.js';
 import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
 import field_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
@@ -21,7 +22,6 @@ import FloatingRateNote from '@fintekkers/ledger-models/node/wrappers/models/sec
 import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
 import { Decimal } from 'decimal.js';
 import { getServiceConnection } from '$lib/grpc-auth';
-import { buildIdentifierProto } from '$lib/security';
 
 const { MeasureProto } = measure_pkg;
 const { FieldProto } = field_pkg;
@@ -172,12 +172,9 @@ function parseCashflows(response: any): CashflowEntry[] {
 
 async function buildSecurityProtoFromCusip(cusip: string, apiKey?: string): Promise<SecurityProto> {
   const filter = new PositionFilter();
-  // #347/#27: route through buildIdentifierProto so an UNKNOWN type
-  // (or empty value) throws instead of hitting the wire silently.
-  const identifierProto = buildIdentifierProto({
-    type: IdentifierTypeProto.CUSIP,
-    value: cusip,
-  });
+  const identifierProto = new IdentifierProto()
+    .setIdentifierType(IdentifierTypeProto.CUSIP)
+    .setIdentifierValue(cusip.trim());
   filter.addObjectFilter(FieldProto.IDENTIFIER, new Identifier(identifierProto));
 
   const conn = getServiceConnection(apiKey);

@@ -111,9 +111,8 @@ export function productTypeNameOf(security: Security): string {
   return found?.[0] ?? 'UNKNOWN_PRODUCT_TYPE';
 }
 
-// #347 (clean redo of #313): identifier display + outgoing-write guard.
+// #347 (clean redo of #313): identifier display contract.
 //
-// Display contract:
 //   - primaryIdentifier(security) returns the best typed identifier per
 //     product family (bonds → CUSIP→ISIN, equities → EXCH_TICKER, indices
 //     → SERIES_ID, currencies → CASH, etc.); falls back to any other
@@ -131,7 +130,9 @@ export function productTypeNameOf(security: Security): string {
 // UNKNOWN_IDENTIFIER_TYPE = 0 is the proto3 default. Any identifier
 // carrying that type is treated as missing — it never came from a
 // loader that knew what kind of identifier it was writing, and rendering
-// its value as if it were canonical would be misleading.
+// its value as if it were canonical would be misleading. The matching
+// outgoing-write guard lives in the ledger-models library (handled by
+// ledger-models-dev), not here.
 
 /** Sentinel returned by identifierString when no typed identifier is
  *  present on the Security — the data-quality flag for #347. */
@@ -227,33 +228,6 @@ export function identifierString(security: Security): string {
 
 export function hasMissingIdentifier(security: Security): boolean {
   return primaryIdentifier(security) === undefined;
-}
-
-/**
- * Outgoing-identifier guard (#347 / #27). The UI must never construct
- * an IdentifierProto with UNKNOWN_IDENTIFIER_TYPE (proto3 default = 0)
- * — that's the loader bug that put UUID-hex rows on /data/securities
- * in the first place. Wrap every `new IdentifierProto()...` site in
- * this helper so a regression throws loudly instead of silently
- * shipping a typeless identifier to the ledger.
- */
-export function buildIdentifierProto(opts: {
-  type: IdentifierTypeProto;
-  value: string;
-}): IdentifierProto {
-  if (opts.type === IdentifierTypeProto.UNKNOWN_IDENTIFIER_TYPE) {
-    throw new Error(
-      '[#347/#27] Refusing to construct an identifier with UNKNOWN_IDENTIFIER_TYPE. ' +
-      'Pick a typed identifier (CUSIP, EXCH_TICKER, ISIN, SERIES_ID, CASH, …) instead.',
-    );
-  }
-  const trimmed = (opts.value ?? '').trim();
-  if (trimmed === '') {
-    throw new Error('[#347/#27] Refusing to construct an identifier with an empty value.');
-  }
-  return new IdentifierProto()
-    .setIdentifierType(opts.type)
-    .setIdentifierValue(trimmed);
 }
 
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
@@ -362,12 +336,8 @@ export async function FetchSecurity(
   }
 
   if (identifier && identifier.trim() !== "") {
-    // #347/#27 guard: refuse to send an UNKNOWN-typed identifier on the
-    // wire. identifierTypeNameToProto defaults to CUSIP for inputs not
-    // in IDENTIFIER_TYPE_NAMES, so we never hit the throw on the URL
-    // path today — the guard is regression-prevention.
     const idType = identifierTypeNameToProto(identifierType ?? 'CUSIP');
-    const identifierProto = buildIdentifierProto({ type: idType, value: identifier });
+    const identifierProto = new IdentifierProto().setIdentifierType(idType).setIdentifierValue(identifier.trim());
     filterSecurity.addObjectFilter(FieldProto.IDENTIFIER, new Identifier(identifierProto));
   }
 

@@ -18,9 +18,9 @@ import measurePkg from '@fintekkers/ledger-models/node/fintekkers/models/positio
 const { MeasureProto } = measurePkg;
 import positionPkg from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js';
 const { PositionTypeProto, PositionViewProto } = positionPkg;
+import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
 import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
 import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
-import { buildIdentifierProto } from '$lib/security';
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 // M5 / #260: SecurityTypeProto retired. Bond narrowing via wrapper
 // helper; product-type display string via Security.getProductType().
@@ -137,14 +137,11 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
 
       const quantity = position.getMeasureValue(MeasureProto.DIRECTED_QUANTITY);
 
-      // Fetch security by identifier. #347/#27: build via the guarded
-      // helper so an UNKNOWN type (or empty string) throws here rather
-      // than going out over the wire as a typeless identifier.
+      // Fetch security by identifier
       const securityFilter = new PositionFilter();
-      const identifierProto = buildIdentifierProto({
-        type: IdentifierTypeProto.CUSIP,
-        value: identifierStr,
-      });
+      const identifierProto = new IdentifierProto()
+        .setIdentifierType(IdentifierTypeProto.CUSIP)
+        .setIdentifierValue(identifierStr);
       const identifier = new Identifier(identifierProto);
       securityFilter.addObjectFilter(FieldProto.IDENTIFIER, identifier);
 

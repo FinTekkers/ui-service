@@ -1,5 +1,6 @@
 /**
- * Unit tests for #347 (clean redo of #313):
+ * Unit tests for #347 (clean redo of #313) — DISPLAY ONLY.
+ *
  *   - identifierString never returns a bare UUID. When no typed
  *     identifier is present it returns MISSING_IDENTIFIER_MARKER
  *     ('UNKNOWN') so the data-quality issue surfaces in the grid.
@@ -7,8 +8,10 @@
  *     equities → EXCH_TICKER, indices → SERIES_ID, currencies → CASH,
  *     crypto/commodity → EXCH_TICKER) and skips UNKNOWN-typed entries.
  *   - hasMissingIdentifier surfaces the boolean for UI flags.
- *   - buildIdentifierProto refuses to construct an outgoing identifier
- *     with UNKNOWN_IDENTIFIER_TYPE (the #347/#27 client-side guard).
+ *
+ * The matching outgoing-write guard for UNKNOWN_IDENTIFIER_TYPE lives
+ * in the ledger-models library (ledger-models-dev's #347 work), not in
+ * the UI — that scope is intentionally out of this file.
  */
 import { describe, expect, test } from 'vitest';
 import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
@@ -22,7 +25,6 @@ import {
   primaryIdentifier,
   identifierString,
   hasMissingIdentifier,
-  buildIdentifierProto,
   MISSING_IDENTIFIER_MARKER,
 } from './security';
 
@@ -223,58 +225,3 @@ describe('#347 hasMissingIdentifier — UI data-quality flag', () => {
   });
 });
 
-describe('#347/#27 buildIdentifierProto — client-side outgoing guard', () => {
-  test('throws on UNKNOWN_IDENTIFIER_TYPE', () => {
-    expect(() =>
-      buildIdentifierProto({
-        type: IdentifierTypeProto.UNKNOWN_IDENTIFIER_TYPE,
-        value: 'whatever',
-      }),
-    ).toThrowError(/UNKNOWN_IDENTIFIER_TYPE/);
-  });
-
-  test('throws on empty value', () => {
-    expect(() =>
-      buildIdentifierProto({
-        type: IdentifierTypeProto.CUSIP,
-        value: '',
-      }),
-    ).toThrowError(/empty value/);
-  });
-
-  test('throws on whitespace-only value', () => {
-    expect(() =>
-      buildIdentifierProto({
-        type: IdentifierTypeProto.EXCH_TICKER,
-        value: '   ',
-      }),
-    ).toThrowError(/empty value/);
-  });
-
-  test('trims the value and stamps the chosen type for CUSIP', () => {
-    const proto = buildIdentifierProto({
-      type: IdentifierTypeProto.CUSIP,
-      value: '  91282CQL8  ',
-    });
-    expect(proto.getIdentifierType()).toBe(IdentifierTypeProto.CUSIP);
-    expect(proto.getIdentifierValue()).toBe('91282CQL8');
-  });
-
-  test('accepts every typed identifier kind the platform models today', () => {
-    const cases: Array<[IdentifierTypeProto, string]> = [
-      [IdentifierTypeProto.CUSIP, '91282CQL8'],
-      [IdentifierTypeProto.ISIN, 'US91282CQL81'],
-      [IdentifierTypeProto.EXCH_TICKER, 'TSLA'],
-      [IdentifierTypeProto.FIGI, 'BBG000B9XRY4'],
-      [IdentifierTypeProto.SERIES_ID, 'CUSR0000SA0'],
-      [IdentifierTypeProto.OSI, 'TSLA_240119C00200000'],
-      [IdentifierTypeProto.INDEX_NAME, 'S&P 500'],
-      [IdentifierTypeProto.CASH, 'USD'],
-    ];
-    for (const [type, value] of cases) {
-      const proto = buildIdentifierProto({ type, value });
-      expect(proto.getIdentifierType()).toBe(type);
-      expect(proto.getIdentifierValue()).toBe(value);
-    }
-  });
-});
