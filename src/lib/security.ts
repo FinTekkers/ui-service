@@ -111,20 +111,123 @@ export function productTypeNameOf(security: Security): string {
   return found?.[0] ?? 'UNKNOWN_PRODUCT_TYPE';
 }
 
-// Identifier lookup helpers. The wrapper's typed lookup
-// `Security.getIdentifierByType(type)` returns `Identifier | undefined`,
-// which lets callers express the canonical "CUSIP, else ISIN, else
-// fall back to UUID" chain inline. These helpers package that chain so
-// the call sites stay short.
+// #347 (clean redo of #313): identifier display contract.
+//
+//   - primaryIdentifier(security) returns the best typed identifier per
+//     product family (bonds → CUSIP→ISIN, equities → EXCH_TICKER, indices
+//     → SERIES_ID, currencies → CASH, etc.); falls back to any other
+//     typed identifier on the security; returns undefined only when the
+//     security carries no typed identifier at all.
+//   - identifierString(security) returns the chosen identifier's value
+//     or the literal MISSING_IDENTIFIER_MARKER ('UNKNOWN'). It NEVER
+//     returns the UUID hex — a UUID rendered in the Identifier column
+//     is the bug the #347/#313 fix is undoing. Surfacing 'UNKNOWN'
+//     keeps the data-quality issue visible to the user instead of
+//     hiding behind a 36-char hex string that looks like a value.
+//   - hasMissingIdentifier(security) is the boolean form for UI flags
+//     (icons / banners on /data/securities + downstream grids).
+//
+// UNKNOWN_IDENTIFIER_TYPE = 0 is the proto3 default. Any identifier
+// carrying that type is treated as missing — it never came from a
+// loader that knew what kind of identifier it was writing, and rendering
+// its value as if it were canonical would be misleading. The matching
+// outgoing-write guard lives in the ledger-models library (handled by
+// ledger-models-dev), not here.
+
+/** Sentinel returned by identifierString when no typed identifier is
+ *  present on the Security — the data-quality flag for #347. */
+export const MISSING_IDENTIFIER_MARKER = 'UNKNOWN';
+
+const BOND_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.CUSIP, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI];
+const EQUITY_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.EXCH_TICKER, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI, IdentifierTypeProto.CUSIP];
+const INDEX_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.SERIES_ID, IdentifierTypeProto.INDEX_NAME];
+const CURRENCY_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.CASH];
+const COMMODITY_OR_CRYPTO_ORDER: readonly IdentifierTypeProto[] =
+  [IdentifierTypeProto.EXCH_TICKER, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI];
+
+function preferenceOrderFor(productType: number): readonly IdentifierTypeProto[] {
+  switch (productType) {
+    case ProductTypeProto.TBILL:
+    case ProductTypeProto.TREASURY_NOTE:
+    case ProductTypeProto.TREASURY_BOND:
+    case ProductTypeProto.TIPS:
+    case ProductTypeProto.TREASURY_FRN:
+    case ProductTypeProto.STRIPS:
+    case ProductTypeProto.SOVEREIGN_BOND:
+    case ProductTypeProto.CORP_BOND:
+    case ProductTypeProto.MUNI_BOND:
+    case ProductTypeProto.MORTGAGE_BACKED:
+      return BOND_ORDER;
+    case ProductTypeProto.COMMON_STOCK:
+    case ProductTypeProto.PREFERRED_STOCK:
+    case ProductTypeProto.ADR:
+    case ProductTypeProto.ETF:
+      return EQUITY_ORDER;
+    case ProductTypeProto.EQUITY_INDEX:
+    case ProductTypeProto.BOND_INDEX:
+    case ProductTypeProto.COMMODITY_INDEX:
+    case ProductTypeProto.VIX_SPOT:
+    case ProductTypeProto.CPI_SERIES:
+    case ProductTypeProto.SOFR_SERIES:
+      return INDEX_ORDER;
+    case ProductTypeProto.CURRENCY:
+    case ProductTypeProto.FX_SPOT:
+    case ProductTypeProto.MONEY_MARKET_FUND:
+      return CURRENCY_ORDER;
+    case ProductTypeProto.CRYPTOCURRENCY:
+    case ProductTypeProto.STABLECOIN:
+    case ProductTypeProto.GOLD:
+    case ProductTypeProto.SILVER:
+      return COMMODITY_OR_CRYPTO_ORDER;
+    default:
+      return BOND_ORDER;
+  }
+}
+
+function isTypedIdentifier(id: Identifier): boolean {
+  // Any identifier whose type is proto3's default (0 / UNKNOWN_IDENTIFIER_TYPE)
+  // is a data-quality miss — the loader didn't know what kind of identifier
+  // it was writing. Skip it so the search keeps looking for a real typed one.
+  return id.getIdentifierType() !== IdentifierTypeProto.UNKNOWN_IDENTIFIER_TYPE;
+}
+
 export function primaryIdentifier(security: Security): Identifier | undefined {
-  return (
-    security.getIdentifierByType(IdentifierTypeProto.CUSIP) ??
-    security.getIdentifierByType(IdentifierTypeProto.ISIN)
-  );
+  // Skip the wrapper's typed lookup on link-mode Securities (it throws);
+  // index lookthrough fan-out hands us those mid-pipeline.
+  if (security.proto.getIsLink()) return undefined;
+
+  const productType = security.proto.getProductType();
+  const order = preferenceOrderFor(productType);
+
+  for (const type of order) {
+    const found = security.getIdentifierByType(type);
+    if (found && isTypedIdentifier(found)) return found;
+  }
+
+  // Off-convention writes — an equity with only an OSI, etc. Pick any
+  // present typed identifier before giving up. UNKNOWN-typed entries
+  // are skipped here too so we never surface a value that lacks a type.
+  for (const id of security.getIdentifiers()) {
+    if (isTypedIdentifier(id)) return id;
+  }
+
+  return undefined;
 }
 
 export function identifierString(security: Security): string {
-  return primaryIdentifier(security)?.getIdentifierValue() ?? security.getID().toString();
+  // Never return security.getID().toString() (the UUID hex). The whole
+  // point of the fix is that a UUID is not an identifier — it's an
+  // internal handle. If the security has no typed identifier, render
+  // the MISSING_IDENTIFIER_MARKER so the data gap is visible.
+  return primaryIdentifier(security)?.getIdentifierValue() ?? MISSING_IDENTIFIER_MARKER;
+}
+
+export function hasMissingIdentifier(security: Security): boolean {
+  return primaryIdentifier(security) === undefined;
 }
 
 function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
@@ -348,8 +451,13 @@ export async function FetchSecurity(
 
         {
           const outstandingAmount = issuance?.getPostAuctionOutstandingQuantity()?.toString() ?? '0';
+          // #347: never fall through to the UUID hex. identifierString
+          // returns MISSING_IDENTIFIER_MARKER ('UNKNOWN') when no typed
+          // identifier is present, which keeps the data-quality issue
+          // visible in the grid rather than masquerading as a value.
+          // The UUID stays available on `uuidStr` below for ops paths.
           const ident = primaryIdentifier(security);
-          const id = ident?.getIdentifierValue() ?? security.getID().toString();
+          const id = identifierString(security);
           const idTypeNum = ident?.getIdentifierType() ?? 0;
           const identifierTypeStr =
             idTypeNum === IdentifierTypeProto.CUSIP       ? 'CUSIP' :
@@ -496,9 +604,18 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
     const ident = primaryIdentifier(security);
     const idTypeNum = ident?.getIdentifierType() ?? 0;
     const identifierTypeStr =
-      idTypeNum === IdentifierTypeProto.CUSIP ? 'CUSIP' :
-      idTypeNum === IdentifierTypeProto.ISIN  ? 'ISIN'  : 'UNKNOWN';
-    const id = ident?.getIdentifierValue() ?? security.getID().toString();
+      idTypeNum === IdentifierTypeProto.CUSIP       ? 'CUSIP' :
+      idTypeNum === IdentifierTypeProto.ISIN        ? 'ISIN'  :
+      idTypeNum === IdentifierTypeProto.EXCH_TICKER ? 'EXCH_TICKER' :
+      idTypeNum === IdentifierTypeProto.FIGI        ? 'FIGI' :
+      idTypeNum === IdentifierTypeProto.SERIES_ID   ? 'SERIES_ID' :
+      idTypeNum === IdentifierTypeProto.OSI         ? 'OSI' :
+      idTypeNum === IdentifierTypeProto.INDEX_NAME  ? 'INDEX_NAME' :
+      idTypeNum === IdentifierTypeProto.CASH        ? 'CASH' : 'UNKNOWN';
+    // #347: never fall through to UUID hex. identifierString emits
+    // MISSING_IDENTIFIER_MARKER for typeless rows so they show as a
+    // data-quality flag in the grid instead of a fake value.
+    const id = identifierString(security);
     const uuidProto = security.proto.getUuid();
     const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
     const uuidStr = security.getID().toString();
