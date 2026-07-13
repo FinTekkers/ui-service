@@ -112,22 +112,51 @@ def deploy_code_to_instance(instance_id: str) -> bool:
         "pwd",
         "pwd",
         "cd /home/ec2-user/ui-service;npm install",
-        # Build the production server, the variables are required to build
-        # TEMP HACK TODO TODO TODO ###############"cd /home/ec2-user/ui-service;GOOGLE_CLIENT_ID=MISSING GOOGLE_CLIENT_SECRET=MISSING npm run build",
-        # Set the port to be 443. Note this is running HTTP server but running on HTTPS port.
-        # The load balancer on AWS will add the encryption/certificate termination and forward
-        # to this port. We could expose to port 80, but the broker is already using that port
-        # Run the production server
-        # CONTACT_GMAIL_APP_PASSWORD contains spaces (the 4×4 group
-        # format Google emits), so single-quote-wrap it inside the
-        # outer double-quoted pm2 start argument.
-        'cd /home/ec2-user/ui-service;sudo PORT=443 ORIGIN=https://www.fintekkers.org pm2 start "GOOGLE_CLIENT_ID='
+        # #348: run the ACTUAL production build now (adapter-node). The
+        # earlier deploy script fell back to `npm run dev` in prod
+        # because the build was failing — that root cause is fixed in
+        # this commit (contactus template TS-cast + vite.config.ts
+        # ssr.noExternal for ledger-models + transitive proto/grpc deps).
+        # Build needs Google OAuth env vars available at build time
+        # (SvelteKit inlines process.env references into the bundle).
+        'cd /home/ec2-user/ui-service;GOOGLE_CLIENT_ID='
         + GOOGLE_CLIENT_ID
         + " GOOGLE_CLIENT_SECRET="
         + GOOGLE_CLIENT_SECRET
         + f" CONTACT_GMAIL_USER='{CONTACT_GMAIL_USER}'"
         + f" CONTACT_GMAIL_APP_PASSWORD='{CONTACT_GMAIL_APP_PASSWORD}'"
-        + ' npm run dev"',  # Needs sudo to expose host; currently running dev because the build fails... unsure why!!!
+        + " npm run build",
+        # #348 CSRF fix: run `node build` (adapter-node prod server) with
+        #   PROTOCOL_HEADER=x-forwarded-proto
+        #   HOST_HEADER=x-forwarded-host
+        # so SvelteKit computes its origin from what the ALB forwards
+        # (https://www.fintekkers.org) instead of the plain-HTTP hop from
+        # the ALB to Node. Without this, browser Origin=https://... vs
+        # SvelteKit-computed origin=http://... → CSRF 403 on every login
+        # POST. This is safe *only* because (a) the ALB overwrites
+        # X-Forwarded-Proto and X-Forwarded-Host on incoming traffic,
+        # and (b) the Node port on this instance is reachable only via
+        # the ALB target group — do NOT open the instance port to the
+        # public internet, or a client could spoof these headers.
+        # Deliberately dropping the static ORIGIN=... env from the old
+        # command: forwarded-headers covers www + api and survives host
+        # changes (per #348 spec).
+        # Port 443 keeps the target-group config unchanged (ALB → 443).
+        # CONTACT_GMAIL_APP_PASSWORD contains spaces (Google's 4×4 group
+        # format), so single-quote it inside the outer pm2 arg string.
+        'cd /home/ec2-user/ui-service;sudo PORT=443'
+        + " PROTOCOL_HEADER=x-forwarded-proto"
+        + " HOST_HEADER=x-forwarded-host"
+        + ' pm2 start "GOOGLE_CLIENT_ID='
+        + GOOGLE_CLIENT_ID
+        + " GOOGLE_CLIENT_SECRET="
+        + GOOGLE_CLIENT_SECRET
+        + f" CONTACT_GMAIL_USER='{CONTACT_GMAIL_USER}'"
+        + f" CONTACT_GMAIL_APP_PASSWORD='{CONTACT_GMAIL_APP_PASSWORD}'"
+        + " PORT=443"
+        + " PROTOCOL_HEADER=x-forwarded-proto"
+        + " HOST_HEADER=x-forwarded-host"
+        + ' node build"',
     ]
 
     ssh_connect_with_retry(ssh, ip_address, 0)
