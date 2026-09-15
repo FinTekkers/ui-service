@@ -23,7 +23,7 @@
   </span>
   <textarea
     on:focus={() => handleFocus(fieldName)}
-    on:change={(event) => handleChange(fieldName, (event.target as HTMLTextAreaElement).value)}
+    on:change={(event) => handleChange(fieldName, event.currentTarget.value)}
     on:blur={() => handleBlur(fieldName)}
     id={fieldName}
     name={fieldName}

@@ -25,17 +25,6 @@
         });
     };
 
-    // #348: Svelte's template parser (v3/4) doesn't accept inline TS
-    // casts like `(event.target as HTMLInputElement).value` in attribute
-    // expressions, even under `<script lang="ts">`. That's the reason
-    // the build was failing and prod was falling back to `npm run dev`
-    // (see build_deploy.py comment "build fails... unsure why"). Extract
-    // the cast into a script helper so the template stays JS-parseable.
-    const inputChangeValue = (fieldName: string, event: Event) => {
-        const target = event.target as HTMLInputElement | HTMLTextAreaElement | null;
-        handleChange(fieldName, target?.value ?? "");
-    };
-
     // displaying errors from form
     const displayError = (fieldName: string) => {
         isTypingField.update((store) => {
@@ -88,7 +77,8 @@
                 </span>
                 <input
                     on:focus={() => handleFocus("firstname")}
-                    on:change={(event) => inputChangeValue("firstname", event)}
+                    on:change={(event) =>
+                        handleChange("firstname", event.currentTarget.value)}
                     on:blur={() => handleBlur("firstname")}
                     id="firstname"
                     name="firstname"
@@ -114,7 +104,8 @@
                 </span>
                 <input
                     on:focus={() => handleFocus("lastname")}
-                    on:change={(event) => inputChangeValue("lastname", event)}
+                    on:change={(event) =>
+                        handleChange("lastname", event.currentTarget.value)}
                     on:blur={() => handleBlur("lastname")}
                     id="lastname"
                     name="lastname"
@@ -139,7 +130,8 @@
                 </span>
                 <input
                     on:focus={() => handleFocus("email")}
-                    on:change={(event) => inputChangeValue("email", event)}
+                    on:change={(event) =>
+                        handleChange("email", event.currentTarget.value)}
                     on:blur={() => handleBlur("email")}
                     id="email"
                     type="email"
@@ -164,7 +156,8 @@
                 </span>
                 <textarea
                     on:focus={() => handleFocus("message")}
-                    on:change={(event) => inputChangeValue("message", event)}
+                    on:change={(event) =>
+                        handleChange("message", event.currentTarget.value)}
                     on:blur={() => handleBlur("message")}
                     id="message"
                     name="message"
