@@ -3,7 +3,7 @@
 </script>
 
 <main>
-  {#each routes as { id, component (loader) }}
+  {#each routes as { id, component: loader }}
     <div>
       {#await loader}
         Loading...
