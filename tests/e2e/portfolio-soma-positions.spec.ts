@@ -30,20 +30,24 @@
  * unsupported measure 500s the entire stream. Backend gap tracked in
  * second-brain#219.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-const PORTFOLIO_NAME = 'Federal Reserve SOMA Holdings';
+const PORTFOLIO_NAME = "Federal Reserve SOMA Holdings";
 
 // Product types the SOMA seed loads. Hardcoded because the seed is stable; if
 // the seed grows, prefer adding to this list over loosening the assertion.
-const SOMA_PRODUCT_TYPES = ['NOTE', 'BILL', 'BOND', 'CASH'] as const;
+const SOMA_PRODUCT_TYPES = ["NOTE", "BILL", "BOND", "CASH"] as const;
 
-test.describe('/data/portfolios → /data/positions (SOMA)', () => {
-  test('clicking SOMA navigates to its positions and PRODUCT_TYPE aggregates DIRECTED_QUANTITY', async ({ page }) => {
+test.describe("/data/portfolios → /data/positions (SOMA)", () => {
+  test("clicking SOMA navigates to its positions and PRODUCT_TYPE aggregates DIRECTED_QUANTITY", async ({
+    page,
+  }) => {
     // 1. Land on the portfolios index. PortfolioGrid renders one row per
     //    portfolio returned by searchPortfolio.
-    await page.goto('/data/portfolios');
-    await expect(page.getByRole('heading', { name: 'Portfolios' })).toBeVisible();
+    await page.goto("/data/portfolios");
+    await expect(
+      page.getByRole("heading", { name: "Portfolios" })
+    ).toBeVisible();
 
     // M5 / #260: pre-M5 the seed deterministically contained
     // 'Federal Reserve SOMA Holdings'. The #256 clean-slate migration
@@ -53,9 +57,15 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
     // test fails LOUDLY when SOMA is back (catches regressions) but
     // doesn't fail noisily when SOMA isn't there. Reseed is M3
     // (market-data-inputs) scope, tracked on #260 / #256.
-    const somaRow = page.locator('table tbody tr').filter({ hasText: PORTFOLIO_NAME }).first();
+    const somaRow = page
+      .locator("table tbody tr")
+      .filter({ hasText: PORTFOLIO_NAME })
+      .first();
     if ((await somaRow.count()) === 0) {
-      test.skip(true, "SOMA not in seed (M5 clean-slate migration). Reseed via M3 to re-enable.");
+      test.skip(
+        true,
+        "SOMA not in seed (M5 clean-slate migration). Reseed via M3 to re-enable."
+      );
       return;
     }
     await expect(somaRow).toBeVisible();
@@ -63,21 +73,30 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
     // 2. Click the portfolio-name link (the Portfolio column links to
     //    /data/positions?portfolioId=...). The Txns and Delete buttons in the
     //    same row use stopPropagation so they don't trigger this navigation.
-    const positionsLink = somaRow.getByRole('link', { name: PORTFOLIO_NAME });
-    await expect(positionsLink).toHaveAttribute('href', /\/data\/positions\?.*portfolioId=[0-9a-f-]+/);
+    const positionsLink = somaRow.getByRole("link", { name: PORTFOLIO_NAME });
+    await expect(positionsLink).toHaveAttribute(
+      "href",
+      /\/data\/positions\?.*portfolioId=[0-9a-f-]+/
+    );
     await positionsLink.click();
 
     // 3. Land on the positions page. The default URL set by PortfolioGrid uses
     //    fields=SECURITY_DESCRIPTION,PORTFOLIO_NAME — i.e. the flat tax-lot
     //    list, not the PRODUCT_TYPE roll-up.
     await page.waitForURL(/\/data\/positions\?.*portfolioId=[0-9a-f-]+/);
-    const portfolioId = new URL(page.url()).searchParams.get('portfolioId');
-    expect(portfolioId).toMatch(/^[0-9a-f-]{8}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{12}$/);
+    const portfolioId = new URL(page.url()).searchParams.get("portfolioId");
+    expect(portfolioId).toMatch(
+      /^[0-9a-f-]{8}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{12}$/
+    );
 
-    await expect(page.getByRole('heading', { name: 'Positions' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Positions" })).toBeVisible({
+      timeout: 15_000,
+    });
     // The "Back to Portfolios" link is rendered iff portfolioId is in scope —
     // confirms the page-server.ts read the param.
-    await expect(page.getByRole('link', { name: /Back to Portfolios/ })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Back to Portfolios/ })
+    ).toBeVisible();
 
     // 4. Switch to the PRODUCT_TYPE × DIRECTED_QUANTITY view. The position
     //    service aggregates server-side: requesting only PRODUCT_TYPE collapses
@@ -89,33 +108,39 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
     const today = new Date().toISOString().slice(0, 10);
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
-      `&fields=PRODUCT_TYPE` +
-      `&measures=DIRECTED_QUANTITY` +
-      `&positionView=DEFAULT_VIEW` +
-      `&positionType=TRANSACTION` +
-      `&tradeDate=${today}` +
-      `&tradeDateOperator=LESS_THAN_OR_EQUALS` +
-      `&hideZeros=true`,
+        `&fields=PRODUCT_TYPE` +
+        `&measures=DIRECTED_QUANTITY` +
+        `&positionView=DEFAULT_VIEW` +
+        `&positionType=TRANSACTION` +
+        `&tradeDate=${today}` +
+        `&tradeDateOperator=LESS_THAN_OR_EQUALS` +
+        `&hideZeros=true`
     );
 
-    await expect(page.getByRole('heading', { name: 'Positions' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Positions" })).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Header row: one field column + one measure column.
-    const headerCells = page.locator('table thead th');
+    const headerCells = page.locator("table thead th");
     await expect(headerCells).toHaveCount(2);
-    await expect(headerCells.nth(0)).toContainText('Product Type');
-    await expect(headerCells.nth(1)).toContainText('Directed Quantity');
+    await expect(headerCells.nth(0)).toContainText("Product Type");
+    await expect(headerCells.nth(1)).toContainText("Directed Quantity");
 
     // Data rows: PositionGrid emits a `summary-row` after the data rows when
     // sortedPositions.length > 0. Filter to data rows only via the
     // `.table-row` class (set on data <tr>s, not on the summary row).
-    const dataRows = page.locator('table tbody tr.table-row');
-    await expect(dataRows).toHaveCount(SOMA_PRODUCT_TYPES.length, { timeout: 10_000 });
+    const dataRows = page.locator("table tbody tr.table-row");
+    await expect(dataRows).toHaveCount(SOMA_PRODUCT_TYPES.length, {
+      timeout: 10_000,
+    });
 
     // Each known product type appears exactly once.
     for (const productType of SOMA_PRODUCT_TYPES) {
       await expect(
-        dataRows.filter({ has: page.locator('td', { hasText: new RegExp(`^${productType}$`) }) }),
+        dataRows.filter({
+          has: page.locator("td", { hasText: new RegExp(`^${productType}$`) }),
+        })
       ).toHaveCount(1);
     }
 
@@ -126,8 +151,10 @@ test.describe('/data/portfolios → /data/positions (SOMA)', () => {
     // negatives as `-$1,234.56` and positives as `$1,234.56`; the regex
     // accepts either sign.
     for (const productType of SOMA_PRODUCT_TYPES) {
-      const row = dataRows.filter({ has: page.locator('td', { hasText: new RegExp(`^${productType}$`) }) });
-      const valueCell = row.locator('td').nth(1);
+      const row = dataRows.filter({
+        has: page.locator("td", { hasText: new RegExp(`^${productType}$`) }),
+      });
+      const valueCell = row.locator("td").nth(1);
       await expect(valueCell).toHaveText(/^-?\$[1-9][\d,]*\.\d{2}$/);
     }
   });

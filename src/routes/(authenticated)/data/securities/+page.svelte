@@ -2,18 +2,22 @@
   import Security from "../../../../components/widgets/SecurityGrid.svelte";
   import SecurityDetail from "../../../../components/widgets/SecurityDetail.svelte";
   import SecuritySelect from "../../../../components/widgets/SecuritySelect.svelte";
-  import { enhance } from '$app/forms';
+  import { enhance } from "$app/forms";
 
   export let data: import("./$types").PageData;
   export let form: import("./$types").ActionData;
 
   // Delete modal state
   let showModal = false;
-  let deleteTarget: { cusip: string; uuidHex: string; issuerName: string } | null = null;
-  let confirmInput = '';
+  let deleteTarget: {
+    cusip: string;
+    uuidHex: string;
+    issuerName: string;
+  } | null = null;
+  let confirmInput = "";
   let deleteLoading = false;
-  let deleteError = '';
-  let deleteSuccess = '';
+  let deleteError = "";
+  let deleteSuccess = "";
   let dryRunSubmitBtn: HTMLButtonElement;
 
   // Dry-run result from form action
@@ -32,7 +36,9 @@
 
   // Check if warnings mention cross-portfolio impact (requires typing DELETE)
   $: requiresForce = (dryRunResult?.warnings ?? []).some(
-    (w: string) => w.toLowerCase().includes('portfolio') || w.toLowerCase().includes('referenced')
+    (w: string) =>
+      w.toLowerCase().includes("portfolio") ||
+      w.toLowerCase().includes("referenced")
   );
 
   // Auto-submit dry-run when deleteTarget is set
@@ -40,18 +46,20 @@
     setTimeout(() => dryRunSubmitBtn?.click(), 0);
   }
 
-  function handleRequestDelete(e: CustomEvent<{ cusip: string; uuidHex: string; issuerName: string }>) {
+  function handleRequestDelete(
+    e: CustomEvent<{ cusip: string; uuidHex: string; issuerName: string }>
+  ) {
     deleteTarget = e.detail;
-    deleteError = '';
-    deleteSuccess = '';
-    confirmInput = '';
+    deleteError = "";
+    deleteSuccess = "";
+    confirmInput = "";
   }
 
   function closeModal() {
     showModal = false;
     deleteTarget = null;
-    confirmInput = '';
-    deleteError = '';
+    confirmInput = "";
+    deleteError = "";
   }
 
   function handleDeleteSuccess() {
@@ -59,7 +67,9 @@
     deleteSuccess = `Security ${deleteTarget?.cusip} deleted successfully.`;
     deleteTarget = null;
     // Refresh page to reload securities list
-    setTimeout(() => { window.location.reload(); }, 1500);
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   }
 </script>
 
@@ -86,25 +96,46 @@
 
 <!-- Dry-run form (hidden, auto-submitted when delete button clicked) -->
 {#if deleteTarget && !showModal}
-  <form method="POST" action="?/dryRun" use:enhance={() => {
-    deleteLoading = true;
-    return async ({ update }) => { await update(); };
-  }}>
+  <form
+    method="POST"
+    action="?/dryRun"
+    use:enhance={() => {
+      deleteLoading = true;
+      return async ({ update }) => {
+        await update();
+      };
+    }}
+  >
     <input type="hidden" name="uuidHex" value={deleteTarget.uuidHex} />
-    <button type="submit" class="hidden-submit" bind:this={dryRunSubmitBtn}></button>
+    <button type="submit" class="hidden-submit" bind:this={dryRunSubmitBtn} />
   </form>
 {/if}
 
 <!-- Confirmation Modal -->
 {#if showModal && dryRunResult && deleteTarget}
-  <div class="modal-overlay" on:click={closeModal} on:keydown={(e) => e.key === 'Escape' && closeModal()}>
-    <div class="modal-content" on:click|stopPropagation role="dialog" aria-modal="true">
+  <div
+    class="modal-overlay"
+    on:click={closeModal}
+    on:keydown={(e) => e.key === "Escape" && closeModal()}
+  >
+    <div
+      class="modal-content"
+      on:click|stopPropagation
+      role="dialog"
+      aria-modal="true"
+    >
       <h3 class="modal-title">Delete Security</h3>
-      <p class="modal-question">Are you sure you want to delete <strong>{deleteTarget.cusip}</strong> ({deleteTarget.issuerName})?</p>
+      <p class="modal-question">
+        Are you sure you want to delete <strong>{deleteTarget.cusip}</strong>
+        ({deleteTarget.issuerName})?
+      </p>
 
       {#if dryRunResult.totalCount > 1}
         <div class="affected-summary">
-          {dryRunResult.totalCount - 1} related {dryRunResult.totalCount - 1 === 1 ? 'entity' : 'entities'} will also be affected
+          {dryRunResult.totalCount - 1} related {dryRunResult.totalCount - 1 ===
+          1
+            ? "entity"
+            : "entities"} will also be affected
         </div>
       {/if}
 
@@ -113,7 +144,9 @@
           <strong>Affected entities:</strong>
           <ul>
             {#each dryRunResult.affectedEntities as entity}
-              <li>{entity.description || `Entity type ${entity.entityType}`}</li>
+              <li>
+                {entity.description || `Entity type ${entity.entityType}`}
+              </li>
             {/each}
           </ul>
         </div>
@@ -132,8 +165,16 @@
 
       {#if requiresForce}
         <div class="force-confirm">
-          <label for="confirmDelete">Type <strong>DELETE</strong> to confirm (this security is referenced by other entities):</label>
-          <input id="confirmDelete" type="text" bind:value={confirmInput} placeholder="DELETE" />
+          <label for="confirmDelete"
+            >Type <strong>DELETE</strong> to confirm (this security is referenced
+            by other entities):</label
+          >
+          <input
+            id="confirmDelete"
+            type="text"
+            bind:value={confirmInput}
+            placeholder="DELETE"
+          />
         </div>
       {/if}
 
@@ -143,25 +184,38 @@
 
       <div class="modal-actions">
         <button class="btn-cancel" on:click={closeModal}>Cancel</button>
-        <form method="POST" action="?/confirmDelete" use:enhance={() => {
-          deleteLoading = true;
-          return async ({ result, update }) => {
-            if (result.type === 'success' && result.data?.deleteResult?.success) {
-              handleDeleteSuccess();
-            } else {
-              deleteError = result.data?.deleteResult?.error ?? 'Delete failed';
-              deleteLoading = false;
-            }
-          };
-        }}>
+        <form
+          method="POST"
+          action="?/confirmDelete"
+          use:enhance={() => {
+            deleteLoading = true;
+            return async ({ result, update }) => {
+              if (
+                result.type === "success" &&
+                result.data?.deleteResult?.success
+              ) {
+                handleDeleteSuccess();
+              } else {
+                deleteError =
+                  result.data?.deleteResult?.error ?? "Delete failed";
+                deleteLoading = false;
+              }
+            };
+          }}
+        >
           <input type="hidden" name="uuidHex" value={deleteTarget.uuidHex} />
-          <input type="hidden" name="force" value={requiresForce ? 'true' : 'false'} />
+          <input
+            type="hidden"
+            name="force"
+            value={requiresForce ? "true" : "false"}
+          />
           <button
             type="submit"
             class="btn-delete"
-            disabled={deleteLoading || (requiresForce && confirmInput !== 'DELETE')}
+            disabled={deleteLoading ||
+              (requiresForce && confirmInput !== "DELETE")}
           >
-            {deleteLoading ? 'Deleting...' : 'Delete'}
+            {deleteLoading ? "Deleting..." : "Delete"}
           </button>
         </form>
       </div>
@@ -226,7 +280,9 @@
     font-size: 0.9rem;
     margin-bottom: 16px;
 
-    strong { color: #7cd2ba; }
+    strong {
+      color: #7cd2ba;
+    }
   }
 
   .affected-summary {
@@ -238,18 +294,24 @@
     color: #fbbf24;
   }
 
-  .affected-list, .warnings-box {
+  .affected-list,
+  .warnings-box {
     margin-bottom: 12px;
     font-size: 0.8rem;
 
-    strong { display: block; margin-bottom: 4px; }
+    strong {
+      display: block;
+      margin-bottom: 4px;
+    }
 
     ul {
       margin: 0;
       padding-left: 1.2em;
       list-style: disc;
 
-      li { margin-bottom: 2px; }
+      li {
+        margin-bottom: 2px;
+      }
     }
   }
 
@@ -268,7 +330,9 @@
       display: block;
       font-size: 0.8rem;
       margin-bottom: 6px;
-      strong { color: #c43d5a; }
+      strong {
+        color: #c43d5a;
+      }
     }
 
     input {
@@ -308,7 +372,9 @@
     font-size: 0.85rem;
     cursor: pointer;
 
-    &:hover { background-color: rgba(255, 255, 255, 0.1); }
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
   }
 
   .btn-delete {
@@ -321,7 +387,12 @@
     font-weight: 600;
     cursor: pointer;
 
-    &:hover:not(:disabled) { background-color: #a33049; }
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:hover:not(:disabled) {
+      background-color: #a33049;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 </style>

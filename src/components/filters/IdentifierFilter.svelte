@@ -23,22 +23,23 @@
    * to encode both layouts; two pages composing one primitive is a smaller
    * abstraction.
    */
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
   import {
     IDENTIFIER_TYPE_NAMES,
     IDENTIFIER_TYPE_LABELS,
     IDENTIFIER_TYPE_PLACEHOLDERS,
     type IdentifierTypeName,
-  } from '$lib/securityFilterTypes';
+  } from "$lib/securityFilterTypes";
 
   // Two-way bindings — parent owns the state.
-  export let identifierType: IdentifierTypeName = 'CUSIP';
-  export let identifier: string = '';
+  export let identifierType: IdentifierTypeName = "CUSIP";
+  export let identifier: string = "";
 
   // Subset of types this consumer wants. Default = all known types.
   // /data/prices passes ['CUSIP','ISIN','EXCH_TICKER','SERIES_ID']; securities
   // passes the full list (or omits this prop).
-  export let supportedTypes: readonly IdentifierTypeName[] = IDENTIFIER_TYPE_NAMES;
+  export let supportedTypes: readonly IdentifierTypeName[] =
+    IDENTIFIER_TYPE_NAMES;
 
   // Built-in human-friendly labels + per-type placeholder hints. Defaults
   // live in $lib/securityFilterTypes (single source for the proto-enum
@@ -56,21 +57,24 @@
   // styling. SecuritySelect has its own .filter-input styling; prices uses
   // .cusip-input. Pass-through avoids duplicating layout rules in the
   // primitive.
-  export let inputClass: string = '';
-  export let selectClass: string = '';
-  export let inputId: string = 'identifier-filter-value';
+  export let inputClass: string = "";
+  export let selectClass: string = "";
+  export let inputId: string = "identifier-filter-value";
 
   $: resolvedLabels = { ...IDENTIFIER_TYPE_LABELS, ...labels };
-  $: resolvedPlaceholders = { ...IDENTIFIER_TYPE_PLACEHOLDERS, ...placeholders };
+  $: resolvedPlaceholders = {
+    ...IDENTIFIER_TYPE_PLACEHOLDERS,
+    ...placeholders,
+  };
   $: currentPlaceholder = resolvedPlaceholders[identifierType];
 
   const dispatch = createEventDispatcher<{ typeChange: IdentifierTypeName }>();
 
   function handleTypeChange() {
     if (clearOnTypeChange) {
-      identifier = '';
+      identifier = "";
     }
-    dispatch('typeChange', identifierType);
+    dispatch("typeChange", identifierType);
   }
 </script>
 

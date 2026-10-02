@@ -1,23 +1,37 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount } from "svelte";
 
-  export let data: { curveData: Array<{
-    tenor: string; cusip: string; description: string;
-    issueDate: string; maturityDate: string; couponRate: number;
-    cleanPrice: number | null;
-    // #305 part B: par yield from RunCurve, joined by tenor.
-    parYield: number | null;
-  }>; selectedDate: string; latestBuildableDate: string | null;
-    asofWasDefaulted: boolean; user?: any };
+  export let data: {
+    curveData: Array<{
+      tenor: string;
+      cusip: string;
+      description: string;
+      issueDate: string;
+      maturityDate: string;
+      couponRate: number;
+      cleanPrice: number | null;
+      // #305 part B: par yield from RunCurve, joined by tenor.
+      parYield: number | null;
+    }>;
+    selectedDate: string;
+    latestBuildableDate: string | null;
+    asofWasDefaulted: boolean;
+    user?: any;
+  };
 
   $: curveData = data.curveData ?? [];
   $: selectedDate = data.selectedDate ?? new Date().toISOString().slice(0, 10);
-  $: hasData = curveData.some(d => d.cusip !== '');
+  $: hasData = curveData.some((d) => d.cusip !== "");
 
   // Format date for display: "March 20, 2026"
-  $: displayDate = new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', {
-    year: 'numeric', month: 'long', day: 'numeric'
-  });
+  $: displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString(
+    "en-US",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+  );
 
   let dateInput = data.selectedDate ?? new Date().toISOString().slice(0, 10);
 
@@ -31,7 +45,9 @@
 
   onMount(async () => {
     if (!chartEl || curveData.length === 0) return;
-    const Plotly: any = (await import('plotly.js-dist') as any).default ?? (await import('plotly.js-dist'));
+    const Plotly: any =
+      ((await import("plotly.js-dist")) as any).default ??
+      (await import("plotly.js-dist"));
     // #305 part B: plot real par yields from RunCurve, not the bond
     // coupon rate (which is fixed at issuance and diverges from yield
     // when bonds trade away from par). Skip rows whose parYield is
@@ -41,29 +57,32 @@
     const trace = {
       x: plotted.map((d) => d.tenor),
       y: plotted.map((d) => d.parYield as number),
-      mode: 'lines+markers',
-      line: { color: '#7cd2ba', width: 2.5, shape: 'linear' },
-      marker: { color: '#7cd2ba', size: 8 },
-      hovertemplate: '%{x}: %{y:.3f}%<extra></extra>',
-      name: 'Par yield',
+      mode: "lines+markers",
+      line: { color: "#7cd2ba", width: 2.5, shape: "linear" },
+      marker: { color: "#7cd2ba", size: 8 },
+      hovertemplate: "%{x}: %{y:.3f}%<extra></extra>",
+      name: "Par yield",
     };
     const layout = {
-      paper_bgcolor: '#0c3a46',
-      plot_bgcolor: '#0c3a46',
-      font: { color: '#a0adb7', size: 11 },
+      paper_bgcolor: "#0c3a46",
+      plot_bgcolor: "#0c3a46",
+      font: { color: "#a0adb7", size: 11 },
       margin: { t: 30, r: 30, b: 50, l: 60 },
       xaxis: {
-        type: 'category',
-        gridcolor: '#164e63',
-        title: { text: 'Tenor', font: { color: '#a0adb7' } },
+        type: "category",
+        gridcolor: "#164e63",
+        title: { text: "Tenor", font: { color: "#a0adb7" } },
       },
       yaxis: {
-        gridcolor: '#164e63',
-        title: { text: 'Yield (%)', font: { color: '#a0adb7' } },
-        ticksuffix: '%',
+        gridcolor: "#164e63",
+        title: { text: "Yield (%)", font: { color: "#a0adb7" } },
+        ticksuffix: "%",
       },
     };
-    Plotly.newPlot(chartEl, [trace], layout, { responsive: true, displayModeBar: false });
+    Plotly.newPlot(chartEl, [trace], layout, {
+      responsive: true,
+      displayModeBar: false,
+    });
   });
 
   let hoveredIndex: number | null = null;
@@ -85,10 +104,15 @@
     />
     {#if data.latestBuildableDate && data.latestBuildableDate !== selectedDate}
       <span class="latest-hint" data-testid="latest-hint">
-        Latest fully-priced: <a href="/data/treasury_curve?date={data.latestBuildableDate}">{data.latestBuildableDate}</a>
+        Latest fully-priced: <a
+          href="/data/treasury_curve?date={data.latestBuildableDate}"
+          >{data.latestBuildableDate}</a
+        >
       </span>
     {:else if data.latestBuildableDate}
-      <span class="latest-hint" data-testid="latest-hint">Latest fully-priced: {data.latestBuildableDate}</span>
+      <span class="latest-hint" data-testid="latest-hint"
+        >Latest fully-priced: {data.latestBuildableDate}</span
+      >
     {/if}
   </div>
 
@@ -115,17 +139,25 @@
         {#each curveData as point, i}
           <tr
             class:highlight={hoveredIndex === i}
-            on:mouseenter={() => hoveredIndex = i}
-            on:mouseleave={() => hoveredIndex = null}
+            on:mouseenter={() => (hoveredIndex = i)}
+            on:mouseleave={() => (hoveredIndex = null)}
           >
             <td><strong>{point.tenor}</strong></td>
-            <td>{point.cusip || '—'}</td>
+            <td>{point.cusip || "—"}</td>
             <td>{point.description}</td>
-            <td>{point.issueDate || '—'}</td>
-            <td>{point.maturityDate || '—'}</td>
+            <td>{point.issueDate || "—"}</td>
+            <td>{point.maturityDate || "—"}</td>
             <td class="yield-cell">{point.couponRate.toFixed(3)}%</td>
-            <td class="par-yield-cell">{point.parYield !== null && point.parYield !== undefined ? `${point.parYield.toFixed(3)}%` : '—'}</td>
-            <td class="price-cell">{point.cleanPrice !== null && point.cleanPrice !== undefined ? point.cleanPrice.toFixed(4) : '—'}</td>
+            <td class="par-yield-cell"
+              >{point.parYield !== null && point.parYield !== undefined
+                ? `${point.parYield.toFixed(3)}%`
+                : "—"}</td
+            >
+            <td class="price-cell"
+              >{point.cleanPrice !== null && point.cleanPrice !== undefined
+                ? point.cleanPrice.toFixed(4)
+                : "—"}</td
+            >
           </tr>
         {/each}
       </tbody>
@@ -230,7 +262,8 @@
     color: $white;
   }
 
-  tr:hover, .highlight {
+  tr:hover,
+  .highlight {
     background-color: $bgc-color;
     cursor: default;
   }

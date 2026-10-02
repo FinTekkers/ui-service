@@ -6,8 +6,8 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        api: 'modern',
-        silenceDeprecations: ['import'],
+        api: "modern",
+        silenceDeprecations: ["import"],
       },
     },
   },
@@ -33,26 +33,26 @@ export default defineConfig({
     // each here lets vite bundle them and rewrite the access into
     // named-import form.
     noExternal: [
-      '@fintekkers/ledger-models',
-      'google-protobuf',
-      'uuid',
-      'luxon',
-      'decimal.js',
-      'dotenv',
-      'bytebuffer',
-      '@grpc/grpc-js',
-      '@grpc/proto-loader',
-      '@js-sdsl/ordered-map',
+      "@fintekkers/ledger-models",
+      "google-protobuf",
+      "uuid",
+      "luxon",
+      "decimal.js",
+      "dotenv",
+      "bytebuffer",
+      "@grpc/grpc-js",
+      "@grpc/proto-loader",
+      "@js-sdsl/ordered-map",
       /^@protobufjs\//,
     ],
   },
   server: {
     allowedHosts: true,
     headers: {
-      'Access-Control-Allow-Origin': '*', // Allow all origins
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS', // Allowed HTTP methods
-      'Access-Control-Allow-Credentials': 'true', // Allow credentials
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization' // Allowed headers
-    }
-  }
+      "Access-Control-Allow-Origin": "*", // Allow all origins
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS", // Allowed HTTP methods
+      "Access-Control-Allow-Credentials": "true", // Allow credentials
+      "Access-Control-Allow-Headers": "Content-Type, Authorization", // Allowed headers
+    },
+  },
 });

@@ -6,11 +6,11 @@ handlers, async chart rendering, keyboard navigation.
 
 ## When to write a test here vs. in vitest
 
-| Need to validate… | Write it as… |
-|---|---|
-| `load()` returns the right data shape, server-side error handling | vitest (`*.test.ts`) — direct call |
-| HTTP status, SSR HTML, auth redirects | vitest (`*-e2e.test.ts`) — Node `http` + cookies |
-| **DOM renders correctly after JS runs**, click sequences, autocomplete, chart interaction | Playwright (`*.spec.ts`) — this directory |
+| Need to validate…                                                                         | Write it as…                                     |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `load()` returns the right data shape, server-side error handling                         | vitest (`*.test.ts`) — direct call               |
+| HTTP status, SSR HTML, auth redirects                                                     | vitest (`*-e2e.test.ts`) — Node `http` + cookies |
+| **DOM renders correctly after JS runs**, click sequences, autocomplete, chart interaction | Playwright (`*.spec.ts`) — this directory        |
 
 If you're not sure, default to vitest — it's faster and has no infra
 dependencies. Move to Playwright only when the test genuinely needs a browser.
@@ -64,11 +64,11 @@ To rotate the session (e.g. after broker auth changes), delete
 
 ```ts
 // tests/e2e/something.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('something', async ({ page }) => {
-  await page.goto('/data/something');
-  await expect(page.locator('h1')).toContainText('Something');
+test("something", async ({ page }) => {
+  await page.goto("/data/something");
+  await expect(page.locator("h1")).toContainText("Something");
 });
 ```
 

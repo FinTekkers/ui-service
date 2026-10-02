@@ -16,37 +16,37 @@ import {
   TREASURY_CURVE_INDEX_UUID,
   fetchIndexConstituentUuids,
   fetchSecuritiesByUuids,
-} from '$lib/indexLookthrough';
-import { fetchPricesForSecurity, priceAsOf } from '$lib/curvePrices';
-import { identifierString, productTypeNameOf } from '$lib/security';
-import type Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
+} from "$lib/indexLookthrough";
+import { fetchPricesForSecurity, priceAsOf } from "$lib/curvePrices";
+import { identifierString, productTypeNameOf } from "$lib/security";
+import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 
 export const EXPECTED_CONSTITUENT_COUNT = 11;
 
 /** Canonical UST par-yield tenor buckets (months). Display order. */
 export const TENOR_BUCKETS: { label: string; months: number }[] = [
-  { label: '1M', months: 1 },
-  { label: '3M', months: 3 },
-  { label: '6M', months: 6 },
-  { label: '1Y', months: 12 },
-  { label: '2Y', months: 24 },
-  { label: '3Y', months: 36 },
-  { label: '5Y', months: 60 },
-  { label: '7Y', months: 84 },
-  { label: '10Y', months: 120 },
-  { label: '20Y', months: 240 },
-  { label: '30Y', months: 360 },
+  { label: "1M", months: 1 },
+  { label: "3M", months: 3 },
+  { label: "6M", months: 6 },
+  { label: "1Y", months: 12 },
+  { label: "2Y", months: 24 },
+  { label: "3Y", months: 36 },
+  { label: "5Y", months: 60 },
+  { label: "7Y", months: 84 },
+  { label: "10Y", months: 120 },
+  { label: "20Y", months: 240 },
+  { label: "30Y", months: 360 },
 ];
 
 export interface CurveConstituent {
-  tenor: string;             // bucket label derived from months-to-maturity
-  bucketMonths: number;      // bucket size in months
-  bond: Security;            // narrowable via .isBond()
-  cusip: string;             // primary identifier value
+  tenor: string; // bucket label derived from months-to-maturity
+  bucketMonths: number; // bucket size in months
+  bond: Security; // narrowable via .isBond()
+  cusip: string; // primary identifier value
   issueDate: Date | null;
   maturityDate: Date | null;
-  couponRate: number;        // % — 0 for TBILL
-  productType: string;       // leaf product type name (TBILL/TREASURY_NOTE/...)
+  couponRate: number; // % — 0 for TBILL
+  productType: string; // leaf product type name (TBILL/TREASURY_NOTE/...)
   cleanPrice: number | null; // latest price ≤ asOf; null when none found
 }
 
@@ -58,7 +58,10 @@ export interface ConstituentBundle {
 }
 
 /** Pick the closest TENOR_BUCKETS entry by absolute month delta. Exported for tests. */
-export function bucketForMonths(monthsToMaturity: number): { label: string; months: number } {
+export function bucketForMonths(monthsToMaturity: number): {
+  label: string;
+  months: number;
+} {
   let best = TENOR_BUCKETS[0];
   let bestDelta = Math.abs(monthsToMaturity - best.months);
   for (const b of TENOR_BUCKETS.slice(1)) {
@@ -72,7 +75,9 @@ export function bucketForMonths(monthsToMaturity: number): { label: string; mont
 }
 
 function monthsBetween(from: Date, to: Date): number {
-  return Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24 * 30.4375));
+  return Math.round(
+    (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24 * 30.4375)
+  );
 }
 
 /**
@@ -126,12 +131,12 @@ function toCurveConstituent(security: Security, asOf: Date): CurveConstituent {
  */
 export async function loadTreasuryCurveBundle(
   asOf: Date,
-  apiKey?: string,
+  apiKey?: string
 ): Promise<ConstituentBundle> {
   const uuids = await fetchIndexConstituentUuids(
     TREASURY_CURVE_INDEX_UUID,
     asOf,
-    apiKey,
+    apiKey
   );
   if (uuids.length === 0) {
     return { asOf, constituents: [], pricedCount: 0, fullyPriced: false };
@@ -143,10 +148,15 @@ export async function loadTreasuryCurveBundle(
   const priceLookups = await Promise.all(
     securities.map(async (s) => {
       try {
-        const prices = await fetchPricesForSecurity(s.getID().toString(), apiKey);
+        const prices = await fetchPricesForSecurity(
+          s.getID().toString(),
+          apiKey
+        );
         return priceAsOf(prices, asOf)?.price ?? null;
-      } catch { return null; }
-    }),
+      } catch {
+        return null;
+      }
+    })
   );
 
   // Build per-security rows, then sort to TENOR_BUCKETS order. If the
@@ -161,7 +171,10 @@ export async function loadTreasuryCurveBundle(
   const byBucket = new Map<string, CurveConstituent>();
   for (const row of rows) {
     const existing = byBucket.get(row.tenor);
-    if (!existing) { byBucket.set(row.tenor, row); continue; }
+    if (!existing) {
+      byBucket.set(row.tenor, row);
+      continue;
+    }
     const a = existing.issueDate?.getTime() ?? 0;
     const b = row.issueDate?.getTime() ?? 0;
     if (b > a) byBucket.set(row.tenor, row);
@@ -208,7 +221,7 @@ export interface LatestBuildable {
 export async function findLatestBuildableDate(
   seed: Date,
   maxDaysBack: number,
-  apiKey?: string,
+  apiKey?: string
 ): Promise<LatestBuildable> {
   let bestPartial: ConstituentBundle | null = null;
   for (let i = 0; i <= maxDaysBack; i++) {

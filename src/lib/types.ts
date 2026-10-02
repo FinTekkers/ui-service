@@ -1,58 +1,56 @@
-import type { booleanKeys, dashboardMenuList } from "$lib/Util"
+import type { booleanKeys, dashboardMenuList } from "$lib/Util";
 
 export type booleanStoreType = {
   [key in booleanKeys]?: boolean;
-}
+};
 
 export type portfolioStoreType = any;
 
 export type pageTitles = {
-  [page:string]: string;
-}
+  [page: string]: string;
+};
 
 export type formError = {
   [x: string]: any;
-  message?:string,
-  formError?: ArrayLike<unknown>,
-  Error?:object,
-  missing?:boolean,
-  firstname?:string,
-  lastname?:string,
-  email?:string,
-  success?:boolean,
-  errors?:object
-
-}
+  message?: string;
+  formError?: ArrayLike<unknown>;
+  Error?: object;
+  missing?: boolean;
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  success?: boolean;
+  errors?: object;
+};
 
 export type dashboardMenuItemType = {
-    location: string,
-    navigateTo: keyof typeof dashboardMenuList,
-    style:string,
-    iconName: string,
-    menuName:string,
-    url: string
-}
+  location: string;
+  navigateTo: keyof typeof dashboardMenuList;
+  style: string;
+  iconName: string;
+  menuName: string;
+  url: string;
+};
 export interface dashboardMenuType {
-    portfolio:dashboardMenuItemType,
-    transaction:dashboardMenuItemType,
-    position:dashboardMenuItemType,
-    security:dashboardMenuItemType,
-    calculators:dashboardMenuItemType,
-    prices:dashboardMenuItemType,
-    treasuries:dashboardMenuItemType,
-    curves:dashboardMenuItemType,
-    cpiIndex:dashboardMenuItemType,
-    profile:dashboardMenuItemType,
-    catalog:dashboardMenuItemType,
+  portfolio: dashboardMenuItemType;
+  transaction: dashboardMenuItemType;
+  position: dashboardMenuItemType;
+  security: dashboardMenuItemType;
+  calculators: dashboardMenuItemType;
+  prices: dashboardMenuItemType;
+  treasuries: dashboardMenuItemType;
+  curves: dashboardMenuItemType;
+  cpiIndex: dashboardMenuItemType;
+  profile: dashboardMenuItemType;
+  catalog: dashboardMenuItemType;
 }
-
 
 export interface NavbarURL {
-    url:string,
-    text:string,
-    id:string,
-    icon:string
-  }
+  url: string;
+  text: string;
+  id: string;
+  icon: string;
+}
 
 export interface FooterLink {
   text: string;
@@ -64,25 +62,25 @@ export interface FooterSection {
   links: FooterLink[];
 }
 
-export interface userArchetypes{
-  title:string,
-  content:string,
-  link:string,
-  type:string
+export interface userArchetypes {
+  title: string;
+  content: string;
+  link: string;
+  type: string;
 }
 
-export interface codeBlockContent{
-  language:string,
-  installCMD:string,
-  importCode:string
+export interface codeBlockContent {
+  language: string;
+  installCMD: string;
+  importCode: string;
 }
 
 export interface installCodeLangType {
-  Typescript:codeBlockContent,
-  Python:codeBlockContent,
-  Java:codeBlockContent
+  Typescript: codeBlockContent;
+  Python: codeBlockContent;
+  Java: codeBlockContent;
 }
 
-export interface codeBlockData{
-  codeLanguage:codeBlockContent;
+export interface codeBlockData {
+  codeLanguage: codeBlockContent;
 }

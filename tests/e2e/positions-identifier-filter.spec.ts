@@ -35,11 +35,11 @@
  * Identifier values are deliberately unlikely-to-match probes — this
  * spec asserts URL shape, not row contents.
  */
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from "@playwright/test";
 
-const PROBE_CUSIP = 'ZZZZZZZZZ';
-const PROBE_TICKER = 'ZZTOP';
-const PROBE_TRADE_DATE = '2026-05-06';
+const PROBE_CUSIP = "ZZZZZZZZZ";
+const PROBE_TICKER = "ZZTOP";
+const PROBE_TRADE_DATE = "2026-05-06";
 
 // M5 / #260: pre-M5 this helper looked specifically for
 // 'Federal Reserve SOMA Holdings' (the deterministic seed name).
@@ -48,121 +48,183 @@ const PROBE_TRADE_DATE = '2026-05-06';
 // portfolioId as scope context — they don't assert SOMA-specific
 // behaviour.
 async function resolvePortfolioId(page: Page): Promise<string> {
-  await page.goto('/data/portfolios');
-  await expect(page.getByRole('heading', { name: 'Portfolios' })).toBeVisible({ timeout: 15_000 });
-  const firstRow = page.locator('table tbody tr').first();
-  await expect(firstRow, 'at least one portfolio in seed').toBeVisible({ timeout: 10_000 });
-  const link = firstRow.getByRole('link').filter({ hasNotText: /^(Txns|Delete)$/ }).first();
-  const href = await link.getAttribute('href');
+  await page.goto("/data/portfolios");
+  await expect(page.getByRole("heading", { name: "Portfolios" })).toBeVisible({
+    timeout: 15_000,
+  });
+  const firstRow = page.locator("table tbody tr").first();
+  await expect(firstRow, "at least one portfolio in seed").toBeVisible({
+    timeout: 10_000,
+  });
+  const link = firstRow
+    .getByRole("link")
+    .filter({ hasNotText: /^(Txns|Delete)$/ })
+    .first();
+  const href = await link.getAttribute("href");
   expect(href).toMatch(/portfolioId=[0-9a-f-]{36}/);
-  return new URL(href!, page.url()).searchParams.get('portfolioId')!;
+  return new URL(href!, page.url()).searchParams.get("portfolioId")!;
 }
 
-test.describe('/data/positions IdentifierFilter (#227)', () => {
-  test('CUSIP filter survives Fetch with portfolio scope', async ({ page }) => {
+test.describe("/data/positions IdentifierFilter (#227)", () => {
+  test("CUSIP filter survives Fetch with portfolio scope", async ({ page }) => {
     const portfolioId = await resolvePortfolioId(page);
 
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
-      `&identifier=${PROBE_CUSIP}&identifierType=CUSIP` +
-      `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
+        `&identifier=${PROBE_CUSIP}&identifierType=CUSIP` +
+        `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`
     );
-    const idInput = page.locator('#position-identifier-input');
+    const idInput = page.locator("#position-identifier-input");
     await expect(idInput).toBeVisible({ timeout: 10_000 });
-    await expect(idInput, 'CUSIP value loaded from URL').toHaveValue(PROBE_CUSIP);
-    await expect(page.getByLabel('Identifier type'), 'CUSIP type loaded from URL').toHaveValue('CUSIP');
+    await expect(idInput, "CUSIP value loaded from URL").toHaveValue(
+      PROBE_CUSIP
+    );
+    await expect(
+      page.getByLabel("Identifier type"),
+      "CUSIP type loaded from URL"
+    ).toHaveValue("CUSIP");
 
-    await page.getByRole('button', { name: 'Fetch' }).click();
-    await page.waitForURL(/\/data\/positions\?.*identifier=/, { timeout: 10_000 });
+    await page.getByRole("button", { name: "Fetch" }).click();
+    await page.waitForURL(/\/data\/positions\?.*identifier=/, {
+      timeout: 10_000,
+    });
 
     const params = new URL(page.url()).searchParams;
-    expect(params.get('identifier'), 'identifier value').toBe(PROBE_CUSIP);
-    expect(params.get('identifierType'), 'identifierType pinned to CUSIP').toBe('CUSIP');
-    expect(params.get('cusip'), 'no legacy ?cusip= re-emitted').toBeNull();
-    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
+    expect(params.get("identifier"), "identifier value").toBe(PROBE_CUSIP);
+    expect(params.get("identifierType"), "identifierType pinned to CUSIP").toBe(
+      "CUSIP"
+    );
+    expect(params.get("cusip"), "no legacy ?cusip= re-emitted").toBeNull();
+    expect(params.get("portfolioId"), "#220 guard: portfolioId preserved").toBe(
+      portfolioId
+    );
   });
 
-  test('EXCH_TICKER (Ticker) filter survives Fetch with portfolio scope', async ({ page }) => {
+  test("EXCH_TICKER (Ticker) filter survives Fetch with portfolio scope", async ({
+    page,
+  }) => {
     const portfolioId = await resolvePortfolioId(page);
 
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
-      `&identifier=${PROBE_TICKER}&identifierType=EXCH_TICKER` +
-      `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
+        `&identifier=${PROBE_TICKER}&identifierType=EXCH_TICKER` +
+        `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`
     );
-    const idInput = page.locator('#position-identifier-input');
+    const idInput = page.locator("#position-identifier-input");
     await expect(idInput).toBeVisible({ timeout: 10_000 });
-    await expect(idInput, 'ticker value loaded from URL').toHaveValue(PROBE_TICKER);
-    await expect(page.getByLabel('Identifier type'), 'EXCH_TICKER type loaded from URL').toHaveValue('EXCH_TICKER');
+    await expect(idInput, "ticker value loaded from URL").toHaveValue(
+      PROBE_TICKER
+    );
+    await expect(
+      page.getByLabel("Identifier type"),
+      "EXCH_TICKER type loaded from URL"
+    ).toHaveValue("EXCH_TICKER");
 
-    await page.getByRole('button', { name: 'Fetch' }).click();
-    await page.waitForURL(/\/data\/positions\?.*identifier=/, { timeout: 10_000 });
+    await page.getByRole("button", { name: "Fetch" }).click();
+    await page.waitForURL(/\/data\/positions\?.*identifier=/, {
+      timeout: 10_000,
+    });
 
     const params = new URL(page.url()).searchParams;
-    expect(params.get('identifier'), 'identifier value').toBe(PROBE_TICKER);
-    expect(params.get('identifierType'), 'identifierType pinned to EXCH_TICKER').toBe('EXCH_TICKER');
-    expect(params.get('cusip'), 'no legacy ?cusip= re-emitted').toBeNull();
-    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
+    expect(params.get("identifier"), "identifier value").toBe(PROBE_TICKER);
+    expect(
+      params.get("identifierType"),
+      "identifierType pinned to EXCH_TICKER"
+    ).toBe("EXCH_TICKER");
+    expect(params.get("cusip"), "no legacy ?cusip= re-emitted").toBeNull();
+    expect(params.get("portfolioId"), "#220 guard: portfolioId preserved").toBe(
+      portfolioId
+    );
   });
 
-  test('tradeDate + tradeDateOperator round-trip through Fetch with portfolio scope', async ({ page }) => {
+  test("tradeDate + tradeDateOperator round-trip through Fetch with portfolio scope", async ({
+    page,
+  }) => {
     const portfolioId = await resolvePortfolioId(page);
 
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
-      `&tradeDate=${PROBE_TRADE_DATE}&tradeDateOperator=LESS_THAN_OR_EQUALS` +
-      `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
+        `&tradeDate=${PROBE_TRADE_DATE}&tradeDateOperator=LESS_THAN_OR_EQUALS` +
+        `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`
     );
 
     // DateFilter loads both bound props from the URL via PositionSelect's
     // loadSelectedValues. The date input takes the date; the operator
     // select takes the operator and is enabled because the date is set.
-    const dateInput = page.locator('#trade-date-input');
+    const dateInput = page.locator("#trade-date-input");
     await expect(dateInput).toBeVisible({ timeout: 10_000 });
-    await expect(dateInput, 'tradeDate populates DateFilter input').toHaveValue(PROBE_TRADE_DATE);
-    const opSelect = page.getByLabel('Date operator');
-    await expect(opSelect, 'tradeDateOperator populates DateFilter select')
-      .toHaveValue('LESS_THAN_OR_EQUALS');
-    await expect(opSelect, 'operator select enabled when date is set').toBeEnabled();
+    await expect(dateInput, "tradeDate populates DateFilter input").toHaveValue(
+      PROBE_TRADE_DATE
+    );
+    const opSelect = page.getByLabel("Date operator");
+    await expect(
+      opSelect,
+      "tradeDateOperator populates DateFilter select"
+    ).toHaveValue("LESS_THAN_OR_EQUALS");
+    await expect(
+      opSelect,
+      "operator select enabled when date is set"
+    ).toBeEnabled();
 
-    await page.getByRole('button', { name: 'Fetch' }).click();
-    await page.waitForURL(/\/data\/positions\?.*tradeDate=/, { timeout: 10_000 });
+    await page.getByRole("button", { name: "Fetch" }).click();
+    await page.waitForURL(/\/data\/positions\?.*tradeDate=/, {
+      timeout: 10_000,
+    });
 
     const params = new URL(page.url()).searchParams;
-    expect(params.get('tradeDate'), 'tradeDate re-emitted').toBe(PROBE_TRADE_DATE);
-    expect(params.get('tradeDateOperator'), 'tradeDateOperator re-emitted')
-      .toBe('LESS_THAN_OR_EQUALS');
-    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
+    expect(params.get("tradeDate"), "tradeDate re-emitted").toBe(
+      PROBE_TRADE_DATE
+    );
+    expect(
+      params.get("tradeDateOperator"),
+      "tradeDateOperator re-emitted"
+    ).toBe("LESS_THAN_OR_EQUALS");
+    expect(params.get("portfolioId"), "#220 guard: portfolioId preserved").toBe(
+      portfolioId
+    );
   });
 
-  test('tradeDate alone (no operator) survives Fetch', async ({ page }) => {
+  test("tradeDate alone (no operator) survives Fetch", async ({ page }) => {
     const portfolioId = await resolvePortfolioId(page);
 
     await page.goto(
       `/data/positions?portfolioId=${portfolioId}` +
-      `&tradeDate=${PROBE_TRADE_DATE}` + // no &tradeDateOperator=
-      `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`,
+        `&tradeDate=${PROBE_TRADE_DATE}` + // no &tradeDateOperator=
+        `&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY`
     );
 
     // Date populates; operator stays empty AND the select is enabled
     // because the date IS set (DateFilter only disables the select when
     // the date is empty).
-    const dateInput = page.locator('#trade-date-input');
+    const dateInput = page.locator("#trade-date-input");
     await expect(dateInput).toBeVisible({ timeout: 10_000 });
-    await expect(dateInput, 'tradeDate populates DateFilter input').toHaveValue(PROBE_TRADE_DATE);
-    const opSelect = page.getByLabel('Date operator');
-    await expect(opSelect, 'no operator in URL → select stays empty').toHaveValue('');
+    await expect(dateInput, "tradeDate populates DateFilter input").toHaveValue(
+      PROBE_TRADE_DATE
+    );
+    const opSelect = page.getByLabel("Date operator");
+    await expect(
+      opSelect,
+      "no operator in URL → select stays empty"
+    ).toHaveValue("");
 
     // Fetch completes — half-applied filter guard in
     // PositionSelect.fetchPositions drops both tradeDate and
     // tradeDateOperator when only one is set (a type-without-value /
     // value-without-type filter is meaningless to the page-server).
-    await page.getByRole('button', { name: 'Fetch' }).click();
+    await page.getByRole("button", { name: "Fetch" }).click();
     await page.waitForURL(/\/data\/positions/, { timeout: 10_000 });
 
     const params = new URL(page.url()).searchParams;
-    expect(params.get('tradeDate'), 'half-applied filter dropped on re-emit').toBeNull();
-    expect(params.get('tradeDateOperator'), 'no orphan operator emitted').toBeNull();
-    expect(params.get('portfolioId'), '#220 guard: portfolioId preserved').toBe(portfolioId);
+    expect(
+      params.get("tradeDate"),
+      "half-applied filter dropped on re-emit"
+    ).toBeNull();
+    expect(
+      params.get("tradeDateOperator"),
+      "no orphan operator emitted"
+    ).toBeNull();
+    expect(params.get("portfolioId"), "#220 guard: portfolioId preserved").toBe(
+      portfolioId
+    );
   });
 });

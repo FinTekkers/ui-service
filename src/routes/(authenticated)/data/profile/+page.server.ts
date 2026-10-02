@@ -1,15 +1,22 @@
-import { redirect, fail } from '@sveltejs/kit';
-import { getApiKeyFromCookies, clearApiKeyCookie, setApiKeyCookie, brokerLogin } from '$lib/grpc-auth';
+import { redirect, fail } from "@sveltejs/kit";
+import {
+  getApiKeyFromCookies,
+  clearApiKeyCookie,
+  setApiKeyCookie,
+  brokerLogin,
+} from "$lib/grpc-auth";
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, cookies }) {
   const user = locals.user;
+  // Source text asserted by src/tests/profile-fixes-39.test.ts.
+  // prettier-ignore
   const apiKey = getApiKeyFromCookies(cookies) ?? '';
 
   const profile = {
-    email: user?.email ?? '',
-    firstname: user?.name?.split(' ')[0] ?? '',
-    lastname: user?.name?.split(' ').slice(1).join(' ') ?? '',
+    email: user?.email ?? "",
+    firstname: user?.name?.split(" ")[0] ?? "",
+    lastname: user?.name?.split(" ").slice(1).join(" ") ?? "",
   };
 
   return { profile, apiKey, user };
@@ -18,23 +25,31 @@ export async function load({ locals, cookies }) {
 export const actions = {
   logout: async ({ cookies }) => {
     clearApiKeyCookie(cookies);
-    cookies.delete('session', { path: '/' });
-    throw redirect(303, '/login');
+    cookies.delete("session", { path: "/" });
+    throw redirect(303, "/login");
   },
 
   regenerateKey: async ({ request, cookies }) => {
     const formData = await request.formData();
+    // Source text asserted by src/tests/profile-fixes-39.test.ts.
+    // prettier-ignore
     const email = formData.get('email')?.toString() ?? '';
+    // Source text asserted by src/tests/profile-fixes-39.test.ts.
+    // prettier-ignore
     const password = formData.get('password')?.toString() ?? '';
 
     if (!email || !password) {
-      return fail(400, { error: 'Email and password are required to regenerate your API key.' });
+      return fail(400, {
+        error: "Email and password are required to regenerate your API key.",
+      });
     }
 
     const result = await brokerLogin({ email, password });
 
     if (!result.success || !result.apiKey) {
-      return fail(401, { error: result.error ?? 'Login failed. Check your credentials.' });
+      return fail(401, {
+        error: result.error ?? "Login failed. Check your credentials.",
+      });
     }
 
     setApiKeyCookie(cookies, result.apiKey);

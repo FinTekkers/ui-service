@@ -1,6 +1,6 @@
-import * as Yup from 'yup';
+import * as Yup from "yup";
 
-import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 const { FieldProto } = pkg;
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
@@ -10,22 +10,22 @@ import { identifierString } from "$lib/security";
 /** @type {import('./$types').PageServerLoad} */
 
 const signInSchema = Yup.object({
-  searchQuery: Yup.string().min(3, 'please enter a word').required('please enter text'),
-})
+  searchQuery: Yup.string()
+    .min(3, "please enter a word")
+    .required("please enter text"),
+});
 
 export const actions = {
   search: async ({ request }: { request: Request }) => {
-
     try {
       const data = await request.formData();
-      const searchQuery = data.get('search');
-      console.log('search query', searchQuery);
+      const searchQuery = data.get("search");
+      console.log("search query", searchQuery);
     } catch (error) {
-      console.log('something went wrong', error)
+      console.log("something went wrong", error);
     }
-  }
-}
-
+  },
+};
 
 export async function load({ locals }: { locals: App.Locals }) {
   const securityService = new SecurityService(locals.user?.apiKey);
@@ -39,7 +39,9 @@ export async function load({ locals }: { locals: App.Locals }) {
   );
 
   try {
-    var securities = await securityService.searchSecurityAsOfNow(positionFilter);
+    var securities = await securityService.searchSecurityAsOfNow(
+      positionFilter
+    );
 
     //Map results into list of maps -> Date, Amount
     for (let index in securities) {
@@ -77,7 +79,7 @@ export async function load({ locals }: { locals: App.Locals }) {
       }
     }
   } catch (error) {
-    console.log('Could not fetch security data', error)
+    console.log("Could not fetch security data", error);
   }
 
   return { results };

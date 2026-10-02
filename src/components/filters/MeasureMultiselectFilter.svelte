@@ -24,14 +24,14 @@
   // wrapper's getAllTypeNames() is the source-of-truth for "every
   // known measure name (sentinel UNKNOWN_MEASURE excluded)" — adding
   // a new proto entry upstream auto-propagates to this dropdown.
-  import { Measure } from '@fintekkers/ledger-models/node/wrappers/models/position/measure';
-  import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
+  import { Measure } from "@fintekkers/ledger-models/node/wrappers/models/position/measure";
+  import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
   // The runtime destructure gives us the value namespace
   // (MeasureProto.PRESENT_VALUE etc.); the type-only alias lets us
   // annotate `Set<MeasureProtoType>` without the value-vs-type
   // collision. Same pattern as FieldProto / FieldProtoType in
   // positions.ts and elsewhere.
-  import type { MeasureProto as MeasureProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
+  import type { MeasureProto as MeasureProtoType } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   const { MeasureProto } = measure_pkg;
 
   // Valuation-only measures are excluded by default — they require a
@@ -62,25 +62,25 @@
    * (numeric-enum-value-in-Set) translation always uses the wrapper
    * — keeping ledger-models as the single point of name resolution.
    */
-  export const DEFAULT_MEASURE_NAMES: readonly string[] = Measure
-    .getAllTypeNames()
-    .filter((name) => !VALUATION_ONLY_MEASURES.has(Measure.fromName(name)));
+  export const DEFAULT_MEASURE_NAMES: readonly string[] =
+    Measure.getAllTypeNames().filter(
+      (name) => !VALUATION_ONLY_MEASURES.has(Measure.fromName(name))
+    );
 
   function titleCase(name: string): string {
     return name
-      .split('_')
+      .split("_")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-      .join(' ');
+      .join(" ");
   }
 
   /** Friendly per-measure labels. Override individual entries via the `labels` prop. */
-  export const DEFAULT_MEASURE_LABELS: Record<string, string> = Object.fromEntries(
-    DEFAULT_MEASURE_NAMES.map((n) => [n, titleCase(n)]),
-  );
+  export const DEFAULT_MEASURE_LABELS: Record<string, string> =
+    Object.fromEntries(DEFAULT_MEASURE_NAMES.map((n) => [n, titleCase(n)]));
 </script>
 
 <script lang="ts">
-  import MultiSelect from 'svelte-multiselect';
+  import MultiSelect from "svelte-multiselect";
 
   // Two-way binding — array of proto enum names. Empty array means
   // "no measures selected" (the URL convention drops the param).
@@ -97,18 +97,20 @@
 
   // Class pass-through and DOM hooks (matches IdentifierFilter
   // conventions).
-  export let containerClass: string = '';
-  export let id: string = 'measure-multiselect';
-  export let placeholder: string = 'Select measures...';
+  export let containerClass: string = "";
+  export let id: string = "measure-multiselect";
+  export let placeholder: string = "Select measures...";
 
   $: resolvedLabels = { ...DEFAULT_MEASURE_LABELS, ...labels };
 
   // Build the MultiSelect's option-label list + a label↔name lookup
   // for the change handler. The dropdown speaks display labels; the
   // primitive's external API speaks proto names.
-  $: optionLabels = supportedMeasures.map((name) => resolvedLabels[name] ?? name);
+  $: optionLabels = supportedMeasures.map(
+    (name) => resolvedLabels[name] ?? name
+  );
   $: labelToName = Object.fromEntries(
-    supportedMeasures.map((name) => [resolvedLabels[name] ?? name, name]),
+    supportedMeasures.map((name) => [resolvedLabels[name] ?? name, name])
   );
 
   // Internal MultiSelect state holds the display labels. Reactive
@@ -131,7 +133,9 @@
   }
 
   function handleChange() {
-    const next = selected.map((label) => labelToName[label]).filter((n): n is string => Boolean(n));
+    const next = selected
+      .map((label) => labelToName[label])
+      .filter((n): n is string => Boolean(n));
     if (next.length !== value.length || next.some((v, i) => v !== value[i])) {
       value = next;
     }

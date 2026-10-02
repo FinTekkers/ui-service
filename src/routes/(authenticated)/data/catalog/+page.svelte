@@ -1,54 +1,70 @@
 <script lang="ts">
-  import measuresData from '$lib/data/measures.json';
-  import fieldsData from '$lib/data/fields.json';
+  import measuresData from "$lib/data/measures.json";
+  import fieldsData from "$lib/data/fields.json";
 
-  export let data: import('./$types').PageData;
+  export let data: import("./$types").PageData;
 
-  let activeTab: 'measures' | 'fields' = 'measures';
-  let searchQuery = '';
-  let selectedCategory = '';
+  let activeTab: "measures" | "fields" = "measures";
+  let searchQuery = "";
+  let selectedCategory = "";
 
-  $: measureCategories = [...new Set(
-    measuresData.measures.filter(m => m.category !== 'sentinel').map(m => m.category)
-  )].sort();
-  $: fieldCategories = [...new Set(
-    fieldsData.fields.filter(f => f.category !== 'sentinel').map(f => f.category)
-  )].sort();
-  $: categories = activeTab === 'measures' ? measureCategories : fieldCategories;
+  $: measureCategories = [
+    ...new Set(
+      measuresData.measures
+        .filter((m) => m.category !== "sentinel")
+        .map((m) => m.category)
+    ),
+  ].sort();
+  $: fieldCategories = [
+    ...new Set(
+      fieldsData.fields
+        .filter((f) => f.category !== "sentinel")
+        .map((f) => f.category)
+    ),
+  ].sort();
+  $: categories =
+    activeTab === "measures" ? measureCategories : fieldCategories;
 
-  function switchTab(tab: 'measures' | 'fields') {
+  function switchTab(tab: "measures" | "fields") {
     activeTab = tab;
-    selectedCategory = '';
-    searchQuery = '';
+    selectedCategory = "";
+    searchQuery = "";
   }
 
   $: filteredMeasures = measuresData.measures
-    .filter(m => m.category !== 'sentinel')
-    .filter(m => !selectedCategory || m.category === selectedCategory)
-    .filter(m => {
+    .filter((m) => m.category !== "sentinel")
+    .filter((m) => !selectedCategory || m.category === selectedCategory)
+    .filter((m) => {
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
-      return m.display_name.toLowerCase().includes(q)
-        || m.description.toLowerCase().includes(q)
-        || m.name.toLowerCase().includes(q)
-        || (m.formula && m.formula.toLowerCase().includes(q));
+      return (
+        m.display_name.toLowerCase().includes(q) ||
+        m.description.toLowerCase().includes(q) ||
+        m.name.toLowerCase().includes(q) ||
+        (m.formula && m.formula.toLowerCase().includes(q))
+      );
     });
 
   $: filteredFields = fieldsData.fields
-    .filter(f => f.category !== 'sentinel')
-    .filter(f => !selectedCategory || f.category === selectedCategory)
-    .filter(f => {
+    .filter((f) => f.category !== "sentinel")
+    .filter((f) => !selectedCategory || f.category === selectedCategory)
+    .filter((f) => {
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
-      return f.display_name.toLowerCase().includes(q)
-        || f.description.toLowerCase().includes(q)
-        || f.name.toLowerCase().includes(q);
+      return (
+        f.display_name.toLowerCase().includes(q) ||
+        f.description.toLowerCase().includes(q) ||
+        f.name.toLowerCase().includes(q)
+      );
     });
 
-  $: groupedMeasures = groupBy(filteredMeasures, m => m.category);
-  $: groupedFields = groupBy(filteredFields, f => f.category);
+  $: groupedMeasures = groupBy(filteredMeasures, (m) => m.category);
+  $: groupedFields = groupBy(filteredFields, (f) => f.category);
 
-  function groupBy<T>(items: T[], keyFn: (item: T) => string): Record<string, T[]> {
+  function groupBy<T>(
+    items: T[],
+    keyFn: (item: T) => string
+  ): Record<string, T[]> {
     const groups: Record<string, T[]> = {};
     for (const item of items) {
       const key = keyFn(item);
@@ -58,11 +74,13 @@
   }
 
   function formatCategory(cat: string): string {
-    return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   function formatAppliesTo(items: string[]): string {
-    return items.map(s => s.replace(/_SECURITY/g, '').replace(/_/g, ' ')).join(', ');
+    return items
+      .map((s) => s.replace(/_SECURITY/g, "").replace(/_/g, " "))
+      .join(", ");
   }
 
   let expandedMeasure: string | null = null;
@@ -77,128 +95,143 @@
 </script>
 
 <div class="portfolio_container px-10 py-7">
-      <h2 class="text-3xl font-extrabold my-3">Data Catalog</h2>
+  <h2 class="text-3xl font-extrabold my-3">Data Catalog</h2>
 
-      <!-- Tab bar — same pattern as calculators page -->
-      <div class="tab-bar">
-        <button class="tab-btn" class:active={activeTab === 'measures'} on:click={() => switchTab('measures')}>
-          Measures ({measuresData.measures.length - 1})
-        </button>
-        <button class="tab-btn" class:active={activeTab === 'fields'} on:click={() => switchTab('fields')}>
-          Fields ({fieldsData.fields.length - 1})
-        </button>
-      </div>
+  <!-- Tab bar — same pattern as calculators page -->
+  <div class="tab-bar">
+    <button
+      class="tab-btn"
+      class:active={activeTab === "measures"}
+      on:click={() => switchTab("measures")}
+    >
+      Measures ({measuresData.measures.length - 1})
+    </button>
+    <button
+      class="tab-btn"
+      class:active={activeTab === "fields"}
+      on:click={() => switchTab("fields")}
+    >
+      Fields ({fieldsData.fields.length - 1})
+    </button>
+  </div>
 
-      <!-- Filters row -->
-      <div class="filter-row">
-        <input
-          type="text"
-          class="filter-input"
-          placeholder="Search {activeTab}..."
-          bind:value={searchQuery}
-        />
-        <select class="filter-input filter-select" bind:value={selectedCategory}>
-          <option value="">All Categories</option>
-          {#each categories as cat}
-            <option value={cat}>{formatCategory(cat)}</option>
-          {/each}
-        </select>
-      </div>
+  <!-- Filters row -->
+  <div class="filter-row">
+    <input
+      type="text"
+      class="filter-input"
+      placeholder="Search {activeTab}..."
+      bind:value={searchQuery}
+    />
+    <select class="filter-input filter-select" bind:value={selectedCategory}>
+      <option value="">All Categories</option>
+      {#each categories as cat}
+        <option value={cat}>{formatCategory(cat)}</option>
+      {/each}
+    </select>
+  </div>
 
-      <!-- Measures view -->
-      {#if activeTab === 'measures'}
-        {#each Object.entries(groupedMeasures) as [category, measures]}
-          <h3 class="group-label">{formatCategory(category)}</h3>
-          <div class="table-wrapper">
-            <table class="text-left">
-              <thead class="border-b border-slate-400">
-                <tr>
-                  <th class="text-semibold px-4 py-2">Measure</th>
-                  <th class="text-semibold px-4 py-2">Applies To</th>
-                  <th class="text-semibold px-4 py-2">Units</th>
-                  <th class="text-semibold px-4 py-2">Description</th>
+  <!-- Measures view -->
+  {#if activeTab === "measures"}
+    {#each Object.entries(groupedMeasures) as [category, measures]}
+      <h3 class="group-label">{formatCategory(category)}</h3>
+      <div class="table-wrapper">
+        <table class="text-left">
+          <thead class="border-b border-slate-400">
+            <tr>
+              <th class="text-semibold px-4 py-2">Measure</th>
+              <th class="text-semibold px-4 py-2">Applies To</th>
+              <th class="text-semibold px-4 py-2">Units</th>
+              <th class="text-semibold px-4 py-2">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each measures as m}
+              <tr
+                class="table-row border-b border-slate-400 clickable-row"
+                on:click={() => toggleMeasure(m.name)}
+              >
+                <td class="table-cell px-4 py-2 name-cell">
+                  <strong>{m.display_name}</strong>
+                  {#if !m.implemented}<span class="badge-planned">Planned</span
+                    >{/if}
+                  <br /><span class="mono-sub">{m.name}</span>
+                </td>
+                <td class="table-cell px-4 py-2"
+                  >{formatAppliesTo(m.applies_to)}</td
+                >
+                <td class="table-cell px-4 py-2 units-cell">{m.units ?? "—"}</td
+                >
+                <td class="table-cell px-4 py-2">{m.description}</td>
+              </tr>
+              {#if expandedMeasure === m.name}
+                <tr class="detail-row">
+                  <td class="table-cell px-4 py-2" colspan="4">
+                    {#if m.formula}
+                      <div class="detail-block">
+                        <span class="detail-label">Formula:</span>
+                        <code class="detail-code">{m.formula}</code>
+                      </div>
+                    {/if}
+                    {#if m.model_assumptions && m.model_assumptions.length > 0}
+                      <div class="detail-block">
+                        <span class="detail-label">Model Assumptions:</span>
+                        <ul class="detail-list">
+                          {#each m.model_assumptions as assumption}
+                            <li>{assumption}</li>
+                          {/each}
+                        </ul>
+                      </div>
+                    {/if}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {#each measures as m}
-                  <tr class="table-row border-b border-slate-400 clickable-row" on:click={() => toggleMeasure(m.name)}>
-                    <td class="table-cell px-4 py-2 name-cell">
-                      <strong>{m.display_name}</strong>
-                      {#if !m.implemented}<span class="badge-planned">Planned</span>{/if}
-                      <br/><span class="mono-sub">{m.name}</span>
-                    </td>
-                    <td class="table-cell px-4 py-2">{formatAppliesTo(m.applies_to)}</td>
-                    <td class="table-cell px-4 py-2 units-cell">{m.units ?? '—'}</td>
-                    <td class="table-cell px-4 py-2">{m.description}</td>
-                  </tr>
-                  {#if expandedMeasure === m.name}
-                    <tr class="detail-row">
-                      <td class="table-cell px-4 py-2" colspan="4">
-                        {#if m.formula}
-                          <div class="detail-block">
-                            <span class="detail-label">Formula:</span>
-                            <code class="detail-code">{m.formula}</code>
-                          </div>
-                        {/if}
-                        {#if m.model_assumptions && m.model_assumptions.length > 0}
-                          <div class="detail-block">
-                            <span class="detail-label">Model Assumptions:</span>
-                            <ul class="detail-list">
-                              {#each m.model_assumptions as assumption}
-                                <li>{assumption}</li>
-                              {/each}
-                            </ul>
-                          </div>
-                        {/if}
-                      </td>
-                    </tr>
-                  {/if}
-                {/each}
-              </tbody>
-            </table>
-          </div>
-        {/each}
+              {/if}
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/each}
 
-        {#if filteredMeasures.length === 0}
-          <p class="empty-msg">No measures match your search.</p>
-        {/if}
-      {/if}
-
-      <!-- Fields view -->
-      {#if activeTab === 'fields'}
-        {#each Object.entries(groupedFields) as [category, fields]}
-          <h3 class="group-label">{formatCategory(category)}</h3>
-          <div class="table-wrapper">
-            <table class="text-left">
-              <thead class="border-b border-slate-400">
-                <tr>
-                  <th class="text-semibold px-4 py-2">Field</th>
-                  <th class="text-semibold px-4 py-2">Data Type</th>
-                  <th class="text-semibold px-4 py-2">Applies To</th>
-                  <th class="text-semibold px-4 py-2">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each fields as f}
-                  <tr class="table-row border-b border-slate-400">
-                    <td class="table-cell px-4 py-2 name-cell">
-                      <strong>{f.display_name}</strong>
-                      <br/><span class="mono-sub">{f.name}</span>
-                    </td>
-                    <td class="table-cell px-4 py-2">{f.data_type ?? '—'}</td>
-                    <td class="table-cell px-4 py-2">{f.applies_to.join(', ')}</td>
-                    <td class="table-cell px-4 py-2">{f.description}</td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
-        {/each}
-
-  {#if filteredFields.length === 0}
-    <p class="empty-msg">No fields match your search.</p>
+    {#if filteredMeasures.length === 0}
+      <p class="empty-msg">No measures match your search.</p>
+    {/if}
   {/if}
-{/if}
+
+  <!-- Fields view -->
+  {#if activeTab === "fields"}
+    {#each Object.entries(groupedFields) as [category, fields]}
+      <h3 class="group-label">{formatCategory(category)}</h3>
+      <div class="table-wrapper">
+        <table class="text-left">
+          <thead class="border-b border-slate-400">
+            <tr>
+              <th class="text-semibold px-4 py-2">Field</th>
+              <th class="text-semibold px-4 py-2">Data Type</th>
+              <th class="text-semibold px-4 py-2">Applies To</th>
+              <th class="text-semibold px-4 py-2">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each fields as f}
+              <tr class="table-row border-b border-slate-400">
+                <td class="table-cell px-4 py-2 name-cell">
+                  <strong>{f.display_name}</strong>
+                  <br /><span class="mono-sub">{f.name}</span>
+                </td>
+                <td class="table-cell px-4 py-2">{f.data_type ?? "—"}</td>
+                <td class="table-cell px-4 py-2">{f.applies_to.join(", ")}</td>
+                <td class="table-cell px-4 py-2">{f.description}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/each}
+
+    {#if filteredFields.length === 0}
+      <p class="empty-msg">No fields match your search.</p>
+    {/if}
+  {/if}
 </div>
 
 <style lang="scss">
@@ -225,7 +258,9 @@
     transition: all 0.15s;
     opacity: 0.7;
 
-    &:hover { opacity: 1; }
+    &:hover {
+      opacity: 1;
+    }
 
     &.active {
       color: #7cd2ba;
@@ -252,7 +287,9 @@
     height: 36px;
     box-sizing: border-box;
 
-    &::placeholder { color: #86929c; }
+    &::placeholder {
+      color: #86929c;
+    }
   }
 
   .filter-select {
@@ -326,7 +363,9 @@
 
   .detail-block {
     margin-bottom: 8px;
-    &:last-child { margin-bottom: 0; }
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 
   .detail-label {

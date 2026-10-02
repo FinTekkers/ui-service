@@ -1,12 +1,16 @@
 <script lang="ts">
-  import BondCalculator from '../../../../components/widgets/BondCalculator.svelte';
-  import TipsCalculator from '../../../../components/widgets/TipsCalculator.svelte';
-  import FrnCalculator from '../../../../components/widgets/FrnCalculator.svelte';
-  export let data: import('./$types').PageData;
+  import BondCalculator from "../../../../components/widgets/BondCalculator.svelte";
+  import TipsCalculator from "../../../../components/widgets/TipsCalculator.svelte";
+  import FrnCalculator from "../../../../components/widgets/FrnCalculator.svelte";
+  export let data: import("./$types").PageData;
 
-  const tabs = ['Bond Pricer', 'TIPS Pricer', 'FRN Pricer'];
-  const tabMap: Record<string, string> = { tips: 'TIPS Pricer', frn: 'FRN Pricer', bond: 'Bond Pricer' };
-  let activeTab = tabMap[data.activeTab] ?? 'Bond Pricer';
+  const tabs = ["Bond Pricer", "TIPS Pricer", "FRN Pricer"];
+  const tabMap: Record<string, string> = {
+    tips: "TIPS Pricer",
+    frn: "FRN Pricer",
+    bond: "Bond Pricer",
+  };
+  let activeTab = tabMap[data.activeTab] ?? "Bond Pricer";
 </script>
 
 <!-- Tab bar -->
@@ -22,11 +26,11 @@
   {/each}
 </div>
 
-{#if activeTab === 'Bond Pricer'}
+{#if activeTab === "Bond Pricer"}
   <BondCalculator result={data.result} securities={data.bondSecurities} />
-{:else if activeTab === 'TIPS Pricer'}
+{:else if activeTab === "TIPS Pricer"}
   <TipsCalculator result={data.tipsResult} securities={data.tipsSecurities} />
-{:else if activeTab === 'FRN Pricer'}
+{:else if activeTab === "FRN Pricer"}
   <FrnCalculator result={data.frnResult} securities={data.frnSecurities} />
 {/if}
 

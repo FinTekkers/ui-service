@@ -1,9 +1,9 @@
 <script>
-  import { routes } from '@sveltejs/kit/config';
+  import { routes } from "@sveltejs/kit/config";
 </script>
 
 <main>
-  {#each routes as { id, component (loader) }}
+  {#each routes as { id, component: loader }}
     <div>
       {#await loader}
         Loading...

@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
   import type { formError } from "$lib/types";
 
   // fieldName was previously typed `keyof formError`, which TS resolves
@@ -23,7 +23,11 @@
 </script>
 
 <label for={fieldName}>
-  <span class={`${focusedElement === fieldName || inputValue[fieldName] ? 'labelFloat' : ''}`}>
+  <span
+    class={`${
+      focusedElement === fieldName || inputValue[fieldName] ? "labelFloat" : ""
+    }`}
+  >
     <slot>Enter your {fieldName}</slot>
   </span>
   <input
@@ -32,11 +36,11 @@
     on:blur={() => handleBlur(fieldName)}
     id={fieldName}
     name={fieldName}
-    value={inputValue[fieldName]?.toString() ?? ''}
+    value={inputValue[fieldName]?.toString() ?? ""}
   />
   {#if displayError(fieldName)}
     <div class="error_message">
-      <p class='form_error'>⚠️ Enter {fieldName}</p>
+      <p class="form_error">⚠️ Enter {fieldName}</p>
     </div>
   {/if}
 </label>

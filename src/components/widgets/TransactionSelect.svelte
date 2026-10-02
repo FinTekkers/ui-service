@@ -56,7 +56,8 @@
     // reason: the form owns it now, so inherit + override would be
     // redundant. Mirrors PositionSelect's PR #146 wiring.
     const trimmedPortfolioId = portfolioIdInput.trim();
-    const portfolioIdOverride = trimmedPortfolioId === '' ? null : trimmedPortfolioId;
+    const portfolioIdOverride =
+      trimmedPortfolioId === "" ? null : trimmedPortfolioId;
 
     const url = buildFilterUrl(
       "/data/transactions",
@@ -70,7 +71,7 @@
       // including portfolioId. The original #220-class concern is
       // addressed by initial-state hydration from the page-server,
       // not URL passthrough.
-      [],
+      []
     );
 
     window.location.href = url;
@@ -90,7 +91,9 @@
   });
 </script>
 
-<div class="transaction-select-container mt-6 mx-10 flex flex-col sm:flex-row gap-2">
+<div
+  class="transaction-select-container mt-6 mx-10 flex flex-col sm:flex-row gap-2"
+>
   <div class="text-white portfolio-filter-cell">
     <h4>Portfolio:</h4>
     <PortfolioFilter

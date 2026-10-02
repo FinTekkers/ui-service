@@ -16,22 +16,27 @@
  *     stable — auth-flow-e2e.test.ts uses the same POST.
  *   - Faster: no browser navigation, no hydration wait.
  */
-import { test as setup, request } from '@playwright/test';
-import { TEST_USER, STORAGE_STATE_PATH, ensureTestUserRegistered, brokerAvailable } from './fixtures/auth';
+import { test as setup, request } from "@playwright/test";
+import {
+  TEST_USER,
+  STORAGE_STATE_PATH,
+  ensureTestUserRegistered,
+  brokerAvailable,
+} from "./fixtures/auth";
 
-setup('authenticate', async ({}, testInfo) => {
+setup("authenticate", async ({}, testInfo) => {
   if (!brokerAvailable()) {
-    console.warn('SKIP auth.setup: broker not reachable on 127.0.0.1:80');
+    console.warn("SKIP auth.setup: broker not reachable on 127.0.0.1:80");
     setup.skip();
     return;
   }
 
   ensureTestUserRegistered();
 
-  const ctx = await request.newContext({ baseURL: 'http://localhost:443' });
-  const res = await ctx.post('/login?/login', {
+  const ctx = await request.newContext({ baseURL: "http://localhost:443" });
+  const res = await ctx.post("/login?/login", {
     form: { email: TEST_USER.email, password: TEST_USER.password },
-    headers: { origin: 'http://localhost:443', accept: 'text/html' },
+    headers: { origin: "http://localhost:443", accept: "text/html" },
   });
 
   // SvelteKit form actions return either 200 (validation error) or 303 (redirect on success).
@@ -41,9 +46,11 @@ setup('authenticate', async ({}, testInfo) => {
 
   // Confirm the cookie is in the request context's jar.
   const state = await ctx.storageState({ path: STORAGE_STATE_PATH });
-  const apiKeyCookie = state.cookies.find((c) => c.name === 'ft_api_key');
+  const apiKeyCookie = state.cookies.find((c) => c.name === "ft_api_key");
   if (!apiKeyCookie) {
-    throw new Error(`Login did not set ft_api_key cookie. Status was ${res.status()}.`);
+    throw new Error(
+      `Login did not set ft_api_key cookie. Status was ${res.status()}.`
+    );
   }
 
   await ctx.dispose();

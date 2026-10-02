@@ -1,28 +1,34 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import type { CashflowEntry } from '$lib/valuation';
+  import { onMount } from "svelte";
+  import type { CashflowEntry } from "$lib/valuation";
 
-  export let result: import('$lib/valuation').FrnValuationResult | null = null;
-  export let securities: { cusip: string; issuerName: string; couponRate?: string; maturityDate: string }[] = [];
+  export let result: import("$lib/valuation").FrnValuationResult | null = null;
+  export let securities: {
+    cusip: string;
+    issuerName: string;
+    couponRate?: string;
+    maturityDate: string;
+  }[] = [];
 
-  type Mode = 'cusip' | 'manual';
-  let mode: Mode = 'manual';
+  type Mode = "cusip" | "manual";
+  let mode: Mode = "manual";
 
   // Shared inputs
-  let price = '';
-  let referenceRate = '';
-  let spread = '';
+  let price = "";
+  let referenceRate = "";
+  let spread = "";
 
   // CUSIP mode
-  let cusip = '';
+  let cusip = "";
   let showSuggestions = false;
   let selectedIndex = -1;
 
-  $: filteredSecurities = cusip.length > 0
-    ? securities.filter(s =>
-        s.cusip.toUpperCase().startsWith(cusip.toUpperCase())
-      ).slice(0, 8)
-    : [];
+  $: filteredSecurities =
+    cusip.length > 0
+      ? securities
+          .filter((s) => s.cusip.toUpperCase().startsWith(cusip.toUpperCase()))
+          .slice(0, 8)
+      : [];
 
   function selectCusip(value: string) {
     cusip = value;
@@ -32,93 +38,99 @@
 
   function handleCusipKeydown(e: KeyboardEvent) {
     if (!showSuggestions || filteredSecurities.length === 0) return;
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      selectedIndex = Math.min(selectedIndex + 1, filteredSecurities.length - 1);
-    } else if (e.key === 'ArrowUp') {
+      selectedIndex = Math.min(
+        selectedIndex + 1,
+        filteredSecurities.length - 1
+      );
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       selectedIndex = Math.max(selectedIndex - 1, 0);
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+    } else if (e.key === "Enter" && selectedIndex >= 0) {
       e.preventDefault();
       selectCusip(filteredSecurities[selectedIndex].cusip);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       showSuggestions = false;
     }
   }
 
   function handleCusipBlur() {
-    setTimeout(() => { showSuggestions = false; }, 150);
+    setTimeout(() => {
+      showSuggestions = false;
+    }, 150);
   }
 
   // Manual mode
-  let faceValue = '1000';
-  let couponFrequency = 'QUARTERLY';
-  let maturityDate = '';
-  let referenceRateIndex = 'SOFR';
+  let faceValue = "1000";
+  let couponFrequency = "QUARTERLY";
+  let maturityDate = "";
+  let referenceRateIndex = "SOFR";
 
   onMount(() => {
     const params = new URLSearchParams(window.location.search);
-    const m = params.get('frnMode');
-    if (m === 'cusip' || m === 'manual') mode = m;
+    const m = params.get("frnMode");
+    if (m === "cusip" || m === "manual") mode = m;
 
-    price = params.get('frnPrice') ?? '';
-    referenceRate = params.get('referenceRate') ?? '';
-    spread = params.get('frnSpread') ?? '';
-    cusip = params.get('frnCusip') ?? '';
-    faceValue = params.get('frnFaceValue') ?? '1000';
-    couponFrequency = params.get('frnCouponFrequency') ?? 'QUARTERLY';
-    maturityDate = params.get('frnMaturityDate') ?? '';
-    referenceRateIndex = params.get('referenceRateIndex') ?? 'SOFR';
+    price = params.get("frnPrice") ?? "";
+    referenceRate = params.get("referenceRate") ?? "";
+    spread = params.get("frnSpread") ?? "";
+    cusip = params.get("frnCusip") ?? "";
+    faceValue = params.get("frnFaceValue") ?? "1000";
+    couponFrequency = params.get("frnCouponFrequency") ?? "QUARTERLY";
+    maturityDate = params.get("frnMaturityDate") ?? "";
+    referenceRateIndex = params.get("referenceRateIndex") ?? "SOFR";
   });
 
   function calculate() {
     const params = new URLSearchParams({
-      tab: 'frn',
+      tab: "frn",
       frnMode: mode,
     });
 
-    if (price) params.set('frnPrice', price);
-    if (referenceRate) params.set('referenceRate', referenceRate);
-    if (spread) params.set('frnSpread', spread);
+    if (price) params.set("frnPrice", price);
+    if (referenceRate) params.set("referenceRate", referenceRate);
+    if (spread) params.set("frnSpread", spread);
 
-    if (mode === 'cusip') {
-      if (cusip) params.set('frnCusip', cusip);
+    if (mode === "cusip") {
+      if (cusip) params.set("frnCusip", cusip);
     } else {
-      if (faceValue) params.set('frnFaceValue', faceValue);
-      if (couponFrequency) params.set('frnCouponFrequency', couponFrequency);
-      if (maturityDate) params.set('frnMaturityDate', maturityDate);
-      if (referenceRateIndex) params.set('referenceRateIndex', referenceRateIndex);
+      if (faceValue) params.set("frnFaceValue", faceValue);
+      if (couponFrequency) params.set("frnCouponFrequency", couponFrequency);
+      if (maturityDate) params.set("frnMaturityDate", maturityDate);
+      if (referenceRateIndex)
+        params.set("referenceRateIndex", referenceRateIndex);
     }
 
     window.location.href = `/data/calculators?${params.toString()}`;
   }
 
   function formatPercent(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${(n * 100).toFixed(4)}%`;
   }
 
   function formatBps(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${(n * 10000).toFixed(2)} bps`;
   }
 
   function formatYears(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(4)} yrs`;
   }
 
   function formatPrice(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(4)}`;
   }
 
   function formatCouponRate(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(4)}%`;
   }
@@ -131,15 +143,15 @@
   <div class="mode-toggle mb-6">
     <button
       class="mode-btn"
-      class:active={mode === 'cusip'}
-      on:click={() => (mode = 'cusip')}
+      class:active={mode === "cusip"}
+      on:click={() => (mode = "cusip")}
     >
       CUSIP Lookup
     </button>
     <button
       class="mode-btn"
-      class:active={mode === 'manual'}
-      on:click={() => (mode = 'manual')}
+      class:active={mode === "manual"}
+      on:click={() => (mode = "manual")}
     >
       Manual Entry
     </button>
@@ -148,7 +160,7 @@
   <div class="calculator-layout">
     <!-- Inputs -->
     <div class="inputs-panel">
-      {#if mode === 'cusip'}
+      {#if mode === "cusip"}
         <div class="field-group autocomplete-wrapper">
           <label for="frnCusip">CUSIP</label>
           <input
@@ -157,10 +169,16 @@
             bind:value={cusip}
             placeholder="Start typing an FRN CUSIP..."
             autocomplete="off"
-            on:focus={() => { showSuggestions = true; selectedIndex = -1; }}
+            on:focus={() => {
+              showSuggestions = true;
+              selectedIndex = -1;
+            }}
             on:blur={handleCusipBlur}
             on:keydown={handleCusipKeydown}
-            on:input={() => { showSuggestions = true; selectedIndex = -1; }}
+            on:input={() => {
+              showSuggestions = true;
+              selectedIndex = -1;
+            }}
           />
           {#if showSuggestions && filteredSecurities.length > 0}
             <ul class="suggestions">
@@ -171,7 +189,7 @@
                 >
                   <span class="suggestion-cusip">{sec.cusip}</span>
                   <span class="suggestion-detail">
-                    {sec.couponRate ? sec.couponRate + '%' : 'FRN'} — matures {sec.maturityDate}
+                    {sec.couponRate ? sec.couponRate + "%" : "FRN"} — matures {sec.maturityDate}
                   </span>
                 </li>
               {/each}
@@ -181,7 +199,12 @@
       {:else}
         <div class="field-group">
           <label for="frnFaceValue">Face Value ($)</label>
-          <input id="frnFaceValue" type="number" bind:value={faceValue} placeholder="1000" />
+          <input
+            id="frnFaceValue"
+            type="number"
+            bind:value={faceValue}
+            placeholder="1000"
+          />
         </div>
         <div class="field-group">
           <label for="frnCouponFrequency">Coupon Frequency</label>
@@ -194,7 +217,12 @@
         </div>
         <div class="field-group">
           <label for="frnMaturityDate">Maturity Date</label>
-          <input id="frnMaturityDate" type="text" bind:value={maturityDate} placeholder="YYYY-MM-DD" />
+          <input
+            id="frnMaturityDate"
+            type="text"
+            bind:value={maturityDate}
+            placeholder="YYYY-MM-DD"
+          />
         </div>
         <div class="field-group">
           <label for="referenceRateIndex">Reference Rate Index</label>
@@ -208,20 +236,36 @@
 
       <div class="field-group">
         <label for="referenceRate">Reference Rate (%)</label>
-        <input id="referenceRate" type="number" step="0.01" bind:value={referenceRate} placeholder="e.g. 4.00" />
+        <input
+          id="referenceRate"
+          type="number"
+          step="0.01"
+          bind:value={referenceRate}
+          placeholder="e.g. 4.00"
+        />
       </div>
       <div class="field-group">
         <label for="frnSpread">Spread (bps)</label>
-        <input id="frnSpread" type="number" step="1" bind:value={spread} placeholder="e.g. 50 = +50bps" />
+        <input
+          id="frnSpread"
+          type="number"
+          step="1"
+          bind:value={spread}
+          placeholder="e.g. 50 = +50bps"
+        />
       </div>
       <div class="field-group">
         <label for="frnPrice">Price (% of par)</label>
-        <input id="frnPrice" type="number" step="0.001" bind:value={price} placeholder="e.g. 99.75" />
+        <input
+          id="frnPrice"
+          type="number"
+          step="0.001"
+          bind:value={price}
+          placeholder="e.g. 99.75"
+        />
       </div>
 
-      <button class="calc-button mt-4" on:click={calculate}>
-        Calculate
-      </button>
+      <button class="calc-button mt-4" on:click={calculate}> Calculate </button>
     </div>
 
     <!-- Results -->
@@ -248,7 +292,9 @@
           </tbody>
         </table>
       {:else}
-        <p class="placeholder-msg">Enter inputs and click Calculate to see FRN valuation results.</p>
+        <p class="placeholder-msg">
+          Enter inputs and click Calculate to see FRN valuation results.
+        </p>
       {/if}
     </div>
   </div>
@@ -276,9 +322,21 @@
           {/each}
           <tr class="total-row">
             <td>Total</td>
-            <td class="numeric"></td>
-            <td class="numeric">{formatPrice(result.cashflows.reduce((s, cf) => s + parseFloat(cf.fvAmount), 0).toString())}</td>
-            <td class="numeric">{formatPrice(result.cashflows.reduce((s, cf) => s + parseFloat(cf.pvAmount), 0).toString())}</td>
+            <td class="numeric" />
+            <td class="numeric"
+              >{formatPrice(
+                result.cashflows
+                  .reduce((s, cf) => s + parseFloat(cf.fvAmount), 0)
+                  .toString()
+              )}</td
+            >
+            <td class="numeric"
+              >{formatPrice(
+                result.cashflows
+                  .reduce((s, cf) => s + parseFloat(cf.pvAmount), 0)
+                  .toString()
+              )}</td
+            >
           </tr>
         </tbody>
       </table>
@@ -334,8 +392,12 @@
     color: $white;
     transition: background 0.15s;
 
-    &:first-child { border-radius: $bd-radius 0 0 $bd-radius; }
-    &:last-child  { border-radius: 0 $bd-radius $bd-radius 0; }
+    &:first-child {
+      border-radius: $bd-radius 0 0 $bd-radius;
+    }
+    &:last-child {
+      border-radius: 0 $bd-radius $bd-radius 0;
+    }
 
     &.active {
       background: $success;
@@ -343,7 +405,7 @@
       font-weight: bold;
     }
     &:not(.active):hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
     }
   }
 
@@ -358,7 +420,8 @@
       color: $white;
     }
 
-    input, select {
+    input,
+    select {
       padding: 4px 10px;
       border: 1px solid $border-color;
       border-radius: 4px;
@@ -368,7 +431,9 @@
       background-color: white;
       color: $black;
 
-      &::placeholder { color: $grey; }
+      &::placeholder {
+        color: $grey;
+      }
     }
   }
 
@@ -401,7 +466,8 @@
       font-size: 0.8rem;
       color: $black;
 
-      &:hover, &.selected {
+      &:hover,
+      &.selected {
         background-color: lighten($primary-color, 40%);
       }
     }
@@ -487,7 +553,8 @@
     width: 100%;
     border-collapse: collapse;
 
-    th, td {
+    th,
+    td {
       padding: 8px 10px;
       font-size: 0.85rem;
     }
@@ -498,7 +565,9 @@
       border-bottom: 2px solid $border-color;
       text-align: left;
 
-      &.numeric { text-align: right; }
+      &.numeric {
+        text-align: right;
+      }
     }
 
     td {

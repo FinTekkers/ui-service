@@ -37,17 +37,20 @@
     ASSET_CLASS_NAMES,
     ASSET_CLASS_LABELS,
     type AssetClassName,
-  } from '$lib/securityFilterTypes';
-  import { assetClassParentOf } from '@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy';
+  } from "$lib/securityFilterTypes";
+  import { assetClassParentOf } from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy";
 
-  export let value: AssetClassName | '' = '';
+  export let value: AssetClassName | "" = "";
   export let supportedTypes: readonly AssetClassName[] = ASSET_CLASS_NAMES;
   export let labels: Partial<Record<AssetClassName, string>> = {};
-  export let selectClass: string = '';
-  export let selectId: string = 'asset-class-filter-value';
-  export let allLabel: string = 'All';
+  export let selectClass: string = "";
+  export let selectId: string = "asset-class-filter-value";
+  export let allLabel: string = "All";
 
-  $: resolvedLabels = { ...ASSET_CLASS_LABELS, ...labels } as Record<string, string>;
+  $: resolvedLabels = { ...ASSET_CLASS_LABELS, ...labels } as Record<
+    string,
+    string
+  >;
 
   // Compute depth via parent walk so the dropdown can render tree
   // shape visually. Roots return depth 0; their immediate children
@@ -71,7 +74,7 @@
   // shallow trees rendered in a flat dropdown; if depths grow, switch
   // to an actual tree widget.
   function indentFor(node: string): string {
-    return '  '.repeat(depthOf(node));
+    return "  ".repeat(depthOf(node));
   }
 
   // Order options so parents render before their descendants. Tree
@@ -99,12 +102,7 @@
   });
 </script>
 
-<select
-  id={selectId}
-  class={selectClass}
-  bind:value
-  aria-label="Asset class"
->
+<select id={selectId} class={selectClass} bind:value aria-label="Asset class">
   <option value="">{allLabel}</option>
   {#each orderedSupportedTypes as t}
     <option value={t}>{indentFor(t)}{resolvedLabels[t] ?? t}</option>

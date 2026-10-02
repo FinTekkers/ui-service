@@ -1,19 +1,19 @@
 @import "variables";
 
 .main_ui_menu {
-    // BRUTE-FORCE: stripped 100vw/100vh/overflow:hidden. These were
-    // capping every data page (securities, portfolios, transactions,
-    // positions) into its own viewport-locked scroll container, which
-    // defeated the body-only-scroll fix at the (authenticated) layout
-    // level. With these gone, content flows naturally into the body.
-    width: 100%;
+  // BRUTE-FORCE: stripped 100vw/100vh/overflow:hidden. These were
+  // capping every data page (securities, portfolios, transactions,
+  // positions) into its own viewport-locked scroll container, which
+  // defeated the body-only-scroll fix at the (authenticated) layout
+  // level. With these gone, content flows naturally into the body.
+  width: 100%;
 }
 
 .main_navbar {
-    padding: 1em;
-    background-color: $primary-color;
+  padding: 1em;
+  background-color: $primary-color;
 
-    .logo {
-        margin-left: 1em;
-    }
+  .logo {
+    margin-left: 1em;
+  }
 }

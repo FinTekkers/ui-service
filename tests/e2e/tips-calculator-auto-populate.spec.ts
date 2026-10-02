@@ -13,10 +13,12 @@
  * security ingested — assertion of the value pulls from whatever is on
  * the wire, not a pinned constant.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('/data/calculators TIPS pricer auto-populates Reference CPI from Security (#266)', () => {
-  test('?tipsCusip=912828ZZ6: auto-fills Reference CPI when wire baseCpi present; else stays empty (manual fallback)', async ({ page }) => {
+test.describe("/data/calculators TIPS pricer auto-populates Reference CPI from Security (#266)", () => {
+  test("?tipsCusip=912828ZZ6: auto-fills Reference CPI when wire baseCpi present; else stays empty (manual fallback)", async ({
+    page,
+  }) => {
     // Acceptance fixture per the issue. The data-side prerequisite is
     // market-data-inputs PR #17 having ingested TipsDetailsProto.base_cpi
     // for this CUSIP (sourced from TreasuryDirect's RefCPIDatedDate). If
@@ -28,9 +30,10 @@ test.describe('/data/calculators TIPS pricer auto-populates Reference CPI from S
     // matches whichever path the code took. The wiring-correctness
     // signal lives in src/tests/TipsCalculator-auto-populate.test.ts +
     // src/tests/baseCpiOf.test.ts (15 vitest cases).
-    await page.goto('/data/calculators?tab=tips&tipsCusip=912828ZZ6');
-    await expect(page.getByRole('button', { name: 'CUSIP Lookup' }))
-      .toBeVisible({ timeout: 15_000 });
+    await page.goto("/data/calculators?tab=tips&tipsCusip=912828ZZ6");
+    await expect(
+      page.getByRole("button", { name: "CUSIP Lookup" })
+    ).toBeVisible({ timeout: 15_000 });
 
     const refCpiInput = page.getByLabel(/Reference CPI/);
     await expect(refCpiInput).toBeVisible();
@@ -40,9 +43,9 @@ test.describe('/data/calculators TIPS pricer auto-populates Reference CPI from S
     await page.waitForTimeout(15_000);
 
     const value = await refCpiInput.inputValue();
-    const indicatorCount = await page.getByText('from Security master').count();
+    const indicatorCount = await page.getByText("from Security master").count();
 
-    if (value !== '') {
+    if (value !== "") {
       // Data path: backend has base_cpi populated — assert the value
       // shape + indicator.
       expect(value).toMatch(/^\d+\.\d+$/);
@@ -51,20 +54,23 @@ test.describe('/data/calculators TIPS pricer auto-populates Reference CPI from S
       // Data-gap path: nothing populated. Page must still be in a
       // clean state — no auto indicator, no manual indicator.
       expect(indicatorCount).toBe(0);
-      const manualCount = await page.getByText('manual override').count();
+      const manualCount = await page.getByText("manual override").count();
       expect(manualCount).toBe(0);
     }
   });
 
-  test('CUSIP with no matching Security leaves Reference CPI empty + no indicator (manual fallback ready)', async ({ page }) => {
-    await page.goto('/data/calculators?tab=tips&tipsCusip=ZZZZZ9999');
-    await expect(page.getByRole('button', { name: 'CUSIP Lookup' }))
-      .toBeVisible({ timeout: 15_000 });
+  test("CUSIP with no matching Security leaves Reference CPI empty + no indicator (manual fallback ready)", async ({
+    page,
+  }) => {
+    await page.goto("/data/calculators?tab=tips&tipsCusip=ZZZZZ9999");
+    await expect(
+      page.getByRole("button", { name: "CUSIP Lookup" })
+    ).toBeVisible({ timeout: 15_000 });
     await page.waitForTimeout(2_000);
 
     const refCpiInput = page.getByLabel(/Reference CPI/);
-    await expect(refCpiInput).toHaveValue('');
-    await expect(page.getByText('from Security master')).toHaveCount(0);
-    await expect(page.getByText('manual override')).toHaveCount(0);
+    await expect(refCpiInput).toHaveValue("");
+    await expect(page.getByText("from Security master")).toHaveCount(0);
+    await expect(page.getByText("manual override")).toHaveCount(0);
   });
 });

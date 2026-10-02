@@ -1,7 +1,13 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount } from "svelte";
 
-  type CpiSeries = { identifier: string; description: string; indexType: string; uuidHex: string; uuidStr: string };
+  type CpiSeries = {
+    identifier: string;
+    description: string;
+    indexType: string;
+    uuidHex: string;
+    uuidStr: string;
+  };
   type CpiPoint = { date: string; value: number; mom: number | null };
 
   export let data: {
@@ -12,13 +18,13 @@
     user?: any;
   };
 
-  $: selectedId = data.selectedSeries?.identifier ?? '';
+  $: selectedId = data.selectedSeries?.identifier ?? "";
 
   function onSeriesChange(e: Event) {
     const id = (e.currentTarget as HTMLSelectElement).value;
     if (!id) return;
-    const u = new URL('/data/cpi_index', window.location.origin);
-    u.searchParams.set('series', id);
+    const u = new URL("/data/cpi_index", window.location.origin);
+    u.searchParams.set("series", id);
     window.location.href = u.pathname + u.search;
   }
 
@@ -33,12 +39,15 @@
 
   // Title / subtitle / Y-axis label derived from selected series
   $: pageTitle = data.selectedSeries
-    ? `${data.selectedSeries.indexType.replace('_', '-')} — ${data.selectedSeries.identifier}`
-    : 'CPI Index';
-  $: pageSubtitle = data.selectedSeries?.description ?? 'Select a CPI series to display.';
+    ? `${data.selectedSeries.indexType.replace("_", "-")} — ${
+        data.selectedSeries.identifier
+      }`
+    : "CPI Index";
+  $: pageSubtitle =
+    data.selectedSeries?.description ?? "Select a CPI series to display.";
   $: yAxisLabel = data.selectedSeries
-    ? `${data.selectedSeries.indexType.replace('_', '-')} Level`
-    : 'Index Level';
+    ? `${data.selectedSeries.indexType.replace("_", "-")} Level`
+    : "Index Level";
 
   let chartEl: HTMLDivElement;
 
@@ -46,107 +55,133 @@
   // so onMount fires fresh per visit. No reactive re-render needed.
   onMount(async () => {
     if (data.cpiData.length === 0 || !chartEl) return;
-    const Plotly: any = (await import('plotly.js-dist') as any).default ?? (await import('plotly.js-dist'));
+    // Source text asserted by src/tests/cpi-index-display.test.ts.
+    // prettier-ignore
+    const Plotly: any =
+      ((await import('plotly.js-dist')) as any).default ??
+      (await import('plotly.js-dist'));
     const trace = {
       x: data.cpiData.map((d) => d.date),
       y: data.cpiData.map((d) => d.value),
-      mode: 'lines',
+      mode: "lines",
+      // Source text asserted by src/tests/cpi-index-display.test.ts.
+      // prettier-ignore
       line: { color: '#7cd2ba', width: 1.5 },
-      hovertemplate: '%{x}<br>%{y:.3f}<extra></extra>',
-      name: data.selectedSeries?.identifier ?? '',
+      hovertemplate: "%{x}<br>%{y:.3f}<extra></extra>",
+      name: data.selectedSeries?.identifier ?? "",
     };
     const layout = {
-      paper_bgcolor: '#0c3a46',
-      plot_bgcolor: '#0c3a46',
-      font: { color: '#a0adb7', size: 11 },
+      paper_bgcolor: "#0c3a46",
+      plot_bgcolor: "#0c3a46",
+      font: { color: "#a0adb7", size: 11 },
       margin: { t: 30, r: 20, b: 50, l: 60 },
+      // Source text asserted by src/tests/cpi-index-display.test.ts.
+      // prettier-ignore
       hovermode: 'x unified',
       xaxis: {
-        gridcolor: '#164e63',
-        rangeslider: { visible: true, bgcolor: '#0a2e38', thickness: 0.05 },
+        gridcolor: "#164e63",
+        rangeslider: { visible: true, bgcolor: "#0a2e38", thickness: 0.05 },
         rangeselector: {
           buttons: [
-            { count: 1, label: '1Y', step: 'year', stepmode: 'backward' },
-            { count: 5, label: '5Y', step: 'year', stepmode: 'backward' },
-            { count: 10, label: '10Y', step: 'year', stepmode: 'backward' },
-            { count: 25, label: '25Y', step: 'year', stepmode: 'backward' },
-            { step: 'all', label: 'All' },
+            { count: 1, label: "1Y", step: "year", stepmode: "backward" },
+            { count: 5, label: "5Y", step: "year", stepmode: "backward" },
+            { count: 10, label: "10Y", step: "year", stepmode: "backward" },
+            { count: 25, label: "25Y", step: "year", stepmode: "backward" },
+            { step: "all", label: "All" },
           ],
-          bgcolor: '#0c3a46',
-          activecolor: '#7cd2ba',
-          font: { color: '#a0adb7' },
+          bgcolor: "#0c3a46",
+          activecolor: "#7cd2ba",
+          font: { color: "#a0adb7" },
           x: 0,
           y: 1.15,
         },
       },
       yaxis: {
-        gridcolor: '#164e63',
-        title: { text: yAxisLabel, font: { color: '#a0adb7' } },
+        gridcolor: "#164e63",
+        title: { text: yAxisLabel, font: { color: "#a0adb7" } },
       },
     };
-    Plotly.newPlot(chartEl, [trace], layout, { responsive: true, displayModeBar: false });
+    Plotly.newPlot(chartEl, [trace], layout, {
+      responsive: true,
+      displayModeBar: false,
+    });
   });
 </script>
 
 <div class="portfolio_container px-10 py-7">
-      <h1 class="page-title">{pageTitle}</h1>
-      <p class="page-subtitle">{pageSubtitle}</p>
+  <h1 class="page-title">{pageTitle}</h1>
+  <p class="page-subtitle">{pageSubtitle}</p>
 
-      <div class="series-selector-row">
-        <label for="series-select">Series</label>
-        <select id="series-select" class="series-select" value={selectedId} on:change={onSeriesChange} disabled={data.allSeries.length === 0}>
-          {#if data.allSeries.length === 0}
-            <option value="">No CPI series available</option>
-          {:else}
-            {#each data.allSeries as series}
-              <option value={series.identifier}>
-                {series.identifier} — {series.description} ({series.indexType.replace('_', '-')})
-              </option>
-            {/each}
-          {/if}
-        </select>
-      </div>
-
-      {#if data.error}
-        <div class="notice">{data.error}</div>
-      {/if}
-
-      {#if cpiPoints.length === 0}
-        <div class="empty-state">No CPI data available for the selected series.</div>
+  <div class="series-selector-row">
+    <label for="series-select">Series</label>
+    <select
+      id="series-select"
+      class="series-select"
+      value={selectedId}
+      on:change={onSeriesChange}
+      disabled={data.allSeries.length === 0}
+    >
+      {#if data.allSeries.length === 0}
+        <option value="">No CPI series available</option>
       {:else}
-        <div class="chart-box">
-          <div bind:this={chartEl} class="cpi-chart" />
-        </div>
+        {#each data.allSeries as series}
+          <option value={series.identifier}>
+            {series.identifier} — {series.description} ({series.indexType.replace(
+              "_",
+              "-"
+            )})
+          </option>
+        {/each}
+      {/if}
+    </select>
+  </div>
 
-        <div class="table-section">
-          <h2 class="section-title">Monthly Data</h2>
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>{yAxisLabel}</th>
-                  <th>Month-over-Month (%)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each reversedPoints as point}
-                  <tr>
-                    <td>{point.date}</td>
-                    <td class="value-cell">{point.value.toFixed(3)}</td>
-                    <td class="change-cell" class:positive={point.mom !== null && point.mom > 0} class:negative={point.mom !== null && point.mom < 0}>
-                      {#if point.mom !== null}
-                        {point.mom > 0 ? '+' : ''}{point.mom.toFixed(3)}%
-                      {:else}
-                        —
-                      {/if}
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
-        </div>
+  {#if data.error}
+    <div class="notice">{data.error}</div>
+  {/if}
+
+  {#if cpiPoints.length === 0}
+    <div class="empty-state">
+      No CPI data available for the selected series.
+    </div>
+  {:else}
+    <div class="chart-box">
+      <div bind:this={chartEl} class="cpi-chart" />
+    </div>
+
+    <div class="table-section">
+      <h2 class="section-title">Monthly Data</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>{yAxisLabel}</th>
+              <th>Month-over-Month (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each reversedPoints as point}
+              <tr>
+                <td>{point.date}</td>
+                <td class="value-cell">{point.value.toFixed(3)}</td>
+                <td
+                  class="change-cell"
+                  class:positive={point.mom !== null && point.mom > 0}
+                  class:negative={point.mom !== null && point.mom < 0}
+                >
+                  {#if point.mom !== null}
+                    {point.mom > 0 ? "+" : ""}{point.mom.toFixed(3)}%
+                  {:else}
+                    —
+                  {/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -219,7 +254,7 @@
 
   .cpi-chart {
     width: 100%;
-    min-height: 420px;  // chart + range slider + range selector
+    min-height: 420px; // chart + range slider + range selector
   }
 
   .section-title {
@@ -271,7 +306,11 @@
   .change-cell {
     font-variant-numeric: tabular-nums;
 
-    &.positive { color: #7cd2ba; }
-    &.negative { color: #c43d5a; }
+    &.positive {
+      color: #7cd2ba;
+    }
+    &.negative {
+      color: #c43d5a;
+    }
   }
 </style>

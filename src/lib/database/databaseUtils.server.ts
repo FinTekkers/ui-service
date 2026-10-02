@@ -1,34 +1,34 @@
-import { eq } from 'drizzle-orm';
-import { database } from './database.server';
-import { usersTable, type UserInsertSchema } from './schema';
+import { eq } from "drizzle-orm";
+import { database } from "./database.server";
+import { usersTable, type UserInsertSchema } from "./schema";
 
 export const checkIfEmailExists = async (email: string) => {
-	const queryResult = await database
-		.select({
-			email: usersTable.email
-		})
-		.from(usersTable)
-		.where(eq(usersTable.email, email));
+  const queryResult = await database
+    .select({
+      email: usersTable.email,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.email, email));
 
-	return queryResult.length > 0;
+  return queryResult.length > 0;
 };
 
 export const insertNewUser = async (user: UserInsertSchema) => {
-	return await database.insert(usersTable).values(user);
+  return await database.insert(usersTable).values(user);
 };
 
 export const getAllUsers = async () => {
-	const queryResult = await database
-		.select({
-			id: usersTable.id,
-			name: usersTable.firstname,
-			email: usersTable.email
-		})
-		.from(usersTable);
+  const queryResult = await database
+    .select({
+      id: usersTable.id,
+      name: usersTable.firstname,
+      email: usersTable.email,
+    })
+    .from(usersTable);
 
-	return queryResult;
+  return queryResult;
 };
 
 export const deleteAllUsers = async () => {
-	return await database.delete(usersTable);
+  return await database.delete(usersTable);
 };

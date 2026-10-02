@@ -1,0 +1,12 @@
+# CI/deploy workflows stay byte-for-byte untouched (operator ruling a).
+.github/
+# Generated output.
+.svelte-kit/
+build/
+node_modules/
+test-results/
+playwright-report/
+*.timestamp-*.mjs
+# npm owns the formatting of these files; they must stay byte-identical to main (R9).
+package.json
+package-lock.json

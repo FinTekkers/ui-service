@@ -18,35 +18,38 @@
  *   4. Call ValuationClient.runCurve via the broker.
  *   5. Map CurveResultProto[] → {par, spot, forward}.
  */
-import { ValuationClient } from '@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js';
-import { CurveRequestProto, CurveInputProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_request_pb.js';
-import type { CurveResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_response_pb.js';
-import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js';
-import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
-import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
-import { getServiceConnection } from '$lib/grpc-auth';
+import { ValuationClient } from "@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js";
+import {
+  CurveRequestProto,
+  CurveInputProto,
+} from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_request_pb.js";
+import type { CurveResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_response_pb.js";
+import { DecimalValueProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js";
+import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
+import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { getServiceConnection } from "$lib/grpc-auth";
 import {
   EXPECTED_CONSTITUENT_COUNT,
   findLatestBuildableDate,
   loadTreasuryCurveBundle,
   type ConstituentBundle,
   type CurveConstituent,
-} from '$lib/treasuryCurveData';
+} from "$lib/treasuryCurveData";
 import {
   formatYears,
   parseForwardTerm,
   type ForwardTermYears,
-} from '$lib/curveForwardTerm';
+} from "$lib/curveForwardTerm";
 
 const { MeasureProto } = measure_pkg;
 
 const LATEST_DATE_SCAN_DAYS = 30;
 
 export interface CurvePoint {
-  tenor: string;   // decimal-year display label (e.g. "9.95Y")
-  years: number;   // numeric (decimal years). For the term-forward trace this is
-                   //   the *starting* year t, not the maturity tenor.
-  yield: number;   // percent (e.g. 4.25 means 4.25%)
+  tenor: string; // decimal-year display label (e.g. "9.95Y")
+  years: number; // numeric (decimal years). For the term-forward trace this is
+  //   the *starting* year t, not the maturity tenor.
+  yield: number; // percent (e.g. 4.25 means 4.25%)
 }
 
 interface PageData {
@@ -72,22 +75,29 @@ function decimal(value: string): DecimalValueProto {
  * Per #203 decision table: as-of semantics are end-of-day.
  */
 function endOfDayProto(asOf: Date) {
-  const eod = new Date(Date.UTC(
-    asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate(),
-    23, 59, 59, 999,
-  ));
+  const eod = new Date(
+    Date.UTC(
+      asOf.getUTCFullYear(),
+      asOf.getUTCMonth(),
+      asOf.getUTCDate(),
+      23,
+      59,
+      59,
+      999
+    )
+  );
   return ZonedDateTime.from(eod).toProto();
 }
 
 function buildCurveRequest(
   constituents: CurveConstituent[],
   asOf: Date,
-  termYears: ForwardTermYears,
+  termYears: ForwardTermYears
 ): { request: CurveRequestProto; warnings: string[] } {
   const warnings: string[] = [];
   const request = new CurveRequestProto();
-  request.setObjectClass('CurveRequestProto');
-  request.setVersion('0.0.1');
+  request.setObjectClass("CurveRequestProto");
+  request.setVersion("0.0.1");
   request.setAsofDatetime(endOfDayProto(asOf));
   request.setCurveTypesList([
     MeasureProto.PAR_YIELD,
@@ -111,7 +121,9 @@ function buildCurveRequest(
 }
 
 function parseCurveResponse(response: CurveResponseProto): {
-  par: CurvePoint[]; spot: CurvePoint[]; forward: CurvePoint[];
+  par: CurvePoint[];
+  spot: CurvePoint[];
+  forward: CurvePoint[];
 } {
   const par: CurvePoint[] = [];
   const spot: CurvePoint[] = [];
@@ -125,7 +137,11 @@ function parseCurveResponse(response: CurveResponseProto): {
       if (!tenorStr || !yieldStr) continue;
       const years = parseFloat(tenorStr);
       const yieldPct = parseFloat(yieldStr) * 100;
-      const cp: CurvePoint = { tenor: formatYears(years), years, yield: yieldPct };
+      const cp: CurvePoint = {
+        tenor: formatYears(years),
+        years,
+        yield: yieldPct,
+      };
       if (curveType === MeasureProto.PAR_YIELD) par.push(cp);
       else if (curveType === MeasureProto.SPOT_YIELD) spot.push(cp);
       else if (curveType === MeasureProto.FORWARD_YIELD) forward.push(cp);
@@ -141,20 +157,32 @@ function emptyPage(
   warnings: string[],
   error: string | null,
   latestBuildableDate: string | null,
-  asofWasDefaulted: boolean,
+  asofWasDefaulted: boolean
 ): PageData {
   return {
-    par: [], spot: [], forward: [],
-    curveDate, termYears, warnings, error,
-    latestBuildableDate, asofWasDefaulted,
+    par: [],
+    spot: [],
+    forward: [],
+    curveDate,
+    termYears,
+    warnings,
+    error,
+    latestBuildableDate,
+    asofWasDefaulted,
   };
 }
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ url, locals }: { url: URL; locals: App.Locals }): Promise<PageData> {
+export async function load({
+  url,
+  locals,
+}: {
+  url: URL;
+  locals: App.Locals;
+}): Promise<PageData> {
   const apiKey = locals.user?.apiKey;
-  const dateParam = url.searchParams.get('asof');
-  const termYears = parseForwardTerm(url.searchParams.get('term'));
+  const dateParam = url.searchParams.get("asof");
+  const termYears = parseForwardTerm(url.searchParams.get("term"));
 
   // Asof resolution. Explicit ?asof= → use it (no scan). Missing → scan
   // backward from today for the latest fully-priced date. The scan also
@@ -165,15 +193,18 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
   let latestBuildableDateStr: string | null;
 
   if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
-    asOf = new Date(dateParam + 'T12:00:00Z');
+    asOf = new Date(dateParam + "T12:00:00Z");
     asofWasDefaulted = false;
     try {
       bundle = await loadTreasuryCurveBundle(asOf, apiKey);
     } catch (e: any) {
       return emptyPage(
-        asOf.toISOString().slice(0, 10), termYears, [],
+        asOf.toISOString().slice(0, 10),
+        termYears,
+        [],
         `Failed to resolve Treasury curve constituents: ${e.message ?? e}`,
-        null, false,
+        null,
+        false
       );
     }
     // Best-effort populate the hint without blocking the user-requested
@@ -181,21 +212,38 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
     latestBuildableDateStr = null;
     try {
       const today = new Date();
-      const latest = await findLatestBuildableDate(today, LATEST_DATE_SCAN_DAYS, apiKey);
-      latestBuildableDateStr = latest.date ? latest.date.toISOString().slice(0, 10) : null;
-    } catch { /* hint is non-critical */ }
+      const latest = await findLatestBuildableDate(
+        today,
+        LATEST_DATE_SCAN_DAYS,
+        apiKey
+      );
+      latestBuildableDateStr = latest.date
+        ? latest.date.toISOString().slice(0, 10)
+        : null;
+    } catch {
+      /* hint is non-critical */
+    }
   } else {
     asofWasDefaulted = true;
     try {
-      const latest = await findLatestBuildableDate(new Date(), LATEST_DATE_SCAN_DAYS, apiKey);
+      const latest = await findLatestBuildableDate(
+        new Date(),
+        LATEST_DATE_SCAN_DAYS,
+        apiKey
+      );
       asOf = latest.date ?? new Date();
-      bundle = latest.bundle ?? await loadTreasuryCurveBundle(asOf, apiKey);
-      latestBuildableDateStr = latest.date ? latest.date.toISOString().slice(0, 10) : null;
+      bundle = latest.bundle ?? (await loadTreasuryCurveBundle(asOf, apiKey));
+      latestBuildableDateStr = latest.date
+        ? latest.date.toISOString().slice(0, 10)
+        : null;
     } catch (e: any) {
       return emptyPage(
-        new Date().toISOString().slice(0, 10), termYears, [],
+        new Date().toISOString().slice(0, 10),
+        termYears,
+        [],
         `Failed to resolve Treasury curve constituents: ${e.message ?? e}`,
-        null, true,
+        null,
+        true
       );
     }
   }
@@ -204,43 +252,61 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
 
   if (bundle.constituents.length === 0) {
     return emptyPage(
-      curveDate, termYears, [],
-      'No Treasury curve constituents resolved for the selected date.',
-      latestBuildableDateStr, asofWasDefaulted,
+      curveDate,
+      termYears,
+      [],
+      "No Treasury curve constituents resolved for the selected date.",
+      latestBuildableDateStr,
+      asofWasDefaulted
     );
   }
 
-  const { request, warnings } = buildCurveRequest(bundle.constituents, asOf, termYears);
+  const { request, warnings } = buildCurveRequest(
+    bundle.constituents,
+    asOf,
+    termYears
+  );
 
   if (bundle.pricedCount < EXPECTED_CONSTITUENT_COUNT) {
     warnings.unshift(
       `Curve has ${bundle.pricedCount}/${EXPECTED_CONSTITUENT_COUNT} priced constituents` +
-      (latestBuildableDateStr && latestBuildableDateStr !== curveDate
-        ? ` — latest fully-priced date is ${latestBuildableDateStr}.`
-        : '.'),
+        (latestBuildableDateStr && latestBuildableDateStr !== curveDate
+          ? ` — latest fully-priced date is ${latestBuildableDateStr}.`
+          : ".")
     );
   }
 
   if (request.getCurveInputsList().length < 2) {
     return emptyPage(
-      curveDate, termYears, warnings,
-      'Insufficient curve inputs — need at least 2 bonds with prices to bootstrap a curve.',
-      latestBuildableDateStr, asofWasDefaulted,
+      curveDate,
+      termYears,
+      warnings,
+      "Insufficient curve inputs — need at least 2 bonds with prices to bootstrap a curve.",
+      latestBuildableDateStr,
+      asofWasDefaulted
     );
   }
 
   let response: CurveResponseProto;
   try {
     const conn = getServiceConnection(apiKey);
-    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+    const client = new ValuationClient(conn.url, conn.credentials, {
+      interceptors: conn.interceptors,
+      ...conn.clientOptions,
+    });
     response = await new Promise<CurveResponseProto>((resolve, reject) => {
-      client.runCurve(request, (err, resp) => (err ? reject(err) : resolve(resp)));
+      client.runCurve(request, (err, resp) =>
+        err ? reject(err) : resolve(resp)
+      );
     });
   } catch (e: any) {
     return emptyPage(
-      curveDate, termYears, warnings,
+      curveDate,
+      termYears,
+      warnings,
       `RunCurve failed: ${e.details ?? e.message ?? e}`,
-      latestBuildableDateStr, asofWasDefaulted,
+      latestBuildableDateStr,
+      asofWasDefaulted
     );
   }
 
@@ -251,14 +317,23 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
     try {
       for (const w of summary.getWarningsList?.() ?? []) {
         const detail = (w as any).getDetail?.();
-        const text = detail?.toString?.() ?? `Warning code ${(w as any).getCode?.()}`;
+        const text =
+          detail?.toString?.() ?? `Warning code ${(w as any).getCode?.()}`;
         if (text) warnings.push(text);
       }
-    } catch { /* summary shape varies */ }
+    } catch {
+      /* summary shape varies */
+    }
   }
 
   return {
-    par, spot, forward, curveDate, termYears, warnings, error: null,
+    par,
+    spot,
+    forward,
+    curveDate,
+    termYears,
+    warnings,
+    error: null,
     latestBuildableDate: latestBuildableDateStr,
     asofWasDefaulted,
   };

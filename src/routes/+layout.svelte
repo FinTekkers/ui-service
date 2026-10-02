@@ -28,7 +28,6 @@
   <title>{title}</title>
 </svelte:head>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <AppShell>
   <SidebarNav />
   <Navbar />

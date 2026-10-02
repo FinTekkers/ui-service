@@ -6,7 +6,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   overflow-x: hidden !important;
 }
 
@@ -151,4 +152,4 @@ body {
   font-size: 1.5rem;
   color: #1b6f85;
   grid-area: 1/1/1/1;
-}/*# sourceMappingURL=style.css.map */
+} /*# sourceMappingURL=style.css.map */

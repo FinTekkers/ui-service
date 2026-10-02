@@ -6,13 +6,13 @@
     handleSortClick,
     type SortDirection,
   } from "$lib/sortUtils";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
 
   type SecurityData = {
     identifier: string;
     identifierType: string;
     settlementCurrency: string;
-    cusip: string;               // deprecated alias kept for compatibility
+    cusip: string; // deprecated alias kept for compatibility
     uuidHex?: string;
     issueDate: string;
     maturityDate: string;
@@ -83,13 +83,18 @@
   function formatCellValue(row: SecurityData, key: keyof SecurityData): string {
     const value = row[key];
     if (key === "faceValue" || key === "outstandingAmount") {
-      return value ? formatAmount(String(value)) : '-';
+      return value ? formatAmount(String(value)) : "-";
     }
-    return value != null ? String(value) : '-';
+    return value != null ? String(value) : "-";
   }
 
   function handleDeleteClick(row: SecurityData) {
-    dispatch('requestDelete', { identifier: row.identifier || row.cusip, cusip: row.identifier || row.cusip, uuidHex: row.uuidHex, issuerName: row.issuerName });
+    dispatch("requestDelete", {
+      identifier: row.identifier || row.cusip,
+      cusip: row.identifier || row.cusip,
+      uuidHex: row.uuidHex,
+      issuerName: row.issuerName,
+    });
   }
 </script>
 

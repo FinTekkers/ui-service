@@ -30,7 +30,7 @@ export function buildFilterUrl(
   pathname: string,
   current: URLSearchParams,
   overrides: FilterOverrides,
-  inheritKeys: readonly string[] = [],
+  inheritKeys: readonly string[] = []
 ): string {
   const params = new URLSearchParams();
 
@@ -45,7 +45,7 @@ export function buildFilterUrl(
       explicitlyRemoved.add(key);
       continue;
     }
-    if (value === undefined || value === '') continue;
+    if (value === undefined || value === "") continue;
     params.set(key, value);
   }
 
@@ -55,7 +55,7 @@ export function buildFilterUrl(
     if (params.has(key)) continue;
     if (explicitlyRemoved.has(key)) continue;
     const inbound = current.get(key);
-    if (inbound !== null && inbound !== '') {
+    if (inbound !== null && inbound !== "") {
       params.set(key, inbound);
     }
   }

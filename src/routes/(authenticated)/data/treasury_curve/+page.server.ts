@@ -16,8 +16,8 @@ import {
   findLatestBuildableDate,
   loadTreasuryCurveBundle,
   type ConstituentBundle,
-} from '$lib/treasuryCurveData';
-import { runCurveParYieldsByTenor } from '$lib/runCurve';
+} from "$lib/treasuryCurveData";
+import { runCurveParYieldsByTenor } from "$lib/runCurve";
 
 const LATEST_DATE_SCAN_DAYS = 30;
 
@@ -28,7 +28,7 @@ export interface TreasuryCurveRow {
   issueDate: string;
   maturityDate: string;
   couponRate: number;
-  cleanPrice: number | null;  // null = no price found at/before as-of
+  cleanPrice: number | null; // null = no price found at/before as-of
   // #305 part B: par yield from RunCurve, joined by tenor. null when
   // RunCurve had insufficient inputs (≪2 priced constituents) or the
   // valuation service errored — chart + column degrade to '—'.
@@ -42,10 +42,15 @@ interface PageData {
   asofWasDefaulted: boolean;
 }
 
-function bundleToRows(bundle: ConstituentBundle, parYieldsByTenor: Map<string, number>): TreasuryCurveRow[] {
+function bundleToRows(
+  bundle: ConstituentBundle,
+  parYieldsByTenor: Map<string, number>
+): TreasuryCurveRow[] {
   return bundle.constituents.map((c) => {
-    const maturity = c.maturityDate ? c.maturityDate.toISOString().slice(0, 10) : '';
-    const issue = c.issueDate ? c.issueDate.toISOString().slice(0, 10) : '';
+    const maturity = c.maturityDate
+      ? c.maturityDate.toISOString().slice(0, 10)
+      : "";
+    const issue = c.issueDate ? c.issueDate.toISOString().slice(0, 10) : "";
     const description = c.productType
       ? `${c.productType} ${c.couponRate}% ${maturity}`
       : `${c.cusip} ${c.couponRate}% ${maturity}`;
@@ -63,9 +68,15 @@ function bundleToRows(bundle: ConstituentBundle, parYieldsByTenor: Map<string, n
 }
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ url, locals }: { url: URL; locals: App.Locals }): Promise<PageData> {
+export async function load({
+  url,
+  locals,
+}: {
+  url: URL;
+  locals: App.Locals;
+}): Promise<PageData> {
   const apiKey = locals.user?.apiKey;
-  const dateParam = url.searchParams.get('date');
+  const dateParam = url.searchParams.get("date");
 
   let asOfDate: Date;
   let bundle: ConstituentBundle | null = null;
@@ -73,29 +84,54 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
   let latestBuildableDateStr: string | null = null;
 
   if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
-    asOfDate = new Date(dateParam + 'T12:00:00');
+    asOfDate = new Date(dateParam + "T12:00:00");
     asofWasDefaulted = false;
     try {
       bundle = await loadTreasuryCurveBundle(asOfDate, apiKey);
     } catch (e: any) {
-      console.error('Error fetching securities for curve:', e?.message ?? e);
-      bundle = { asOf: asOfDate, constituents: [], pricedCount: 0, fullyPriced: false };
+      console.error("Error fetching securities for curve:", e?.message ?? e);
+      bundle = {
+        asOf: asOfDate,
+        constituents: [],
+        pricedCount: 0,
+        fullyPriced: false,
+      };
     }
     try {
-      const latest = await findLatestBuildableDate(new Date(), LATEST_DATE_SCAN_DAYS, apiKey);
-      latestBuildableDateStr = latest.date ? latest.date.toISOString().slice(0, 10) : null;
-    } catch { /* hint is non-critical */ }
+      const latest = await findLatestBuildableDate(
+        new Date(),
+        LATEST_DATE_SCAN_DAYS,
+        apiKey
+      );
+      latestBuildableDateStr = latest.date
+        ? latest.date.toISOString().slice(0, 10)
+        : null;
+    } catch {
+      /* hint is non-critical */
+    }
   } else {
     asofWasDefaulted = true;
     try {
-      const latest = await findLatestBuildableDate(new Date(), LATEST_DATE_SCAN_DAYS, apiKey);
+      const latest = await findLatestBuildableDate(
+        new Date(),
+        LATEST_DATE_SCAN_DAYS,
+        apiKey
+      );
       asOfDate = latest.date ?? new Date();
-      bundle = latest.bundle ?? await loadTreasuryCurveBundle(asOfDate, apiKey);
-      latestBuildableDateStr = latest.date ? latest.date.toISOString().slice(0, 10) : null;
+      bundle =
+        latest.bundle ?? (await loadTreasuryCurveBundle(asOfDate, apiKey));
+      latestBuildableDateStr = latest.date
+        ? latest.date.toISOString().slice(0, 10)
+        : null;
     } catch (e: any) {
-      console.error('Error scanning for latest curve date:', e?.message ?? e);
+      console.error("Error scanning for latest curve date:", e?.message ?? e);
       asOfDate = new Date();
-      bundle = { asOf: asOfDate, constituents: [], pricedCount: 0, fullyPriced: false };
+      bundle = {
+        asOf: asOfDate,
+        constituents: [],
+        pricedCount: 0,
+        fullyPriced: false,
+      };
     }
   }
 
@@ -108,9 +144,13 @@ export async function load({ url, locals }: { url: URL; locals: App.Locals }): P
   // the table + price column still render.
   let parYieldsByTenor = new Map<string, number>();
   try {
-    parYieldsByTenor = await runCurveParYieldsByTenor(bundle.constituents, asOfDate, apiKey);
+    parYieldsByTenor = await runCurveParYieldsByTenor(
+      bundle.constituents,
+      asOfDate,
+      apiKey
+    );
   } catch (e: any) {
-    console.warn('runCurveParYieldsByTenor threw:', e?.message ?? e);
+    console.warn("runCurveParYieldsByTenor threw:", e?.message ?? e);
   }
 
   return {

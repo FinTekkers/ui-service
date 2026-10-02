@@ -12,18 +12,18 @@
  * behavior that motivated it (so a future upstream wrapper fix surfaces
  * here as a green-but-now-redundant test, not silent drift).
  */
-import { describe, expect, test } from 'vitest';
-import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
-import BondSecurity from '@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity';
-import TIPSBond from '@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond';
-import FloatingRateNote from '@fintekkers/ledger-models/node/wrappers/models/security/FloatingRateNote';
-import { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb';
-import { ProductTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb';
-import { CouponTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb';
-import { CouponFrequencyProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb';
-import { IndexTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb';
-import { Decimal } from 'decimal.js';
-import { productTypeNameOf } from '$lib/security';
+import { describe, expect, test } from "vitest";
+import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
+import BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
+import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
+import FloatingRateNote from "@fintekkers/ledger-models/node/wrappers/models/security/FloatingRateNote";
+import { SecurityProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_pb";
+import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb";
+import { CouponTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb";
+import { CouponFrequencyProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb";
+import { IndexTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb";
+import { Decimal } from "decimal.js";
+import { productTypeNameOf } from "$lib/security";
 
 function makeBondProto(opts: {
   productType: number;
@@ -31,8 +31,8 @@ function makeBondProto(opts: {
   maturityYear: number;
 }): SecurityProto {
   const baseArgs = {
-    faceValue: new Decimal('1000'),
-    couponRate: new Decimal('0.05'),
+    faceValue: new Decimal("1000"),
+    couponRate: new Decimal("0.05"),
     couponType: CouponTypeProto.FIXED,
     couponFrequency: CouponFrequencyProto.SEMIANNUALLY,
     issueDate: new Date(opts.issueYear, 0, 1),
@@ -42,7 +42,7 @@ function makeBondProto(opts: {
     case ProductTypeProto.TIPS:
       return TIPSBond.fromPricerInputs({
         ...baseArgs,
-        baseCpi: new Decimal('100'),
+        baseCpi: new Decimal("100"),
         indexDate: baseArgs.issueDate,
         inflationIndexType: IndexTypeProto.CPI_U,
       });
@@ -50,7 +50,7 @@ function makeBondProto(opts: {
       return FloatingRateNote.fromPricerInputs({
         ...baseArgs,
         couponType: CouponTypeProto.FLOAT,
-        spread: new Decimal('0.005'),
+        spread: new Decimal("0.005"),
         referenceRateIndex: IndexTypeProto.SOFR,
         resetFrequency: CouponFrequencyProto.QUARTERLY,
       });
@@ -64,66 +64,70 @@ function makeBondProto(opts: {
   }
 }
 
-describe('productTypeNameOf (M6 #263 bug 3)', () => {
-  test('returns the proto leaf name for non-bond securities', () => {
+describe("productTypeNameOf (M6 #263 bug 3)", () => {
+  test("returns the proto leaf name for non-bond securities", () => {
     const proto = new SecurityProto();
     proto.setProductType(ProductTypeProto.TBILL);
     const sec = Security.create(proto);
-    expect(productTypeNameOf(sec)).toBe('TBILL');
+    expect(productTypeNameOf(sec)).toBe("TBILL");
   });
 
-  test('returns TREASURY_NOTE for a 10Y note (wrapper would return NOTE)', () => {
+  test("returns TREASURY_NOTE for a 10Y note (wrapper would return NOTE)", () => {
     const proto = makeBondProto({
       productType: ProductTypeProto.TREASURY_NOTE,
-      issueYear: 2024, maturityYear: 2034,
+      issueYear: 2024,
+      maturityYear: 2034,
     });
     const sec = Security.create(proto);
     expect(sec).toBeInstanceOf(BondSecurity);
-    expect(productTypeNameOf(sec)).toBe('TREASURY_NOTE');
+    expect(productTypeNameOf(sec)).toBe("TREASURY_NOTE");
     // Document the pre-fix behavior that motivated the helper.
-    expect(sec.getProductType()).toBe('NOTE');
+    expect(sec.getProductType()).toBe("NOTE");
   });
 
-  test('returns TIPS for a 30Y TIPS (wrapper would return BOND)', () => {
+  test("returns TIPS for a 30Y TIPS (wrapper would return BOND)", () => {
     const proto = makeBondProto({
       productType: ProductTypeProto.TIPS,
-      issueYear: 2024, maturityYear: 2054,
+      issueYear: 2024,
+      maturityYear: 2054,
     });
     const sec = Security.create(proto);
     expect(sec).toBeInstanceOf(BondSecurity);
-    expect(productTypeNameOf(sec)).toBe('TIPS');
+    expect(productTypeNameOf(sec)).toBe("TIPS");
     // This is the phantom-BOND case from the bug report:
     // 30Y TIPS used to display as 'BOND' on /data/securities.
-    expect(sec.getProductType()).toBe('BOND');
+    expect(sec.getProductType()).toBe("BOND");
   });
 
-  test('returns TREASURY_FRN regardless of tenor (wrapper would derive BILL/NOTE/BOND)', () => {
+  test("returns TREASURY_FRN regardless of tenor (wrapper would derive BILL/NOTE/BOND)", () => {
     const proto = makeBondProto({
       productType: ProductTypeProto.TREASURY_FRN,
-      issueYear: 2024, maturityYear: 2026,
+      issueYear: 2024,
+      maturityYear: 2026,
     });
     const sec = Security.create(proto);
     expect(sec).toBeInstanceOf(BondSecurity);
-    expect(productTypeNameOf(sec)).toBe('TREASURY_FRN');
+    expect(productTypeNameOf(sec)).toBe("TREASURY_FRN");
   });
 
-  test('TREASURY_BOND (not a BondSecurity per the factory) round-trips its leaf name', () => {
+  test("TREASURY_BOND (not a BondSecurity per the factory) round-trips its leaf name", () => {
     // Security.create only wraps TREASURY_NOTE/TIPS/TREASURY_FRN as
     // BondSecurity; TREASURY_BOND comes back as base Security. Pin
     // that — if a future factory rev wraps TREASURY_BOND too, this
     // test should still pass.
     const proto = makeBondProto({
       productType: ProductTypeProto.TREASURY_BOND,
-      issueYear: 2024, maturityYear: 2054,
+      issueYear: 2024,
+      maturityYear: 2054,
     });
     const sec = Security.create(proto);
-    expect(productTypeNameOf(sec)).toBe('TREASURY_BOND');
+    expect(productTypeNameOf(sec)).toBe("TREASURY_BOND");
   });
 
-  test('unknown / unset product type falls back to UNKNOWN_PRODUCT_TYPE', () => {
+  test("unknown / unset product type falls back to UNKNOWN_PRODUCT_TYPE", () => {
     const proto = new SecurityProto();
     proto.setProductType(99999 as unknown as number);
     const sec = Security.create(proto);
-    expect(productTypeNameOf(sec)).toBe('UNKNOWN_PRODUCT_TYPE');
+    expect(productTypeNameOf(sec)).toBe("UNKNOWN_PRODUCT_TYPE");
   });
 });

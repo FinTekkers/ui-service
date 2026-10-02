@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Playwright configuration for ui-service browser-driven E2E tests.
@@ -26,7 +26,7 @@ import { defineConfig, devices } from '@playwright/test';
  * src/tests/auth-flow-e2e.test.ts.
  */
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   testMatch: /.*\.spec\.ts$/,
 
   fullyParallel: true,
@@ -36,31 +36,31 @@ export default defineConfig({
   // session state (login). Bump if/when the auth fixture is per-worker.
   workers: 1,
 
-  reporter: process.env.CI ? 'github' : 'list',
+  reporter: process.env.CI ? "github" : "list",
 
   use: {
     // The dev server runs plain HTTP on :443 (vite dev with no https config).
     // Matches what src/tests/auth-flow-e2e.test.ts uses (http://localhost:443).
-    baseURL: 'http://localhost:443',
+    baseURL: "http://localhost:443",
     // Trace on first retry so flake reproduction is one click away.
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
 
   projects: [
     // Setup project — logs in once and saves storageState. Every test project
     // that needs an authenticated session depends on this.
     {
-      name: 'setup',
+      name: "setup",
       testMatch: /auth\.setup\.ts/,
     },
     {
-      name: 'chromium',
+      name: "chromium",
       use: {
-        ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/user.json',
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/user.json",
       },
-      dependencies: ['setup'],
+      dependencies: ["setup"],
       testIgnore: /auth\.setup\.ts/,
     },
   ],

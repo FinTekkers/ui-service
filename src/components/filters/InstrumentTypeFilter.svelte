@@ -35,25 +35,29 @@
     INSTRUMENT_TYPE_NAMES,
     INSTRUMENT_TYPE_LABELS,
     type InstrumentTypeName,
-  } from '$lib/securityFilterTypes';
+  } from "$lib/securityFilterTypes";
 
   // Two-way binding — empty string represents "no filter" / All.
-  export let value: InstrumentTypeName | '' = '';
+  export let value: InstrumentTypeName | "" = "";
 
   // Subset of instrument types the consumer wants. Default = full set.
-  export let supportedTypes: readonly InstrumentTypeName[] = INSTRUMENT_TYPE_NAMES;
+  export let supportedTypes: readonly InstrumentTypeName[] =
+    INSTRUMENT_TYPE_NAMES;
 
   // Per-entry label override; merged over INSTRUMENT_TYPE_LABELS.
   export let labels: Partial<Record<InstrumentTypeName, string>> = {};
 
   // Class pass-through.
-  export let selectClass: string = '';
-  export let selectId: string = 'instrument-type-filter-value';
+  export let selectClass: string = "";
+  export let selectId: string = "instrument-type-filter-value";
 
   // Empty-option label.
-  export let allLabel: string = 'All';
+  export let allLabel: string = "All";
 
-  $: resolvedLabels = { ...INSTRUMENT_TYPE_LABELS, ...labels } as Record<string, string>;
+  $: resolvedLabels = { ...INSTRUMENT_TYPE_LABELS, ...labels } as Record<
+    string,
+    string
+  >;
 </script>
 
 <select

@@ -1,5 +1,5 @@
 // import adapter from "@sveltejs/adapter-auto";
-import adapter from '@sveltejs/adapter-node'
+import adapter from "@sveltejs/adapter-node";
 import { vitePreprocess } from "@sveltejs/kit/vite";
 /** @type {import('@sveltejs/kit').Config} */
 import autoprefixer from "autoprefixer";
@@ -8,8 +8,8 @@ const config = {
   // for more information about preprocessors
   preprocess: vitePreprocess(),
 
-  vitePlugin:{
-       inspector:true
+  vitePlugin: {
+    inspector: true,
   },
 
   css: {
@@ -32,16 +32,15 @@ const config = {
   },
 
   onwarn: (warning, handler) => {
-        const { code, _frame } = warning;
-        if (code === "css-unused-selector"){
-          return;
-        } 
-        if (code === 'a11y-click-events-have-key-events'){
-          return
-        } 
+    const { code, _frame } = warning;
+    if (code === "css-unused-selector") {
+      return;
+    }
+    if (code === "a11y-click-events-have-key-events") {
+      return;
+    }
 
-        handler(warning);
-    },
-
+    handler(warning);
+  },
 };
 export default config;

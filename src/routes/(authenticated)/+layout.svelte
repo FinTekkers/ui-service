@@ -36,7 +36,7 @@
    * user's POV — they pin to whichever is the nearest scrolling
    * ancestor, which is now `<html>`.
    */
-  import DashboardSideBar from '../../components/DashboardSideBar.svelte';
+  import DashboardSideBar from "../../components/DashboardSideBar.svelte";
   export let data;
 </script>
 
@@ -80,7 +80,7 @@
   // resilient single-scrollbar UX).
   :global(html) {
     overflow-y: scroll; // force always-visible track so layout doesn't
-                        // shift when content grows past one viewport
+    // shift when content grows past one viewport
     overflow-x: auto;
   }
   :global(body) {

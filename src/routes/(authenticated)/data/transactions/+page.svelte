@@ -2,15 +2,15 @@
   import Transaction from "../../../../components/widgets/TransactionGrid.svelte";
   import TransactionSelect from "../../../../components/widgets/TransactionSelect.svelte";
   import DeleteConfirmModal from "../../../../components/widgets/DeleteConfirmModal.svelte";
-  import { enhance } from '$app/forms';
+  import { enhance } from "$app/forms";
   export let data: import("./$types").PageData;
   export let form: import("./$types").ActionData;
 
   let deleteTarget: { id: string; uuidHex: string } | null = null;
   let showModal = false;
   let deleteLoading = false;
-  let deleteError = '';
-  let deleteSuccess = '';
+  let deleteError = "";
+  let deleteSuccess = "";
   let dryRunSubmitBtn: HTMLButtonElement;
 
   $: dryRunResult = form?.deleteResult;
@@ -29,10 +29,12 @@
     setTimeout(() => dryRunSubmitBtn?.click(), 0);
   }
 
-  function handleRequestDelete(e: CustomEvent<{ id: string; uuidHex: string }>) {
+  function handleRequestDelete(
+    e: CustomEvent<{ id: string; uuidHex: string }>
+  ) {
     deleteTarget = e.detail;
-    deleteError = '';
-    deleteSuccess = '';
+    deleteError = "";
+    deleteSuccess = "";
   }
 
   function handleClose() {
@@ -44,14 +46,16 @@
     showModal = false;
     deleteSuccess = `Transaction deleted successfully.`;
     deleteTarget = null;
-    setTimeout(() => { window.location.reload(); }, 1500);
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   }
 </script>
 
 <TransactionSelect
   portfolioUniverse={data.portfolioUniverse ?? []}
-  initialPortfolioId={data.portfolioId ?? ''}
-  initialPortfolioName={data.portfolioName ?? ''}
+  initialPortfolioId={data.portfolioId ?? ""}
+  initialPortfolioName={data.portfolioName ?? ""}
 />
 
 {#if deleteSuccess}
@@ -62,24 +66,32 @@
 {/if}
 
 <Transaction
-  rows={Array.isArray(data.transactions) ? data.transactions : [data.transactions]}
+  rows={Array.isArray(data.transactions)
+    ? data.transactions
+    : [data.transactions]}
   on:requestDelete={handleRequestDelete}
 />
 
 {#if deleteTarget && !showModal}
-  <form method="POST" action="?/dryRun" use:enhance={() => {
-    deleteLoading = true;
-    return async ({ update }) => { await update(); };
-  }}>
+  <form
+    method="POST"
+    action="?/dryRun"
+    use:enhance={() => {
+      deleteLoading = true;
+      return async ({ update }) => {
+        await update();
+      };
+    }}
+  >
     <input type="hidden" name="uuidHex" value={deleteTarget.uuidHex} />
-    <button type="submit" class="hidden-submit" bind:this={dryRunSubmitBtn}></button>
+    <button type="submit" class="hidden-submit" bind:this={dryRunSubmitBtn} />
   </form>
 {/if}
 
 <DeleteConfirmModal
   show={showModal}
-  entityName={deleteTarget?.id ?? ''}
-  uuidHex={deleteTarget?.uuidHex ?? ''}
+  entityName={deleteTarget?.id ?? ""}
+  uuidHex={deleteTarget?.uuidHex ?? ""}
   {dryRunResult}
   {deleteLoading}
   {deleteError}
@@ -89,7 +101,21 @@
 
 <style lang="scss">
   @import "../../../../style";
-  .hidden-submit { display: none; }
-  .success-banner { background-color: #065f46; color: #d1fae5; padding: 10px 40px; font-size: 0.85rem; font-weight: 600; }
-  .error-banner { background-color: #7f1d1d; color: #fecaca; padding: 10px 40px; font-size: 0.85rem; font-weight: 600; }
+  .hidden-submit {
+    display: none;
+  }
+  .success-banner {
+    background-color: #065f46;
+    color: #d1fae5;
+    padding: 10px 40px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .error-banner {
+    background-color: #7f1d1d;
+    color: #fecaca;
+    padding: 10px 40px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
 </style>
