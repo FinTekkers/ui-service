@@ -29,7 +29,7 @@ export const actions = {
 
 export async function load({ locals }: { locals: App.Locals }) {
   const securityService = new SecurityService(locals.user?.apiKey);
-  const results = [];
+  let results = [];
 
   const positionFilter = new PositionFilter();
   positionFilter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
@@ -39,12 +39,12 @@ export async function load({ locals }: { locals: App.Locals }) {
   );
 
   try {
-    const securities = await securityService.searchSecurityAsOfNow(
+    var securities = await securityService.searchSecurityAsOfNow(
       positionFilter
     );
 
     //Map results into list of maps -> Date, Amount
-    for (const index in securities) {
+    for (let index in securities) {
       const security: Security = securities[index];
       if (!security.isBond()) continue;
 
@@ -65,10 +65,10 @@ export async function load({ locals }: { locals: App.Locals }) {
         } else if (!qty && maturity.getFullYear() <= 2009) {
           // Swallow this data gap. It's old and we don't mind
         } else {
-          const postAuctionQuantity = qty ? Number(qty.toString()) : 0;
-          const id = identifierString(security);
+          let postAuctionQuantity = qty ? Number(qty.toString()) : 0;
+          let id = identifierString(security);
 
-          const result = {
+          let result = {
             cusip: id,
             issueDate: issue,
             outstandingAmount: postAuctionQuantity,

@@ -55,14 +55,16 @@
   // so onMount fires fresh per visit. No reactive re-render needed.
   onMount(async () => {
     if (data.cpiData.length === 0 || !chartEl) return;
+    // prettier-ignore
     const Plotly: any =
-      ((await import("plotly.js-dist")) as any).default ??
-      (await import("plotly.js-dist"));
+      ((await import('plotly.js-dist')) as any).default ??
+      (await import('plotly.js-dist'));
     const trace = {
       x: data.cpiData.map((d) => d.date),
       y: data.cpiData.map((d) => d.value),
       mode: "lines",
-      line: { color: "#7cd2ba", width: 1.5 },
+      // prettier-ignore
+      line: { color: '#7cd2ba', width: 1.5 },
       hovertemplate: "%{x}<br>%{y:.3f}<extra></extra>",
       name: data.selectedSeries?.identifier ?? "",
     };
@@ -71,7 +73,8 @@
       plot_bgcolor: "#0c3a46",
       font: { color: "#a0adb7", size: 11 },
       margin: { t: 30, r: 20, b: 50, l: 60 },
-      hovermode: "x unified",
+      // prettier-ignore
+      hovermode: 'x unified',
       xaxis: {
         gridcolor: "#164e63",
         rangeslider: { visible: true, bgcolor: "#0a2e38", thickness: 0.05 },

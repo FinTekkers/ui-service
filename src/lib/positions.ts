@@ -217,7 +217,7 @@ function elementsToReturn(results: Position[]) {
   return results.map((element) => {
     const processedElement: any = {};
 
-    for (const field of element.getFields()) {
+    for (let field of element.getFields()) {
       let displayValue: any;
       try {
         displayValue = element.getFieldDisplay(field);
@@ -234,7 +234,7 @@ function elementsToReturn(results: Position[]) {
       processedElement[field.getField()] = displayValue;
     }
 
-    for (const measure of element.getMeasures()) {
+    for (let measure of element.getMeasures()) {
       processedElement[measure.getMeasure()] = element.getMeasureValue(
         measure.getMeasure()
       );

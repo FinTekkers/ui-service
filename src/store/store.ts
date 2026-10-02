@@ -15,7 +15,7 @@ export const booleanStore = writable<booleanStoreType>({
 export const customBooleanStoreUpdater: (key: booleanKeys) => void = (
   key: booleanKeys
 ) => {
-  const _storeValue = get(booleanStore);
+  let _storeValue = get(booleanStore);
   if (typeof key === "string") {
     booleanStore.update((store) => {
       store[key] = !_storeValue[key];

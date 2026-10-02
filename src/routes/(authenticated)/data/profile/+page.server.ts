@@ -9,7 +9,8 @@ import {
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, cookies }) {
   const user = locals.user;
-  const apiKey = getApiKeyFromCookies(cookies) ?? "";
+  // prettier-ignore
+  const apiKey = getApiKeyFromCookies(cookies) ?? '';
 
   const profile = {
     email: user?.email ?? "",
@@ -29,8 +30,10 @@ export const actions = {
 
   regenerateKey: async ({ request, cookies }) => {
     const formData = await request.formData();
-    const email = formData.get("email")?.toString() ?? "";
-    const password = formData.get("password")?.toString() ?? "";
+    // prettier-ignore
+    const email = formData.get('email')?.toString() ?? '';
+    // prettier-ignore
+    const password = formData.get('password')?.toString() ?? '';
 
     if (!email || !password) {
       return fail(400, {

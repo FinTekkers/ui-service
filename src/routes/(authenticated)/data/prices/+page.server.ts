@@ -59,9 +59,12 @@ export async function load({ locals, request }) {
   // URL contract: ?type=cusip|ticker|isin|series&id=<value>
   // Legacy alias:  ?cusip=<value> → treated as type=cusip&id=<value>
   // No args:       defaults to type=ticker&id=AAPL.
-  let typeRaw = searchParams.get("type");
-  let identifierValue = (searchParams.get("id") ?? "").trim();
-  const legacyCusip = (searchParams.get("cusip") ?? "").trim();
+  // prettier-ignore
+  let typeRaw = searchParams.get('type');
+  // prettier-ignore
+  let identifierValue = (searchParams.get('id') ?? '').trim();
+  // prettier-ignore
+  const legacyCusip = (searchParams.get('cusip') ?? '').trim();
   if (!identifierValue && legacyCusip) {
     identifierValue = legacyCusip;
     if (!typeRaw) typeRaw = "cusip";

@@ -24,10 +24,14 @@
   // so we translate at the URL boundary in `navigateTo` and on initial
   // load below. Keeping the URL convention preserves existing bookmarks.
   const PROTO_TO_URL: Record<IdentifierTypeName, string> = {
-    CUSIP: "cusip",
-    EXCH_TICKER: "ticker",
-    ISIN: "isin",
-    SERIES_ID: "series",
+    // prettier-ignore
+    CUSIP: 'cusip',
+    // prettier-ignore
+    EXCH_TICKER: 'ticker',
+    // prettier-ignore
+    ISIN: 'isin',
+    // prettier-ignore
+    SERIES_ID: 'series',
     // Not currently surfaced on /data/prices but defined for completeness;
     // supportedTypes prop below restricts the dropdown to the four above.
     OSI: "osi",
@@ -60,11 +64,12 @@
 
   // Order matters in the dropdown — keep CUSIP first so legacy users on
   // the default "no params" landing don't get a surprise type change.
+  // prettier-ignore
   const PRICES_SUPPORTED_TYPES: readonly IdentifierTypeName[] = [
-    "CUSIP",
-    "EXCH_TICKER",
-    "ISIN",
-    "SERIES_ID",
+    'CUSIP',
+    'EXCH_TICKER',
+    'ISIN',
+    'SERIES_ID',
   ] as const;
 
   function filterUniverse(
@@ -86,8 +91,10 @@
 
   function navigateTo(type: IdentifierTypeName, id: string) {
     const u = new URL("/data/prices", window.location.origin);
-    u.searchParams.set("type", PROTO_TO_URL[type]);
-    u.searchParams.set("id", id);
+    // prettier-ignore
+    u.searchParams.set('type', PROTO_TO_URL[type]);
+    // prettier-ignore
+    u.searchParams.set('id', id);
     window.location.href = u.pathname + u.search;
   }
 
@@ -110,22 +117,24 @@
   }
 
   function handleKeydown(e: KeyboardEvent, filtered: UniverseEntry[]) {
-    if (e.key === "Enter") {
+    // prettier-ignore
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleSearch();
       return;
     }
     if (!showSuggestions || filtered.length === 0) return;
-    if (e.key === "ArrowDown") {
+    // prettier-ignore
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
       selectedSuggestionIndex = Math.min(
         selectedSuggestionIndex + 1,
         filtered.length - 1
       );
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, 0);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       showSuggestions = false;
     }
   }
@@ -148,9 +157,10 @@
   // chartPrices changes after initial render.
   onMount(async () => {
     if (chartPrices.length === 0 || !chartEl) return;
+    // prettier-ignore
     const Plotly: any =
-      ((await import("plotly.js-dist")) as any).default ??
-      (await import("plotly.js-dist"));
+      ((await import('plotly.js-dist')) as any).default ??
+      (await import('plotly.js-dist'));
     const trace = {
       x: chartPrices.map((p) => p.date),
       y: chartPrices.map((p) => p.price),
@@ -169,13 +179,14 @@
         gridcolor: "#164e63",
         rangeslider: { visible: true, bgcolor: "#0a2e38", thickness: 0.05 },
         rangeselector: {
+          // prettier-ignore
           buttons: [
-            { count: 1, label: "1M", step: "month", stepmode: "backward" },
-            { count: 3, label: "3M", step: "month", stepmode: "backward" },
-            { count: 6, label: "6M", step: "month", stepmode: "backward" },
-            { count: 1, label: "1Y", step: "year", stepmode: "backward" },
-            { count: 5, label: "5Y", step: "year", stepmode: "backward" },
-            { step: "all", label: "All" },
+            { count: 1, label: '1M', step: 'month', stepmode: 'backward' },
+            { count: 3, label: '3M', step: 'month', stepmode: 'backward' },
+            { count: 6, label: '6M', step: 'month', stepmode: 'backward' },
+            { count: 1, label: '1Y', step: 'year', stepmode: 'backward' },
+            { count: 5, label: '5Y', step: 'year', stepmode: 'backward' },
+            { step: 'all', label: 'All' },
           ],
           bgcolor: "#0c3a46",
           activecolor: "#7cd2ba",

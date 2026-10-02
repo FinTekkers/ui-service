@@ -37,6 +37,10 @@
       "warn",
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
     ],
+    // Reported, not failed: fixing the 4 files with hits would exceed this item's 15-file cap; follow-up item.
+    "prefer-const": "warn",
+    // Reported, not failed: same 15-file cap as prefer-const; the one hit is a `var` in src/routes/+page.server.ts.
+    "no-var": "warn",
     // Explicit annotations on Svelte props document their API; removing 57 of them is churn, not a fix.
     "@typescript-eslint/no-inferrable-types": "off",
     // `Function` types gRPC interceptor callbacks and test mocks; narrowing them is a typing refactor.

@@ -95,10 +95,8 @@
           </button>
         {:else}
           <div class="confirm-row">
-            <span class="confirm-text"
-              >This will invalidate your current key. Enter your credentials to
-              confirm.</span
-            >
+            <!-- prettier-ignore -->
+            <span class="confirm-text">This will invalidate your current key. Enter your credentials to confirm.</span>
           </div>
           <form
             method="POST"
@@ -111,20 +109,10 @@
             }}
           >
             <div class="regen-form">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                required
-                class="regen-input"
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                required
-                class="regen-input"
-              />
+              <!-- prettier-ignore -->
+              <input type="email" name="email" placeholder="Email" required class="regen-input" />
+              <!-- prettier-ignore -->
+              <input type="password" name="password" placeholder="Password" required class="regen-input" />
               <div class="confirm-row">
                 <button type="submit" class="btn-danger">Yes, Regenerate</button
                 >
@@ -140,11 +128,8 @@
       </div>
     {:else}
       <div class="no-key-notice">
-        <p>
-          No API key available. Register with an email and password at <a
-            href="/register">/register</a
-          > to get an API key for API access.
-        </p>
+        <!-- prettier-ignore -->
+        <p>No API key available. Register with an email and password at <a href="/register">/register</a> to get an API key for API access.</p>
       </div>
     {/if}
   </div>

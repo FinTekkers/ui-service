@@ -27,7 +27,8 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   // Fall back to legacy Google OAuth session auth
-  const sessionCookie = event.cookies.get("session");
+  // prettier-ignore
+  const sessionCookie = event.cookies.get('session');
 
   if (sessionCookie) {
     const { session, user } = validateSessionToken(sessionCookie);

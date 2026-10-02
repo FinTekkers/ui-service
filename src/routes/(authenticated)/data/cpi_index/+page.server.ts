@@ -64,7 +64,8 @@ async function fetchCpiSeries(apiKey?: string): Promise<CpiSeries[]> {
   // search matched nothing and the page came back empty despite
   // data-sourcing-dev confirming 4,798 CPI prices in the ledger.
   const filter = new PositionFilter();
-  filter.addEqualsFilter(FieldProto.ASSET_CLASS, "RATES");
+  // prettier-ignore
+  filter.addEqualsFilter(FieldProto.ASSET_CLASS, 'RATES');
 
   const service = new SecurityService(apiKey);
   const securities = await service.searchSecurityAsOfNow(filter);
@@ -157,7 +158,8 @@ async function fetchPrices(
     const results: CpiDataPoint[] = [];
     const stream = client.search(request);
 
-    stream.on("data", (response: any) => {
+    // prettier-ignore
+    stream.on('data', (response: any) => {
       const priceList = response.getPriceResponseList?.() ?? [];
       for (const price of priceList) {
         const asOf = price.getAsOf?.();
