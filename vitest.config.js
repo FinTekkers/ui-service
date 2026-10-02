@@ -13,6 +13,10 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["src/setuptest.js"],
+    // `npm test` is bare `vitest`, which defaults to watch mode outside CI
+    // and never exits in a non-interactive check run. Run once by default;
+    // use `npx vitest --watch` for watch mode.
+    watch: false,
     // Vitest's default include is `**/*.{test,spec}.{js,ts,...}` from
     // the workspace root, which would pick up tests/e2e/*.spec.ts —
     // those are Playwright specs that import @playwright/test (not
