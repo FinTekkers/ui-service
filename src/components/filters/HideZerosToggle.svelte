@@ -14,8 +14,8 @@
   // the URL — same as the existing /data/positions emit pattern).
   export let value: boolean = false;
 
-  export let label: string = 'Hide zero values';
-  export let id: string = 'hide-zeros-toggle';
+  export let label: string = "Hide zero values";
+  export let id: string = "hide-zeros-toggle";
 </script>
 
 <label class="inline-flex items-center cursor-pointer" for={id}>

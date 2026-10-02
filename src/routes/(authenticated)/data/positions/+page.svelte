@@ -68,16 +68,14 @@
 
 {#if portfolioId}
   <div class="px-4 pt-4">
-    <a href="/data/portfolios" class="back-link">
-      &larr; Back to Portfolios
-    </a>
+    <a href="/data/portfolios" class="back-link"> &larr; Back to Portfolios </a>
   </div>
 {/if}
 
 <PositionSelect
   portfolioUniverse={data.portfolioUniverse ?? []}
-  initialPortfolioId={data.portfolioId ?? ''}
-  initialPortfolioName={data.portfolioName ?? ''}
+  initialPortfolioId={data.portfolioId ?? ""}
+  initialPortfolioName={data.portfolioName ?? ""}
 />
 
 {#if data.error}

@@ -7,7 +7,7 @@
  */
 
 export const ALLOWED_FORWARD_TERMS = [1, 2, 5, 10] as const;
-export type ForwardTermYears = typeof ALLOWED_FORWARD_TERMS[number];
+export type ForwardTermYears = (typeof ALLOWED_FORWARD_TERMS)[number];
 export const DEFAULT_FORWARD_TERM: ForwardTermYears = 10;
 
 /**
@@ -18,7 +18,7 @@ export const DEFAULT_FORWARD_TERM: ForwardTermYears = 10;
  * code doesn't surface "NaNY".
  */
 export function formatYears(years: number): string {
-  if (!Number.isFinite(years)) return '—';
+  if (!Number.isFinite(years)) return "—";
   const rounded = Math.round(years * 100) / 100;
   return Number.isInteger(rounded) ? `${rounded}Y` : `${rounded.toFixed(2)}Y`;
 }

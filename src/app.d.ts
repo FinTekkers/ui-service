@@ -3,10 +3,10 @@ import type { Session } from "$lib/server/session";
 
 /** User authenticated via broker gRPC (email/password) */
 interface BrokerUser {
-      id: string;
-      name: string;
-      email: string;
-      apiKey: string;
+  id: string;
+  name: string;
+  email: string;
+  apiKey: string;
 }
 
 type AppUser = GoogleUser | BrokerUser;
@@ -19,29 +19,27 @@ type AppUser = GoogleUser | BrokerUser;
 // `locals.user` access lights up as "Property 'user' does not exist on
 // type 'Locals'" (~41 svelte-check errors before this change).
 declare global {
-      namespace App {
+  namespace App {
+    interface Error {
+      [prop: string]: string;
+      error?: object;
+      errors?: object;
+      flash?: { type: "success" | "error"; message: string };
+    }
 
-            interface Error {
-              [prop:string]:string,
-              error?: object,
-              errors?:object,
-              flash?:{ type: 'success' | 'error'; message: string };
-            }
+    interface Locals {
+      user: AppUser | null;
+      session: Session | null;
+    }
 
-            interface Locals{
-                user: AppUser | null;
-                session: Session | null;
-            }
-
-            interface PageData{
-              pageMetaTags?: MetaTagsProps;
-              isUserLoggedIn?: boolean;
-              form?:any;
-              flash?: { type: 'success' | 'error'; message: string };
-                user?: AppUser | null;
-            }
-
-      }
+    interface PageData {
+      pageMetaTags?: MetaTagsProps;
+      isUserLoggedIn?: boolean;
+      form?: any;
+      flash?: { type: "success" | "error"; message: string };
+      user?: AppUser | null;
+    }
+  }
 }
 
 // Marks this file as a module so the `declare global` above takes

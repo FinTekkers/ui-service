@@ -1,199 +1,215 @@
-import { render, screen, fireEvent } from '@testing-library/svelte';
-import { describe, expect, test, beforeEach } from 'vitest';
-import PortfolioGrid from '../components/widgets/PortfolioGrid.svelte';
+import { render, screen, fireEvent } from "@testing-library/svelte";
+import { describe, expect, test, beforeEach } from "vitest";
+import PortfolioGrid from "../components/widgets/PortfolioGrid.svelte";
 
 const mockRows = [
-	{
-		portfolioName: 'Growth Fund',
-		portfolioId: 'portfolio-001',
-		portfolioAsOf: '2025-06-15',
-	},
-	{
-		portfolioName: 'Income Fund',
-		portfolioId: 'portfolio-002',
-		portfolioAsOf: '2025-07-01',
-	},
-	{
-		portfolioName: 'Balanced Fund',
-		portfolioId: 'portfolio-003',
-		portfolioAsOf: '2025-05-20',
-	},
+  {
+    portfolioName: "Growth Fund",
+    portfolioId: "portfolio-001",
+    portfolioAsOf: "2025-06-15",
+  },
+  {
+    portfolioName: "Income Fund",
+    portfolioId: "portfolio-002",
+    portfolioAsOf: "2025-07-01",
+  },
+  {
+    portfolioName: "Balanced Fund",
+    portfolioId: "portfolio-003",
+    portfolioAsOf: "2025-05-20",
+  },
 ];
 
-describe('PortfolioGrid', () => {
-	beforeEach(() => {
-		render(PortfolioGrid, { props: { rows: mockRows } });
-	});
+describe("PortfolioGrid", () => {
+  beforeEach(() => {
+    render(PortfolioGrid, { props: { rows: mockRows } });
+  });
 
-	test('renders the Portfolios heading', () => {
-		expect(screen.getByText('Portfolios')).toBeInTheDocument();
-	});
+  test("renders the Portfolios heading", () => {
+    expect(screen.getByText("Portfolios")).toBeInTheDocument();
+  });
 
-	test('renders all portfolio rows with correct data', () => {
-		for (const row of mockRows) {
-			expect(screen.getByText(row.portfolioName)).toBeInTheDocument();
-			expect(screen.getByText(row.portfolioId)).toBeInTheDocument();
-			expect(screen.getByText(row.portfolioAsOf)).toBeInTheDocument();
-		}
-	});
+  test("renders all portfolio rows with correct data", () => {
+    for (const row of mockRows) {
+      expect(screen.getByText(row.portfolioName)).toBeInTheDocument();
+      expect(screen.getByText(row.portfolioId)).toBeInTheDocument();
+      expect(screen.getByText(row.portfolioAsOf)).toBeInTheDocument();
+    }
+  });
 
-	test('renders column headers for Portfolio, ID, and As Of', () => {
-		const headers = screen.getAllByRole('button');
-		const headerTexts = headers.map((h) => h.textContent?.trim());
-		expect(headerTexts).toContain('Portfolio');
-		expect(headerTexts).toContain('ID');
-		// Renamed from "Created (AsOf)" — the column now shows just the
-		// UTC date (formatted via PortfolioGrid.formatAsOf), not a
-		// timestamp; the legacy label was misleading.
-		expect(headerTexts).toContain('As Of');
-	});
+  test("renders column headers for Portfolio, ID, and As Of", () => {
+    const headers = screen.getAllByRole("button");
+    const headerTexts = headers.map((h) => h.textContent?.trim());
+    expect(headerTexts).toContain("Portfolio");
+    expect(headerTexts).toContain("ID");
+    // Renamed from "Created (AsOf)" — the column now shows just the
+    // UTC date (formatted via PortfolioGrid.formatAsOf), not a
+    // timestamp; the legacy label was misleading.
+    expect(headerTexts).toContain("As Of");
+  });
 
-	test('each row contains links with the correct positions URL', () => {
-		const links = screen.getAllByRole('link');
-		// Date computed the same way as PortfolioGrid.getPositionsUrl. The
-		// component runs in the same test invocation so they will agree
-		// barring a midnight rollover mid-test (which would also flake the
-		// component's own behavior, not our assertion shape).
-		const today = new Date().toISOString().slice(0, 10);
+  test("each row contains links with the correct positions URL", () => {
+    const links = screen.getAllByRole("link");
+    // Date computed the same way as PortfolioGrid.getPositionsUrl. The
+    // component runs in the same test invocation so they will agree
+    // barring a midnight rollover mid-test (which would also flake the
+    // component's own behavior, not our assertion shape).
+    const today = new Date().toISOString().slice(0, 10);
 
-		for (const row of mockRows) {
-			const expectedParams = new URLSearchParams({
-				portfolioId: row.portfolioId,
-				fields: 'SECURITY_DESCRIPTION,PORTFOLIO_NAME',
-				measures: 'DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY',
-				positionView: 'DEFAULT_VIEW',
-				positionType: 'TRANSACTION',
-				tradeDate: today,
-				tradeDateOperator: 'LESS_THAN_OR_EQUALS',
-				hideZeros: 'true',
-			});
-			const expectedUrl = `/data/positions?${expectedParams.toString()}`;
+    for (const row of mockRows) {
+      const expectedParams = new URLSearchParams({
+        portfolioId: row.portfolioId,
+        fields: "SECURITY_DESCRIPTION,PORTFOLIO_NAME",
+        measures:
+          "DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY",
+        positionView: "DEFAULT_VIEW",
+        positionType: "TRANSACTION",
+        tradeDate: today,
+        tradeDateOperator: "LESS_THAN_OR_EQUALS",
+        hideZeros: "true",
+      });
+      const expectedUrl = `/data/positions?${expectedParams.toString()}`;
 
-			// Find links for this row (3 links per row: one per column)
-			const rowLinks = links.filter(
-				(link) => link.getAttribute('href') === expectedUrl
-			);
-			expect(rowLinks.length).toBe(3); // one link per column cell
-		}
-	});
+      // Find links for this row (3 links per row: one per column)
+      const rowLinks = links.filter(
+        (link) => link.getAttribute("href") === expectedUrl
+      );
+      expect(rowLinks.length).toBe(3); // one link per column cell
+    }
+  });
 
-	test('links include required query parameters: portfolioId, fields, measures, positionView, positionType', () => {
-		const links = screen.getAllByRole('link');
-		// Find a positions link for portfolio-001 (must include 'fields' param to distinguish from Txns link)
-		const firstLink = links.find((l) =>
-			l.getAttribute('href')?.includes('portfolio-001') &&
-			l.getAttribute('href')?.includes('fields=')
-		);
-		expect(firstLink).toBeTruthy();
+  test("links include required query parameters: portfolioId, fields, measures, positionView, positionType", () => {
+    const links = screen.getAllByRole("link");
+    // Find a positions link for portfolio-001 (must include 'fields' param to distinguish from Txns link)
+    const firstLink = links.find(
+      (l) =>
+        l.getAttribute("href")?.includes("portfolio-001") &&
+        l.getAttribute("href")?.includes("fields=")
+    );
+    expect(firstLink).toBeTruthy();
 
-		const href = firstLink!.getAttribute('href')!;
-		const params = new URLSearchParams(href.split('?')[1]);
+    const href = firstLink!.getAttribute("href")!;
+    const params = new URLSearchParams(href.split("?")[1]);
 
-		expect(params.get('portfolioId')).toBe('portfolio-001');
-		expect(params.get('fields')).toBe('SECURITY_DESCRIPTION,PORTFOLIO_NAME');
-		expect(params.get('measures')).toBe('DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY');
-		expect(params.get('positionView')).toBe('DEFAULT_VIEW');
-		expect(params.get('positionType')).toBe('TRANSACTION');
-		expect(params.get('tradeDate')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-		expect(params.get('tradeDateOperator')).toBe('LESS_THAN_OR_EQUALS');
-		expect(params.get('hideZeros')).toBe('true');
-	});
+    expect(params.get("portfolioId")).toBe("portfolio-001");
+    expect(params.get("fields")).toBe("SECURITY_DESCRIPTION,PORTFOLIO_NAME");
+    expect(params.get("measures")).toBe(
+      "DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY"
+    );
+    expect(params.get("positionView")).toBe("DEFAULT_VIEW");
+    expect(params.get("positionType")).toBe("TRANSACTION");
+    expect(params.get("tradeDate")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(params.get("tradeDateOperator")).toBe("LESS_THAN_OR_EQUALS");
+    expect(params.get("hideZeros")).toBe("true");
+  });
 
-	test('clicking a column header triggers sorting', async () => {
-		const idHeader = screen.getByText(/^ID/);
-		await fireEvent.click(idHeader);
+  test("clicking a column header triggers sorting", async () => {
+    const idHeader = screen.getByText(/^ID/);
+    await fireEvent.click(idHeader);
 
-		// After clicking ID header ascending, rows should be in ID order
-		// Each row now has 4 links: [Txns, Portfolio name, ID, AsOf] — ID is at index 2 (i % 4 === 2)
-		const allCells = screen.getAllByRole('link');
-		const idTexts = allCells
-			.filter((_, i) => i % 4 === 2)
-			.map((el) => el.textContent);
+    // After clicking ID header ascending, rows should be in ID order
+    // Each row now has 4 links: [Txns, Portfolio name, ID, AsOf] — ID is at index 2 (i % 4 === 2)
+    const allCells = screen.getAllByRole("link");
+    const idTexts = allCells
+      .filter((_, i) => i % 4 === 2)
+      .map((el) => el.textContent);
 
-		expect(idTexts).toEqual([
-			'portfolio-001',
-			'portfolio-002',
-			'portfolio-003',
-		]);
+    expect(idTexts).toEqual([
+      "portfolio-001",
+      "portfolio-002",
+      "portfolio-003",
+    ]);
 
-		// Click again to reverse sort
-		await fireEvent.click(idHeader);
-		const allCellsAfter = screen.getAllByRole('link');
-		const idTextsDesc = allCellsAfter
-			.filter((_, i) => i % 4 === 2)
-			.map((el) => el.textContent);
+    // Click again to reverse sort
+    await fireEvent.click(idHeader);
+    const allCellsAfter = screen.getAllByRole("link");
+    const idTextsDesc = allCellsAfter
+      .filter((_, i) => i % 4 === 2)
+      .map((el) => el.textContent);
 
-		expect(idTextsDesc).toEqual([
-			'portfolio-003',
-			'portfolio-002',
-			'portfolio-001',
-		]);
-	});
+    expect(idTextsDesc).toEqual([
+      "portfolio-003",
+      "portfolio-002",
+      "portfolio-001",
+    ]);
+  });
 
-	test('renders correct number of table rows (excluding header)', () => {
-		const rows = screen.getAllByRole('row');
-		// 1 header row + 3 data rows
-		expect(rows.length).toBe(4);
-	});
+  test("renders correct number of table rows (excluding header)", () => {
+    const rows = screen.getAllByRole("row");
+    // 1 header row + 3 data rows
+    expect(rows.length).toBe(4);
+  });
 
-	test('Txns link goes to /data/transactions?portfolioId=<uuid> for each row', () => {
-		// Issue #222: the Txns button used to point at /data/portfolios (same
-		// page) which made it a dead click. Each row's Txns link must now go
-		// to the transactions page with the row's portfolioId in the query.
-		for (const row of mockRows) {
-			const expectedUrl = `/data/transactions?portfolioId=${encodeURIComponent(row.portfolioId)}`;
-			const txnsLink = screen
-				.getAllByRole('link', { name: /Txns/ })
-				.find((l) => l.getAttribute('href') === expectedUrl);
-			expect(txnsLink).toBeTruthy();
-			expect(txnsLink!.getAttribute('title')).toBe(
-				`View transactions for ${row.portfolioName}`,
-			);
-		}
-	});
+  test("Txns link goes to /data/transactions?portfolioId=<uuid> for each row", () => {
+    // Issue #222: the Txns button used to point at /data/portfolios (same
+    // page) which made it a dead click. Each row's Txns link must now go
+    // to the transactions page with the row's portfolioId in the query.
+    for (const row of mockRows) {
+      const expectedUrl = `/data/transactions?portfolioId=${encodeURIComponent(
+        row.portfolioId
+      )}`;
+      const txnsLink = screen
+        .getAllByRole("link", { name: /Txns/ })
+        .find((l) => l.getAttribute("href") === expectedUrl);
+      expect(txnsLink).toBeTruthy();
+      expect(txnsLink!.getAttribute("title")).toBe(
+        `View transactions for ${row.portfolioName}`
+      );
+    }
+  });
 });
 
-describe('PortfolioGrid with empty rows', () => {
-	test('renders table with no data rows when rows is empty', () => {
-		render(PortfolioGrid, { props: { rows: [] } });
-		const rows = screen.getAllByRole('row');
-		// Only the header row
-		expect(rows.length).toBe(1);
-	});
+describe("PortfolioGrid with empty rows", () => {
+  test("renders table with no data rows when rows is empty", () => {
+    render(PortfolioGrid, { props: { rows: [] } });
+    const rows = screen.getAllByRole("row");
+    // Only the header row
+    expect(rows.length).toBe(1);
+  });
 });
 
-describe('PortfolioGrid As Of formatting', () => {
-	test('renders ZonedDateTime "YYYY/MM/DD HH:MM:SS" as plain UTC YYYY-MM-DD', () => {
-		render(PortfolioGrid, {
-			props: {
-				rows: [{
-					portfolioName: 'Test',
-					portfolioId: 'p-1',
-					// Shape produced by the wrappers' ZonedDateTime.toString()
-					portfolioAsOf: '2026/05/08 12:34:56',
-				}],
-			},
-		});
-		expect(screen.getByText('2026-05-08')).toBeInTheDocument();
-		// Time-of-day component is dropped.
-		expect(screen.queryByText(/12:34:56/)).toBeNull();
-	});
+describe("PortfolioGrid As Of formatting", () => {
+  test('renders ZonedDateTime "YYYY/MM/DD HH:MM:SS" as plain UTC YYYY-MM-DD', () => {
+    render(PortfolioGrid, {
+      props: {
+        rows: [
+          {
+            portfolioName: "Test",
+            portfolioId: "p-1",
+            // Shape produced by the wrappers' ZonedDateTime.toString()
+            portfolioAsOf: "2026/05/08 12:34:56",
+          },
+        ],
+      },
+    });
+    expect(screen.getByText("2026-05-08")).toBeInTheDocument();
+    // Time-of-day component is dropped.
+    expect(screen.queryByText(/12:34:56/)).toBeNull();
+  });
 
-	test('renders em-dash for empty/missing asOf (per-row guard fallback)', () => {
-		render(PortfolioGrid, {
-			props: {
-				rows: [{ portfolioName: 'Test', portfolioId: 'p-2', portfolioAsOf: '' }],
-			},
-		});
-		expect(screen.getByText('—')).toBeInTheDocument();
-	});
+  test("renders em-dash for empty/missing asOf (per-row guard fallback)", () => {
+    render(PortfolioGrid, {
+      props: {
+        rows: [
+          { portfolioName: "Test", portfolioId: "p-2", portfolioAsOf: "" },
+        ],
+      },
+    });
+    expect(screen.getByText("—")).toBeInTheDocument();
+  });
 
-	test('renders em-dash for malformed asOf', () => {
-		render(PortfolioGrid, {
-			props: {
-				rows: [{ portfolioName: 'Test', portfolioId: 'p-3', portfolioAsOf: 'not-a-date' }],
-			},
-		});
-		expect(screen.getByText('—')).toBeInTheDocument();
-	});
+  test("renders em-dash for malformed asOf", () => {
+    render(PortfolioGrid, {
+      props: {
+        rows: [
+          {
+            portfolioName: "Test",
+            portfolioId: "p-3",
+            portfolioAsOf: "not-a-date",
+          },
+        ],
+      },
+    });
+    expect(screen.getByText("—")).toBeInTheDocument();
+  });
 });

@@ -14,29 +14,34 @@
  * /treasuries2 is a top-level route (NOT under (authenticated)/), so
  * `.auth-shell` is not present here. Assert against the page's own H1.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('/treasuries2 — page-server apiKey threading', () => {
-  test('/treasuries2 loads without 500 (apiKey threaded to getTreasuryTransactions)', async ({ page }) => {
-    const response = await page.goto('/treasuries2');
+test.describe("/treasuries2 — page-server apiKey threading", () => {
+  test("/treasuries2 loads without 500 (apiKey threaded to getTreasuryTransactions)", async ({
+    page,
+  }) => {
+    const response = await page.goto("/treasuries2");
 
-    expect(response, 'GET /treasuries2 returns a response').not.toBeNull();
+    expect(response, "GET /treasuries2 returns a response").not.toBeNull();
     const status = response!.status();
-    expect(status, 'no 500 / no 5xx after apiKey threading').toBeLessThan(500);
+    expect(status, "no 500 / no 5xx after apiKey threading").toBeLessThan(500);
 
     await expect(
-      page.getByRole('heading', { level: 1, name: /Treasury Position Analytics/ }),
+      page.getByRole("heading", {
+        level: 1,
+        name: /Treasury Position Analytics/,
+      })
     ).toBeVisible({ timeout: 10_000 });
 
     // Either the analytics view OR the empty-state is acceptable — both
     // prove load() returned cleanly. Seed contents are backend-driven.
-    const graphs = page.locator('.graphs-column');
-    const emptyState = page.locator('.no-data');
+    const graphs = page.locator(".graphs-column");
+    const emptyState = page.locator(".no-data");
     const hasGraphs = await graphs.isVisible().catch(() => false);
     const hasEmptyState = await emptyState.isVisible().catch(() => false);
     expect(
       hasGraphs || hasEmptyState,
-      'either the graphs column OR the empty-state is rendered',
+      "either the graphs column OR the empty-state is rendered"
     ).toBe(true);
   });
 });

@@ -10,12 +10,12 @@
 // indistinguishable from running <cmd> directly. This means it's safe to
 // adopt before the companion services.sh transition PR sets LOG_FILE.
 
-import { spawn } from 'node:child_process';
-import { dirname, basename } from 'node:path';
+import { spawn } from "node:child_process";
+import { dirname, basename } from "node:path";
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
-  console.error('usage: log-rotate.mjs <cmd> [args...]');
+  console.error("usage: log-rotate.mjs <cmd> [args...]");
   process.exit(2);
 }
 const [cmd, ...cmdArgs] = args;
@@ -24,27 +24,27 @@ const logFile = process.env.LOG_FILE;
 
 if (!logFile) {
   // Passthrough — no rotation, no extra deps loaded.
-  const child = spawn(cmd, cmdArgs, { stdio: 'inherit' });
-  child.on('exit', (code) => process.exit(code ?? 0));
-  process.on('SIGINT', () => child.kill('SIGINT'));
-  process.on('SIGTERM', () => child.kill('SIGTERM'));
+  const child = spawn(cmd, cmdArgs, { stdio: "inherit" });
+  child.on("exit", (code) => process.exit(code ?? 0));
+  process.on("SIGINT", () => child.kill("SIGINT"));
+  process.on("SIGTERM", () => child.kill("SIGTERM"));
 } else {
   // Daily rotation, keep 7 files, gzip rotated. The stream's bookkeeping
   // (which file is current vs. rotated) lives in the rotating-file-stream
   // module — we just write to it.
-  const { createStream } = await import('rotating-file-stream');
+  const { createStream } = await import("rotating-file-stream");
   // Size-triggered rotation with a hard 100 MB cap on the active file and
   // a single retained rotated sibling — meets the #332 100 MB-per-service
   // total target. rotating-file-stream supports `size` natively, so unlike
   // the Rust services (tracing-appender, time-only) this is a hard cap.
   const stream = createStream(basename(logFile), {
-    size: '100M',
+    size: "100M",
     maxFiles: 1,
     path: dirname(logFile),
-    compress: 'gzip',
+    compress: "gzip",
   });
 
-  const child = spawn(cmd, cmdArgs, { stdio: ['inherit', 'pipe', 'pipe'] });
+  const child = spawn(cmd, cmdArgs, { stdio: ["inherit", "pipe", "pipe"] });
 
   // Mirror to both the rotated file and the parent's stdio so dev users
   // still see live output in the terminal.
@@ -53,10 +53,10 @@ if (!logFile) {
   child.stdout.pipe(process.stdout);
   child.stderr.pipe(process.stderr);
 
-  child.on('exit', (code) => {
+  child.on("exit", (code) => {
     stream.end();
     process.exit(code ?? 0);
   });
-  process.on('SIGINT', () => child.kill('SIGINT'));
-  process.on('SIGTERM', () => child.kill('SIGTERM'));
+  process.on("SIGINT", () => child.kill("SIGINT"));
+  process.on("SIGTERM", () => child.kill("SIGTERM"));
 }

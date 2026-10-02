@@ -15,34 +15,39 @@
  * indicators: the H1 title, and either a data row or the .no-data
  * block.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('/treasuries3 — page-server apiKey threading', () => {
-  test('/treasuries3 loads without 500 (apiKey threaded to getTreasuryTransactions)', async ({ page }) => {
-    const response = await page.goto('/treasuries3');
+test.describe("/treasuries3 — page-server apiKey threading", () => {
+  test("/treasuries3 loads without 500 (apiKey threaded to getTreasuryTransactions)", async ({
+    page,
+  }) => {
+    const response = await page.goto("/treasuries3");
 
     // 1. HTTP layer — the bug previously surfaced as a 500.
-    expect(response, 'GET /treasuries3 returns a response').not.toBeNull();
+    expect(response, "GET /treasuries3 returns a response").not.toBeNull();
     const status = response!.status();
-    expect(status, 'no 500 / no 5xx after apiKey threading').toBeLessThan(500);
+    expect(status, "no 500 / no 5xx after apiKey threading").toBeLessThan(500);
 
     // 2. Render layer — the page's own H1 is the cheap "page rendered"
     // signal that doesn't depend on the seed having data. Not an exact
     // match because the heading text contains regex-special chars.
     await expect(
-      page.getByRole('heading', { level: 1, name: /Bond Activity.*December 2025/ }),
+      page.getByRole("heading", {
+        level: 1,
+        name: /Bond Activity.*December 2025/,
+      })
     ).toBeVisible({ timeout: 10_000 });
 
     // 3. Either the table OR the empty-state is acceptable — both prove
     // the page-server's load() returned cleanly. The seed contents are
     // backend-driven and can change without breaking this assertion.
-    const table = page.locator('table.bond-activity-table');
-    const emptyState = page.locator('.no-data');
+    const table = page.locator("table.bond-activity-table");
+    const emptyState = page.locator(".no-data");
     const hasTable = await table.isVisible().catch(() => false);
     const hasEmptyState = await emptyState.isVisible().catch(() => false);
     expect(
       hasTable || hasEmptyState,
-      'either the table OR the empty-state is rendered',
+      "either the table OR the empty-state is rendered"
     ).toBe(true);
   });
 });

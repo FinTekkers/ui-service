@@ -1,5 +1,4 @@
-import type { TreasuryTransaction } from './treasury_positions';
-
+import type { TreasuryTransaction } from "./treasury_positions";
 
 /**
  * Groups transactions by date and a category field, then sums DIRECTED_QUANTITY
@@ -9,22 +8,23 @@ import type { TreasuryTransaction } from './treasury_positions';
 export function groupByDateAndCategory(
   transactions: TreasuryTransaction[],
   category:
-    | 'TRANSACTION_TYPE'
-    | 'PRODUCT_TYPE'
-    | 'TENOR'
+    | "TRANSACTION_TYPE"
+    | "PRODUCT_TYPE"
+    | "TENOR"
     | ((txn: TreasuryTransaction) => string)
 ): Map<string, Map<string, number>> {
   const grouped = new Map<string, Map<string, number>>();
 
   for (const txn of transactions) {
-    const dateKey = txn.TRADE_DATE instanceof Date
-      ? txn.TRADE_DATE.toISOString().slice(0, 10)
-      : String(txn.TRADE_DATE); // YYYY-MM-DD
+    const dateKey =
+      txn.TRADE_DATE instanceof Date
+        ? txn.TRADE_DATE.toISOString().slice(0, 10)
+        : String(txn.TRADE_DATE); // YYYY-MM-DD
     const categoryValue =
-      typeof category === 'function'
+      typeof category === "function"
         ? category(txn)
-        : String((txn as any)[category] || '');
-    const categoryKey = String(categoryValue || '');
+        : String((txn as any)[category] || "");
+    const categoryKey = String(categoryValue || "");
 
     if (!grouped.has(dateKey)) {
       grouped.set(dateKey, new Map());
@@ -50,14 +50,14 @@ export function resampleWeekly(
   const weekly = new Map<string, Map<string, number>>();
 
   for (const [dateStr, categoryMap] of data.entries()) {
-    const date = new Date(dateStr + 'T00:00:00'); // Ensure consistent timezone
+    const date = new Date(dateStr + "T00:00:00"); // Ensure consistent timezone
     // Get Monday of the week
     const dayOfWeek = date.getDay();
     const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
     const monday = new Date(date);
     monday.setDate(diff);
     monday.setHours(0, 0, 0, 0);
-    const weekKey = monday.toISOString().split('T')[0];
+    const weekKey = monday.toISOString().split("T")[0];
 
     if (!weekly.has(weekKey)) {
       weekly.set(weekKey, new Map());
@@ -83,9 +83,11 @@ export function resampleMonthly(
   const monthly = new Map<string, Map<string, number>>();
 
   for (const [dateStr, categoryMap] of data.entries()) {
-    const date = new Date(dateStr + 'T00:00:00'); // Ensure consistent timezone
+    const date = new Date(dateStr + "T00:00:00"); // Ensure consistent timezone
     // Get first day of the month
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
+    const monthKey = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-01`;
 
     if (!monthly.has(monthKey)) {
       monthly.set(monthKey, new Map());
@@ -196,7 +198,9 @@ export function filterByStartDate(
  * Sorts dates in ascending order
  */
 export function sortDates(dates: string[]): string[] {
-  return [...dates].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+  return [...dates].sort(
+    (a, b) => new Date(a).getTime() - new Date(b).getTime()
+  );
 }
 
 /**
@@ -210,15 +214,17 @@ export function fillMissingMonths(
   if (dates.length === 0) return pivot;
 
   const filled: Record<string, Record<string, number>> = { ...pivot };
-  const startDate = new Date(dates[0] + 'T00:00:00');
-  const endDate = new Date(dates[dates.length - 1] + 'T00:00:00');
+  const startDate = new Date(dates[0] + "T00:00:00");
+  const endDate = new Date(dates[dates.length - 1] + "T00:00:00");
 
   // Generate all months between start and end
   const current = new Date(startDate);
   current.setDate(1); // Start of month
 
   while (current <= endDate) {
-    const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-01`;
+    const monthKey = `${current.getFullYear()}-${String(
+      current.getMonth() + 1
+    ).padStart(2, "0")}-01`;
 
     // Only add if it doesn't already exist
     if (!(monthKey in filled)) {
@@ -235,7 +241,9 @@ export function fillMissingMonths(
 /**
  * Gets all unique categories from pivot table
  */
-export function getUniqueCategories(pivot: Record<string, Record<string, number>>): string[] {
+export function getUniqueCategories(
+  pivot: Record<string, Record<string, number>>
+): string[] {
   const categories = new Set<string>();
 
   for (const row of Object.values(pivot)) {
@@ -343,9 +351,11 @@ export function combineMaturationColumns(
   for (const [date, values] of Object.entries(pivot)) {
     combined[date] = { ...values };
 
-    if ('MATURATION_OFFSET' in combined[date]) {
-      combined[date]['MATURATION'] = (combined[date]['MATURATION'] || 0) + combined[date]['MATURATION_OFFSET'];
-      delete combined[date]['MATURATION_OFFSET'];
+    if ("MATURATION_OFFSET" in combined[date]) {
+      combined[date]["MATURATION"] =
+        (combined[date]["MATURATION"] || 0) +
+        combined[date]["MATURATION_OFFSET"];
+      delete combined[date]["MATURATION_OFFSET"];
     }
   }
 
@@ -373,4 +383,3 @@ export function calculateTotal(
 
   return totals;
 }
-

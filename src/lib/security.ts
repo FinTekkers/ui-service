@@ -1,9 +1,9 @@
-import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
 import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js";
 import { GetFieldValuesRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/get_field_values_request_pb.js";
-import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb.js';
+import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb.js";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
@@ -17,25 +17,25 @@ import {
   instrumentTypeOf,
   allAssetClasses,
 } from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy";
-import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
-import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
-import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
-import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
+import { Tenor } from "@fintekkers/ledger-models/node/wrappers/models/security/term";
+import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
+import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb";
+import { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb";
 // PositionFilterOperator wrapper (ledger-models 0.1.135+); see positions.ts
 // for the migration rationale (#229).
-import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
-import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
-import { SecurityService } from '@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService';
+import { PositionFilterOperator } from "@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator";
+import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
+import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 
 const { FieldProto } = pkg;
 
 export interface securityData {
-  identifier: string;          // primary identifier value (CUSIP or ISIN)
-  identifierType: string;      // "CUSIP" | "ISIN" | "UNKNOWN"
-  settlementCurrency: string;  // "USD" | "GBP" | "" if not set
-  cusip: string;               // deprecated alias for identifier; kept for compatibility
+  identifier: string; // primary identifier value (CUSIP or ISIN)
+  identifierType: string; // "CUSIP" | "ISIN" | "UNKNOWN"
+  settlementCurrency: string; // "USD" | "GBP" | "" if not set
+  cusip: string; // deprecated alias for identifier; kept for compatibility
   uuidHex?: string;
-  uuidStr?: string;            // human-readable UUID (hyphenated)
+  uuidStr?: string; // human-readable UUID (hyphenated)
   issueDate: string;
   maturityDate: string;
   outstandingAmount: string;
@@ -82,7 +82,7 @@ import {
   type IdentifierTypeName,
   type ProductTypeName,
   type InstrumentTypeName,
-} from './securityFilterTypes';
+} from "./securityFilterTypes";
 export {
   IDENTIFIER_TYPE_NAMES,
   PRODUCT_TYPE_NAMES,
@@ -108,7 +108,7 @@ export function productTypeNameOf(security: Security): string {
   const value = security.proto.getProductType();
   const entries = Object.entries(ProductTypeProto) as Array<[string, number]>;
   const found = entries.find(([, v]) => v === value);
-  return found?.[0] ?? 'UNKNOWN_PRODUCT_TYPE';
+  return found?.[0] ?? "UNKNOWN_PRODUCT_TYPE";
 }
 
 // #347 (clean redo of #313): identifier display contract.
@@ -136,20 +136,35 @@ export function productTypeNameOf(security: Security): string {
 
 /** Sentinel returned by identifierString when no typed identifier is
  *  present on the Security — the data-quality flag for #347. */
-export const MISSING_IDENTIFIER_MARKER = 'UNKNOWN';
+export const MISSING_IDENTIFIER_MARKER = "UNKNOWN";
 
-const BOND_ORDER: readonly IdentifierTypeProto[] =
-  [IdentifierTypeProto.CUSIP, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI];
-const EQUITY_ORDER: readonly IdentifierTypeProto[] =
-  [IdentifierTypeProto.EXCH_TICKER, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI, IdentifierTypeProto.CUSIP];
-const INDEX_ORDER: readonly IdentifierTypeProto[] =
-  [IdentifierTypeProto.SERIES_ID, IdentifierTypeProto.INDEX_NAME];
-const CURRENCY_ORDER: readonly IdentifierTypeProto[] =
-  [IdentifierTypeProto.CASH];
-const COMMODITY_OR_CRYPTO_ORDER: readonly IdentifierTypeProto[] =
-  [IdentifierTypeProto.EXCH_TICKER, IdentifierTypeProto.ISIN, IdentifierTypeProto.FIGI];
+const BOND_ORDER: readonly IdentifierTypeProto[] = [
+  IdentifierTypeProto.CUSIP,
+  IdentifierTypeProto.ISIN,
+  IdentifierTypeProto.FIGI,
+];
+const EQUITY_ORDER: readonly IdentifierTypeProto[] = [
+  IdentifierTypeProto.EXCH_TICKER,
+  IdentifierTypeProto.ISIN,
+  IdentifierTypeProto.FIGI,
+  IdentifierTypeProto.CUSIP,
+];
+const INDEX_ORDER: readonly IdentifierTypeProto[] = [
+  IdentifierTypeProto.SERIES_ID,
+  IdentifierTypeProto.INDEX_NAME,
+];
+const CURRENCY_ORDER: readonly IdentifierTypeProto[] = [
+  IdentifierTypeProto.CASH,
+];
+const COMMODITY_OR_CRYPTO_ORDER: readonly IdentifierTypeProto[] = [
+  IdentifierTypeProto.EXCH_TICKER,
+  IdentifierTypeProto.ISIN,
+  IdentifierTypeProto.FIGI,
+];
 
-function preferenceOrderFor(productType: number): readonly IdentifierTypeProto[] {
+function preferenceOrderFor(
+  productType: number
+): readonly IdentifierTypeProto[] {
   switch (productType) {
     case ProductTypeProto.TBILL:
     case ProductTypeProto.TREASURY_NOTE:
@@ -223,24 +238,37 @@ export function identifierString(security: Security): string {
   // point of the fix is that a UUID is not an identifier — it's an
   // internal handle. If the security has no typed identifier, render
   // the MISSING_IDENTIFIER_MARKER so the data gap is visible.
-  return primaryIdentifier(security)?.getIdentifierValue() ?? MISSING_IDENTIFIER_MARKER;
+  return (
+    primaryIdentifier(security)?.getIdentifierValue() ??
+    MISSING_IDENTIFIER_MARKER
+  );
 }
 
 export function hasMissingIdentifier(security: Security): boolean {
   return primaryIdentifier(security) === undefined;
 }
 
-function identifierTypeNameToProto(name: IdentifierTypeName): IdentifierTypeProto {
+function identifierTypeNameToProto(
+  name: IdentifierTypeName
+): IdentifierTypeProto {
   switch (name) {
-    case 'ISIN': return IdentifierTypeProto.ISIN;
-    case 'EXCH_TICKER': return IdentifierTypeProto.EXCH_TICKER;
-    case 'SERIES_ID': return IdentifierTypeProto.SERIES_ID;
-    case 'OSI': return IdentifierTypeProto.OSI;
-    case 'FIGI': return IdentifierTypeProto.FIGI;
-    case 'INDEX_NAME': return IdentifierTypeProto.INDEX_NAME;
-    case 'CASH': return IdentifierTypeProto.CASH;
-    case 'CUSIP':
-    default: return IdentifierTypeProto.CUSIP;
+    case "ISIN":
+      return IdentifierTypeProto.ISIN;
+    case "EXCH_TICKER":
+      return IdentifierTypeProto.EXCH_TICKER;
+    case "SERIES_ID":
+      return IdentifierTypeProto.SERIES_ID;
+    case "OSI":
+      return IdentifierTypeProto.OSI;
+    case "FIGI":
+      return IdentifierTypeProto.FIGI;
+    case "INDEX_NAME":
+      return IdentifierTypeProto.INDEX_NAME;
+    case "CASH":
+      return IdentifierTypeProto.CASH;
+    case "CUSIP":
+    default:
+      return IdentifierTypeProto.CUSIP;
   }
 }
 
@@ -260,7 +288,7 @@ export async function FetchSecurity(
   issueDateOperator?: string,
   apiKey?: string,
   productType?: ProductTypeName,
-  instrumentType?: InstrumentTypeName,
+  instrumentType?: InstrumentTypeName
 ): Promise<securityData[]> {
   // #306: ledger-service rejects an empty filter ("There was no UUID list
   // nor security filter in the request"), so when EVERY user-driven filter
@@ -272,7 +300,7 @@ export async function FetchSecurity(
   const allUserFiltersAbsent =
     !assetClass &&
     !issuerName &&
-    (!identifier || identifier.trim() === '') &&
+    (!identifier || identifier.trim() === "") &&
     !productType &&
     !instrumentType;
   if (allUserFiltersAbsent) {
@@ -284,7 +312,9 @@ export async function FetchSecurity(
     // current ledger.
     const issuerNames = await fetchDistinctIssuerNames(apiKey);
     if (issuerNames.length === 0) {
-      console.warn('[#306-fo] no distinct issuers found via getFieldValues — returning empty list');
+      console.warn(
+        "[#306-fo] no distinct issuers found via getFieldValues — returning empty list"
+      );
       return [];
     }
     const concurrency = 16;
@@ -293,12 +323,25 @@ export async function FetchSecurity(
       const slice = issuerNames.slice(i, i + concurrency);
       const batches = await Promise.all(
         slice.map((iss) =>
-          FetchSecurity(null, iss, identifier, identifierType, issueDate, issueDateOperator, apiKey, productType, instrumentType)
-            .catch((e: any) => {
-              console.warn(`[#306-fo] issuer=${JSON.stringify(iss)} failed: ${e?.message ?? e}`);
-              return [] as securityData[];
-            }),
-        ),
+          FetchSecurity(
+            null,
+            iss,
+            identifier,
+            identifierType,
+            issueDate,
+            issueDateOperator,
+            apiKey,
+            productType,
+            instrumentType
+          ).catch((e: any) => {
+            console.warn(
+              `[#306-fo] issuer=${JSON.stringify(iss)} failed: ${
+                e?.message ?? e
+              }`
+            );
+            return [] as securityData[];
+          })
+        )
       );
       for (const b of batches) results.push(...b);
     }
@@ -326,19 +369,23 @@ export async function FetchSecurity(
   // Compute the asset-class match set up front. Empty array means
   // "no asset-class post-filter applied". Includes the input itself
   // PLUS descendants when the input is an internal node.
-  const assetClassMatchSet: ReadonlySet<string> =
-    assetClass
-      ? new Set([assetClass, ...assetClassDescendantsOf(assetClass)])
-      : new Set<string>();
+  const assetClassMatchSet: ReadonlySet<string> = assetClass
+    ? new Set([assetClass, ...assetClassDescendantsOf(assetClass)])
+    : new Set<string>();
 
   if (issuerName) {
     filterSecurity.addEqualsFilter(FieldProto.SECURITY_ISSUER_NAME, issuerName);
   }
 
   if (identifier && identifier.trim() !== "") {
-    const idType = identifierTypeNameToProto(identifierType ?? 'CUSIP');
-    const identifierProto = new IdentifierProto().setIdentifierType(idType).setIdentifierValue(identifier.trim());
-    filterSecurity.addObjectFilter(FieldProto.IDENTIFIER, new Identifier(identifierProto));
+    const idType = identifierTypeNameToProto(identifierType ?? "CUSIP");
+    const identifierProto = new IdentifierProto()
+      .setIdentifierType(idType)
+      .setIdentifierValue(identifier.trim());
+    filterSecurity.addObjectFilter(
+      FieldProto.IDENTIFIER,
+      new Identifier(identifierProto)
+    );
   }
 
   if (issueDate && issueDate.trim() !== "" && issueDateOperator) {
@@ -356,15 +403,19 @@ export async function FetchSecurity(
   // loop uses ~1000/class), so post-filter cost is bounded.
   const productTypeProtoValue: number | null =
     productType !== undefined && productType !== null
-      ? ((ProductTypeProto as unknown as Record<string, number>)[productType] ?? null)
+      ? (ProductTypeProto as unknown as Record<string, number>)[productType] ??
+        null
       : null;
 
   try {
     const conn = getServiceConnection(apiKey);
-    const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+    const client = new SecurityClient(conn.url, conn.credentials, {
+      interceptors: conn.interceptors,
+      ...conn.clientOptions,
+    });
     const searchRequest = new QuerySecurityRequestProto();
-    searchRequest.setObjectClass('SecurityRequest');
-    searchRequest.setVersion('0.0.1');
+    searchRequest.setObjectClass("SecurityRequest");
+    searchRequest.setVersion("0.0.1");
     searchRequest.setAsOf(ZonedDateTime.now().toProto());
     searchRequest.setSearchSecurityInput(filterSecurity.toProto());
 
@@ -375,21 +426,24 @@ export async function FetchSecurity(
     const securities = await new Promise<Security[]>((resolve) => {
       const list: Security[] = [];
       const stream = client.search(searchRequest);
-      stream.on('data', (response: any) => {
+      stream.on("data", (response: any) => {
         response.getSecurityResponseList().forEach((proto: any) => {
           list.push(Security.create(proto));
         });
       });
-      stream.on('end', () => resolve(list));
-      stream.on('error', (err: any) => {
-        console.warn(`Security search stream error after ${list.length} records: ${err.details ?? err.message}`);
+      stream.on("end", () => resolve(list));
+      stream.on("error", (err: any) => {
+        console.warn(
+          `Security search stream error after ${list.length} records: ${
+            err.details ?? err.message
+          }`
+        );
         resolve(list);
       });
     });
 
-    return securities.reduce(
-      (acc: securityData[], security: Security) => {
-       try {
+    return securities.reduce((acc: securityData[], security: Security) => {
+      try {
         // Post-filter on productType (M5 / #260: no PRODUCT_TYPE
         // FieldProto, so the gRPC search can't narrow server-side).
         if (
@@ -444,13 +498,18 @@ export async function FetchSecurity(
           const qty = issuance.getPostAuctionOutstandingQuantity();
           if (!qty && maturityDate.getFullYear() > 2009) {
             return acc;
-          } else if (!qty && maturityDate.getFullYear() <= 2009 && maturityDate.getFullYear() > 1970) {
+          } else if (
+            !qty &&
+            maturityDate.getFullYear() <= 2009 &&
+            maturityDate.getFullYear() > 1970
+          ) {
             return acc;
           }
         }
 
         {
-          const outstandingAmount = issuance?.getPostAuctionOutstandingQuantity()?.toString() ?? '0';
+          const outstandingAmount =
+            issuance?.getPostAuctionOutstandingQuantity()?.toString() ?? "0";
           // #347: never fall through to the UUID hex. identifierString
           // returns MISSING_IDENTIFIER_MARKER ('UNKNOWN') when no typed
           // identifier is present, which keeps the data-quality issue
@@ -460,26 +519,46 @@ export async function FetchSecurity(
           const id = identifierString(security);
           const idTypeNum = ident?.getIdentifierType() ?? 0;
           const identifierTypeStr =
-            idTypeNum === IdentifierTypeProto.CUSIP       ? 'CUSIP' :
-            idTypeNum === IdentifierTypeProto.ISIN        ? 'ISIN'  :
-            idTypeNum === IdentifierTypeProto.EXCH_TICKER ? 'EXCH_TICKER' :
-            idTypeNum === IdentifierTypeProto.FIGI        ? 'FIGI' :
-            idTypeNum === IdentifierTypeProto.SERIES_ID   ? 'SERIES_ID' :
-            idTypeNum === IdentifierTypeProto.OSI         ? 'OSI' :
-            idTypeNum === IdentifierTypeProto.INDEX_NAME  ? 'INDEX_NAME' :
-            idTypeNum === IdentifierTypeProto.CASH        ? 'CASH' : 'UNKNOWN';
+            idTypeNum === IdentifierTypeProto.CUSIP
+              ? "CUSIP"
+              : idTypeNum === IdentifierTypeProto.ISIN
+              ? "ISIN"
+              : idTypeNum === IdentifierTypeProto.EXCH_TICKER
+              ? "EXCH_TICKER"
+              : idTypeNum === IdentifierTypeProto.FIGI
+              ? "FIGI"
+              : idTypeNum === IdentifierTypeProto.SERIES_ID
+              ? "SERIES_ID"
+              : idTypeNum === IdentifierTypeProto.OSI
+              ? "OSI"
+              : idTypeNum === IdentifierTypeProto.INDEX_NAME
+              ? "INDEX_NAME"
+              : idTypeNum === IdentifierTypeProto.CASH
+              ? "CASH"
+              : "UNKNOWN";
 
           // Resolve settlement currency
-          let settlementCurrency = '';
+          let settlementCurrency = "";
           try {
-            const settlementSec = (security.proto as any).getSettlementCurrency?.();
-            settlementCurrency = settlementSec?.getCashDetails?.()?.getCashId?.() ?? '';
-          } catch { /* optional field */ }
+            const settlementSec = (
+              security.proto as any
+            ).getSettlementCurrency?.();
+            settlementCurrency =
+              settlementSec?.getCashDetails?.()?.getCashId?.() ?? "";
+          } catch {
+            /* optional field */
+          }
 
           // Empty string for non-bond securities — sentinel new Date(0) = 1970-01-01
-          const issueDateStr = issueDate.getTime() === 0 ? '' : issueDate.toISOString().slice(0, 10).replace(/-/g, '/');
-          const maturityDateStr = maturityDate.getTime() === 0 ? '' : maturityDate.toISOString().slice(0, 10).replace(/-/g, '/');
-          const asOfStr = security.getAsOf().toString().split(' ')[0]; // Format: "YYYY/MM/DD"
+          const issueDateStr =
+            issueDate.getTime() === 0
+              ? ""
+              : issueDate.toISOString().slice(0, 10).replace(/-/g, "/");
+          const maturityDateStr =
+            maturityDate.getTime() === 0
+              ? ""
+              : maturityDate.toISOString().slice(0, 10).replace(/-/g, "/");
+          const asOfStr = security.getAsOf().toString().split(" ")[0]; // Format: "YYYY/MM/DD"
 
           // M5 / #260: bond detection now goes through the wrapper's
           // type-guard helper, which checks against ProductTypeProto.
@@ -492,14 +571,16 @@ export async function FetchSecurity(
 
           // Serialize UUID for delete support
           const uuidProto = security.proto.getUuid();
-          const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
+          const uuidHex = uuidProto
+            ? Buffer.from(uuidProto.serializeBinary()).toString("hex")
+            : undefined;
           const uuidStr = security.getID().toString();
 
           const result: securityData = {
             identifier: id,
             identifierType: identifierTypeStr,
             settlementCurrency,
-            cusip: id,           // backward-compat alias
+            cusip: id, // backward-compat alias
             uuidHex,
             uuidStr,
             issueDate: issueDateStr,
@@ -534,7 +615,8 @@ export async function FetchSecurity(
             }
 
             try {
-              result.couponRate = bondSecurity.getCouponRate()?.toString() ?? undefined;
+              result.couponRate =
+                bondSecurity.getCouponRate()?.toString() ?? undefined;
             } catch (e) {
               // Coupon rate might not be available
             }
@@ -546,13 +628,16 @@ export async function FetchSecurity(
             }
 
             try {
-              result.couponFrequency = bondSecurity.getCouponFrequency()?.toString();
+              result.couponFrequency = bondSecurity
+                .getCouponFrequency()
+                ?.toString();
             } catch (e) {
               // Coupon frequency might not be available
             }
 
             try {
-              result.faceValue = bondSecurity.getFaceValue()?.toString() ?? undefined;
+              result.faceValue =
+                bondSecurity.getFaceValue()?.toString() ?? undefined;
             } catch (e) {
               // Face value might not be available
             }
@@ -561,7 +646,10 @@ export async function FetchSecurity(
               const datedDate = bondSecurity.getDatedDate();
               if (datedDate) {
                 // #302: v0.4.x getDatedDate() returns Date | null directly.
-                result.datedDate = datedDate.toISOString().slice(0, 10).replace(/-/g, '/');
+                result.datedDate = datedDate
+                  .toISOString()
+                  .slice(0, 10)
+                  .replace(/-/g, "/");
               }
             } catch (e) {
               // Dated date might not be available
@@ -580,15 +668,17 @@ export async function FetchSecurity(
 
           acc.push(result);
         }
-       } catch (perRecordErr: any) {
-         // Skip individual records that throw during deserialization rather than
-         // dropping the whole batch.
-         console.warn(`Skipping security during deserialization: ${perRecordErr?.message ?? perRecordErr}`);
-       }
-        return acc;
-      },
-      []
-    );
+      } catch (perRecordErr: any) {
+        // Skip individual records that throw during deserialization rather than
+        // dropping the whole batch.
+        console.warn(
+          `Skipping security during deserialization: ${
+            perRecordErr?.message ?? perRecordErr
+          }`
+        );
+      }
+      return acc;
+    }, []);
   } catch (error: any) {
     console.error("Error fetching security data:", error.message);
     return [];
@@ -604,20 +694,31 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
     const ident = primaryIdentifier(security);
     const idTypeNum = ident?.getIdentifierType() ?? 0;
     const identifierTypeStr =
-      idTypeNum === IdentifierTypeProto.CUSIP       ? 'CUSIP' :
-      idTypeNum === IdentifierTypeProto.ISIN        ? 'ISIN'  :
-      idTypeNum === IdentifierTypeProto.EXCH_TICKER ? 'EXCH_TICKER' :
-      idTypeNum === IdentifierTypeProto.FIGI        ? 'FIGI' :
-      idTypeNum === IdentifierTypeProto.SERIES_ID   ? 'SERIES_ID' :
-      idTypeNum === IdentifierTypeProto.OSI         ? 'OSI' :
-      idTypeNum === IdentifierTypeProto.INDEX_NAME  ? 'INDEX_NAME' :
-      idTypeNum === IdentifierTypeProto.CASH        ? 'CASH' : 'UNKNOWN';
+      idTypeNum === IdentifierTypeProto.CUSIP
+        ? "CUSIP"
+        : idTypeNum === IdentifierTypeProto.ISIN
+        ? "ISIN"
+        : idTypeNum === IdentifierTypeProto.EXCH_TICKER
+        ? "EXCH_TICKER"
+        : idTypeNum === IdentifierTypeProto.FIGI
+        ? "FIGI"
+        : idTypeNum === IdentifierTypeProto.SERIES_ID
+        ? "SERIES_ID"
+        : idTypeNum === IdentifierTypeProto.OSI
+        ? "OSI"
+        : idTypeNum === IdentifierTypeProto.INDEX_NAME
+        ? "INDEX_NAME"
+        : idTypeNum === IdentifierTypeProto.CASH
+        ? "CASH"
+        : "UNKNOWN";
     // #347: never fall through to UUID hex. identifierString emits
     // MISSING_IDENTIFIER_MARKER for typeless rows so they show as a
     // data-quality flag in the grid instead of a fake value.
     const id = identifierString(security);
     const uuidProto = security.proto.getUuid();
-    const uuidHex = uuidProto ? Buffer.from(uuidProto.serializeBinary()).toString('hex') : undefined;
+    const uuidHex = uuidProto
+      ? Buffer.from(uuidProto.serializeBinary()).toString("hex")
+      : undefined;
     const uuidStr = security.getID().toString();
     // M5 / #260: same wrapper-driven bond narrowing as above.
     const bondSecurity = security.isBond() ? security : null;
@@ -625,30 +726,37 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
     const result: securityData = {
       identifier: id,
       identifierType: identifierTypeStr,
-      settlementCurrency: '',
+      settlementCurrency: "",
       cusip: id,
       uuidHex,
       uuidStr,
-      issueDate: issueDate.toISOString().slice(0, 10).replace(/-/g, '/'),
-      maturityDate: maturityDate.toISOString().slice(0, 10).replace(/-/g, '/'),
-      outstandingAmount: '0',
+      issueDate: issueDate.toISOString().slice(0, 10).replace(/-/g, "/"),
+      maturityDate: maturityDate.toISOString().slice(0, 10).replace(/-/g, "/"),
+      outstandingAmount: "0",
       issuerName: security.getIssuerName(),
       assetClass: security.getAssetClass(),
       // M6 #263 bug 3: see productTypeNameOf docs — bypasses the
       // BondSecurity tenor-derived override.
       productType: productTypeNameOf(security),
-      asOf: security.getAsOf().toString().split(' ')[0],
+      asOf: security.getAsOf().toString().split(" ")[0],
       productTypeEnum: security.proto.getProductType(),
     };
 
     if (bondSecurity) {
-      try { result.couponRate = bondSecurity.getCouponRate()?.toString(); } catch {}
-      try { result.couponFrequency = bondSecurity.getCouponFrequency()?.toString(); } catch {}
-      try { result.faceValue = bondSecurity.getFaceValue()?.toString(); } catch {}
+      try {
+        result.couponRate = bondSecurity.getCouponRate()?.toString();
+      } catch {}
+      try {
+        result.couponFrequency = bondSecurity.getCouponFrequency()?.toString();
+      } catch {}
+      try {
+        result.faceValue = bondSecurity.getFaceValue()?.toString();
+      } catch {}
       try {
         const dd = bondSecurity.getDatedDate();
         // #302: v0.4.x getDatedDate() returns Date | null directly.
-        if (dd) result.datedDate = dd.toISOString().slice(0, 10).replace(/-/g, '/');
+        if (dd)
+          result.datedDate = dd.toISOString().slice(0, 10).replace(/-/g, "/");
       } catch {}
       if (bondSecurity instanceof TIPSBond) {
         const baseCpi = bondSecurity.getBaseCpi();
@@ -663,7 +771,7 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
 
 export interface UniverseEntry {
   identifier: string;
-  identifierType: string;  // "CUSIP" | "ISIN" | "EXCH_TICKER" | "UNKNOWN"
+  identifierType: string; // "CUSIP" | "ISIN" | "EXCH_TICKER" | "UNKNOWN"
   description: string;
   uuidHex: string;
   assetClass: string;
@@ -682,7 +790,13 @@ const UNIVERSE_CAP_PER_CLASS = 1000;
 // is unioned (M5 + legacy) so the autocomplete still surfaces every
 // asset_class string the running ledger has on the wire.
 const M5_ASSET_CLASSES: readonly string[] = allAssetClasses();
-const LEGACY_ASSET_CLASSES: readonly string[] = ['Fixed Income', 'Equity', 'Index', 'Cash', 'Currency'];
+const LEGACY_ASSET_CLASSES: readonly string[] = [
+  "Fixed Income",
+  "Equity",
+  "Index",
+  "Cash",
+  "Currency",
+];
 const UNIVERSE_ASSET_CLASSES: readonly string[] = [
   ...M5_ASSET_CLASSES,
   ...LEGACY_ASSET_CLASSES,
@@ -704,15 +818,21 @@ const ISSUER_NAMES_TTL_MS = 5 * 60 * 1000; // 5 min
 let issuerNamesCache: { value: string[]; fetchedAt: number } | null = null;
 
 async function fetchDistinctIssuerNames(apiKey?: string): Promise<string[]> {
-  if (issuerNamesCache && Date.now() - issuerNamesCache.fetchedAt < ISSUER_NAMES_TTL_MS) {
+  if (
+    issuerNamesCache &&
+    Date.now() - issuerNamesCache.fetchedAt < ISSUER_NAMES_TTL_MS
+  ) {
     return issuerNamesCache.value;
   }
   try {
     const conn = getServiceConnection(apiKey);
-    const client = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+    const client = new SecurityClient(conn.url, conn.credentials, {
+      interceptors: conn.interceptors,
+      ...conn.clientOptions,
+    });
     const req = new GetFieldValuesRequestProto();
-    req.setObjectClass('GetFieldValuesRequestProto');
-    req.setVersion('0.0.1');
+    req.setObjectClass("GetFieldValuesRequestProto");
+    req.setVersion("0.0.1");
     req.setField(FieldProto.SECURITY_ISSUER_NAME);
 
     const issuers: string[] = await new Promise((resolve, reject) => {
@@ -721,10 +841,16 @@ async function fetchDistinctIssuerNames(apiKey?: string): Promise<string[]> {
         const list = resp.getValuesList?.() ?? [];
         const out: string[] = [];
         for (const any of list) {
-          if (typeof any?.getTypeUrl === 'function' && any.getTypeUrl().endsWith('StringValue')) {
-            const sv = any.unpack(StringValue.deserializeBinary, 'google.protobuf.StringValue');
+          if (
+            typeof any?.getTypeUrl === "function" &&
+            any.getTypeUrl().endsWith("StringValue")
+          ) {
+            const sv = any.unpack(
+              StringValue.deserializeBinary,
+              "google.protobuf.StringValue"
+            );
             const v = sv?.getValue?.();
-            if (typeof v === 'string' && v.length > 0) out.push(v);
+            if (typeof v === "string" && v.length > 0) out.push(v);
           }
         }
         resolve(out);
@@ -734,11 +860,16 @@ async function fetchDistinctIssuerNames(apiKey?: string): Promise<string[]> {
     issuerNamesCache = { value: issuers, fetchedAt: Date.now() };
     return issuers;
   } catch (e: any) {
-    console.warn(`[#306-fo] fetchDistinctIssuerNames failed: ${e?.message ?? e}`);
+    console.warn(
+      `[#306-fo] fetchDistinctIssuerNames failed: ${e?.message ?? e}`
+    );
     return [];
   }
 }
-const universeCache = new Map<string, { value: UniverseEntry[]; fetchedAt: number }>();
+const universeCache = new Map<
+  string,
+  { value: UniverseEntry[]; fetchedAt: number }
+>();
 
 export function clearUniverseCache(): void {
   universeCache.clear();
@@ -753,15 +884,17 @@ function dedupeLatestPerIdentifier(secs: securityData[]): securityData[] {
     if (!s.uuidHex) continue;
     const key = `${s.identifierType}:${s.identifier}`;
     const existing = byKey.get(key);
-    if (!existing || (s.asOf ?? '') > (existing.asOf ?? '')) {
+    if (!existing || (s.asOf ?? "") > (existing.asOf ?? "")) {
       byKey.set(key, s);
     }
   }
   return [...byKey.values()];
 }
 
-export async function FetchSecurityUniverse(apiKey?: string): Promise<UniverseEntry[]> {
-  const cacheKey = apiKey ?? '__no_key__';
+export async function FetchSecurityUniverse(
+  apiKey?: string
+): Promise<UniverseEntry[]> {
+  const cacheKey = apiKey ?? "__no_key__";
   const cached = universeCache.get(cacheKey);
   if (cached && Date.now() - cached.fetchedAt < UNIVERSE_TTL_MS) {
     return cached.value;
@@ -770,21 +903,36 @@ export async function FetchSecurityUniverse(apiKey?: string): Promise<UniverseEn
   const perClass = await Promise.all(
     UNIVERSE_ASSET_CLASSES.map(async (cls) => {
       try {
-        const all = await FetchSecurity(cls, null, undefined, undefined, undefined, undefined, apiKey);
+        const all = await FetchSecurity(
+          cls,
+          null,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          apiKey
+        );
         return dedupeLatestPerIdentifier(all).slice(0, UNIVERSE_CAP_PER_CLASS);
       } catch (e: any) {
-        console.warn(`Universe fetch failed for asset class ${cls}:`, e?.message ?? e);
+        console.warn(
+          `Universe fetch failed for asset class ${cls}:`,
+          e?.message ?? e
+        );
         return [];
       }
-    }),
+    })
   );
 
   const universe: UniverseEntry[] = [];
   for (const secs of perClass) {
     for (const sec of secs) {
-      const couponPart = sec.couponRate ? ` ${sec.couponRate}%` : '';
-      const maturityPart = sec.maturityDate && sec.assetClass === 'Fixed Income' ? ` ${sec.maturityDate}` : '';
-      const description = `${sec.issuerName}${couponPart}${maturityPart}`.trim();
+      const couponPart = sec.couponRate ? ` ${sec.couponRate}%` : "";
+      const maturityPart =
+        sec.maturityDate && sec.assetClass === "Fixed Income"
+          ? ` ${sec.maturityDate}`
+          : "";
+      const description =
+        `${sec.issuerName}${couponPart}${maturityPart}`.trim();
       universe.push({
         identifier: sec.identifier,
         identifierType: sec.identifierType,
@@ -799,13 +947,16 @@ export async function FetchSecurityUniverse(apiKey?: string): Promise<UniverseEn
   return universe;
 }
 
-export async function FetchSecurityByUuid(uuidStr: string, apiKey?: string): Promise<securityData[]> {
+export async function FetchSecurityByUuid(
+  uuidStr: string,
+  apiKey?: string
+): Promise<securityData[]> {
   try {
     const service = new SecurityService(apiKey);
     const securities = await service.searchByUuid(uuidStr);
     return mapSecuritiesToData(securities);
   } catch (error: any) {
-    console.error('Error fetching security by UUID:', error.message);
+    console.error("Error fetching security by UUID:", error.message);
     return [];
   }
 }

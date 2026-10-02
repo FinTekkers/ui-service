@@ -5,8 +5,6 @@
   @include glass-background;
 }
 
-
-
 .notSupported {
   color: $grey !important;
   font-weight: bold;
@@ -28,7 +26,6 @@
   @include button-style;
 }
 
-
 .navigation_bar {
   height: 10vh;
   padding: 1em;
@@ -49,13 +46,13 @@
       width: 60vw;
 
       li {
-        padding: .6em 1em;
+        padding: 0.6em 1em;
         position: relative;
         cursor: pointer;
         @include flex(row, center, center, 1em);
 
         &:not(:first-child)::before {
-          content: '';
+          content: "";
           width: 0;
           height: 2px;
           background-color: $primary-color;
@@ -70,28 +67,23 @@
         &:hover::before {
           width: 95%;
           left: 50%;
-
         }
 
         a {
-
-          @include flex(row, center, center, .5em);
-
-
+          @include flex(row, center, center, 0.5em);
         }
       }
 
       li:first-child {
         border-radius: 50px;
         background-color: $success;
-        transition: all .5s ease-in-out;
+        transition: all 0.5s ease-in-out;
         color: $bgc-color;
         font-weight: bold;
 
-
         &:hover {
           background-color: $primary-color;
-          color: $white
+          color: $white;
         }
       }
 
@@ -107,14 +99,8 @@
   }
 }
 
-
-
-
-
-
 .form {
   height: 100%;
-
 
   .form_container {
     width: 25vw;
@@ -129,11 +115,6 @@
       font-size: 1.5rem;
       color: $primary-color;
       grid-area: 1/1/1/1;
-
     }
-
-
-
   }
-
 }

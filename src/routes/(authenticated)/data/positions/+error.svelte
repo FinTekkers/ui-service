@@ -1,11 +1,13 @@
 <script>
-  import { page } from '$app/stores';
+  import { page } from "$app/stores";
 </script>
 
 <div class="error-container">
   <div class="error-card">
     <h1>Something went wrong</h1>
-    <p class="error-message">{$page.error?.message ?? 'An unexpected error occurred'}</p>
+    <p class="error-message">
+      {$page.error?.message ?? "An unexpected error occurred"}
+    </p>
     <button class="retry-button" on:click={() => location.reload()}>
       Retry
     </button>

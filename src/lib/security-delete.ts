@@ -1,7 +1,7 @@
-import delete_pkg from '@fintekkers/ledger-models/node/fintekkers/requests/util/delete_request_pb.js';
-import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js';
-import { UUIDProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js';
-import { getServiceConnection } from '$lib/grpc-auth';
+import delete_pkg from "@fintekkers/ledger-models/node/fintekkers/requests/util/delete_request_pb.js";
+import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
+import { UUIDProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js";
+import { getServiceConnection } from "$lib/grpc-auth";
 
 const { DeleteRequestProto, EntityTypeProto } = delete_pkg;
 
@@ -19,14 +19,18 @@ export interface DeleteResult {
 }
 
 function uuidFromHex(hex: string): any {
-  const bytes = Buffer.from(hex, 'hex');
+  const bytes = Buffer.from(hex, "hex");
   return UUIDProto.deserializeBinary(new Uint8Array(bytes));
 }
 
-function buildDeleteRequest(uuidHex: string, dryRun: boolean, force: boolean): any {
+function buildDeleteRequest(
+  uuidHex: string,
+  dryRun: boolean,
+  force: boolean
+): any {
   const request = new DeleteRequestProto();
-  request.setObjectClass('DeleteRequestProto');
-  request.setVersion('0.0.1');
+  request.setObjectClass("DeleteRequestProto");
+  request.setVersion("0.0.1");
   request.setUuid(uuidFromHex(uuidHex));
   request.setEntityType(EntityTypeProto.SECURITY);
   request.setDryRun(dryRun);
@@ -36,10 +40,18 @@ function buildDeleteRequest(uuidHex: string, dryRun: boolean, force: boolean): a
 
 function getClient(apiKey?: string): any {
   const conn = getServiceConnection(apiKey);
-  return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+  return new SecurityClient(conn.url, conn.credentials, {
+    interceptors: conn.interceptors,
+    ...conn.clientOptions,
+  });
 }
 
-export async function deleteSecurity(uuidHex: string, dryRun: boolean, force = false, apiKey?: string): Promise<DeleteDryRunResult> {
+export async function deleteSecurity(
+  uuidHex: string,
+  dryRun: boolean,
+  force = false,
+  apiKey?: string
+): Promise<DeleteDryRunResult> {
   try {
     const request = buildDeleteRequest(uuidHex, dryRun, force);
     const client = getClient(apiKey);
@@ -51,10 +63,12 @@ export async function deleteSecurity(uuidHex: string, dryRun: boolean, force = f
       });
     });
 
-    const affectedEntities = (response.getAffectedEntitiesList?.() ?? []).map((e: any) => ({
-      entityType: e.getEntityType(),
-      description: e.getDescription(),
-    }));
+    const affectedEntities = (response.getAffectedEntitiesList?.() ?? []).map(
+      (e: any) => ({
+        entityType: e.getEntityType(),
+        description: e.getDescription(),
+      })
+    );
 
     return {
       success: response.getSuccess(),
@@ -68,7 +82,7 @@ export async function deleteSecurity(uuidHex: string, dryRun: boolean, force = f
       totalCount: 0,
       affectedEntities: [],
       warnings: [],
-      error: error.details ?? error.message ?? 'Delete failed',
+      error: error.details ?? error.message ?? "Delete failed",
     };
   }
 }

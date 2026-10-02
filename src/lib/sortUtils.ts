@@ -2,7 +2,7 @@
  * Universal client-side sorting utilities for table components
  */
 
-export type SortDirection = 'asc' | 'desc';
+export type SortDirection = "asc" | "desc";
 
 export interface SortState<T = any> {
   sortField: T | null;
@@ -34,8 +34,8 @@ export function compareValues(
   }
   // Handle objects with toEpochSecond method (LocalDate/ZonedDateTime)
   else if (
-    typeof valueA.toEpochSecond === 'function' &&
-    typeof valueB.toEpochSecond === 'function'
+    typeof valueA.toEpochSecond === "function" &&
+    typeof valueB.toEpochSecond === "function"
   ) {
     comparison = valueA.toEpochSecond() - valueB.toEpochSecond();
   }
@@ -51,7 +51,7 @@ export function compareValues(
     }
   }
 
-  return sortDirection === 'desc' ? -comparison : comparison;
+  return sortDirection === "desc" ? -comparison : comparison;
 }
 
 /**
@@ -116,9 +116,9 @@ export function getSortIndicator<T>(
   sortDirection: SortDirection
 ): string {
   if (currentField === targetField) {
-    return sortDirection === 'asc' ? '↑' : '↓';
+    return sortDirection === "asc" ? "↑" : "↓";
   }
-  return '';
+  return "";
 }
 
 /**
@@ -137,13 +137,13 @@ export function handleSortClick<T>(
     // Toggle direction if clicking the same column
     return {
       sortField: clickedField,
-      sortDirection: currentSortDirection === 'asc' ? 'desc' : 'asc',
+      sortDirection: currentSortDirection === "asc" ? "desc" : "asc",
     };
   } else {
     // New column, start with ascending
     return {
       sortField: clickedField,
-      sortDirection: 'asc',
+      sortDirection: "asc",
     };
   }
 }
@@ -159,22 +159,21 @@ export function handleSortClick<T>(
 export function initSortFromUrl<T>(
   urlParams: URLSearchParams,
   fieldMapper: (urlValue: string) => T | null,
-  sortByParam: string = 'sortBy',
-  sortDirectionParam: string = 'sortDirection'
+  sortByParam: string = "sortBy",
+  sortDirectionParam: string = "sortDirection"
 ): SortState<T> | null {
   const sortBy = urlParams.get(sortByParam);
-  const sortDir = urlParams.get(sortDirectionParam) || 'asc';
+  const sortDir = urlParams.get(sortDirectionParam) || "asc";
 
   if (sortBy) {
     const mappedField = fieldMapper(sortBy);
     if (mappedField !== null) {
       return {
         sortField: mappedField,
-        sortDirection: (sortDir === 'desc' ? 'desc' : 'asc') as SortDirection,
+        sortDirection: (sortDir === "desc" ? "desc" : "asc") as SortDirection,
       };
     }
   }
 
   return null;
 }
-

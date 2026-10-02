@@ -2,13 +2,12 @@
 </script>
 
 <svelte:head>
-  <title>{'Dashboard Positions'}</title>
+  <title>{"Dashboard Positions"}</title>
 </svelte:head>
 
 <div class="main_ui_menu grow">
   <slot />
 </div>
-
 
 <style lang="scss">
   @import "../../../../styles/layout";

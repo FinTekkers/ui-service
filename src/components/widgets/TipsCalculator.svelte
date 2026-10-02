@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import type { CashflowEntry } from '$lib/valuation';
+  import { onMount } from "svelte";
+  import type { CashflowEntry } from "$lib/valuation";
 
-  export let result: import('$lib/valuation').TipsValuationResult | null = null;
+  export let result: import("$lib/valuation").TipsValuationResult | null = null;
   // #266: `baseCpi` carries the canonical TIPS reference CPI from the
   // Security record (data-sourcing-dev's market-data-inputs PR #17
   // populates it from TreasuryDirect's RefCPIDatedDate). When the user
@@ -17,16 +17,16 @@
     baseCpi?: string;
   }[] = [];
 
-  type Mode = 'cusip' | 'manual';
-  let mode: Mode = 'cusip';
+  type Mode = "cusip" | "manual";
+  let mode: Mode = "cusip";
 
   // Shared
-  let price = '';
-  let currentCpi = '';
-  let settlementDate = '';
+  let price = "";
+  let currentCpi = "";
+  let settlementDate = "";
 
   // CUSIP mode
-  let cusip = '';
+  let cusip = "";
   let showSuggestions = false;
   let selectedIndex = -1;
 
@@ -34,28 +34,29 @@
   //   'auto'   — populated from the picked Security's TipsDetailsProto.base_cpi
   //   'manual' — user typed a value (override, or no Security match available)
   //   'empty'  — nothing entered yet
-  type ReferenceCpiSource = 'auto' | 'manual' | 'empty';
-  let referenceCpiSource: ReferenceCpiSource = 'empty';
+  type ReferenceCpiSource = "auto" | "manual" | "empty";
+  let referenceCpiSource: ReferenceCpiSource = "empty";
 
-  $: filteredSecurities = cusip.length > 0
-    ? securities.filter(s =>
-        s.cusip.toUpperCase().startsWith(cusip.toUpperCase())
-      ).slice(0, 8)
-    : [];
+  $: filteredSecurities =
+    cusip.length > 0
+      ? securities
+          .filter((s) => s.cusip.toUpperCase().startsWith(cusip.toUpperCase()))
+          .slice(0, 8)
+      : [];
 
   function autofillReferenceCpiFor(pickedCusip: string): void {
     // Skip when the user has manually overridden — the PR #164 fallback
     // escape hatch must survive a subsequent CUSIP pick. Only fire when
     // the input is in 'empty' or 'auto' state.
-    if (referenceCpiSource === 'manual') return;
+    if (referenceCpiSource === "manual") return;
     // Match exactly on cusip — autocomplete only ever passes a value from
     // the suggestion list, but defensive equality keeps the auto path
     // from firing on a partial typed string that happens to match a
     // CUSIP prefix.
     const sec = securities.find((s) => s.cusip === pickedCusip);
-    if (sec?.baseCpi && sec.baseCpi.trim() !== '') {
+    if (sec?.baseCpi && sec.baseCpi.trim() !== "") {
       referenceCpi = sec.baseCpi;
-      referenceCpiSource = 'auto';
+      referenceCpiSource = "auto";
     }
   }
 
@@ -73,59 +74,65 @@
   // surfaces the bound variable as `number` once the user types, so
   // calling `.trim()` directly would throw on that path.
   function handleReferenceCpiInput(): void {
-    const v = String(referenceCpi ?? '');
-    referenceCpiSource = v.trim() === '' ? 'empty' : 'manual';
+    const v = String(referenceCpi ?? "");
+    referenceCpiSource = v.trim() === "" ? "empty" : "manual";
   }
 
   function handleCusipKeydown(e: KeyboardEvent) {
     if (!showSuggestions || filteredSecurities.length === 0) return;
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      selectedIndex = Math.min(selectedIndex + 1, filteredSecurities.length - 1);
-    } else if (e.key === 'ArrowUp') {
+      selectedIndex = Math.min(
+        selectedIndex + 1,
+        filteredSecurities.length - 1
+      );
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       selectedIndex = Math.max(selectedIndex - 1, 0);
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+    } else if (e.key === "Enter" && selectedIndex >= 0) {
       e.preventDefault();
       selectCusip(filteredSecurities[selectedIndex].cusip);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       showSuggestions = false;
     }
   }
 
   function handleCusipBlur() {
-    setTimeout(() => { showSuggestions = false; }, 150);
+    setTimeout(() => {
+      showSuggestions = false;
+    }, 150);
   }
 
   // Manual mode
-  let faceValue = '1000';
-  let realCouponRate = '';
-  let couponFrequency = 'SEMIANNUALLY';
-  let referenceCpi = '';
-  let maturityDate = '';
-  let issueDate = '';
+  let faceValue = "1000";
+  let realCouponRate = "";
+  let couponFrequency = "SEMIANNUALLY";
+  let referenceCpi = "";
+  let maturityDate = "";
+  let issueDate = "";
 
   onMount(() => {
     const params = new URLSearchParams(window.location.search);
-    const m = params.get('tipsMode');
-    if (m === 'cusip' || m === 'manual') mode = m;
+    const m = params.get("tipsMode");
+    if (m === "cusip" || m === "manual") mode = m;
 
-    price = params.get('tipsPrice') ?? '';
-    currentCpi = params.get('currentCpi') ?? '';
-    settlementDate = params.get('settlementDate') ?? '';
-    cusip = params.get('tipsCusip') ?? '';
-    faceValue = params.get('tipsFaceValue') ?? '1000';
-    realCouponRate = params.get('realCouponRate') ?? '';
-    couponFrequency = params.get('tipsCouponFrequency') ?? 'SEMIANNUALLY';
-    referenceCpi = params.get('referenceCpi') ?? '';
+    price = params.get("tipsPrice") ?? "";
+    currentCpi = params.get("currentCpi") ?? "";
+    settlementDate = params.get("settlementDate") ?? "";
+    cusip = params.get("tipsCusip") ?? "";
+    faceValue = params.get("tipsFaceValue") ?? "1000";
+    realCouponRate = params.get("realCouponRate") ?? "";
+    couponFrequency = params.get("tipsCouponFrequency") ?? "SEMIANNUALLY";
+    referenceCpi = params.get("referenceCpi") ?? "";
     // #266: if the URL supplied an explicit referenceCpi (= the user
     // manually overrode it on the prior page render), that wins —
     // mark it 'manual' so the auto-fill reactive below doesn't clobber
     // it. If empty, leave 'empty'; the reactive will auto-fill when
     // `securities` resolves.
-    referenceCpiSource = String(referenceCpi ?? '').trim() === '' ? 'empty' : 'manual';
-    maturityDate = params.get('tipsMaturityDate') ?? '';
-    issueDate = params.get('tipsIssueDate') ?? '';
+    referenceCpiSource =
+      String(referenceCpi ?? "").trim() === "" ? "empty" : "manual";
+    maturityDate = params.get("tipsMaturityDate") ?? "";
+    issueDate = params.get("tipsIssueDate") ?? "";
   });
 
   // #266: auto-fill when `securities` arrives (it's streamed) and the
@@ -133,9 +140,9 @@
   // referenceCpiSource === 'empty' so a manual override or an already-
   // auto-populated value is never silently overwritten.
   $: if (
-    mode === 'cusip' &&
+    mode === "cusip" &&
     cusip &&
-    referenceCpiSource === 'empty' &&
+    referenceCpiSource === "empty" &&
     securities.length > 0
   ) {
     autofillReferenceCpiFor(cusip);
@@ -143,53 +150,53 @@
 
   function calculate() {
     const params = new URLSearchParams({
-      tab: 'tips',
+      tab: "tips",
       tipsMode: mode,
       tipsPrice: price,
     });
 
-    if (currentCpi) params.set('currentCpi', currentCpi);
-    if (settlementDate) params.set('settlementDate', settlementDate);
+    if (currentCpi) params.set("currentCpi", currentCpi);
+    if (settlementDate) params.set("settlementDate", settlementDate);
 
-    if (mode === 'cusip') {
-      if (cusip) params.set('tipsCusip', cusip);
+    if (mode === "cusip") {
+      if (cusip) params.set("tipsCusip", cusip);
     } else {
-      if (faceValue) params.set('tipsFaceValue', faceValue);
-      if (realCouponRate) params.set('realCouponRate', realCouponRate);
-      if (couponFrequency) params.set('tipsCouponFrequency', couponFrequency);
-      if (maturityDate) params.set('tipsMaturityDate', maturityDate);
-      if (issueDate) params.set('tipsIssueDate', issueDate);
+      if (faceValue) params.set("tipsFaceValue", faceValue);
+      if (realCouponRate) params.set("realCouponRate", realCouponRate);
+      if (couponFrequency) params.set("tipsCouponFrequency", couponFrequency);
+      if (maturityDate) params.set("tipsMaturityDate", maturityDate);
+      if (issueDate) params.set("tipsIssueDate", issueDate);
     }
     // Reference CPI applies to both modes — the input is rendered outside
     // the mode-toggle block. In CUSIP mode, a form-supplied referenceCpi
     // overrides the wire's base_cpi (which is missing on some pre-#263-
     // backfill TIPS records, causing valuation-service to reject the
     // request with "Missing required field: base_cpi").
-    if (referenceCpi) params.set('referenceCpi', referenceCpi);
+    if (referenceCpi) params.set("referenceCpi", referenceCpi);
 
     window.location.href = `/data/calculators?${params.toString()}`;
   }
 
   function formatPercent(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${(n * 100).toFixed(4)}%`;
   }
 
   function formatYears(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(4)} yrs`;
   }
 
   function formatPrice(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(4)}`;
   }
 
   function formatCpi(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(3)}`;
   }
@@ -202,15 +209,15 @@
   <div class="mode-toggle mb-6">
     <button
       class="mode-btn"
-      class:active={mode === 'cusip'}
-      on:click={() => (mode = 'cusip')}
+      class:active={mode === "cusip"}
+      on:click={() => (mode = "cusip")}
     >
       CUSIP Lookup
     </button>
     <button
       class="mode-btn"
-      class:active={mode === 'manual'}
-      on:click={() => (mode = 'manual')}
+      class:active={mode === "manual"}
+      on:click={() => (mode = "manual")}
     >
       Manual Entry
     </button>
@@ -219,7 +226,7 @@
   <div class="calculator-layout">
     <!-- Inputs -->
     <div class="inputs-panel">
-      {#if mode === 'cusip'}
+      {#if mode === "cusip"}
         <div class="field-group autocomplete-wrapper">
           <label for="tipsCusip">CUSIP</label>
           <input
@@ -228,10 +235,16 @@
             bind:value={cusip}
             placeholder="Start typing a TIPS CUSIP..."
             autocomplete="off"
-            on:focus={() => { showSuggestions = true; selectedIndex = -1; }}
+            on:focus={() => {
+              showSuggestions = true;
+              selectedIndex = -1;
+            }}
             on:blur={handleCusipBlur}
             on:keydown={handleCusipKeydown}
-            on:input={() => { showSuggestions = true; selectedIndex = -1; }}
+            on:input={() => {
+              showSuggestions = true;
+              selectedIndex = -1;
+            }}
           />
           {#if showSuggestions && filteredSecurities.length > 0}
             <ul class="suggestions">
@@ -242,7 +255,7 @@
                 >
                   <span class="suggestion-cusip">{sec.cusip}</span>
                   <span class="suggestion-detail">
-                    {sec.couponRate ? sec.couponRate + '%' : 'Zero'} — matures {sec.maturityDate}
+                    {sec.couponRate ? sec.couponRate + "%" : "Zero"} — matures {sec.maturityDate}
                   </span>
                 </li>
               {/each}
@@ -252,11 +265,22 @@
       {:else}
         <div class="field-group">
           <label for="tipsFaceValue">Face Value ($)</label>
-          <input id="tipsFaceValue" type="number" bind:value={faceValue} placeholder="1000" />
+          <input
+            id="tipsFaceValue"
+            type="number"
+            bind:value={faceValue}
+            placeholder="1000"
+          />
         </div>
         <div class="field-group">
           <label for="realCouponRate">Real Coupon Rate (%)</label>
-          <input id="realCouponRate" type="number" step="0.001" bind:value={realCouponRate} placeholder="e.g. 0.625" />
+          <input
+            id="realCouponRate"
+            type="number"
+            step="0.001"
+            bind:value={realCouponRate}
+            placeholder="e.g. 0.625"
+          />
         </div>
         <div class="field-group">
           <label for="tipsCouponFrequency">Coupon Frequency</label>
@@ -269,23 +293,39 @@
         </div>
         <div class="field-group">
           <label for="tipsIssueDate">Issue Date</label>
-          <input id="tipsIssueDate" type="text" bind:value={issueDate} placeholder="YYYY-MM-DD" />
+          <input
+            id="tipsIssueDate"
+            type="text"
+            bind:value={issueDate}
+            placeholder="YYYY-MM-DD"
+          />
         </div>
         <div class="field-group">
           <label for="tipsMaturityDate">Maturity Date</label>
-          <input id="tipsMaturityDate" type="text" bind:value={maturityDate} placeholder="YYYY-MM-DD" />
+          <input
+            id="tipsMaturityDate"
+            type="text"
+            bind:value={maturityDate}
+            placeholder="YYYY-MM-DD"
+          />
         </div>
       {/if}
 
       <div class="field-group">
         <label for="referenceCpi">
           Reference CPI (at issuance)
-          {#if referenceCpiSource === 'auto'}
-            <span class="cpi-source cpi-source-auto" title="Populated from the Security record (TipsDetailsProto.base_cpi)">
+          {#if referenceCpiSource === "auto"}
+            <span
+              class="cpi-source cpi-source-auto"
+              title="Populated from the Security record (TipsDetailsProto.base_cpi)"
+            >
               from Security master
             </span>
-          {:else if referenceCpiSource === 'manual'}
-            <span class="cpi-source cpi-source-manual" title="Manually overridden — auto-fill from the Security record is disabled until this field is cleared">
+          {:else if referenceCpiSource === "manual"}
+            <span
+              class="cpi-source cpi-source-manual"
+              title="Manually overridden — auto-fill from the Security record is disabled until this field is cleared"
+            >
               manual override
             </span>
           {/if}
@@ -301,20 +341,35 @@
       </div>
       <div class="field-group">
         <label for="currentCpi">Current CPI</label>
-        <input id="currentCpi" type="number" step="0.001" bind:value={currentCpi} placeholder="e.g. 312.230" />
+        <input
+          id="currentCpi"
+          type="number"
+          step="0.001"
+          bind:value={currentCpi}
+          placeholder="e.g. 312.230"
+        />
       </div>
       <div class="field-group">
         <label for="settlementDate">Settlement Date</label>
-        <input id="settlementDate" type="text" bind:value={settlementDate} placeholder="YYYY-MM-DD" />
+        <input
+          id="settlementDate"
+          type="text"
+          bind:value={settlementDate}
+          placeholder="YYYY-MM-DD"
+        />
       </div>
       <div class="field-group">
         <label for="tipsPrice">Price (% of par)</label>
-        <input id="tipsPrice" type="number" step="0.001" bind:value={price} placeholder="e.g. 98.5" />
+        <input
+          id="tipsPrice"
+          type="number"
+          step="0.001"
+          bind:value={price}
+          placeholder="e.g. 98.5"
+        />
       </div>
 
-      <button class="calc-button mt-4" on:click={calculate}>
-        Calculate
-      </button>
+      <button class="calc-button mt-4" on:click={calculate}> Calculate </button>
     </div>
 
     <!-- Results -->
@@ -328,7 +383,9 @@
           <tbody>
             <tr>
               <td class="label">Inflation-Adjusted Principal</td>
-              <td class="value">{formatPrice(result.inflationAdjustedPrincipal)}</td>
+              <td class="value"
+                >{formatPrice(result.inflationAdjustedPrincipal)}</td
+              >
             </tr>
             <tr>
               <td class="label">Present Value</td>
@@ -357,7 +414,10 @@
           </tbody>
         </table>
       {:else}
-        <p class="placeholder-msg">Enter inputs and click Calculate to see inflation-adjusted valuation results.</p>
+        <p class="placeholder-msg">
+          Enter inputs and click Calculate to see inflation-adjusted valuation
+          results.
+        </p>
       {/if}
     </div>
   </div>
@@ -383,8 +443,20 @@
           {/each}
           <tr class="total-row">
             <td>Total</td>
-            <td class="numeric">{formatPrice(result.cashflows.reduce((s, cf) => s + parseFloat(cf.fvAmount), 0).toString())}</td>
-            <td class="numeric">{formatPrice(result.cashflows.reduce((s, cf) => s + parseFloat(cf.pvAmount), 0).toString())}</td>
+            <td class="numeric"
+              >{formatPrice(
+                result.cashflows
+                  .reduce((s, cf) => s + parseFloat(cf.fvAmount), 0)
+                  .toString()
+              )}</td
+            >
+            <td class="numeric"
+              >{formatPrice(
+                result.cashflows
+                  .reduce((s, cf) => s + parseFloat(cf.pvAmount), 0)
+                  .toString()
+              )}</td
+            >
           </tr>
         </tbody>
       </table>
@@ -462,8 +534,12 @@
     color: $white;
     transition: background 0.15s;
 
-    &:first-child { border-radius: $bd-radius 0 0 $bd-radius; }
-    &:last-child  { border-radius: 0 $bd-radius $bd-radius 0; }
+    &:first-child {
+      border-radius: $bd-radius 0 0 $bd-radius;
+    }
+    &:last-child {
+      border-radius: 0 $bd-radius $bd-radius 0;
+    }
 
     &.active {
       background: $success;
@@ -471,7 +547,7 @@
       font-weight: bold;
     }
     &:not(.active):hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
     }
   }
 
@@ -486,7 +562,8 @@
       color: $white;
     }
 
-    input, select {
+    input,
+    select {
       padding: 4px 10px;
       border: 1px solid $border-color;
       border-radius: 4px;
@@ -496,7 +573,9 @@
       background-color: white;
       color: $black;
 
-      &::placeholder { color: $grey; }
+      &::placeholder {
+        color: $grey;
+      }
     }
   }
 
@@ -529,7 +608,8 @@
       font-size: 0.8rem;
       color: $black;
 
-      &:hover, &.selected {
+      &:hover,
+      &.selected {
         background-color: lighten($primary-color, 40%);
       }
     }
@@ -615,7 +695,8 @@
     width: 100%;
     border-collapse: collapse;
 
-    th, td {
+    th,
+    td {
       padding: 8px 10px;
       font-size: 0.85rem;
     }
@@ -626,7 +707,9 @@
       border-bottom: 2px solid $border-color;
       text-align: left;
 
-      &.numeric { text-align: right; }
+      &.numeric {
+        text-align: right;
+      }
     }
 
     td {

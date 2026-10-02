@@ -3,8 +3,9 @@
 This is the UI component of Fintekkers that provides samples on getting started with the platform. Our goal is to be open-source as much as possible, hence sharing this source code.
 
 This UI project:
-* Has a marketing front end
-* Has some out-of-the-box UI pages (e.g. list portfolios; etc)
+
+- Has a marketing front end
+- Has some out-of-the-box UI pages (e.g. list portfolios; etc)
 
 # Technologies
 
@@ -18,8 +19,6 @@ npm install
 cd fin-ui
 npm run dev
 
-
 ## Publishing
 
 Currently this code is deployed periodically to AWS. We may automate if there is reason to (e.g. publish when a new release version in Github is created)
-

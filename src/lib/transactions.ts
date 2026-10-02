@@ -6,40 +6,40 @@ import type Transaction from "@fintekkers/ledger-models/node/wrappers/models/tra
 // The SecurityType wrapper + SecurityTypeProto were retired in 0.2.1;
 // the wrapper now narrows on the ProductTypeProto leaves
 // TREASURY_NOTE / TIPS / TREASURY_FRN.
-import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
-import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
+import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 // PositionFilterOperator wrapper (ledger-models 0.1.135+); see positions.ts
 // for the migration rationale (#229).
-import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
+import { PositionFilterOperator } from "@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator";
 // M6 #263 bug 3: bypass the BondSecurity getProductType() override
 // (returns tenor-derived 'BILL' / 'NOTE' / 'BOND') so the transactions
 // grid shows the canonical leaf name (TREASURY_NOTE, TIPS, TREASURY_FRN).
-import { productTypeNameOf, identifierString } from '$lib/security';
+import { productTypeNameOf, identifierString } from "$lib/security";
 const { FieldProto } = pkg;
 
 /**
  * Formats a date object to ISO date string (YYYY-MM-DD)
  */
 function formatDateToISO(date: any): string {
-  if (!date) return '';
+  if (!date) return "";
 
   // If it has a toDate method (like ZonedDateTime or LocalDate), use it
-  if (typeof date.toDate === 'function') {
+  if (typeof date.toDate === "function") {
     const jsDate = date.toDate();
-    return jsDate.toISOString().split('T')[0];
+    return jsDate.toISOString().split("T")[0];
   }
 
   // If it's already a Date object
   if (date instanceof Date) {
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   }
 
   // If it's a string, try to parse it
-  if (typeof date === 'string') {
+  if (typeof date === "string") {
     const parsed = new Date(date);
     if (!isNaN(parsed.getTime())) {
-      return parsed.toISOString().split('T')[0];
+      return parsed.toISOString().split("T")[0];
     }
   }
 
@@ -67,7 +67,10 @@ interface TransactionData {
   transactionPrice: string;
 }
 
-let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filter: positionFilter.PositionFilter, apiKey?: string): Promise<TransactionData[]> {
+let FetchTransactionWithFilter = async function FetchTransactionWithFilter(
+  filter: positionFilter.PositionFilter,
+  apiKey?: string
+): Promise<TransactionData[]> {
   try {
     const now = datetime.ZonedDateTime.now();
     const service = new ts.TransactionService(apiKey);
@@ -110,32 +113,78 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
         // Wrapper-only access: Transaction.getID() returns the UUID
         // wrapper; toUUIDProto() then surfaces the proto for the wire-format
         // hex serialization the deletion / detail flows round-trip on.
-        const uuidHex = Buffer.from(element.getID().toUUIDProto().serializeBinary()).toString('hex');
+        const uuidHex = Buffer.from(
+          element.getID().toUUIDProto().serializeBinary()
+        ).toString("hex");
 
         transactionData.push({
-          transactionId: safe(() => identifierString(security), ''),
+          transactionId: safe(() => identifierString(security), ""),
           uuidHex,
           // M6 #263 bug 4: surface the embedded portfolio so /data/transactions
           // shows which portfolio each row belongs to. TransactionProto embeds
           // a full PortfolioProto, so this is read directly from the wrapper.
-          transactionPortfolioId: safe(() => element.getPortfolio().getID().toString(), ''),
-          transactionPortfolioName: safe(() => element.getPortfolio().getPortfolioName(), ''),
-          transactionSettlementDate: safe(() => formatDateToISO(element.getSettlementDate()), ''),
-          transactionIssuerName: safe(() => element.getIssuerName().toString(), ''),
-          transactionIssueDate: safe(() => formatDateToISO(security.getIssueDate()), ''),
-          transactionQuantity: safe(() => element.getQuantity().toString(), ''),
-          transactionProductType: safe(() => productTypeNameOf(security), ''),
-          transactionCouponRate: safe(() => bondSecurity?.getCouponRate()?.toString() ?? '', ''),
-          transactionCouponType: safe(() => bondSecurity?.getCouponType().name() ?? '', ''),
-          transactionTenor: safe(() => bondSecurity?.getTenor().getTenorDescription() ?? '', ''),
-          transactionCouponFrequency: safe(() => bondSecurity?.getCouponFrequency()?.toString() ?? '', ''),
-          transactionMaturityDate: safe(() => formatDateToISO(security.getMaturityDate()), ''),
-          transactionTradeDate: safe(() => formatDateToISO(element.getTradeDate()), ''),
-          transactionSide: safe(() => element.getTransactionType().toString(), ''),
-          transactionPrice: safe(() => element.getPrice()?.getPrice()?.getArbitraryPrecisionValue() ?? '', ''),
+          transactionPortfolioId: safe(
+            () => element.getPortfolio().getID().toString(),
+            ""
+          ),
+          transactionPortfolioName: safe(
+            () => element.getPortfolio().getPortfolioName(),
+            ""
+          ),
+          transactionSettlementDate: safe(
+            () => formatDateToISO(element.getSettlementDate()),
+            ""
+          ),
+          transactionIssuerName: safe(
+            () => element.getIssuerName().toString(),
+            ""
+          ),
+          transactionIssueDate: safe(
+            () => formatDateToISO(security.getIssueDate()),
+            ""
+          ),
+          transactionQuantity: safe(() => element.getQuantity().toString(), ""),
+          transactionProductType: safe(() => productTypeNameOf(security), ""),
+          transactionCouponRate: safe(
+            () => bondSecurity?.getCouponRate()?.toString() ?? "",
+            ""
+          ),
+          transactionCouponType: safe(
+            () => bondSecurity?.getCouponType().name() ?? "",
+            ""
+          ),
+          transactionTenor: safe(
+            () => bondSecurity?.getTenor().getTenorDescription() ?? "",
+            ""
+          ),
+          transactionCouponFrequency: safe(
+            () => bondSecurity?.getCouponFrequency()?.toString() ?? "",
+            ""
+          ),
+          transactionMaturityDate: safe(
+            () => formatDateToISO(security.getMaturityDate()),
+            ""
+          ),
+          transactionTradeDate: safe(
+            () => formatDateToISO(element.getTradeDate()),
+            ""
+          ),
+          transactionSide: safe(
+            () => element.getTransactionType().toString(),
+            ""
+          ),
+          transactionPrice: safe(
+            () =>
+              element.getPrice()?.getPrice()?.getArbitraryPrecisionValue() ??
+              "",
+            ""
+          ),
         });
       } catch (rowErr: any) {
-        console.warn('Skipping transaction row due to wrapper error:', rowErr?.message ?? rowErr);
+        console.warn(
+          "Skipping transaction row due to wrapper error:",
+          rowErr?.message ?? rowErr
+        );
       }
     }
 
@@ -153,9 +202,9 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(filte
 function applyTradeDateFilter(
   filter: positionFilter.PositionFilter,
   tradeDate?: string,
-  tradeDateOperator?: string,
+  tradeDateOperator?: string
 ): void {
-  if (!tradeDate || tradeDate.trim() === '' || !tradeDateOperator) return;
+  if (!tradeDate || tradeDate.trim() === "" || !tradeDateOperator) return;
   const tradeDateObj = new Date(tradeDate);
   const operator = PositionFilterOperator.fromName(tradeDateOperator);
   filter.addFilter(FieldProto.TRADE_DATE, operator, tradeDateObj);
@@ -164,7 +213,7 @@ function applyTradeDateFilter(
 let FetchTransaction = async function FetchTransaction(
   apiKey?: string,
   tradeDate?: string,
-  tradeDateOperator?: string,
+  tradeDateOperator?: string
 ): Promise<TransactionData[]> {
   const filter = new positionFilter.PositionFilter();
   filter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
@@ -176,17 +225,27 @@ let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(
   portfolioId: string,
   apiKey?: string,
   tradeDate?: string,
-  tradeDateOperator?: string,
+  tradeDateOperator?: string
 ): Promise<TransactionData[]> {
   const filter = new positionFilter.PositionFilter();
   const portfolioUuid = new UUID(UUID.fromString(portfolioId.trim()));
-  filter.addFilter(FieldProto.PORTFOLIO_ID, PositionFilterOperator.fromName('EQUALS'), portfolioUuid);
+  filter.addFilter(
+    FieldProto.PORTFOLIO_ID,
+    PositionFilterOperator.fromName("EQUALS"),
+    portfolioUuid
+  );
   applyTradeDateFilter(filter, tradeDate, tradeDateOperator);
   const results = await FetchTransactionWithFilter(filter, apiKey);
   // Sort descending by trade date (most recent first)
-  results.sort((a, b) => b.transactionTradeDate.localeCompare(a.transactionTradeDate));
+  results.sort((a, b) =>
+    b.transactionTradeDate.localeCompare(a.transactionTradeDate)
+  );
   return results;
 };
 
-export { FetchTransactionWithFilter, FetchTransaction, FetchTransactionByPortfolio };
+export {
+  FetchTransactionWithFilter,
+  FetchTransaction,
+  FetchTransactionByPortfolio,
+};
 export type { TransactionData };

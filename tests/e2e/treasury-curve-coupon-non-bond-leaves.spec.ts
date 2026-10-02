@@ -24,44 +24,64 @@
  * bug), the spec falls through — it only asserts on rows whose
  * productType is in the previously-broken set.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-const NON_BONDSECURITY_LEAVES = new Set(['TREASURY_BOND', 'STRIPS', 'SOVEREIGN_BOND']);
+const NON_BONDSECURITY_LEAVES = new Set([
+  "TREASURY_BOND",
+  "STRIPS",
+  "SOVEREIGN_BOND",
+]);
 
-test.describe('/data/treasury_curve — coupon read for non-BondSecurity leaves (#263 bug 3 round 2)', () => {
-  test('TREASURY_BOND / STRIPS / SOVEREIGN_BOND rows render their wire coupon, not 0%', async ({ page }) => {
-    await page.goto('/data/treasury_curve');
-    await expect(page.locator('table tbody')).toBeVisible({ timeout: 15_000 });
+test.describe("/data/treasury_curve — coupon read for non-BondSecurity leaves (#263 bug 3 round 2)", () => {
+  test("TREASURY_BOND / STRIPS / SOVEREIGN_BOND rows render their wire coupon, not 0%", async ({
+    page,
+  }) => {
+    await page.goto("/data/treasury_curve");
+    await expect(page.locator("table tbody")).toBeVisible({ timeout: 15_000 });
 
-    type Row = { tenor: string; cusip: string; description: string; coupon: string };
-    const rows: Row[] = await page.locator('table tbody tr').evaluateAll((trs) =>
-      trs.map((tr) => {
-        const c = Array.from(tr.querySelectorAll('td'));
-        return {
-          tenor:       c[0]?.textContent?.trim() ?? '',
-          cusip:       c[1]?.textContent?.trim() ?? '',
-          description: c[2]?.textContent?.trim() ?? '',
-          coupon:      c[5]?.textContent?.trim() ?? '',
-        };
-      }),
-    );
+    type Row = {
+      tenor: string;
+      cusip: string;
+      description: string;
+      coupon: string;
+    };
+    const rows: Row[] = await page
+      .locator("table tbody tr")
+      .evaluateAll((trs) =>
+        trs.map((tr) => {
+          const c = Array.from(tr.querySelectorAll("td"));
+          return {
+            tenor: c[0]?.textContent?.trim() ?? "",
+            cusip: c[1]?.textContent?.trim() ?? "",
+            description: c[2]?.textContent?.trim() ?? "",
+            coupon: c[5]?.textContent?.trim() ?? "",
+          };
+        })
+      );
 
     // Only assert on rows whose product-type leaf would have been broken
     // by the BondSecurity-factory gap. Description format is e.g.
     // "TREASURY_BOND 4.625% 2046-02-15".
     const subject = rows.filter((r) =>
-      [...NON_BONDSECURITY_LEAVES].some((leaf) => r.description.startsWith(leaf + ' ')),
+      [...NON_BONDSECURITY_LEAVES].some((leaf) =>
+        r.description.startsWith(leaf + " ")
+      )
     );
 
-    test.skip(subject.length === 0, 'no TREASURY_BOND / STRIPS / SOVEREIGN_BOND row in the current on-the-run pick — nothing to assert');
+    test.skip(
+      subject.length === 0,
+      "no TREASURY_BOND / STRIPS / SOVEREIGN_BOND row in the current on-the-run pick — nothing to assert"
+    );
 
     for (const r of subject) {
       // The bug surfaced as exactly the string "0.000%". We assert it isn't
       // that anymore for rows that should carry a wire coupon.
-      const couponNum = parseFloat(r.coupon.replace('%', ''));
+      const couponNum = parseFloat(r.coupon.replace("%", ""));
       expect(
         couponNum,
-        `${r.cusip} (${r.tenor}, ${r.description.split(' ')[0]}) should have a wire coupon — saw "${r.coupon}"`,
+        `${r.cusip} (${r.tenor}, ${
+          r.description.split(" ")[0]
+        }) should have a wire coupon — saw "${r.coupon}"`
       ).toBeGreaterThan(0);
     }
   });

@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
   import type { formError } from "$lib/types";
 
   // Same fix as InputFieldText: `keyof formError` is `string | number |
@@ -18,7 +18,11 @@
 </script>
 
 <label for={fieldName}>
-  <span class={`${focusedElement === fieldName || inputValue[fieldName] ? 'labelFloat' : ''}`}>
+  <span
+    class={`${
+      focusedElement === fieldName || inputValue[fieldName] ? "labelFloat" : ""
+    }`}
+  >
     <slot>Enter your {fieldName}</slot>
   </span>
   <textarea
@@ -28,11 +32,11 @@
     id={fieldName}
     name={fieldName}
     rows="3"
-    value={inputValue[fieldName]?.toString() ?? ''}
+    value={inputValue[fieldName]?.toString() ?? ""}
   />
   {#if displayError(fieldName)}
     <div class="error_message">
-      <p class='form_error'>⚠️ Enter {fieldName}</p>
+      <p class="form_error">⚠️ Enter {fieldName}</p>
     </div>
   {/if}
 </label>

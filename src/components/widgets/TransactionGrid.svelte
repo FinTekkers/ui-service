@@ -7,7 +7,7 @@
     handleSortClick,
     type SortDirection,
   } from "$lib/sortUtils";
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
 
   export let rows: TransactionData[];
   export let titleOverride: string | undefined = undefined;
@@ -16,7 +16,7 @@
   const dispatch = createEventDispatcher();
 
   function handleDeleteClick(row: TransactionData) {
-    dispatch('requestDelete', { id: row.transactionId, uuidHex: row.uuidHex });
+    dispatch("requestDelete", { id: row.transactionId, uuidHex: row.uuidHex });
   }
 
   // Sort state - using universal sort utilities
@@ -85,7 +85,9 @@
     <table class="text-left">
       <thead class="border-b border-slate-400">
         <tr>
-          {#if showDelete}<th class="text-semibold text-lg px-4 py-2 action-col">Actions</th>{/if}
+          {#if showDelete}<th class="text-semibold text-lg px-4 py-2 action-col"
+              >Actions</th
+            >{/if}
           {#each columns as column}
             <th
               class="text-semibold text-lg px-4 py-2 sortable-header"
@@ -105,8 +107,13 @@
         {#each sortedRows as row}
           <tr class="table-row border-b border-slate-400">
             {#if showDelete}<td class="table-cell px-4 py-2 action-col">
-              <button class="delete-btn" title="Delete {row.transactionId}" on:click|stopPropagation={() => handleDeleteClick(row)}>Delete</button>
-            </td>{/if}
+                <button
+                  class="delete-btn"
+                  title="Delete {row.transactionId}"
+                  on:click|stopPropagation={() => handleDeleteClick(row)}
+                  >Delete</button
+                >
+              </td>{/if}
             {#each columns as column}
               <td class="table-cell px-4 py-2">
                 {#if column.key === "transactionQuantity"}
@@ -116,13 +123,17 @@
                     <button
                       type="button"
                       class="portfolio-id-toggle"
-                      title={expandedPortfolioIds.has(row.transactionPortfolioId)
+                      title={expandedPortfolioIds.has(
+                        row.transactionPortfolioId
+                      )
                         ? "Click to collapse"
                         : row.transactionPortfolioId}
-                      on:click|stopPropagation={() => togglePortfolioId(row.transactionPortfolioId)}
-                    >{expandedPortfolioIds.has(row.transactionPortfolioId)
+                      on:click|stopPropagation={() =>
+                        togglePortfolioId(row.transactionPortfolioId)}
+                      >{expandedPortfolioIds.has(row.transactionPortfolioId)
                         ? row.transactionPortfolioId
-                        : compactUuid(row.transactionPortfolioId)}</button>
+                        : compactUuid(row.transactionPortfolioId)}</button
+                    >
                   {/if}
                 {:else}
                   {row[column.key]}
@@ -134,7 +145,8 @@
       </tbody>
       <tfoot>
         <tr class="summary-row border-t-2 border-slate-600">
-          {#if showDelete}<td class="table-cell px-4 py-2 action-col">&nbsp;</td>{/if}
+          {#if showDelete}<td class="table-cell px-4 py-2 action-col">&nbsp;</td
+            >{/if}
           {#each columns as column}
             <td class="table-cell px-4 py-2 font-bold">
               {#if column.key === "transactionId"}
@@ -211,8 +223,13 @@
     cursor: pointer;
     text-decoration: underline dotted;
 
-    &:hover { color: #1d4ed8; }
-    &:focus { outline: 2px solid #3b82f6; outline-offset: 2px; }
+    &:hover {
+      color: #1d4ed8;
+    }
+    &:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
   }
 
   .delete-btn {
@@ -227,6 +244,8 @@
     white-space: nowrap;
     transition: all 0.15s;
 
-    &:hover { background-color: #a33049; }
+    &:hover {
+      background-color: #a33049;
+    }
   }
 </style>

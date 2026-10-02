@@ -15,13 +15,13 @@
  *    (is_link=true, uuid + as_of set, no body); the caller follows up with
  *    `GetByIds(constituent_uuids)` for the full Security payloads.
  */
-import { SecurityClient } from '@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js';
-import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
-import type { SecurityProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js';
-import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
-import { UUID } from '@fintekkers/ledger-models/node/wrappers/models/utils/uuid';
-import Security from '@fintekkers/ledger-models/node/wrappers/models/security/security';
-import { getServiceConnection } from '$lib/grpc-auth';
+import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
+import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js";
+import type { SecurityProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js";
+import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
+import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
+import { getServiceConnection } from "$lib/grpc-auth";
 
 /**
  * Deterministic UUID for the Treasury Curve index Security
@@ -33,21 +33,24 @@ import { getServiceConnection } from '$lib/grpc-auth';
  * stable across environments because the upstream creator computes the same
  * uuid5 deterministically.
  */
-export const TREASURY_CURVE_INDEX_UUID = '8a6dba91-832a-501c-8d78-dc887e3acb30';
+export const TREASURY_CURVE_INDEX_UUID = "8a6dba91-832a-501c-8d78-dc887e3acb30";
 
 function newSecurityClient(apiKey?: string): SecurityClient {
   const conn = getServiceConnection(apiKey);
-  return new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+  return new SecurityClient(conn.url, conn.credentials, {
+    interceptors: conn.interceptors,
+    ...conn.clientOptions,
+  });
 }
 
 function buildGetByIdsRequest(
   uuidStrs: readonly string[],
   asOf: Date,
-  lookthrough: boolean,
+  lookthrough: boolean
 ): QuerySecurityRequestProto {
   const request = new QuerySecurityRequestProto();
-  request.setObjectClass('SecurityRequest');
-  request.setVersion('0.0.1');
+  request.setObjectClass("SecurityRequest");
+  request.setVersion("0.0.1");
   request.setAsOf(ZonedDateTime.from(asOf).toProto());
   request.setLookthrough(lookthrough);
   for (const uuidStr of uuidStrs) {
@@ -59,7 +62,7 @@ function buildGetByIdsRequest(
 
 function unaryGetByIds(
   client: SecurityClient,
-  request: QuerySecurityRequestProto,
+  request: QuerySecurityRequestProto
 ): Promise<SecurityProto[]> {
   return new Promise((resolve, reject) => {
     (client as any).getByIds(request, (err: any, response: any) => {
@@ -86,10 +89,14 @@ function unaryGetByIds(
 export async function fetchIndexConstituentUuids(
   indexUuid: string,
   asOf: Date,
-  apiKey?: string,
+  apiKey?: string
 ): Promise<string[]> {
   const client = newSecurityClient(apiKey);
-  const request = buildGetByIdsRequest([indexUuid], asOf, /* lookthrough */ true);
+  const request = buildGetByIdsRequest(
+    [indexUuid],
+    asOf,
+    /* lookthrough */ true
+  );
   const responses = await unaryGetByIds(client, request);
   if (responses.length === 0) return [];
 
@@ -121,7 +128,7 @@ export async function fetchIndexConstituentUuids(
 export async function fetchSecuritiesByUuids(
   uuidStrs: readonly string[],
   asOf: Date,
-  apiKey?: string,
+  apiKey?: string
 ): Promise<Security[]> {
   if (uuidStrs.length === 0) return [];
   const client = newSecurityClient(apiKey);
@@ -130,13 +137,21 @@ export async function fetchSecuritiesByUuids(
   try {
     responses = await unaryGetByIds(client, request);
   } catch (err: any) {
-    console.warn(`getByIds(${uuidStrs.length} uuids) failed: ${err.details ?? err.message ?? err}`);
+    console.warn(
+      `getByIds(${uuidStrs.length} uuids) failed: ${
+        err.details ?? err.message ?? err
+      }`
+    );
     return [];
   }
 
   const out: Security[] = [];
   for (const proto of responses) {
-    try { out.push(Security.create(proto)); } catch { /* skip malformed */ }
+    try {
+      out.push(Security.create(proto));
+    } catch {
+      /* skip malformed */
+    }
   }
   return out;
 }

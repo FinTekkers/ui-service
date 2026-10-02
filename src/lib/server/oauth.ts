@@ -10,4 +10,8 @@ const origin = process.env.ORIGIN || "http://localhost:443";
 const callbackUrl = `${origin}/login/google/callback`;
 
 console.log(`Callback URL: ${callbackUrl}`);
-export const google = new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, callbackUrl);
+export const google = new Google(
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  callbackUrl
+);

@@ -21,13 +21,13 @@
    *     enum name verbatim.
    */
 
-  import { PositionFilterOperator } from '@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator';
+  import { PositionFilterOperator } from "@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator";
 
   // Two-way bindings — parent owns the state. operator is the proto
   // enum name string (e.g. 'MORE_THAN'); empty string means "no
   // operator selected".
-  export let date: string = '';
-  export let operator: string = '';
+  export let date: string = "";
+  export let operator: string = "";
 
   // Optional: render only the date input, no operator. Useful when the
   // consumer wants an absolute equals-this-date filter without exposing
@@ -38,13 +38,14 @@
   // PositionFilterOperator runtime list (proto declaration order,
   // sentinel UNKNOWN_OPERATOR excluded). Adding a new proto entry
   // automatically widens the dropdown — no UI edit required.
-  export let operators: readonly string[] = PositionFilterOperator.getAllTypeNames();
+  export let operators: readonly string[] =
+    PositionFilterOperator.getAllTypeNames();
 
   // Class pass-through (matches IdentifierFilter). Consumer supplies
   // its own page-specific styling on the rendered <input>/<select>.
-  export let inputClass: string = '';
-  export let selectClass: string = '';
-  export let inputId: string = 'date-filter-value';
+  export let inputClass: string = "";
+  export let selectClass: string = "";
+  export let inputId: string = "date-filter-value";
 </script>
 
 <div class="date-filter">

@@ -1,116 +1,125 @@
-import { describe, expect, test } from 'vitest';
-import { buildFilterUrl } from './urlState';
+import { describe, expect, test } from "vitest";
+import { buildFilterUrl } from "./urlState";
 
-describe('buildFilterUrl', () => {
-  test('empty overrides + empty current returns just the pathname', () => {
-    expect(buildFilterUrl('/data/positions', new URLSearchParams(), {})).toBe(
-      '/data/positions',
+describe("buildFilterUrl", () => {
+  test("empty overrides + empty current returns just the pathname", () => {
+    expect(buildFilterUrl("/data/positions", new URLSearchParams(), {})).toBe(
+      "/data/positions"
     );
   });
 
-  test('non-empty string override is set', () => {
+  test("non-empty string override is set", () => {
     expect(
-      buildFilterUrl('/data/positions', new URLSearchParams(), { fields: 'A,B' }),
-    ).toBe('/data/positions?fields=A%2CB');
+      buildFilterUrl("/data/positions", new URLSearchParams(), {
+        fields: "A,B",
+      })
+    ).toBe("/data/positions?fields=A%2CB");
   });
 
-  test('empty-string override is treated as absent', () => {
+  test("empty-string override is treated as absent", () => {
     expect(
-      buildFilterUrl('/data/positions', new URLSearchParams(), {
-        fields: 'A',
-        cusip: '',
-      }),
-    ).toBe('/data/positions?fields=A');
+      buildFilterUrl("/data/positions", new URLSearchParams(), {
+        fields: "A",
+        cusip: "",
+      })
+    ).toBe("/data/positions?fields=A");
   });
 
-  test('undefined override is treated as absent', () => {
+  test("undefined override is treated as absent", () => {
     expect(
-      buildFilterUrl('/data/positions', new URLSearchParams(), {
-        fields: 'A',
+      buildFilterUrl("/data/positions", new URLSearchParams(), {
+        fields: "A",
         cusip: undefined,
-      }),
-    ).toBe('/data/positions?fields=A');
+      })
+    ).toBe("/data/positions?fields=A");
   });
 
-  test('inheritKeys preserves param from current when override absent', () => {
-    const current = new URLSearchParams('portfolioId=abc-123');
+  test("inheritKeys preserves param from current when override absent", () => {
+    const current = new URLSearchParams("portfolioId=abc-123");
     expect(
-      buildFilterUrl('/data/positions', current, { fields: 'A' }, ['portfolioId']),
-    ).toBe('/data/positions?fields=A&portfolioId=abc-123');
+      buildFilterUrl("/data/positions", current, { fields: "A" }, [
+        "portfolioId",
+      ])
+    ).toBe("/data/positions?fields=A&portfolioId=abc-123");
   });
 
-  test('inheritKeys does NOT add a param that is missing from current', () => {
-    expect(
-      buildFilterUrl('/data/positions', new URLSearchParams(), { fields: 'A' }, [
-        'portfolioId',
-      ]),
-    ).toBe('/data/positions?fields=A');
-  });
-
-  test('override wins over current for the same key', () => {
-    const current = new URLSearchParams('portfolioId=old&fields=stale');
+  test("inheritKeys does NOT add a param that is missing from current", () => {
     expect(
       buildFilterUrl(
-        '/data/positions',
-        current,
-        { portfolioId: 'new', fields: 'fresh' },
-        ['portfolioId'],
-      ),
-    ).toBe('/data/positions?portfolioId=new&fields=fresh');
+        "/data/positions",
+        new URLSearchParams(),
+        { fields: "A" },
+        ["portfolioId"]
+      )
+    ).toBe("/data/positions?fields=A");
   });
 
-  test('null override removes a key that would otherwise inherit', () => {
-    const current = new URLSearchParams('portfolioId=abc-123');
+  test("override wins over current for the same key", () => {
+    const current = new URLSearchParams("portfolioId=old&fields=stale");
     expect(
       buildFilterUrl(
-        '/data/positions',
+        "/data/positions",
         current,
-        { fields: 'A', portfolioId: null },
-        ['portfolioId'],
-      ),
-    ).toBe('/data/positions?fields=A');
+        { portfolioId: "new", fields: "fresh" },
+        ["portfolioId"]
+      )
+    ).toBe("/data/positions?portfolioId=new&fields=fresh");
   });
 
-  test('insertion order: overrides first (in declaration order), then inheritKeys', () => {
-    const current = new URLSearchParams('portfolioId=p1&assetClass=fixed');
+  test("null override removes a key that would otherwise inherit", () => {
+    const current = new URLSearchParams("portfolioId=abc-123");
     expect(
       buildFilterUrl(
-        '/data/positions',
+        "/data/positions",
         current,
-        { fields: 'A', measures: 'M' },
-        ['portfolioId', 'assetClass'],
-      ),
-    ).toBe('/data/positions?fields=A&measures=M&portfolioId=p1&assetClass=fixed');
+        { fields: "A", portfolioId: null },
+        ["portfolioId"]
+      )
+    ).toBe("/data/positions?fields=A");
   });
 
-  test('special characters get URL-encoded', () => {
+  test("insertion order: overrides first (in declaration order), then inheritKeys", () => {
+    const current = new URLSearchParams("portfolioId=p1&assetClass=fixed");
     expect(
-      buildFilterUrl('/data/positions', new URLSearchParams(), {
-        cusip: 'a b/c',
-      }),
-    ).toBe('/data/positions?cusip=a+b%2Fc');
+      buildFilterUrl(
+        "/data/positions",
+        current,
+        { fields: "A", measures: "M" },
+        ["portfolioId", "assetClass"]
+      )
+    ).toBe(
+      "/data/positions?fields=A&measures=M&portfolioId=p1&assetClass=fixed"
+    );
   });
 
-  test('PositionSelect call shape — inherits portfolioId, applies form overrides', () => {
-    const current = new URLSearchParams('portfolioId=soma-uuid&fields=stale');
+  test("special characters get URL-encoded", () => {
+    expect(
+      buildFilterUrl("/data/positions", new URLSearchParams(), {
+        cusip: "a b/c",
+      })
+    ).toBe("/data/positions?cusip=a+b%2Fc");
+  });
+
+  test("PositionSelect call shape — inherits portfolioId, applies form overrides", () => {
+    const current = new URLSearchParams("portfolioId=soma-uuid&fields=stale");
     const url = buildFilterUrl(
-      '/data/positions',
+      "/data/positions",
       current,
       {
-        positionView: 'DEFAULT_VIEW',
-        positionType: 'TRANSACTION',
-        fields: 'SECURITY_DESCRIPTION',
-        measures: 'DIRECTED_QUANTITY',
+        positionView: "DEFAULT_VIEW",
+        positionType: "TRANSACTION",
+        fields: "SECURITY_DESCRIPTION",
+        measures: "DIRECTED_QUANTITY",
         cusip: undefined,
-        tradeDate: '2026-05-06',
-        tradeDateOperator: 'LESS_THAN_OR_EQUALS',
+        tradeDate: "2026-05-06",
+        tradeDateOperator: "LESS_THAN_OR_EQUALS",
         assetClass: undefined,
-        hideZeros: 'true',
+        hideZeros: "true",
       },
-      ['portfolioId'],
+      ["portfolioId"]
     );
     expect(url).toBe(
-      '/data/positions?positionView=DEFAULT_VIEW&positionType=TRANSACTION&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY&tradeDate=2026-05-06&tradeDateOperator=LESS_THAN_OR_EQUALS&hideZeros=true&portfolioId=soma-uuid',
+      "/data/positions?positionView=DEFAULT_VIEW&positionType=TRANSACTION&fields=SECURITY_DESCRIPTION&measures=DIRECTED_QUANTITY&tradeDate=2026-05-06&tradeDateOperator=LESS_THAN_OR_EQUALS&hideZeros=true&portfolioId=soma-uuid"
     );
   });
 });

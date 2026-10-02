@@ -53,7 +53,9 @@
   // silently rendered blank cells. Format from
   // ledger-models's `Tenor.getTenorDescription()`: optional Y / M / W /
   // D segments. We only need Y + M for the table.
-  function parseTenor(tenor: string | undefined): { years: number; months: number } | undefined {
+  function parseTenor(
+    tenor: string | undefined
+  ): { years: number; months: number } | undefined {
     if (!tenor) return undefined;
     const m = tenor.match(/(?:(\d+)Y)?(?:(\d+)M)?/);
     if (!m) return undefined;

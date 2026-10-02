@@ -1,18 +1,18 @@
 # PR #171 — vitest failure audit
 
-**Author:** ui-dev  •  **Date:** 2026-05-14  •  **Trigger:** PM gate on PR #171 review
+**Author:** ui-dev • **Date:** 2026-05-14 • **Trigger:** PM gate on PR #171 review
 
 ## TL;DR
 
 PR #171 opened with **30 vitest failures** (26 consistent + 4 flaky timeouts), reported as "all pre-existing, matches main". The PM correctly flagged that as a discipline failure: a "matches main" hand-wave hides regressions. This audit re-checked every failure against three baselines:
 
-| Baseline | Commit | ledger-models | Failures |
-|---|---|---|---|
-| Pre-PR-#170 | `0777599` | `^0.2.5` | **0 pricing failures** (only 10 auth/HTTP infra failures from a transient UI server state) |
-| main (post-PR-#170) | `0cacc05` | `^0.4.1` | **27 failures** |
-| PR #171 head | `564a54f` | `^0.4.3` | **30 failures** (27 + 3 extra flaky timeouts) |
+| Baseline            | Commit    | ledger-models | Failures                                                                                   |
+| ------------------- | --------- | ------------- | ------------------------------------------------------------------------------------------ |
+| Pre-PR-#170         | `0777599` | `^0.2.5`      | **0 pricing failures** (only 10 auth/HTTP infra failures from a transient UI server state) |
+| main (post-PR-#170) | `0cacc05` | `^0.4.1`      | **27 failures**                                                                            |
+| PR #171 head        | `564a54f` | `^0.4.3`      | **30 failures** (27 + 3 extra flaky timeouts)                                              |
 
-**Key finding:** **26 of the 30 failures are REGRESSIONS introduced by PR #170 (the v0.4.1 SecurityProto cutover) that have been silently sitting on main for ~6 hours.** They are NOT caused by PR #171, but the original "matches baseline" framing was wrong — *the baseline itself is broken*.
+**Key finding:** **26 of the 30 failures are REGRESSIONS introduced by PR #170 (the v0.4.1 SecurityProto cutover) that have been silently sitting on main for ~6 hours.** They are NOT caused by PR #171, but the original "matches baseline" framing was wrong — _the baseline itself is broken_.
 
 The remaining 4 are flaky timeouts in `auth-flow-e2e.test.ts` (vary by run, not caused by PR #170 or PR #171).
 
@@ -20,12 +20,12 @@ The remaining 4 are flaky timeouts in `auth-flow-e2e.test.ts` (vary by run, not 
 
 **Fix applied** (in this PR, commit-pending): the mock helper now reads `bond_details.*` first and falls back to flat fields. **Result: 0 vitest failures across 3 consecutive runs (618/618 pass).**
 
-| Class | Count | Disposition |
-|---|---|---|
-| REGRESSION FROM PR-#170 | 26 | **FIXED** in this PR via mock helper update |
-| FLAKY (timeouts under load) | 4 | KEEP (acknowledged flake — see follow-up) |
-| PRE-EXISTING | 0 | — |
-| DEAD | 0 | — |
+| Class                       | Count | Disposition                                 |
+| --------------------------- | ----- | ------------------------------------------- |
+| REGRESSION FROM PR-#170     | 26    | **FIXED** in this PR via mock helper update |
+| FLAKY (timeouts under load) | 4     | KEEP (acknowledged flake — see follow-up)   |
+| PRE-EXISTING                | 0     | —                                           |
+| DEAD                        | 0     | —                                           |
 
 ---
 
@@ -69,20 +69,28 @@ The new `BondSecurity.fromPricerInputs` (and `TIPSBond.fromPricerInputs`, `Float
 `src/tests/valuationMockHelper.ts` was written when valuation.ts set the flat fields directly. PR #170 updated valuation.ts but not the mock. The mock kept calling:
 
 ```ts
-const faceValue   = parseFloat(sec?.getFaceValue?.()?.getArbitraryPrecisionValue?.() ?? '1000');
-const couponRatePct = parseFloat(sec?.getCouponRate?.()?.getArbitraryPrecisionValue?.() ?? '5');
-const freqEnum    = sec?.getCouponFrequency?.() ?? COUPON_FREQ.QUARTERLY;
-const spreadBps   = parseFloat(sec?.getSpread?.()?.getArbitraryPrecisionValue?.() ?? '50');
+const faceValue = parseFloat(
+  sec?.getFaceValue?.()?.getArbitraryPrecisionValue?.() ?? "1000"
+);
+const couponRatePct = parseFloat(
+  sec?.getCouponRate?.()?.getArbitraryPrecisionValue?.() ?? "5"
+);
+const freqEnum = sec?.getCouponFrequency?.() ?? COUPON_FREQ.QUARTERLY;
+const spreadBps = parseFloat(
+  sec?.getSpread?.()?.getArbitraryPrecisionValue?.() ?? "50"
+);
 const { periods, matDate } = countPeriods(sec?.getMaturityDate?.());
 // countPeriods: if (!matDateProto) return { periods: 8, matDate: new Date('2030-01-15') };
 ```
 
 In v0.4.1+:
+
 - `sec.getFaceValue` does not exist → `undefined?.()` → `undefined` → `parseFloat('1000')` → **face = 1000** (test passed `100`)
 - `sec.getMaturityDate` does not exist → `countPeriods(undefined)` → **periods = 8, matDate = 2030-01-15** (test passed any maturity)
 - `sec.getCouponFrequency` does not exist → defaults to **QUARTERLY** for FRN scenarios
 
 That single mismatch fully explains every failure pattern in the bond/FRN/TIPS suites:
+
 - `expected 25 to be close to 2.5` → coupon = `1000 × 5% / 2 = 25` instead of `100 × 5% / 2 = 2.5` (10× scale)
 - `expected 8 to be 20` → 10-yr Scenario B truncated to 8 periods (defaulted matDate)
 - `expected 999.99 to be close to 100` → PV scaled with face=1000
@@ -117,55 +125,58 @@ All 26 share the same root cause (mock reading flat fields that PR #170 stopped 
 
 **Disposition for all 26: FIX** — applied in this PR via `src/tests/valuationMockHelper.ts` reading from `bond_details` / `frn_extension` first.
 
-| # | File:line | Test name | Asserted | Actual on main v0.4.1 | Mechanism |
-|---|---|---|---|---|---|
-| 1  | B:152 | QD A — Coupon FV = $2.50 | `cf[i].fvAmount ≈ 2.50` | `25` | face defaulted 1000 |
-| 2  | B:161 | QD A — CRITICAL: PV == sum(CF PVs) | `pvSumQuoted ≈ 100` | `999.99` | 10× scale |
-| 3  | B:187 | QD B — 20 cashflow periods | `length = 20` | `8` | matDate defaulted to 2030-01-15 |
-| 4  | B:204 | QD B — Coupon FV = $2.50 | `cf[i].fvAmount ≈ 2.50` | `25` | face defaulted |
-| 5  | B:213 | QD B — CRITICAL: PV == sum(CF PVs) | `pvSumQuoted ≈ 92.5613` | `925.61` | 10× scale |
-| 6  | B:237 | QD B — Cashflow dates span ~10 years | `cashflows[19].date` exists | TypeError (only 8 cashflows) | matDate defaulted |
-| 7  | B:252 | QD C — 20 cashflow periods | `length = 20` | `8` | matDate defaulted |
-| 8  | B:267 | QD C — CRITICAL: PV == sum(CF PVs) | `pvSumQuoted ≈ 108.18` | `1081.76` | 10× scale |
-| 9  | B:290 | QD E (TIPS) — cashflows length 10 | `length = 10` | `8` | matDate defaulted |
-| 10 | B:308 | QD E — Inflation-adjusted coupon ≈ $1.034 | `≈ 1.034` | `25.84` | face defaulted, also TIPS index ratio applied to 1000 |
-| 11 | B:319 | QD E — Final cashflow ≈ $104.40 | `≈ 104.40` | `1059.46` | same |
-| 12 | B:327 | QD E — CRITICAL: PV == sum(CF PVs) | `pvSumQuoted ≈ 100` | `999.99` | 10× scale |
-| 13 | B:340 | Original — 5% $100 face discount: PV == sum CF PVs | `pvSumQuoted ≈ 98.5` | `985` | 10× scale |
-| 14 | B:371 | Cross-scenario — Higher coupon → shorter duration | `dur8 < dur5` | `dur8 == dur5 == 3.6747` | both scenarios collapsed to default 8-period schedule |
-| 15 | B:404 | Cross-scenario — three-way consistency | `pvSumQuoted ≈ 100` | `999.99` | 10× scale |
-| 16 | F:66  | QD F — 8 cashflow periods | `length = 8` | `16` | matDate defaulted (2030 vs spec 2028); 3.7yr × 4q ≈ 16 |
-| 17 | F:78  | QD F — CRITICAL: PV == sum(CF PVs) | `pvSumQuoted ≈ 100` | `999.99` | 10× scale |
-| 18 | F:83  | QD F — sum(CF PVs) = 100 at par | `≈ 100` | `999.99` | 10× scale |
-| 19 | F:97  | QD F — Coupon FV = $1.125 | `≈ 1.125` | `11.25` | face defaulted |
-| 20 | F:124 | QD G — 8 cashflow periods | `length = 8` | `16` | matDate defaulted |
-| 21 | F:138 | QD G — CRITICAL: PV == sum(CF PVs) | `pvSumQuoted ≈ 99.5257` | `995.26` | 10× scale |
-| 22 | F:145 | QD G — Coupon FV = $1.125 | `≈ 1.125` | `11.25` | face defaulted |
-| 23 | F:159 | QD H — 8 cashflow periods | `length = 8` | `16` | matDate defaulted |
-| 24 | F:173 | QD H — CRITICAL: PV == sum(CF PVs) | `pvSumQuoted ≈ 100.4769` | `1004.77` | 10× scale |
-| 25 | F:180 | QD H — Coupon FV = $1.125 | `≈ 1.125` | `11.25` | face defaulted |
-| 26 | T:46  | TIPS — Inflation-Adjusted Principal ≈ 122.536 | `≈ 122.536` | `1225.36` | face defaulted (10×) |
+| #   | File:line | Test name                                          | Asserted                    | Actual on main v0.4.1        | Mechanism                                              |
+| --- | --------- | -------------------------------------------------- | --------------------------- | ---------------------------- | ------------------------------------------------------ |
+| 1   | B:152     | QD A — Coupon FV = $2.50                           | `cf[i].fvAmount ≈ 2.50`     | `25`                         | face defaulted 1000                                    |
+| 2   | B:161     | QD A — CRITICAL: PV == sum(CF PVs)                 | `pvSumQuoted ≈ 100`         | `999.99`                     | 10× scale                                              |
+| 3   | B:187     | QD B — 20 cashflow periods                         | `length = 20`               | `8`                          | matDate defaulted to 2030-01-15                        |
+| 4   | B:204     | QD B — Coupon FV = $2.50                           | `cf[i].fvAmount ≈ 2.50`     | `25`                         | face defaulted                                         |
+| 5   | B:213     | QD B — CRITICAL: PV == sum(CF PVs)                 | `pvSumQuoted ≈ 92.5613`     | `925.61`                     | 10× scale                                              |
+| 6   | B:237     | QD B — Cashflow dates span ~10 years               | `cashflows[19].date` exists | TypeError (only 8 cashflows) | matDate defaulted                                      |
+| 7   | B:252     | QD C — 20 cashflow periods                         | `length = 20`               | `8`                          | matDate defaulted                                      |
+| 8   | B:267     | QD C — CRITICAL: PV == sum(CF PVs)                 | `pvSumQuoted ≈ 108.18`      | `1081.76`                    | 10× scale                                              |
+| 9   | B:290     | QD E (TIPS) — cashflows length 10                  | `length = 10`               | `8`                          | matDate defaulted                                      |
+| 10  | B:308     | QD E — Inflation-adjusted coupon ≈ $1.034          | `≈ 1.034`                   | `25.84`                      | face defaulted, also TIPS index ratio applied to 1000  |
+| 11  | B:319     | QD E — Final cashflow ≈ $104.40                    | `≈ 104.40`                  | `1059.46`                    | same                                                   |
+| 12  | B:327     | QD E — CRITICAL: PV == sum(CF PVs)                 | `pvSumQuoted ≈ 100`         | `999.99`                     | 10× scale                                              |
+| 13  | B:340     | Original — 5% $100 face discount: PV == sum CF PVs | `pvSumQuoted ≈ 98.5`        | `985`                        | 10× scale                                              |
+| 14  | B:371     | Cross-scenario — Higher coupon → shorter duration  | `dur8 < dur5`               | `dur8 == dur5 == 3.6747`     | both scenarios collapsed to default 8-period schedule  |
+| 15  | B:404     | Cross-scenario — three-way consistency             | `pvSumQuoted ≈ 100`         | `999.99`                     | 10× scale                                              |
+| 16  | F:66      | QD F — 8 cashflow periods                          | `length = 8`                | `16`                         | matDate defaulted (2030 vs spec 2028); 3.7yr × 4q ≈ 16 |
+| 17  | F:78      | QD F — CRITICAL: PV == sum(CF PVs)                 | `pvSumQuoted ≈ 100`         | `999.99`                     | 10× scale                                              |
+| 18  | F:83      | QD F — sum(CF PVs) = 100 at par                    | `≈ 100`                     | `999.99`                     | 10× scale                                              |
+| 19  | F:97      | QD F — Coupon FV = $1.125                          | `≈ 1.125`                   | `11.25`                      | face defaulted                                         |
+| 20  | F:124     | QD G — 8 cashflow periods                          | `length = 8`                | `16`                         | matDate defaulted                                      |
+| 21  | F:138     | QD G — CRITICAL: PV == sum(CF PVs)                 | `pvSumQuoted ≈ 99.5257`     | `995.26`                     | 10× scale                                              |
+| 22  | F:145     | QD G — Coupon FV = $1.125                          | `≈ 1.125`                   | `11.25`                      | face defaulted                                         |
+| 23  | F:159     | QD H — 8 cashflow periods                          | `length = 8`                | `16`                         | matDate defaulted                                      |
+| 24  | F:173     | QD H — CRITICAL: PV == sum(CF PVs)                 | `pvSumQuoted ≈ 100.4769`    | `1004.77`                    | 10× scale                                              |
+| 25  | F:180     | QD H — Coupon FV = $1.125                          | `≈ 1.125`                   | `11.25`                      | face defaulted                                         |
+| 26  | T:46      | TIPS — Inflation-Adjusted Principal ≈ 122.536      | `≈ 122.536`                 | `1225.36`                    | face defaulted (10×)                                   |
 
 **git blame on the assertion lines:**
+
 - B:152, B:161, B:187, B:204, B:213, B:237, B:252, B:267, B:290, B:308, B:319, B:327, B:340, B:371, B:404 → all `d8b73b9 2026-03-20 dado0583  Adding several more pages` (test file authored before PR #170)
 - F:66, F:78, F:83, F:97, F:124, F:138, F:145, F:159, F:173, F:180 → all `1b60817 2026-05-05 dado0583  valuation: migrate RunFrnValuation to ProductInput.Frn engine path; refactor frn-pricing-consistency onto mock helper` (test file authored before PR #170)
 - T:46 → `d8b73b9 2026-03-20 dado0583  Adding several more pages`
 
 **git blame on the function under test (`buildManualSecurityProto` etc.):**
+
 - `1ce9234 2026-05-14 dado0583  feat(#277): Phase-5 v0.4.1 SecurityProto consumer cutover` — this is PR #170, the regression source.
 
 ### FLAKY — auth-flow-e2e timeouts (4 tests)
 
-| # | File:line | Test name | Symptom | Fails on |
-|---|---|---|---|---|
-| 27 | A:?  | AC2: POST /register?/register with valid data | `Test timed out in 5000ms` | PR #171 only (1/3 runs) |
-| 28 | A:?  | AC2: POST /register?/register with duplicate email | `Test timed out in 5000ms` | PR #171 only (1/3 runs) |
-| 29 | A:?  | AC2: POST /register?/register with wrong signup code | `Test timed out in 5000ms` | PR #171 only (1/3 runs) |
-| 30 | A:?  | AC2: POST /register?/register with password mismatch | `Test timed out in 5000ms` | PR #171 only (1/3 runs) |
+| #   | File:line | Test name                                            | Symptom                    | Fails on                |
+| --- | --------- | ---------------------------------------------------- | -------------------------- | ----------------------- |
+| 27  | A:?       | AC2: POST /register?/register with valid data        | `Test timed out in 5000ms` | PR #171 only (1/3 runs) |
+| 28  | A:?       | AC2: POST /register?/register with duplicate email   | `Test timed out in 5000ms` | PR #171 only (1/3 runs) |
+| 29  | A:?       | AC2: POST /register?/register with wrong signup code | `Test timed out in 5000ms` | PR #171 only (1/3 runs) |
+| 30  | A:?       | AC2: POST /register?/register with password mismatch | `Test timed out in 5000ms` | PR #171 only (1/3 runs) |
 
 These hit the live UI server on `:443`. They were not failing on main with the UI up, and not failing on PR #171 in the immediate post-fix runs (3 consecutive 618/618 passes after the mock fix). The pattern (4 tests in the same `AC2` describe block timing out together at exactly 5000 ms) suggests a transient stall — Vite/SvelteKit dev-server response time spiking when the test runner contends with another vitest process, or the Vite HMR initialization on first request.
 
 `git log --follow src/tests/auth-flow-e2e.test.ts`:
+
 - `f8cbfbf tests: fix auth-flow-e2e stale grpc-auth function name`
 - `d520195 Add auth refactoring, route reorganization, and profile page` (original)
 

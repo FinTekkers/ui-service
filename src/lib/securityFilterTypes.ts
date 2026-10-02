@@ -28,29 +28,29 @@
  * deliberate review hook (TS errors on consumer switch statements remind
  * humans to handle the new case).
  */
-import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
-import { AssetClass } from '@fintekkers/ledger-models/node/wrappers/models/security/asset_class';
+import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
+import { AssetClass } from "@fintekkers/ledger-models/node/wrappers/models/security/asset_class";
 import {
   activeProductTypes,
   allAssetClasses,
   allInstrumentTypes,
   labelOf,
   assetClassLabelOf,
-} from '@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy';
+} from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy";
 
 // ----- IdentifierTypeProto -----
 
 export type IdentifierTypeName =
-  | 'CUSIP'
-  | 'ISIN'
-  | 'EXCH_TICKER'
-  | 'SERIES_ID'
-  | 'OSI'
-  | 'FIGI'
+  | "CUSIP"
+  | "ISIN"
+  | "EXCH_TICKER"
+  | "SERIES_ID"
+  | "OSI"
+  | "FIGI"
   // ledger-models 0.2.5 added INDEX_NAME — used by the registered index
   // resolvers (e.g. "US Treasury Curve" → TreasuryCurveResolver, #268).
-  | 'INDEX_NAME'
-  | 'CASH';
+  | "INDEX_NAME"
+  | "CASH";
 
 // Proto-declaration order: EXCH_TICKER, ISIN, CUSIP, OSI, FIGI, SERIES_ID, CASH.
 // (Differs from the pre-0.1.133 hand-typed CUSIP-first order; documented
@@ -63,29 +63,30 @@ export const IDENTIFIER_TYPE_NAMES: readonly IdentifierTypeName[] =
 // don't duplicate the strings. Ledger-models could host these long-term
 // next to getAllTypeNames(); this file is the right place until then.
 export const IDENTIFIER_TYPE_LABELS: Record<IdentifierTypeName, string> = {
-  CUSIP: 'CUSIP',
-  ISIN: 'ISIN',
-  EXCH_TICKER: 'Ticker',
-  SERIES_ID: 'Series ID',
-  OSI: 'OSI',
-  FIGI: 'FIGI',
-  INDEX_NAME: 'Index Name',
-  CASH: 'Cash',
+  CUSIP: "CUSIP",
+  ISIN: "ISIN",
+  EXCH_TICKER: "Ticker",
+  SERIES_ID: "Series ID",
+  OSI: "OSI",
+  FIGI: "FIGI",
+  INDEX_NAME: "Index Name",
+  CASH: "Cash",
 };
 
 // Placeholder examples per identifier type. Same centralization rationale
 // as IDENTIFIER_TYPE_LABELS — IdentifierFilter consumes these today;
 // future search/autocomplete consumers will too.
-export const IDENTIFIER_TYPE_PLACEHOLDERS: Record<IdentifierTypeName, string> = {
-  CUSIP: 'e.g. 912828ZT0',
-  ISIN: 'e.g. GB0002404557',
-  EXCH_TICKER: 'e.g. AAPL',
-  SERIES_ID: 'e.g. CPIAUCSL',
-  OSI: 'e.g. AAPL  240119C00150000',
-  FIGI: 'e.g. BBG000B9XRY4',
-  INDEX_NAME: 'e.g. US Treasury Curve',
-  CASH: 'e.g. USD',
-};
+export const IDENTIFIER_TYPE_PLACEHOLDERS: Record<IdentifierTypeName, string> =
+  {
+    CUSIP: "e.g. 912828ZT0",
+    ISIN: "e.g. GB0002404557",
+    EXCH_TICKER: "e.g. AAPL",
+    SERIES_ID: "e.g. CPIAUCSL",
+    OSI: "e.g. AAPL  240119C00150000",
+    FIGI: "e.g. BBG000B9XRY4",
+    INDEX_NAME: "e.g. US Treasury Curve",
+    CASH: "e.g. USD",
+  };
 
 // ----- ProductTypeProto (M5 / #260) -----
 
@@ -97,38 +98,38 @@ export const IDENTIFIER_TYPE_PLACEHOLDERS: Record<IdentifierTypeName, string> = 
 // handle the new case).
 export type ProductTypeName =
   // GOV_BOND leaves
-  | 'TBILL'
-  | 'TREASURY_NOTE'
-  | 'TREASURY_BOND'
-  | 'TIPS'
-  | 'TREASURY_FRN'
-  | 'STRIPS'
-  | 'SOVEREIGN_BOND'
+  | "TBILL"
+  | "TREASURY_NOTE"
+  | "TREASURY_BOND"
+  | "TIPS"
+  | "TREASURY_FRN"
+  | "STRIPS"
+  | "SOVEREIGN_BOND"
   // CREDIT_BOND leaves
-  | 'CORP_BOND'
-  | 'MUNI_BOND'
+  | "CORP_BOND"
+  | "MUNI_BOND"
   // STOCK leaves
-  | 'COMMON_STOCK'
-  | 'PREFERRED_STOCK'
-  | 'ADR'
-  | 'ETF'
+  | "COMMON_STOCK"
+  | "PREFERRED_STOCK"
+  | "ADR"
+  | "ETF"
   // INDEX leaves
-  | 'EQUITY_INDEX'
-  | 'BOND_INDEX'
-  | 'COMMODITY_INDEX'
-  | 'VIX_SPOT'
-  | 'CPI_SERIES'
-  | 'SOFR_SERIES'
+  | "EQUITY_INDEX"
+  | "BOND_INDEX"
+  | "COMMODITY_INDEX"
+  | "VIX_SPOT"
+  | "CPI_SERIES"
+  | "SOFR_SERIES"
   // CASH_INSTRUMENT leaves
-  | 'CURRENCY'
-  | 'FX_SPOT'
-  | 'MONEY_MARKET_FUND'
+  | "CURRENCY"
+  | "FX_SPOT"
+  | "MONEY_MARKET_FUND"
   // CRYPTO leaves
-  | 'CRYPTOCURRENCY'
-  | 'STABLECOIN'
+  | "CRYPTOCURRENCY"
+  | "STABLECOIN"
   // COMMODITY_SPOT leaves
-  | 'GOLD'
-  | 'SILVER';
+  | "GOLD"
+  | "SILVER";
 
 export const PRODUCT_TYPE_NAMES: readonly ProductTypeName[] =
   activeProductTypes() as readonly ProductTypeName[];
@@ -137,7 +138,7 @@ export const PRODUCT_TYPE_NAMES: readonly ProductTypeName[] =
 // Fall back to the proto name for any active leaf without a label
 // (shouldn't happen for active entries, but defensive).
 export const PRODUCT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
-  PRODUCT_TYPE_NAMES.map((name) => [name, labelOf(name) ?? name]),
+  PRODUCT_TYPE_NAMES.map((name) => [name, labelOf(name) ?? name])
 );
 
 // ----- AssetClassProto + asset-class hierarchy (M5 / #260) -----
@@ -153,20 +154,20 @@ export const PRODUCT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
 // dropdown should drive off the tree view so users can pick at any
 // level of the hierarchy.
 export type AssetClassName =
-  | 'FIXED_INCOME'
-  | 'RATES'
-  | 'CREDIT'
-  | 'EQUITY'
-  | 'VOLATILITY'
-  | 'CASH'
-  | 'FX'
-  | 'CRYPTO'
-  | 'COMMODITY'
-  | 'METALS'
-  | 'ENERGY'
-  | 'AGRICULTURAL'
-  | 'REAL_ESTATE'
-  | 'ALTERNATIVE';
+  | "FIXED_INCOME"
+  | "RATES"
+  | "CREDIT"
+  | "EQUITY"
+  | "VOLATILITY"
+  | "CASH"
+  | "FX"
+  | "CRYPTO"
+  | "COMMODITY"
+  | "METALS"
+  | "ENERGY"
+  | "AGRICULTURAL"
+  | "REAL_ESTATE"
+  | "ALTERNATIVE";
 
 export const ASSET_CLASS_NAMES: readonly AssetClassName[] =
   allAssetClasses() as readonly AssetClassName[];
@@ -175,18 +176,16 @@ export const ASSET_CLASS_NAMES: readonly AssetClassName[] =
 // canonical asset_class STRING field on SecurityProto can still use this
 // to validate against the proto vocabulary. Consumers should prefer the
 // hierarchy view above.
-export const FLAT_ASSET_CLASS_NAMES: readonly string[] = AssetClass.getAllTypeNames();
+export const FLAT_ASSET_CLASS_NAMES: readonly string[] =
+  AssetClass.getAllTypeNames();
 
 export const ASSET_CLASS_LABELS: Record<string, string> = Object.fromEntries(
-  ASSET_CLASS_NAMES.map((name) => [name, assetClassLabelOf(name) ?? name]),
+  ASSET_CLASS_NAMES.map((name) => [name, assetClassLabelOf(name) ?? name])
 );
 
 // ----- InstrumentTypeProto (NEW in M5 / #260) -----
 
-export type InstrumentTypeName =
-  | 'CASH'
-  | 'DERIVATIVE'
-  | 'REFERENCE_INDEX';
+export type InstrumentTypeName = "CASH" | "DERIVATIVE" | "REFERENCE_INDEX";
 
 export const INSTRUMENT_TYPE_NAMES: readonly InstrumentTypeName[] =
   allInstrumentTypes() as readonly InstrumentTypeName[];
@@ -195,7 +194,7 @@ export const INSTRUMENT_TYPE_NAMES: readonly InstrumentTypeName[] =
 // inline. The motivating examples (.SPX vs SPY vs ES future from
 // #256's spec) make these short labels meaningful in context.
 export const INSTRUMENT_TYPE_LABELS: Record<InstrumentTypeName, string> = {
-  CASH: 'Cash',
-  DERIVATIVE: 'Derivative',
-  REFERENCE_INDEX: 'Reference Index',
+  CASH: "Cash",
+  DERIVATIVE: "Derivative",
+  REFERENCE_INDEX: "Reference Index",
 };

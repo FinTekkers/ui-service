@@ -1,4 +1,4 @@
-import { getTreasuryTransactions } from '$lib/treasury_positions';
+import { getTreasuryTransactions } from "$lib/treasury_positions";
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals }) {
@@ -14,12 +14,11 @@ export async function load({ locals }) {
   // feature/301-treasuries2-mbs-overlay.
   const transactions = await getTreasuryTransactions(
     new Date(),
-    locals.user?.apiKey,
+    locals.user?.apiKey
   );
 
   return {
     transactions: transactions || [],
-    user: locals.user
+    user: locals.user,
   };
 }
-

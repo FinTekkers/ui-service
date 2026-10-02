@@ -26,10 +26,10 @@
     PRODUCT_TYPE_NAMES,
     PRODUCT_TYPE_LABELS,
     type ProductTypeName,
-  } from '$lib/securityFilterTypes';
+  } from "$lib/securityFilterTypes";
 
   // Two-way binding — empty string represents "no filter" / All.
-  export let value: ProductTypeName | '' = '';
+  export let value: ProductTypeName | "" = "";
 
   // Subset of proto names the consumer wants. Default = full active
   // set from product_hierarchy.activeProductTypes().
@@ -39,22 +39,20 @@
   export let labels: Partial<Record<ProductTypeName, string>> = {};
 
   // Class pass-through.
-  export let selectClass: string = '';
-  export let selectId: string = 'product-type-filter-value';
+  export let selectClass: string = "";
+  export let selectId: string = "product-type-filter-value";
 
   // Empty-option label. Consumers wanting strict "must pick a type" UX
   // can pass `allLabel=''` and constrain via the parent.
-  export let allLabel: string = 'All';
+  export let allLabel: string = "All";
 
-  $: resolvedLabels = { ...PRODUCT_TYPE_LABELS, ...labels } as Record<string, string>;
+  $: resolvedLabels = { ...PRODUCT_TYPE_LABELS, ...labels } as Record<
+    string,
+    string
+  >;
 </script>
 
-<select
-  id={selectId}
-  class={selectClass}
-  bind:value
-  aria-label="Product type"
->
+<select id={selectId} class={selectClass} bind:value aria-label="Product type">
   <option value="">{allLabel}</option>
   {#each supportedTypes as t}
     <option value={t}>{resolvedLabels[t] ?? t}</option>

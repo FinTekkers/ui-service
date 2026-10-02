@@ -12,10 +12,13 @@
  * auth is confirmed working.
  */
 
-import EnvConfig from '@fintekkers/ledger-models/node/wrappers/models/utils/requestcontext';
+import EnvConfig from "@fintekkers/ledger-models/node/wrappers/models/utils/requestcontext";
 
 // Broker runs on port 80
-const BROKER_URL = EnvConfig.apiURL.replace(/:8082$/, ':80').replace(/:8080$/, ':80').replace(/:8083$/, ':80');
+const BROKER_URL = EnvConfig.apiURL
+  .replace(/:8082$/, ":80")
+  .replace(/:8080$/, ":80")
+  .replace(/:8083$/, ":80");
 
 export interface RegisterRequest {
   email: string;
@@ -40,9 +43,14 @@ export interface AuthResponse {
  * TODO: Implement when broker auth endpoints are ready.
  * Will call broker's gRPC or REST register endpoint.
  */
-export async function brokerRegister(_req: RegisterRequest): Promise<AuthResponse> {
+export async function brokerRegister(
+  _req: RegisterRequest
+): Promise<AuthResponse> {
   // Placeholder — will be implemented when broker auth is ready
-  return { success: false, error: 'Broker auth not yet implemented — using local auth' };
+  return {
+    success: false,
+    error: "Broker auth not yet implemented — using local auth",
+  };
 }
 
 /**
@@ -51,7 +59,10 @@ export async function brokerRegister(_req: RegisterRequest): Promise<AuthRespons
  */
 export async function brokerLogin(_req: LoginRequest): Promise<AuthResponse> {
   // Placeholder — will be implemented when broker auth is ready
-  return { success: false, error: 'Broker auth not yet implemented — using local auth' };
+  return {
+    success: false,
+    error: "Broker auth not yet implemented — using local auth",
+  };
 }
 
 /**
@@ -65,7 +76,7 @@ export function getServiceURL(servicePort: number): string {
   // return BROKER_URL;
 
   // Current: direct connection to individual services
-  return EnvConfig.apiURL.replace(':8082', `:${servicePort}`);
+  return EnvConfig.apiURL.replace(":8082", `:${servicePort}`);
 }
 
 /**

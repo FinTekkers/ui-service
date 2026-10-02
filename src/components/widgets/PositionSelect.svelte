@@ -94,7 +94,8 @@
     // same reason: the form owns it now, so inherit + override would
     // be redundant.
     const trimmedPortfolioId = portfolioIdInput.trim();
-    const portfolioIdOverride = trimmedPortfolioId === '' ? null : trimmedPortfolioId;
+    const portfolioIdOverride =
+      trimmedPortfolioId === "" ? null : trimmedPortfolioId;
 
     const url = buildFilterUrl(
       "/data/positions",
@@ -118,7 +119,7 @@
       // No more inheritKeys — every form field is form-driven now,
       // including portfolioId (the original #220-class concern is
       // now addressed by initial-state hydration, not URL passthrough).
-      [],
+      []
     );
 
     window.location.href = url;
@@ -167,7 +168,9 @@
         identifierInput = identifierFromUrl;
         if (
           identifierTypeFromUrl &&
-          (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(identifierTypeFromUrl)
+          (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(
+            identifierTypeFromUrl
+          )
         ) {
           identifierType = identifierTypeFromUrl as IdentifierTypeName;
         }

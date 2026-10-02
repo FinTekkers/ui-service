@@ -16,37 +16,55 @@
  *   Re-registration is idempotent (the broker returns AlreadyExists, which
  *   we ignore — only Login matters for state).
  */
-import { execSync } from 'child_process';
-import * as path from 'path';
+import { execSync } from "child_process";
+import * as path from "path";
 
 export const TEST_USER = {
-  email: 'playwright@fintekkers-test.local',
-  password: 'PlaywrightTest123',
-  name: 'Playwright',
+  email: "playwright@fintekkers-test.local",
+  password: "PlaywrightTest123",
+  name: "Playwright",
 } as const;
 
-export const STORAGE_STATE_PATH = path.resolve('playwright/.auth/user.json');
+export const STORAGE_STATE_PATH = path.resolve("playwright/.auth/user.json");
 
-const BROKER_HOST = '127.0.0.1:80';
-const PROTO_PATH = path.resolve(process.env.HOME!, 'projects/broker-service/proto');
-const SIGNUP_CODE = 'S1GNUP';
+const BROKER_HOST = "127.0.0.1:80";
+const PROTO_PATH = path.resolve(
+  process.env.HOME!,
+  "projects/broker-service/proto"
+);
+const SIGNUP_CODE = "S1GNUP";
 
-function grpcurl(method: string, data: Record<string, string>): { code: number; stdout: string; stderr: string } {
+function grpcurl(
+  method: string,
+  data: Record<string, string>
+): { code: number; stdout: string; stderr: string } {
   const cmd = [
-    'grpcurl -plaintext',
+    "grpcurl -plaintext",
     `-import-path ${PROTO_PATH}`,
-    '-proto auth.proto',
+    "-proto auth.proto",
     `-d '${JSON.stringify(data)}'`,
     BROKER_HOST,
     `fintekkers.services.auth.Auth/${method}`,
-  ].join(' ');
+  ].join(" ");
   try {
-    return { code: 0, stdout: execSync(cmd, { encoding: 'utf-8', timeout: 10_000, stdio: ['ignore', 'pipe', 'pipe'] }), stderr: '' };
+    return {
+      code: 0,
+      stdout: execSync(cmd, {
+        encoding: "utf-8",
+        timeout: 10_000,
+        stdio: ["ignore", "pipe", "pipe"],
+      }),
+      stderr: "",
+    };
   } catch (err: any) {
     // grpcurl writes its own error message to stderr AND throws; we capture
     // both so callers can decide whether to ignore (e.g. AlreadyExists on
     // re-register is fine).
-    return { code: err.status ?? 1, stdout: err.stdout?.toString() ?? '', stderr: err.stderr?.toString() ?? '' };
+    return {
+      code: err.status ?? 1,
+      stdout: err.stdout?.toString() ?? "",
+      stderr: err.stderr?.toString() ?? "",
+    };
   }
 }
 
@@ -55,7 +73,7 @@ function grpcurl(method: string, data: Record<string, string>): { code: number; 
  * is a no-op when the user already exists.
  */
 export function ensureTestUserRegistered(): void {
-  const result = grpcurl('Register', {
+  const result = grpcurl("Register", {
     email: TEST_USER.email,
     password: TEST_USER.password,
     name: TEST_USER.name,
@@ -64,8 +82,13 @@ export function ensureTestUserRegistered(): void {
   // code 0 = newly created. Anything else is fine if it's AlreadyExists (the
   // broker rejects duplicate emails, which is what we want — the user already
   // existed from a prior run).
-  if (result.code !== 0 && !/AlreadyExists|already registered/i.test(result.stderr)) {
-    throw new Error(`Failed to register Playwright test user: ${result.stderr}`);
+  if (
+    result.code !== 0 &&
+    !/AlreadyExists|already registered/i.test(result.stderr)
+  ) {
+    throw new Error(
+      `Failed to register Playwright test user: ${result.stderr}`
+    );
   }
 }
 
@@ -74,7 +97,10 @@ export function ensureTestUserRegistered(): void {
  * what the SvelteKit form action expects to set as `ft_api_key` cookie.
  */
 export function loginTestUser(): string {
-  const result = grpcurl('Login', { email: TEST_USER.email, password: TEST_USER.password });
+  const result = grpcurl("Login", {
+    email: TEST_USER.email,
+    password: TEST_USER.password,
+  });
   if (result.code !== 0) {
     throw new Error(`Failed to login Playwright test user: ${result.stderr}`);
   }
@@ -91,7 +117,10 @@ export function loginTestUser(): string {
  */
 export function brokerAvailable(): boolean {
   try {
-    execSync(`grpcurl -plaintext ${BROKER_HOST} list`, { timeout: 3000, stdio: 'pipe' });
+    execSync(`grpcurl -plaintext ${BROKER_HOST} list`, {
+      timeout: 3000,
+      stdio: "pipe",
+    });
     return true;
   } catch {
     return false;

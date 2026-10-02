@@ -24,11 +24,11 @@
 </script>
 
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick } from "svelte";
 
   // Two-way bindings — parent owns the state.
-  export let portfolioId: string = '';
-  export let portfolioName: string = '';
+  export let portfolioId: string = "";
+  export let portfolioName: string = "";
 
   // The list of (id, name) the user can autocomplete against. Page-
   // server fetches this via FetchPortfolioUniverse and threads it down.
@@ -44,9 +44,9 @@
   export let debounceMs: number = 250;
 
   // Class pass-through (matches IdentifierFilter / DateFilter conventions).
-  export let inputClass: string = '';
-  export let inputId: string = 'portfolio-filter-input';
-  export let placeholder: string = 'Type to search portfolios…';
+  export let inputClass: string = "";
+  export let inputId: string = "portfolio-filter-input";
+  export let placeholder: string = "Type to search portfolios…";
 
   // Internal state
   let suggestions: PortfolioOption[] = [];
@@ -89,8 +89,8 @@
     // portfolioId so a stale UUID doesn't survive a name change. The
     // parent can detect "user is editing" via portfolioId === '' &&
     // portfolioName !== ''.
-    if (portfolioId !== '') {
-      portfolioId = '';
+    if (portfolioId !== "") {
+      portfolioId = "";
     }
     scheduleFilter();
   }
@@ -105,19 +105,19 @@
 
   function onKeydown(e: KeyboardEvent) {
     if (!listOpen || suggestions.length === 0) return;
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       highlightedIndex = (highlightedIndex + 1) % suggestions.length;
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       highlightedIndex =
         (highlightedIndex - 1 + suggestions.length) % suggestions.length;
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
         e.preventDefault();
         selectSuggestion(suggestions[highlightedIndex]);
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       listOpen = false;
       highlightedIndex = -1;
     }

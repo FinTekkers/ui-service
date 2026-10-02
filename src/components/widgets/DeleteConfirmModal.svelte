@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
-  import { createEventDispatcher } from 'svelte';
+  import { enhance } from "$app/forms";
+  import { createEventDispatcher } from "svelte";
 
   export let show = false;
-  export let entityName = '';
-  export let uuidHex = '';
+  export let entityName = "";
+  export let uuidHex = "";
   export let dryRunResult: {
     success: boolean;
     totalCount: number;
@@ -13,34 +13,52 @@
     error?: string;
   } | null = null;
   export let deleteLoading = false;
-  export let deleteError = '';
+  export let deleteError = "";
 
   const dispatch = createEventDispatcher();
 
   $: requiresForce = (dryRunResult?.warnings ?? []).some(
-    (w) => w.toLowerCase().includes('portfolio') || w.toLowerCase().includes('referenced')
+    (w) =>
+      w.toLowerCase().includes("portfolio") ||
+      w.toLowerCase().includes("referenced")
   );
   $: requiresCascade = (dryRunResult?.warnings ?? []).some(
-    (w) => w.toLowerCase().includes('cascade') || w.toLowerCase().includes('transaction')
+    (w) =>
+      w.toLowerCase().includes("cascade") ||
+      w.toLowerCase().includes("transaction")
   );
 
-  let confirmInput = '';
+  let confirmInput = "";
 
   function close() {
-    confirmInput = '';
-    dispatch('close');
+    confirmInput = "";
+    dispatch("close");
   }
 </script>
 
 {#if show && dryRunResult}
-  <div class="modal-overlay" on:click={close} on:keydown={(e) => e.key === 'Escape' && close()}>
-    <div class="modal-content" on:click|stopPropagation role="dialog" aria-modal="true">
+  <div
+    class="modal-overlay"
+    on:click={close}
+    on:keydown={(e) => e.key === "Escape" && close()}
+  >
+    <div
+      class="modal-content"
+      on:click|stopPropagation
+      role="dialog"
+      aria-modal="true"
+    >
       <h3 class="modal-title">Confirm Delete</h3>
-      <p class="modal-question">Are you sure you want to delete <strong>{entityName}</strong>?</p>
+      <p class="modal-question">
+        Are you sure you want to delete <strong>{entityName}</strong>?
+      </p>
 
       {#if dryRunResult.totalCount > 1}
         <div class="affected-summary">
-          {dryRunResult.totalCount - 1} related {dryRunResult.totalCount - 1 === 1 ? 'entity' : 'entities'} will also be affected
+          {dryRunResult.totalCount - 1} related {dryRunResult.totalCount - 1 ===
+          1
+            ? "entity"
+            : "entities"} will also be affected
         </div>
       {/if}
 
@@ -49,7 +67,9 @@
           <strong>Affected entities:</strong>
           <ul>
             {#each dryRunResult.affectedEntities as entity}
-              <li>{entity.description || `Entity type ${entity.entityType}`}</li>
+              <li>
+                {entity.description || `Entity type ${entity.entityType}`}
+              </li>
             {/each}
           </ul>
         </div>
@@ -68,8 +88,15 @@
 
       {#if requiresForce || requiresCascade}
         <div class="force-confirm">
-          <label for="confirmDelete">Type <strong>DELETE</strong> to confirm:</label>
-          <input id="confirmDelete" type="text" bind:value={confirmInput} placeholder="DELETE" />
+          <label for="confirmDelete"
+            >Type <strong>DELETE</strong> to confirm:</label
+          >
+          <input
+            id="confirmDelete"
+            type="text"
+            bind:value={confirmInput}
+            placeholder="DELETE"
+          />
         </div>
       {/if}
 
@@ -79,26 +106,43 @@
 
       <div class="modal-actions">
         <button class="btn-cancel" on:click={close}>Cancel</button>
-        <form method="POST" action="?/confirmDelete" use:enhance={() => {
-          deleteLoading = true;
-          return async ({ result }) => {
-            if (result.type === 'success' && result.data?.deleteResult?.success) {
-              dispatch('deleted');
-            } else {
-              deleteError = result.data?.deleteResult?.error ?? 'Delete failed';
-              deleteLoading = false;
-            }
-          };
-        }}>
+        <form
+          method="POST"
+          action="?/confirmDelete"
+          use:enhance={() => {
+            deleteLoading = true;
+            return async ({ result }) => {
+              if (
+                result.type === "success" &&
+                result.data?.deleteResult?.success
+              ) {
+                dispatch("deleted");
+              } else {
+                deleteError =
+                  result.data?.deleteResult?.error ?? "Delete failed";
+                deleteLoading = false;
+              }
+            };
+          }}
+        >
           <input type="hidden" name="uuidHex" value={uuidHex} />
-          <input type="hidden" name="force" value={requiresForce ? 'true' : 'false'} />
-          <input type="hidden" name="cascade" value={requiresCascade ? 'true' : 'false'} />
+          <input
+            type="hidden"
+            name="force"
+            value={requiresForce ? "true" : "false"}
+          />
+          <input
+            type="hidden"
+            name="cascade"
+            value={requiresCascade ? "true" : "false"}
+          />
           <button
             type="submit"
             class="btn-delete"
-            disabled={deleteLoading || ((requiresForce || requiresCascade) && confirmInput !== 'DELETE')}
+            disabled={deleteLoading ||
+              ((requiresForce || requiresCascade) && confirmInput !== "DELETE")}
           >
-            {deleteLoading ? 'Deleting...' : 'Delete'}
+            {deleteLoading ? "Deleting..." : "Delete"}
           </button>
         </form>
       </div>
@@ -111,7 +155,10 @@
 
   .modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
@@ -129,8 +176,18 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
 
-  .modal-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; }
-  .modal-question { font-size: 0.9rem; margin-bottom: 16px; strong { color: $success; } }
+  .modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .modal-question {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    strong {
+      color: $success;
+    }
+  }
 
   .affected-summary {
     background-color: #1b4d63;
@@ -141,11 +198,22 @@
     color: #fbbf24;
   }
 
-  .affected-list, .warnings-box {
+  .affected-list,
+  .warnings-box {
     margin-bottom: 12px;
     font-size: 0.8rem;
-    strong { display: block; margin-bottom: 4px; }
-    ul { margin: 0; padding-left: 1.2em; list-style: disc; li { margin-bottom: 2px; } }
+    strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    ul {
+      margin: 0;
+      padding-left: 1.2em;
+      list-style: disc;
+      li {
+        margin-bottom: 2px;
+      }
+    }
   }
 
   .warnings-box {
@@ -158,32 +226,70 @@
 
   .force-confirm {
     margin-bottom: 12px;
-    label { display: block; font-size: 0.8rem; margin-bottom: 6px; strong { color: $error; } }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+      strong {
+        color: $error;
+      }
+    }
     input {
-      width: 100%; padding: 6px 10px;
-      border: 1px solid $error; border-radius: 4px;
-      font-size: 0.85rem; background-color: white; color: #05192a;
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid $error;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      background-color: white;
+      color: #05192a;
       box-sizing: border-box;
     }
   }
 
   .modal-error {
-    background-color: #7f1d1d; color: #fecaca;
-    border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; margin-bottom: 12px;
+    background-color: #7f1d1d;
+    color: #fecaca;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    margin-bottom: 12px;
   }
 
-  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+  }
 
   .btn-cancel {
-    padding: 8px 20px; border: 1px solid #ddd; border-radius: 4px;
-    background: transparent; color: $white; font-size: 0.85rem; cursor: pointer;
-    &:hover { background-color: rgba(255, 255, 255, 0.1); }
+    padding: 8px 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: transparent;
+    color: $white;
+    font-size: 0.85rem;
+    cursor: pointer;
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
   }
 
   .btn-delete {
-    padding: 8px 20px; border: none; border-radius: 4px;
-    background-color: $error; color: white; font-size: 0.85rem; font-weight: 600; cursor: pointer;
-    &:hover:not(:disabled) { background-color: #a33049; }
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: $error;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover:not(:disabled) {
+      background-color: #a33049;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 </style>

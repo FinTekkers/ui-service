@@ -1,28 +1,28 @@
 // Services
-import { PositionClient } from '@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js';
-import { getServiceConnection } from '$lib/grpc-auth';
-import { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
-import type { QueryPositionResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_response_pb';
+import { PositionClient } from "@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js";
+import { getServiceConnection } from "$lib/grpc-auth";
+import { Position } from "@fintekkers/ledger-models/node/wrappers/models/position/position";
+import type { QueryPositionResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_response_pb";
 
 // Models
-import { PositionFilter } from '@fintekkers/ledger-models/node/wrappers/models/position/positionfilter';
-import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
+import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
+import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 
 // Requests
-import { QueryPositionRequest } from '@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest';
+import { QueryPositionRequest } from "@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest";
 
-import measurePkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
+import measurePkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 const { MeasureProto } = measurePkg;
-import type { MeasureProto as MeasureProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
-import positionPkg from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js';
+import type { MeasureProto as MeasureProtoType } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
+import positionPkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
 const { PositionTypeProto, PositionViewProto } = positionPkg;
 
 // Import FieldProto as both type and value
-import pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js';
+import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 const { FieldProto } = pkg;
-import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
-import { PositionFilterOperator } from '@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js';
-import { Tenor } from '@fintekkers/ledger-models/node/wrappers/models/security/term';
+import type { FieldProto as FieldProtoType } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+import { PositionFilterOperator } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js";
+import { Tenor } from "@fintekkers/ledger-models/node/wrappers/models/security/term";
 
 // Constants
 const PORTFOLIO_NAME = "Federal Reserve SOMA Holdings";
@@ -31,44 +31,44 @@ const PORTFOLIO_NAME = "Federal Reserve SOMA Holdings";
  * Maps FieldProto enum value to field name string
  */
 function getFieldName(fieldEnum: number): string {
-    // Create reverse lookup: enum value -> name
-    const fieldNameMap: Record<number, string> = {};
-    Object.keys(FieldProto).forEach((key: string) => {
-        const value = (FieldProto as any)[key];
-        if (typeof value === 'number') {
-            fieldNameMap[value] = key;
-        }
-    });
-    return fieldNameMap[fieldEnum] || fieldEnum.toString();
+  // Create reverse lookup: enum value -> name
+  const fieldNameMap: Record<number, string> = {};
+  Object.keys(FieldProto).forEach((key: string) => {
+    const value = (FieldProto as any)[key];
+    if (typeof value === "number") {
+      fieldNameMap[value] = key;
+    }
+  });
+  return fieldNameMap[fieldEnum] || fieldEnum.toString();
 }
 
 /**
  * Maps MeasureProto enum value to measure name string
  */
 function getMeasureName(measureEnum: number): string {
-    const measureNameMap: Record<number, string> = {};
-    Object.keys(MeasureProto).forEach((key: string) => {
-        const value = (MeasureProto as any)[key];
-        if (typeof value === 'number') {
-            measureNameMap[value] = key;
-        }
-    });
-    return measureNameMap[measureEnum] || measureEnum.toString();
+  const measureNameMap: Record<number, string> = {};
+  Object.keys(MeasureProto).forEach((key: string) => {
+    const value = (MeasureProto as any)[key];
+    if (typeof value === "number") {
+      measureNameMap[value] = key;
+    }
+  });
+  return measureNameMap[measureEnum] || measureEnum.toString();
 }
 
 /**
  * Treasury transaction data structure
  */
 export interface TreasuryTransaction {
-    IDENTIFIER: string;
-    TRANSACTION_TYPE: string;
-    TRADE_DATE: Date;
-    MATURITY_DATE?: string;
-    ISSUE_DATE?: string;
-    PRODUCT_TYPE?: string;
-    ADJUSTED_TENOR?: string;
-    DIRECTED_QUANTITY: number;
-    TENOR?: string;
+  IDENTIFIER: string;
+  TRANSACTION_TYPE: string;
+  TRADE_DATE: Date;
+  MATURITY_DATE?: string;
+  ISSUE_DATE?: string;
+  PRODUCT_TYPE?: string;
+  ADJUSTED_TENOR?: string;
+  DIRECTED_QUANTITY: number;
+  TENOR?: string;
 }
 
 /**
@@ -76,22 +76,22 @@ export interface TreasuryTransaction {
  * Equivalent to get_trade_date_filter in Python recon_utils.py
  */
 export function createTradeDateFilter(asOfDate: Date): PositionFilter {
-    const filter = new PositionFilter();
-    filter.addFilter(
-        FieldProto.TRADE_DATE,
-        PositionFilterOperator.LESS_THAN_OR_EQUALS,
-        asOfDate
-    );
-    return filter;
+  const filter = new PositionFilter();
+  filter.addFilter(
+    FieldProto.TRADE_DATE,
+    PositionFilterOperator.LESS_THAN_OR_EQUALS,
+    asOfDate
+  );
+  return filter;
 }
 
 /**
  * Creates a PositionFilter for portfolio name filtering
  */
 export function createPortfolioFilter(): PositionFilter {
-    const filter = new PositionFilter();
-    filter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, PORTFOLIO_NAME);
-    return filter;
+  const filter = new PositionFilter();
+  filter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, PORTFOLIO_NAME);
+  return filter;
 }
 
 /**
@@ -100,56 +100,61 @@ export function createPortfolioFilter(): PositionFilter {
  * Uses field/measure names (like IDENTIFIER, TRADE_DATE) as keys for easier access
  */
 export function positionToPlainObject(position: Position): Record<string, any> {
-    const result: Record<string, any> = {};
+  const result: Record<string, any> = {};
 
-    // TODO: We should use rich types not display types
-    for (const field of position.getFields()) {
-        const fieldName = getFieldName(field.getField());
-        let displayValue: any;
+  // TODO: We should use rich types not display types
+  for (const field of position.getFields()) {
+    const fieldName = getFieldName(field.getField());
+    let displayValue: any;
+    try {
+      displayValue = position.getFieldDisplay(field);
+    } catch (error) {
+      // Handle cases where getFieldDisplay fails (e.g., malformed TENOR descriptions)
+      console.warn(`Error getting field display for ${fieldName}:`, error);
+      try {
+        const rawValue = (position as any).getFieldValue?.(field.getField());
+        displayValue = rawValue?.toString() || "";
+      } catch {
+        displayValue = "";
+      }
+    }
+
+    // For ADJUSTED_TENOR: when display is "Tenor" (the raw type name), try richer sources
+    if (fieldName === "ADJUSTED_TENOR" && displayValue === "Tenor") {
+      // Try getFieldValue first
+      const fieldValue = (position as any).getFieldValue?.(field.getField());
+      if (fieldValue !== undefined && fieldValue !== null) {
+        displayValue = fieldValue;
+      } else {
+        // Try to decode from packed Any StringValue
         try {
-            displayValue = position.getFieldDisplay(field);
-        } catch (error) {
-            // Handle cases where getFieldDisplay fails (e.g., malformed TENOR descriptions)
-            console.warn(`Error getting field display for ${fieldName}:`, error);
-            try {
-                const rawValue = (position as any).getFieldValue?.(field.getField());
-                displayValue = rawValue?.toString() || '';
-            } catch {
-                displayValue = '';
-            }
+          const packed = (field as any).getFieldValuePacked?.();
+          if (packed) {
+            const {
+              StringValue,
+            } = require("google-protobuf/google/protobuf/wrappers_pb");
+            const sv = packed.unpack(
+              StringValue.deserializeBinary,
+              "google.protobuf.StringValue"
+            );
+            if (sv) displayValue = sv.getValue();
+          }
+        } catch {
+          // leave displayValue as-is
         }
-
-        // For ADJUSTED_TENOR: when display is "Tenor" (the raw type name), try richer sources
-        if (fieldName === 'ADJUSTED_TENOR' && displayValue === 'Tenor') {
-            // Try getFieldValue first
-            const fieldValue = (position as any).getFieldValue?.(field.getField());
-            if (fieldValue !== undefined && fieldValue !== null) {
-                displayValue = fieldValue;
-            } else {
-                // Try to decode from packed Any StringValue
-                try {
-                    const packed = (field as any).getFieldValuePacked?.();
-                    if (packed) {
-                        const { StringValue } = require('google-protobuf/google/protobuf/wrappers_pb');
-                        const sv = packed.unpack(StringValue.deserializeBinary, 'google.protobuf.StringValue');
-                        if (sv) displayValue = sv.getValue();
-                    }
-                } catch {
-                    // leave displayValue as-is
-                }
-            }
-        }
-
-        result[fieldName] = displayValue;
+      }
     }
 
-    // Extract measures - use measure name as key
-    for (const measure of position.getMeasures()) {
-        const measureName = getMeasureName(measure.getMeasure());
-        result[measureName] = position.getMeasureValue(measure.getMeasure());
-    }
+    result[fieldName] = displayValue;
+  }
 
-    return result;
+  // Extract measures - use measure name as key
+  for (const measure of position.getMeasures()) {
+    const measureName = getMeasureName(measure.getMeasure());
+    result[measureName] = position.getMeasureValue(measure.getMeasure());
+  }
+
+  return result;
 }
 
 /**
@@ -157,132 +162,136 @@ export function positionToPlainObject(position: Position): Record<string, any> {
  * Equivalent to the data processing in get_transactions in Python data.py
  */
 export function processTransactionData(
-    positions: Position[]
+  positions: Position[]
 ): TreasuryTransaction[] {
-    if (!positions || positions.length === 0) {
-        return [];
-    }
+  if (!positions || positions.length === 0) {
+    return [];
+  }
 
-    // Convert positions to plain objects
-    const plainObjects = positions.map(positionToPlainObject);
+  // Convert positions to plain objects
+  const plainObjects = positions.map(positionToPlainObject);
 
-    // Filter out USD identifiers and convert to TreasuryTransaction format
-    const transactions: TreasuryTransaction[] = positions
-        .map((position, index) => {
-            const obj = plainObjects[index];
-            const identifier = String(obj.IDENTIFIER || '');
+  // Filter out USD identifiers and convert to TreasuryTransaction format
+  const transactions: TreasuryTransaction[] = positions
+    .map((position, index) => {
+      const obj = plainObjects[index];
+      const identifier = String(obj.IDENTIFIER || "");
 
-            // Filter out USD identifiers
-            if (identifier.includes('USD')) {
-                return null;
-            }
+      // Filter out USD identifiers
+      if (identifier.includes("USD")) {
+        return null;
+      }
 
-            // Extract values using field names (matching Python output format)
-            const transactionType = String(obj.TRANSACTION_TYPE || '');
-            const tradeDateStr = obj.TRADE_DATE;
-            const maturityDate = obj.MATURITY_DATE;
-            const issueDate = obj.ISSUE_DATE;
-            const productType = obj.PRODUCT_TYPE;
-            const adjustedTenor = obj.ADJUSTED_TENOR;
-            const directedQuantity = Number(obj.DIRECTED_QUANTITY || 0);
+      // Extract values using field names (matching Python output format)
+      const transactionType = String(obj.TRANSACTION_TYPE || "");
+      const tradeDateStr = obj.TRADE_DATE;
+      const maturityDate = obj.MATURITY_DATE;
+      const issueDate = obj.ISSUE_DATE;
+      const productType = obj.PRODUCT_TYPE;
+      const adjustedTenor = obj.ADJUSTED_TENOR;
+      const directedQuantity = Number(obj.DIRECTED_QUANTITY || 0);
 
-            // Convert TRADE_DATE string to Date object
-            const tradeDate = tradeDateStr ? new Date(tradeDateStr) : new Date();
+      // Convert TRADE_DATE string to Date object
+      const tradeDate = tradeDateStr ? new Date(tradeDateStr) : new Date();
 
-            return {
-                IDENTIFIER: String(identifier),
-                TRANSACTION_TYPE: String(transactionType),
-                TRADE_DATE: tradeDate,
-                MATURITY_DATE: maturityDate ? String(maturityDate) : undefined,
-                ISSUE_DATE: issueDate ? String(issueDate) : undefined,
-                PRODUCT_TYPE: productType ? String(productType) : undefined,
-                ADJUSTED_TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
-                TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
-                DIRECTED_QUANTITY: Number(directedQuantity),
-            };
-        })
-        .filter((txn): txn is TreasuryTransaction => txn !== null);
+      return {
+        IDENTIFIER: String(identifier),
+        TRANSACTION_TYPE: String(transactionType),
+        TRADE_DATE: tradeDate,
+        MATURITY_DATE: maturityDate ? String(maturityDate) : undefined,
+        ISSUE_DATE: issueDate ? String(issueDate) : undefined,
+        PRODUCT_TYPE: productType ? String(productType) : undefined,
+        ADJUSTED_TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
+        TENOR: adjustedTenor ? String(adjustedTenor) : undefined,
+        DIRECTED_QUANTITY: Number(directedQuantity),
+      };
+    })
+    .filter((txn): txn is TreasuryTransaction => txn !== null);
 
-    // Sort by TRADE_DATE ascending
-    transactions.sort((a, b) => a.TRADE_DATE.getTime() - b.TRADE_DATE.getTime());
+  // Sort by TRADE_DATE ascending
+  transactions.sort((a, b) => a.TRADE_DATE.getTime() - b.TRADE_DATE.getTime());
 
-    return transactions;
+  return transactions;
 }
 
 /**
  * Fetches treasury transactions for a given as-of date
  * Equivalent to get_transactions in Python data.py
- * 
+ *
  * @param asOfDate - The as-of date for filtering transactions (defaults to now)
  * @returns Array of TreasuryTransaction objects, or null if no results found
  */
 export async function getTreasuryTransactions(
-    asOfDate: Date = new Date(),
-    apiKey?: string
+  asOfDate: Date = new Date(),
+  apiKey?: string
 ): Promise<TreasuryTransaction[] | null> {
-    const now = ZonedDateTime.now();
+  const now = ZonedDateTime.now();
 
-    // Create combined filter
-    const combinedFilter = new PositionFilter();
-    combinedFilter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, PORTFOLIO_NAME);
-    combinedFilter.addFilter(
-        FieldProto.TRADE_DATE,
-        PositionFilterOperator.LESS_THAN_OR_EQUALS,
-        asOfDate
-    );
+  // Create combined filter
+  const combinedFilter = new PositionFilter();
+  combinedFilter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, PORTFOLIO_NAME);
+  combinedFilter.addFilter(
+    FieldProto.TRADE_DATE,
+    PositionFilterOperator.LESS_THAN_OR_EQUALS,
+    asOfDate
+  );
 
-    // Define required fields and measures
-    const fields: FieldProtoType[] = [
-        FieldProto.IDENTIFIER,
-        FieldProto.TRANSACTION_TYPE,
-        FieldProto.TRADE_DATE,
-        FieldProto.MATURITY_DATE,
-        FieldProto.ISSUE_DATE,
-        FieldProto.PRODUCT_TYPE,
-        // FieldProto.TENOR,
-    ];
+  // Define required fields and measures
+  const fields: FieldProtoType[] = [
+    FieldProto.IDENTIFIER,
+    FieldProto.TRANSACTION_TYPE,
+    FieldProto.TRADE_DATE,
+    FieldProto.MATURITY_DATE,
+    FieldProto.ISSUE_DATE,
+    FieldProto.PRODUCT_TYPE,
+    // FieldProto.TENOR,
+  ];
 
-    const measures: MeasureProtoType[] = [MeasureProto.DIRECTED_QUANTITY];
+  const measures: MeasureProtoType[] = [MeasureProto.DIRECTED_QUANTITY];
 
-    // Create request
-    const request = new QueryPositionRequest(
-        combinedFilter,
-        PositionTypeProto.TRANSACTION,
-        PositionViewProto.DEFAULT_VIEW,
-        fields,
-        measures,
-        now
-    );
+  // Create request
+  const request = new QueryPositionRequest(
+    combinedFilter,
+    PositionTypeProto.TRANSACTION,
+    PositionViewProto.DEFAULT_VIEW,
+    fields,
+    measures,
+    now
+  );
 
-    const conn = getServiceConnection(apiKey);
-    const client = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+  const conn = getServiceConnection(apiKey);
+  const client = new PositionClient(conn.url, conn.credentials, {
+    interceptors: conn.interceptors,
+    ...conn.clientOptions,
+  });
 
-    function streamSearch(): Promise<Position[]> {
-        const listPositions: Position[] = [];
-        const stream = client.search(request.toProto());
-        return new Promise<Position[]>((resolve, reject) => {
-            stream.on('data', (response: QueryPositionResponseProto) => {
-                response.getPositionsList().forEach(p => listPositions.push(new Position(p)));
-            });
-            stream.on('end', () => resolve(listPositions));
-            stream.on('error', (err) => reject(err));
-        });
+  function streamSearch(): Promise<Position[]> {
+    const listPositions: Position[] = [];
+    const stream = client.search(request.toProto());
+    return new Promise<Position[]>((resolve, reject) => {
+      stream.on("data", (response: QueryPositionResponseProto) => {
+        response
+          .getPositionsList()
+          .forEach((p) => listPositions.push(new Position(p)));
+      });
+      stream.on("end", () => resolve(listPositions));
+      stream.on("error", (err) => reject(err));
+    });
+  }
+
+  try {
+    const results: Position[] = await streamSearch();
+
+    if (!results || results.length === 0) {
+      console.log("No results found");
+      return null;
     }
 
-    try {
-        const results: Position[] = await streamSearch();
-
-        if (!results || results.length === 0) {
-            console.log("No results found");
-            return null;
-        }
-
-        // Process and return transactions
-        const transactions = processTransactionData(results);
-        return transactions;
-    } catch (error) {
-        console.error("Error fetching treasury transactions:", error);
-        throw error;
-    }
+    // Process and return transactions
+    const transactions = processTransactionData(results);
+    return transactions;
+  } catch (error) {
+    console.error("Error fetching treasury transactions:", error);
+    throw error;
+  }
 }
-

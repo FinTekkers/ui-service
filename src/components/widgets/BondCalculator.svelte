@@ -1,26 +1,32 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount } from "svelte";
 
-  import type { CashflowEntry } from '$lib/valuation';
-  export let result: import('$lib/valuation').ValuationResult | null = null;
-  export let securities: { cusip: string; issuerName: string; couponRate?: string; maturityDate: string }[] = [];
+  import type { CashflowEntry } from "$lib/valuation";
+  export let result: import("$lib/valuation").ValuationResult | null = null;
+  export let securities: {
+    cusip: string;
+    issuerName: string;
+    couponRate?: string;
+    maturityDate: string;
+  }[] = [];
 
-  type Mode = 'cusip' | 'manual';
-  let mode: Mode = 'cusip';
+  type Mode = "cusip" | "manual";
+  let mode: Mode = "cusip";
 
   // Shared
-  let price = '';
+  let price = "";
 
   // CUSIP mode
-  let cusip = '';
+  let cusip = "";
   let showSuggestions = false;
   let selectedIndex = -1;
 
-  $: filteredSecurities = cusip.length > 0
-    ? securities.filter(s =>
-        s.cusip.toUpperCase().startsWith(cusip.toUpperCase())
-      ).slice(0, 8)
-    : [];
+  $: filteredSecurities =
+    cusip.length > 0
+      ? securities
+          .filter((s) => s.cusip.toUpperCase().startsWith(cusip.toUpperCase()))
+          .slice(0, 8)
+      : [];
 
   function selectCusip(value: string) {
     cusip = value;
@@ -30,91 +36,96 @@
 
   function handleCusipKeydown(e: KeyboardEvent) {
     if (!showSuggestions || filteredSecurities.length === 0) return;
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      selectedIndex = Math.min(selectedIndex + 1, filteredSecurities.length - 1);
-    } else if (e.key === 'ArrowUp') {
+      selectedIndex = Math.min(
+        selectedIndex + 1,
+        filteredSecurities.length - 1
+      );
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       selectedIndex = Math.max(selectedIndex - 1, 0);
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+    } else if (e.key === "Enter" && selectedIndex >= 0) {
       e.preventDefault();
       selectCusip(filteredSecurities[selectedIndex].cusip);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       showSuggestions = false;
     }
   }
 
   function handleCusipBlur() {
     // Delay to allow click on suggestion
-    setTimeout(() => { showSuggestions = false; }, 150);
+    setTimeout(() => {
+      showSuggestions = false;
+    }, 150);
   }
 
   // Manual mode
-  let faceValue = '1000';
-  let couponRate = '';
-  let couponFrequency = 'SEMIANNUALLY';
-  let issueDate = '';
-  let maturityDate = '';
-  let issuerName = '';
+  let faceValue = "1000";
+  let couponRate = "";
+  let couponFrequency = "SEMIANNUALLY";
+  let issueDate = "";
+  let maturityDate = "";
+  let issuerName = "";
 
   onMount(() => {
     const params = new URLSearchParams(window.location.search);
-    const m = params.get('mode');
-    if (m === 'cusip' || m === 'manual') mode = m;
+    const m = params.get("mode");
+    if (m === "cusip" || m === "manual") mode = m;
 
-    price = params.get('price') ?? '';
-    cusip = params.get('cusip') ?? '';
-    faceValue = params.get('faceValue') ?? '1000';
-    couponRate = params.get('couponRate') ?? '';
-    couponFrequency = params.get('couponFrequency') ?? 'SEMIANNUALLY';
-    issueDate = params.get('issueDate') ?? '';
-    maturityDate = params.get('maturityDate') ?? '';
-    issuerName = params.get('issuerName') ?? '';
+    price = params.get("price") ?? "";
+    cusip = params.get("cusip") ?? "";
+    faceValue = params.get("faceValue") ?? "1000";
+    couponRate = params.get("couponRate") ?? "";
+    couponFrequency = params.get("couponFrequency") ?? "SEMIANNUALLY";
+    issueDate = params.get("issueDate") ?? "";
+    maturityDate = params.get("maturityDate") ?? "";
+    issuerName = params.get("issuerName") ?? "";
   });
 
   function calculate() {
     const params = new URLSearchParams({ mode, price });
 
-    if (mode === 'cusip') {
-      if (cusip) params.set('cusip', cusip);
+    if (mode === "cusip") {
+      if (cusip) params.set("cusip", cusip);
     } else {
-      if (faceValue) params.set('faceValue', faceValue);
-      if (couponRate) params.set('couponRate', couponRate);
-      if (couponFrequency) params.set('couponFrequency', couponFrequency);
-      if (issueDate) params.set('issueDate', issueDate);
-      if (maturityDate) params.set('maturityDate', maturityDate);
-      if (issuerName) params.set('issuerName', issuerName);
+      if (faceValue) params.set("faceValue", faceValue);
+      if (couponRate) params.set("couponRate", couponRate);
+      if (couponFrequency) params.set("couponFrequency", couponFrequency);
+      if (issueDate) params.set("issueDate", issueDate);
+      if (maturityDate) params.set("maturityDate", maturityDate);
+      if (issuerName) params.set("issuerName", issuerName);
     }
 
     window.location.href = `/data/calculators?${params.toString()}`;
   }
 
   function formatPercent(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${(n * 100).toFixed(4)}%`;
   }
 
   function formatYears(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(4)} yrs`;
   }
 
   function formatPrice(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `${n.toFixed(4)}`;
   }
 
   function formatDollar(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : `$${n.toFixed(4)}`;
   }
 
   function formatConvexity(val: string | undefined): string {
-    if (!val) return '—';
+    if (!val) return "—";
     const n = parseFloat(val);
     return isNaN(n) ? val : n.toFixed(2);
   }
@@ -127,15 +138,15 @@
   <div class="mode-toggle mb-6">
     <button
       class="mode-btn"
-      class:active={mode === 'cusip'}
-      on:click={() => (mode = 'cusip')}
+      class:active={mode === "cusip"}
+      on:click={() => (mode = "cusip")}
     >
       CUSIP Lookup
     </button>
     <button
       class="mode-btn"
-      class:active={mode === 'manual'}
-      on:click={() => (mode = 'manual')}
+      class:active={mode === "manual"}
+      on:click={() => (mode = "manual")}
     >
       Manual Entry
     </button>
@@ -144,7 +155,7 @@
   <div class="calculator-layout">
     <!-- Inputs -->
     <div class="inputs-panel">
-      {#if mode === 'cusip'}
+      {#if mode === "cusip"}
         <div class="field-group autocomplete-wrapper">
           <label for="cusip">CUSIP</label>
           <input
@@ -153,10 +164,16 @@
             bind:value={cusip}
             placeholder="Start typing a CUSIP..."
             autocomplete="off"
-            on:focus={() => { showSuggestions = true; selectedIndex = -1; }}
+            on:focus={() => {
+              showSuggestions = true;
+              selectedIndex = -1;
+            }}
             on:blur={handleCusipBlur}
             on:keydown={handleCusipKeydown}
-            on:input={() => { showSuggestions = true; selectedIndex = -1; }}
+            on:input={() => {
+              showSuggestions = true;
+              selectedIndex = -1;
+            }}
           />
           {#if showSuggestions && filteredSecurities.length > 0}
             <ul class="suggestions">
@@ -167,7 +184,7 @@
                 >
                   <span class="suggestion-cusip">{sec.cusip}</span>
                   <span class="suggestion-detail">
-                    {sec.couponRate ? sec.couponRate + '%' : 'Zero'} — matures {sec.maturityDate}
+                    {sec.couponRate ? sec.couponRate + "%" : "Zero"} — matures {sec.maturityDate}
                   </span>
                 </li>
               {/each}
@@ -177,11 +194,22 @@
       {:else}
         <div class="field-group">
           <label for="faceValue">Face Value ($)</label>
-          <input id="faceValue" type="number" bind:value={faceValue} placeholder="1000" />
+          <input
+            id="faceValue"
+            type="number"
+            bind:value={faceValue}
+            placeholder="1000"
+          />
         </div>
         <div class="field-group">
           <label for="couponRate">Coupon Rate (%)</label>
-          <input id="couponRate" type="number" step="0.001" bind:value={couponRate} placeholder="e.g. 4.25" />
+          <input
+            id="couponRate"
+            type="number"
+            step="0.001"
+            bind:value={couponRate}
+            placeholder="e.g. 4.25"
+          />
         </div>
         <div class="field-group">
           <label for="couponFrequency">Coupon Frequency</label>
@@ -194,18 +222,27 @@
         </div>
         <div class="field-group">
           <label for="maturityDate">Maturity Date</label>
-          <input id="maturityDate" type="text" bind:value={maturityDate} placeholder="YYYY-MM-DD" />
+          <input
+            id="maturityDate"
+            type="text"
+            bind:value={maturityDate}
+            placeholder="YYYY-MM-DD"
+          />
         </div>
       {/if}
 
       <div class="field-group">
         <label for="price">Price (% of par)</label>
-        <input id="price" type="number" step="0.001" bind:value={price} placeholder="e.g. 98.5" />
+        <input
+          id="price"
+          type="number"
+          step="0.001"
+          bind:value={price}
+          placeholder="e.g. 98.5"
+        />
       </div>
 
-      <button class="calc-button mt-4" on:click={calculate}>
-        Calculate
-      </button>
+      <button class="calc-button mt-4" on:click={calculate}> Calculate </button>
     </div>
 
     <!-- Results -->
@@ -253,7 +290,9 @@
           </tbody>
         </table>
       {:else}
-        <p class="placeholder-msg">Enter inputs and click Calculate to see results.</p>
+        <p class="placeholder-msg">
+          Enter inputs and click Calculate to see results.
+        </p>
       {/if}
     </div>
   </div>
@@ -279,8 +318,20 @@
           {/each}
           <tr class="total-row">
             <td>Total</td>
-            <td class="numeric">{formatPrice(result.cashflows.reduce((s, cf) => s + parseFloat(cf.fvAmount), 0).toString())}</td>
-            <td class="numeric">{formatPrice(result.cashflows.reduce((s, cf) => s + parseFloat(cf.pvAmount), 0).toString())}</td>
+            <td class="numeric"
+              >{formatPrice(
+                result.cashflows
+                  .reduce((s, cf) => s + parseFloat(cf.fvAmount), 0)
+                  .toString()
+              )}</td
+            >
+            <td class="numeric"
+              >{formatPrice(
+                result.cashflows
+                  .reduce((s, cf) => s + parseFloat(cf.pvAmount), 0)
+                  .toString()
+              )}</td
+            >
           </tr>
         </tbody>
       </table>
@@ -339,8 +390,12 @@
     color: $white;
     transition: background 0.15s;
 
-    &:first-child { border-radius: $bd-radius 0 0 $bd-radius; }
-    &:last-child  { border-radius: 0 $bd-radius $bd-radius 0; }
+    &:first-child {
+      border-radius: $bd-radius 0 0 $bd-radius;
+    }
+    &:last-child {
+      border-radius: 0 $bd-radius $bd-radius 0;
+    }
 
     &.active {
       background: $success;
@@ -348,7 +403,7 @@
       font-weight: bold;
     }
     &:not(.active):hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
     }
   }
 
@@ -363,7 +418,8 @@
       color: $white;
     }
 
-    input, select {
+    input,
+    select {
       padding: 4px 10px;
       border: 1px solid $border-color;
       border-radius: 4px;
@@ -373,7 +429,9 @@
       background-color: white;
       color: $black;
 
-      &::placeholder { color: $grey; }
+      &::placeholder {
+        color: $grey;
+      }
     }
   }
 
@@ -406,7 +464,8 @@
       font-size: 0.8rem;
       color: $black;
 
-      &:hover, &.selected {
+      &:hover,
+      &.selected {
         background-color: lighten($primary-color, 40%);
       }
     }
@@ -503,7 +562,8 @@
     width: 100%;
     border-collapse: collapse;
 
-    th, td {
+    th,
+    td {
       padding: 8px 10px;
       font-size: 0.85rem;
     }
@@ -514,7 +574,9 @@
       border-bottom: 2px solid $border-color;
       text-align: left;
 
-      &.numeric { text-align: right; }
+      &.numeric {
+        text-align: right;
+      }
     }
 
     td {

@@ -9,14 +9,17 @@
  * wants), and return par-yields keyed by the constituent's tenor label
  * so per-row joins on `tenor` work.
  */
-import { ValuationClient } from '@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js';
-import { CurveRequestProto, CurveInputProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_request_pb.js';
-import type { CurveResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_response_pb.js';
-import { DecimalValueProto } from '@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js';
-import measure_pkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
-import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
-import { getServiceConnection } from '$lib/grpc-auth';
-import type { CurveConstituent } from '$lib/treasuryCurveData';
+import { ValuationClient } from "@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js";
+import {
+  CurveRequestProto,
+  CurveInputProto,
+} from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_request_pb.js";
+import type { CurveResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_response_pb.js";
+import { DecimalValueProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js";
+import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
+import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { getServiceConnection } from "$lib/grpc-auth";
+import type { CurveConstituent } from "$lib/treasuryCurveData";
 
 const { MeasureProto } = measure_pkg;
 
@@ -25,10 +28,17 @@ function decimal(value: string): DecimalValueProto {
 }
 
 function endOfDayProto(asOf: Date) {
-  const eod = new Date(Date.UTC(
-    asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate(),
-    23, 59, 59, 999,
-  ));
+  const eod = new Date(
+    Date.UTC(
+      asOf.getUTCFullYear(),
+      asOf.getUTCMonth(),
+      asOf.getUTCDate(),
+      23,
+      59,
+      59,
+      999
+    )
+  );
   return ZonedDateTime.from(eod).toProto();
 }
 
@@ -38,10 +48,13 @@ function endOfDayProto(asOf: Date) {
  * tenor. Skipping spot/forward keeps the response small and the
  * client→server payload tighter.
  */
-function buildParYieldRequest(constituents: CurveConstituent[], asOf: Date): CurveRequestProto {
+function buildParYieldRequest(
+  constituents: CurveConstituent[],
+  asOf: Date
+): CurveRequestProto {
   const request = new CurveRequestProto();
-  request.setObjectClass('CurveRequestProto');
-  request.setVersion('0.0.1');
+  request.setObjectClass("CurveRequestProto");
+  request.setVersion("0.0.1");
   request.setAsofDatetime(endOfDayProto(asOf));
   request.setCurveTypesList([MeasureProto.PAR_YIELD]);
   for (const c of constituents) {
@@ -74,7 +87,7 @@ function buildParYieldRequest(constituents: CurveConstituent[], asOf: Date): Cur
 function joinByMaturityYears(
   constituents: CurveConstituent[],
   parPoints: Array<{ years: number; yieldPct: number }>,
-  asOf: Date,
+  asOf: Date
 ): Map<string, number> {
   const out = new Map<string, number>();
   const MS_PER_YEAR = 365.25 * 86400 * 1000;
@@ -86,7 +99,10 @@ function joinByMaturityYears(
     let bestDelta = Number.POSITIVE_INFINITY;
     for (const p of parPoints) {
       const d = Math.abs(p.years - cYears);
-      if (d < bestDelta) { bestDelta = d; best = p; }
+      if (d < bestDelta) {
+        bestDelta = d;
+        best = p;
+      }
     }
     // 0.5y tolerance: smallest inter-bucket gap is 0.5y (6M → 1Y)
     // so cross-matching adjacent buckets is impossible. Day-count /
@@ -109,7 +125,7 @@ function joinByMaturityYears(
 export async function runCurveParYieldsByTenor(
   constituents: CurveConstituent[],
   asOf: Date,
-  apiKey?: string,
+  apiKey?: string
 ): Promise<Map<string, number>> {
   const priced = constituents.filter((c) => c.cleanPrice !== null);
   if (priced.length < 2) return new Map();
@@ -120,12 +136,20 @@ export async function runCurveParYieldsByTenor(
   let response: CurveResponseProto;
   try {
     const conn = getServiceConnection(apiKey);
-    const client = new ValuationClient(conn.url, conn.credentials, { interceptors: conn.interceptors });
+    const client = new ValuationClient(conn.url, conn.credentials, {
+      interceptors: conn.interceptors,
+    });
     response = await new Promise<CurveResponseProto>((resolve, reject) => {
-      client.runCurve(request, (err, resp) => (err ? reject(err) : resolve(resp)));
+      client.runCurve(request, (err, resp) =>
+        err ? reject(err) : resolve(resp)
+      );
     });
   } catch (e: any) {
-    console.warn(`runCurveParYieldsByTenor — RunCurve failed: ${e?.details ?? e?.message ?? e}`);
+    console.warn(
+      `runCurveParYieldsByTenor — RunCurve failed: ${
+        e?.details ?? e?.message ?? e
+      }`
+    );
     return new Map();
   }
 

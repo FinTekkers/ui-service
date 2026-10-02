@@ -3,15 +3,19 @@
  * Handles Register and Login RPCs, API key session management,
  * and authenticated gRPC channel creation.
  */
-import grpc from '@grpc/grpc-js';
-import protoLoader from '@grpc/proto-loader';
-import path from 'path';
-import type { Cookies } from '@sveltejs/kit';
+import grpc from "@grpc/grpc-js";
+import protoLoader from "@grpc/proto-loader";
+import path from "path";
+import type { Cookies } from "@sveltejs/kit";
 
-const BROKER_HOST = process.env.BROKER_HOST ?? 'localhost:80';
-const AUTH_COOKIE = 'ft_api_key';
+const BROKER_HOST = process.env.BROKER_HOST ?? "localhost:80";
+const AUTH_COOKIE = "ft_api_key";
 const AUTH_PROTO_PATH = path.resolve(
-  process.env.BROKER_PROTO_PATH ?? path.join(process.env.HOME ?? '', 'projects/broker-service/proto/auth.proto')
+  process.env.BROKER_PROTO_PATH ??
+    path.join(
+      process.env.HOME ?? "",
+      "projects/broker-service/proto/auth.proto"
+    )
 );
 
 /**
@@ -25,9 +29,9 @@ const AUTH_PROTO_PATH = path.resolve(
  * env var after this module loads (e.g. via process.env mutation or a
  * vi.stubEnv) sees the new value without needing a module-cache reset.
  */
-const TENANT_HEADER = 'x-fintekkers-tenant';
+const TENANT_HEADER = "x-fintekkers-tenant";
 export function getTenantHeaderValue(): string {
-  return process.env.FINTEKKERS_TENANT ?? 'production';
+  return process.env.FINTEKKERS_TENANT ?? "production";
 }
 
 // --- Proto loading (dynamic, no compile needed) ---
@@ -53,7 +57,7 @@ function getAuthClient(): any {
   authClient = new proto.fintekkers.services.auth.Auth(
     BROKER_HOST,
     grpc.credentials.createInsecure(),
-    { interceptors: [getTenantInterceptor()] },
+    { interceptors: [getTenantInterceptor()] }
   );
   return authClient;
 }
@@ -74,19 +78,24 @@ export interface RegisterResult {
   error?: string;
 }
 
-export async function brokerRegister(input: RegisterInput): Promise<RegisterResult> {
+export async function brokerRegister(
+  input: RegisterInput
+): Promise<RegisterResult> {
   try {
     const client = getAuthClient();
     const response = await new Promise<any>((resolve, reject) => {
-      client.register({
-        email: input.email,
-        password: input.password,
-        name: input.name,
-        signupCode: input.signupCode,
-      }, (err: any, resp: any) => {
-        if (err) reject(err);
-        else resolve(resp);
-      });
+      client.register(
+        {
+          email: input.email,
+          password: input.password,
+          name: input.name,
+          signupCode: input.signupCode,
+        },
+        (err: any, resp: any) => {
+          if (err) reject(err);
+          else resolve(resp);
+        }
+      );
     });
 
     return {
@@ -96,13 +105,13 @@ export async function brokerRegister(input: RegisterInput): Promise<RegisterResu
     };
   } catch (error: any) {
     const code = error.code;
-    const detail = error.details ?? error.message ?? 'Registration failed';
+    const detail = error.details ?? error.message ?? "Registration failed";
 
     if (code === grpc.status.INVALID_ARGUMENT) {
       return { success: false, error: detail };
     }
     if (code === grpc.status.ALREADY_EXISTS) {
-      return { success: false, error: 'Email already registered' };
+      return { success: false, error: "Email already registered" };
     }
     return { success: false, error: detail };
   }
@@ -126,13 +135,16 @@ export async function brokerLogin(input: LoginInput): Promise<LoginResult> {
   try {
     const client = getAuthClient();
     const response = await new Promise<any>((resolve, reject) => {
-      client.login({
-        email: input.email,
-        password: input.password,
-      }, (err: any, resp: any) => {
-        if (err) reject(err);
-        else resolve(resp);
-      });
+      client.login(
+        {
+          email: input.email,
+          password: input.password,
+        },
+        (err: any, resp: any) => {
+          if (err) reject(err);
+          else resolve(resp);
+        }
+      );
     });
 
     return {
@@ -143,7 +155,7 @@ export async function brokerLogin(input: LoginInput): Promise<LoginResult> {
       userId: response.userId,
     };
   } catch (error: any) {
-    const detail = error.details ?? error.message ?? 'Login failed';
+    const detail = error.details ?? error.message ?? "Login failed";
     return { success: false, error: detail };
   }
 }
@@ -155,22 +167,33 @@ export interface ProvisionApiKeyResult {
   error?: string;
 }
 
-export async function brokerProvisionApiKey(email: string, name: string, signupCode: string): Promise<ProvisionApiKeyResult> {
+export async function brokerProvisionApiKey(
+  email: string,
+  name: string,
+  signupCode: string
+): Promise<ProvisionApiKeyResult> {
   try {
     const client = getAuthClient();
     const response = await new Promise<any>((resolve, reject) => {
-      client.provisionApiKey({ email, name, signupCode }, (err: any, resp: any) => {
-        if (err) reject(err);
-        else resolve(resp);
-      });
+      client.provisionApiKey(
+        { email, name, signupCode },
+        (err: any, resp: any) => {
+          if (err) reject(err);
+          else resolve(resp);
+        }
+      );
     });
 
     if (response.apiKey) {
-      return { success: true, apiKey: response.apiKey, userId: response.userId };
+      return {
+        success: true,
+        apiKey: response.apiKey,
+        userId: response.userId,
+      };
     }
-    return { success: false, error: response.message ?? 'No API key returned' };
+    return { success: false, error: response.message ?? "No API key returned" };
   } catch (error: any) {
-    const detail = error.details ?? error.message ?? 'Provision failed';
+    const detail = error.details ?? error.message ?? "Provision failed";
     return { success: false, error: detail };
   }
 }
@@ -179,24 +202,28 @@ export async function brokerProvisionApiKey(email: string, name: string, signupC
 
 export function setApiKeyCookie(cookies: Cookies, apiKey: string) {
   cookies.set(AUTH_COOKIE, apiKey, {
-    path: '/',
+    path: "/",
     httpOnly: true,
     secure: import.meta.env.PROD,
-    sameSite: 'lax',
+    sameSite: "lax",
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
 }
 
-export function setUserInfoCookies(cookies: Cookies, name: string, email: string) {
+export function setUserInfoCookies(
+  cookies: Cookies,
+  name: string,
+  email: string
+) {
   const opts = {
-    path: '/',
+    path: "/",
     httpOnly: true,
     secure: import.meta.env.PROD,
-    sameSite: 'lax' as const,
+    sameSite: "lax" as const,
     maxAge: 60 * 60 * 24 * 30,
   };
-  cookies.set('ft_user_name', name, opts);
-  cookies.set('ft_user_email', email, opts);
+  cookies.set("ft_user_name", name, opts);
+  cookies.set("ft_user_email", email, opts);
 }
 
 export function getApiKeyFromCookies(cookies: Cookies): string | undefined {
@@ -204,7 +231,7 @@ export function getApiKeyFromCookies(cookies: Cookies): string | undefined {
 }
 
 export function clearApiKeyCookie(cookies: Cookies) {
-  cookies.delete(AUTH_COOKIE, { path: '/' });
+  cookies.delete(AUTH_COOKIE, { path: "/" });
 }
 
 // --- gRPC metadata injection ---
@@ -214,7 +241,7 @@ export function clearApiKeyCookie(cookies: Cookies) {
  */
 export function createAuthMetadata(apiKey: string): grpc.Metadata {
   const metadata = new grpc.Metadata();
-  metadata.add('x-api-key', apiKey);
+  metadata.add("x-api-key", apiKey);
   return metadata;
 }
 
@@ -226,9 +253,9 @@ export function getAuthenticatedInterceptor(apiKey: string): grpc.Interceptor {
   return (_options, nextCall) => {
     return new grpc.InterceptingCall(nextCall(_options), {
       start(metadata: grpc.Metadata, listener: grpc.Listener, next: Function) {
-        metadata.add('x-api-key', apiKey);
+        metadata.add("x-api-key", apiKey);
         next(metadata, listener);
-      }
+      },
     });
   };
 }
@@ -273,8 +300,8 @@ export function getBrokerURL(): string {
  */
 const GRPC_MAX_RECEIVE_MB = 64;
 const GRPC_CLIENT_OPTIONS: Record<string, number | string> = {
-  'grpc.max_receive_message_length': GRPC_MAX_RECEIVE_MB * 1024 * 1024,
-  'grpc.max_send_message_length': GRPC_MAX_RECEIVE_MB * 1024 * 1024,
+  "grpc.max_receive_message_length": GRPC_MAX_RECEIVE_MB * 1024 * 1024,
+  "grpc.max_send_message_length": GRPC_MAX_RECEIVE_MB * 1024 * 1024,
 };
 
 /**

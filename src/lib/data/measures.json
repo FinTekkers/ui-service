@@ -21,7 +21,13 @@
       "formula": null,
       "units": "Units of the security (shares for equity, face-value dollars for bonds)",
       "category": "input",
-      "applies_to": ["BOND_SECURITY", "TIPS", "FRN", "EQUITY_SECURITY", "CASH_SECURITY"],
+      "applies_to": [
+        "BOND_SECURITY",
+        "TIPS",
+        "FRN",
+        "EQUITY_SECURITY",
+        "CASH_SECURITY"
+      ],
       "model_assumptions": [],
       "implemented": true
     },
@@ -33,10 +39,14 @@
       "formula": "MarketValue = price / 100 * directed_quantity",
       "units": "Dollars (or settlement currency)",
       "category": "valuation",
-      "applies_to": ["BOND_SECURITY", "TIPS", "FRN", "EQUITY_SECURITY", "CASH_SECURITY"],
-      "model_assumptions": [
-        "None — direct mark-to-market calculation"
+      "applies_to": [
+        "BOND_SECURITY",
+        "TIPS",
+        "FRN",
+        "EQUITY_SECURITY",
+        "CASH_SECURITY"
       ],
+      "model_assumptions": ["None — direct mark-to-market calculation"],
       "implemented": true
     },
     {
@@ -47,10 +57,14 @@
       "formula": "Returns the price_input as-is (quoted as % of par for bonds)",
       "units": "Quoted price (% of par for bonds; dollar price for equities)",
       "category": "cost",
-      "applies_to": ["BOND_SECURITY", "TIPS", "FRN", "EQUITY_SECURITY", "CASH_SECURITY"],
-      "model_assumptions": [
-        "None — pass-through of the input price"
+      "applies_to": [
+        "BOND_SECURITY",
+        "TIPS",
+        "FRN",
+        "EQUITY_SECURITY",
+        "CASH_SECURITY"
       ],
+      "model_assumptions": ["None — pass-through of the input price"],
       "implemented": true
     },
     {

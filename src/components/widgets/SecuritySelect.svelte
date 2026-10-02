@@ -65,7 +65,7 @@
         issuerName: issuerNameInput.trim() || undefined,
         productType: productTypeInput || undefined,
         instrumentType: instrumentTypeInput || undefined,
-      },
+      }
     );
 
     window.location.href = url;
@@ -74,7 +74,8 @@
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
 
-    const identifierFromUrl = urlParams.get("identifier") ?? urlParams.get("cusip");
+    const identifierFromUrl =
+      urlParams.get("identifier") ?? urlParams.get("cusip");
     if (identifierFromUrl) identifierInput = identifierFromUrl;
 
     // IdentifierFilter validates the type itself via supportedTypes, but we
@@ -108,7 +109,9 @@
       // M5 / #260: hierarchy-tree names sourced from
       // product_hierarchy.allAssetClasses(). Unknown values drop to
       // empty (clean-slate migration; no legacy free-form shim).
-      if ((ASSET_CLASS_NAMES as readonly string[]).includes(assetClassFromUrl)) {
+      if (
+        (ASSET_CLASS_NAMES as readonly string[]).includes(assetClassFromUrl)
+      ) {
         assetClassInput = assetClassFromUrl as AssetClassName;
       }
     }
@@ -117,12 +120,20 @@
     if (issuerNameFromUrl !== null) issuerNameInput = issuerNameFromUrl;
 
     const productTypeFromUrl = urlParams.get("productType");
-    if (productTypeFromUrl && (PRODUCT_TYPE_NAMES as readonly string[]).includes(productTypeFromUrl)) {
+    if (
+      productTypeFromUrl &&
+      (PRODUCT_TYPE_NAMES as readonly string[]).includes(productTypeFromUrl)
+    ) {
       productTypeInput = productTypeFromUrl as ProductTypeName;
     }
 
     const instrumentTypeFromUrl = urlParams.get("instrumentType");
-    if (instrumentTypeFromUrl && (INSTRUMENT_TYPE_NAMES as readonly string[]).includes(instrumentTypeFromUrl)) {
+    if (
+      instrumentTypeFromUrl &&
+      (INSTRUMENT_TYPE_NAMES as readonly string[]).includes(
+        instrumentTypeFromUrl
+      )
+    ) {
       instrumentTypeInput = instrumentTypeFromUrl as InstrumentTypeName;
     }
   });

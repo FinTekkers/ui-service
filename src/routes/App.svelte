@@ -1,5 +1,5 @@
 <script>
-  import { routes } from '@sveltejs/kit/config';
+  import { routes } from "@sveltejs/kit/config";
 </script>
 
 <main>

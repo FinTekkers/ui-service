@@ -1,4 +1,4 @@
-import type { TreasuryTransaction } from './treasury_positions';
+import type { TreasuryTransaction } from "./treasury_positions";
 import {
   groupByDateAndCategory,
   resampleWeekly,
@@ -17,24 +17,52 @@ import {
   getUniqueCategories,
   fillMissingMonths,
   // adjustDirectedQuantitySign,
-} from './treasury_graph_utils';
+} from "./treasury_graph_utils";
 
 /**
  * Plotly color palettes
  */
 const PLOTLY_COLORS = {
   T10: [
-    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
+    "#1f77b4",
+    "#ff7f0e",
+    "#2ca02c",
+    "#d62728",
+    "#9467bd",
+    "#8c564b",
+    "#e377c2",
+    "#7f7f7f",
+    "#bcbd22",
+    "#17becf",
   ],
   Alphabet: [
-    '#AA0DFE', '#3283FE', '#85660D', '#782AB6', '#565656',
-    '#1C8356', '#16FF32', '#F7E1A0', '#E2E2E2', '#1CBE4F',
-    '#C4451C', '#DEA0FD', '#FE00FA', '#325A9B', '#FEAF16',
-    '#F8A19F', '#90AD1C', '#F6222E', '#1CFFCE', '#2ED9FF',
-    '#B10DA1', '#C075A6', '#FC1CBF', '#B00068', '#FBE426',
-    '#FA0087'
-  ]
+    "#AA0DFE",
+    "#3283FE",
+    "#85660D",
+    "#782AB6",
+    "#565656",
+    "#1C8356",
+    "#16FF32",
+    "#F7E1A0",
+    "#E2E2E2",
+    "#1CBE4F",
+    "#C4451C",
+    "#DEA0FD",
+    "#FE00FA",
+    "#325A9B",
+    "#FEAF16",
+    "#F8A19F",
+    "#90AD1C",
+    "#F6222E",
+    "#1CFFCE",
+    "#2ED9FF",
+    "#B10DA1",
+    "#C075A6",
+    "#FC1CBF",
+    "#B00068",
+    "#FBE426",
+    "#FA0087",
+  ],
 };
 
 /**
@@ -43,13 +71,13 @@ const PLOTLY_COLORS = {
  * - Consistent font + grid styling
  */
 const DARK_THEME = {
-  fontColor: '#edfbfd', // $tealwhite
-  gridColor: 'rgba(237, 251, 253, 0.12)',
-  axisLineColor: 'rgba(237, 251, 253, 0.25)',
-  zeroLineColor: 'rgba(237, 251, 253, 0.25)',
-  paperBg: 'rgba(0,0,0,0)',
-  plotBg: 'rgba(0,0,0,0)',
-  legendBg: 'rgba(0,0,0,0)',
+  fontColor: "#edfbfd", // $tealwhite
+  gridColor: "rgba(237, 251, 253, 0.12)",
+  axisLineColor: "rgba(237, 251, 253, 0.25)",
+  zeroLineColor: "rgba(237, 251, 253, 0.25)",
+  paperBg: "rgba(0,0,0,0)",
+  plotBg: "rgba(0,0,0,0)",
+  legendBg: "rgba(0,0,0,0)",
 } as const;
 
 function darkenAxis(axis: any = {}) {
@@ -63,29 +91,35 @@ function darkenAxis(axis: any = {}) {
   };
 }
 
-function withDarkTheme(layout: any, opts?: { legendBelow?: boolean; margin?: any }) {
+function withDarkTheme(
+  layout: any,
+  opts?: { legendBelow?: boolean; margin?: any }
+) {
   const title =
-    typeof layout.title === 'string'
+    typeof layout.title === "string"
       ? { text: layout.title, font: { color: DARK_THEME.fontColor } }
       : {
-        ...(layout.title ?? {}),
-        font: { color: DARK_THEME.fontColor, ...((layout.title ?? {}).font ?? {}) },
-      };
+          ...(layout.title ?? {}),
+          font: {
+            color: DARK_THEME.fontColor,
+            ...((layout.title ?? {}).font ?? {}),
+          },
+        };
 
   const legendBelow = opts?.legendBelow ?? false;
   const legendDefault = legendBelow
     ? {
-      orientation: 'h',
-      yanchor: 'top',
-      y: -0.75,
-      xanchor: 'center',
-      x: 0.5,
-    }
+        orientation: "h",
+        yanchor: "top",
+        y: -0.75,
+        xanchor: "center",
+        x: 0.5,
+      }
     : {};
 
   const themed: any = {
     ...layout,
-    template: layout.template ?? 'plotly_dark',
+    template: layout.template ?? "plotly_dark",
     title,
     paper_bgcolor: layout.paper_bgcolor ?? DARK_THEME.paperBg,
     plot_bgcolor: layout.plot_bgcolor ?? DARK_THEME.plotBg,
@@ -96,7 +130,10 @@ function withDarkTheme(layout: any, opts?: { legendBelow?: boolean; margin?: any
       ...(layout.legend ?? {}),
       ...(legendDefault as any),
       bgcolor: (layout.legend ?? {}).bgcolor ?? DARK_THEME.legendBg,
-      font: { color: DARK_THEME.fontColor, ...((layout.legend ?? {}).font ?? {}) },
+      font: {
+        color: DARK_THEME.fontColor,
+        ...((layout.legend ?? {}).font ?? {}),
+      },
     },
     margin: {
       t: 80,
@@ -121,9 +158,11 @@ function withDarkTheme(layout: any, opts?: { legendBelow?: boolean; margin?: any
 /**
  * Activity over time - Weekly bar chart showing purchases, sales, and maturations
  */
-export function createActivityOverTimeGraph(transactions: TreasuryTransaction[]) {
+export function createActivityOverTimeGraph(
+  transactions: TreasuryTransaction[]
+) {
   // Group by date and transaction type
-  let grouped = groupByDateAndCategory(transactions, 'TRANSACTION_TYPE');
+  let grouped = groupByDateAndCategory(transactions, "TRANSACTION_TYPE");
 
   // Resample to weekly
   grouped = resampleWeekly(grouped);
@@ -141,49 +180,49 @@ export function createActivityOverTimeGraph(transactions: TreasuryTransaction[])
   const categories = getUniqueCategories(pivot);
 
   // Add BUY trace
-  if (categories.includes('BUY')) {
+  if (categories.includes("BUY")) {
     traces.push({
       x: dates,
-      y: dates.map(d => pivot[d]?.['BUY'] || 0),
-      name: 'Purchases',
-      type: 'bar',
-      marker: { color: PLOTLY_COLORS.T10[0] }
+      y: dates.map((d) => pivot[d]?.["BUY"] || 0),
+      name: "Purchases",
+      type: "bar",
+      marker: { color: PLOTLY_COLORS.T10[0] },
     });
   }
 
   // Add SELL trace
-  if (categories.includes('SELL')) {
+  if (categories.includes("SELL")) {
     traces.push({
       x: dates,
-      y: dates.map(d => pivot[d]?.['SELL'] || 0),
-      name: 'Sales',
-      type: 'bar',
-      marker: { color: PLOTLY_COLORS.T10[1] }
+      y: dates.map((d) => pivot[d]?.["SELL"] || 0),
+      name: "Sales",
+      type: "bar",
+      marker: { color: PLOTLY_COLORS.T10[1] },
     });
   }
 
   // Add MATURATION trace
-  if (categories.includes('MATURATION')) {
+  if (categories.includes("MATURATION")) {
     traces.push({
       x: dates,
-      y: dates.map(d => pivot[d]?.['MATURATION'] || 0),
-      name: 'Maturation',
-      type: 'bar',
-      marker: { color: PLOTLY_COLORS.T10[2] }
+      y: dates.map((d) => pivot[d]?.["MATURATION"] || 0),
+      name: "Maturation",
+      type: "bar",
+      marker: { color: PLOTLY_COLORS.T10[2] },
     });
   }
 
   const layout = withDarkTheme(
     {
-      title: 'Bond purchases over time',
+      title: "Bond purchases over time",
       xaxis: {
-        title: 'Monthly purchases vs. maturing bonds',
+        title: "Monthly purchases vs. maturing bonds",
         tickangle: -45,
       },
       yaxis: {
-        title: 'Face value in $',
+        title: "Face value in $",
       },
-      barmode: 'group',
+      barmode: "group",
     },
     { legendBelow: true }
   );
@@ -194,9 +233,11 @@ export function createActivityOverTimeGraph(transactions: TreasuryTransaction[])
 /**
  * Net activity over time - Monthly bar chart showing net purchases
  */
-export function createNetActivityOverTimeGraph(transactions: TreasuryTransaction[]) {
+export function createNetActivityOverTimeGraph(
+  transactions: TreasuryTransaction[]
+) {
   // Group by date and transaction type
-  let grouped = groupByDateAndCategory(transactions, 'TRANSACTION_TYPE');
+  let grouped = groupByDateAndCategory(transactions, "TRANSACTION_TYPE");
 
   // Resample to monthly
   grouped = resampleMonthly(grouped);
@@ -214,24 +255,24 @@ export function createNetActivityOverTimeGraph(transactions: TreasuryTransaction
 
   const trace = {
     x: dates,
-    y: dates.map(d => totals[d] || 0),
-    name: 'Net purchases',
-    type: 'bar',
-    marker: { color: PLOTLY_COLORS.Alphabet[0] }
+    y: dates.map((d) => totals[d] || 0),
+    name: "Net purchases",
+    type: "bar",
+    marker: { color: PLOTLY_COLORS.Alphabet[0] },
   };
 
   const layout = withDarkTheme(
     {
-      title: 'Net Bond activity over time',
+      title: "Net Bond activity over time",
       xaxis: {
-        title: 'Monthly purchases vs. maturing bonds',
+        title: "Monthly purchases vs. maturing bonds",
         tickangle: -45,
         // standoff: 20
       },
       yaxis: {
-        title: 'Net face value (+ve = QE, -ve = QT)'
-      }
-    },
+        title: "Net face value (+ve = QE, -ve = QT)",
+      },
+    }
     // { legendBelow: true, margin: { b: 120 } }
   );
 
@@ -241,9 +282,11 @@ export function createNetActivityOverTimeGraph(transactions: TreasuryTransaction
 /**
  * Cumulative position - Stacked bars by product type with cumulative sum
  */
-export function createCumulativePositionGraph(transactions: TreasuryTransaction[]) {
+export function createCumulativePositionGraph(
+  transactions: TreasuryTransaction[]
+) {
   // Group by date and product type
-  let grouped = groupByDateAndCategory(transactions, 'PRODUCT_TYPE');
+  let grouped = groupByDateAndCategory(transactions, "PRODUCT_TYPE");
 
   // Resample to monthly
   grouped = resampleMonthly(grouped);
@@ -271,20 +314,21 @@ export function createCumulativePositionGraph(transactions: TreasuryTransaction[
   // Create traces for each product type
   const traces: any[] = productTypes.map((productType, index) => ({
     x: dates,
-    y: dates.map(d => cumulativeTrillions[d]?.[productType] || 0),
+    y: dates.map((d) => cumulativeTrillions[d]?.[productType] || 0),
     name: productType,
-    type: 'bar',
+    type: "bar",
     marker: { color: PLOTLY_COLORS.T10[index % PLOTLY_COLORS.T10.length] },
-    customdata: dates.map(d => totals[d] || 0),
-    hovertemplate: '<b>%{x|%b %Y}</b><br>%{y:.2f} from %{fullData.name}<br><b>Total: %{customdata:.2f}T</b><extra></extra>'
+    customdata: dates.map((d) => totals[d] || 0),
+    hovertemplate:
+      "<b>%{x|%b %Y}</b><br>%{y:.2f} from %{fullData.name}<br><b>Total: %{customdata:.2f}T</b><extra></extra>",
   }));
 
   const layout = withDarkTheme(
     {
-      title: 'Cumulative Monthly Directed Quantity by Product Type',
-      xaxis: { title: 'Month' },
-      yaxis: { title: 'Directed Quantity' },
-      barmode: 'stack'
+      title: "Cumulative Monthly Directed Quantity by Product Type",
+      xaxis: { title: "Month" },
+      yaxis: { title: "Directed Quantity" },
+      barmode: "stack",
     },
     { legendBelow: true }
   );
@@ -292,26 +336,32 @@ export function createCumulativePositionGraph(transactions: TreasuryTransaction[
   return { data: traces, layout };
 }
 const termCategories = [
-  '0 - 3 months',
-  '>3 months - 1 year',
-  '>1 year - 3 years',
-  '>3 years - 5 years',
-  '>5 years - 10 years',
-  '>10 years'
+  "0 - 3 months",
+  ">3 months - 1 year",
+  ">1 year - 3 years",
+  ">3 years - 5 years",
+  ">5 years - 10 years",
+  ">10 years",
 ];
 
 function parseTenorToMonths(tenorStr: string): number {
   // Parse ISO 8601 duration: P2Y, P6M, P2Y6M, etc.
   const iso = /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?$/i.exec(tenorStr);
   if (iso) {
-    const years = parseInt(iso[1] ?? '0') || 0;
-    const months = parseInt(iso[2] ?? '0') || 0;
-    const weeks = parseInt(iso[3] ?? '0') || 0;
+    const years = parseInt(iso[1] ?? "0") || 0;
+    const months = parseInt(iso[2] ?? "0") || 0;
+    const weeks = parseInt(iso[3] ?? "0") || 0;
     return years * 12 + months + Math.round(weeks / 4);
   }
   // Parse "TERM: 5Y1M4W1D" format
   const termMatch = /TERM:\s*(.+)/i.exec(tenorStr);
-  if (termMatch) return parseTenorToMonths(termMatch[1].replace(/(\d+)([YMWD])/gi, 'P$1$2').replace('PD', 'P').replace(/([YMWD])(\d)/g, '$1$2'));
+  if (termMatch)
+    return parseTenorToMonths(
+      termMatch[1]
+        .replace(/(\d+)([YMWD])/gi, "P$1$2")
+        .replace("PD", "P")
+        .replace(/([YMWD])(\d)/g, "$1$2")
+    );
   // Parse "N years", "N months", "N year", "N month"
   const yearMonthMatch = /^(\d+(?:\.\d+)?)\s*(year|yr|y)s?/i.exec(tenorStr);
   if (yearMonthMatch) return Math.round(parseFloat(yearMonthMatch[1]) * 12);
@@ -321,7 +371,9 @@ function parseTenorToMonths(tenorStr: string): number {
   const shortMatch = /^(\d+(?:\.\d+)?)(Y|M)/i.exec(tenorStr);
   if (shortMatch) {
     const n = parseFloat(shortMatch[1]);
-    return shortMatch[2].toUpperCase() === 'Y' ? Math.round(n * 12) : Math.round(n);
+    return shortMatch[2].toUpperCase() === "Y"
+      ? Math.round(n * 12)
+      : Math.round(n);
   }
   // Parse complex like "5Y1M4W1D"
   let totalMonths = 0;
@@ -331,9 +383,15 @@ function parseTenorToMonths(tenorStr: string): number {
     matched = true;
     const n = parseFloat(part[1]);
     switch (part[2].toUpperCase()) {
-      case 'Y': totalMonths += n * 12; break;
-      case 'M': totalMonths += n; break;
-      case 'W': totalMonths += n / 4; break;
+      case "Y":
+        totalMonths += n * 12;
+        break;
+      case "M":
+        totalMonths += n;
+        break;
+      case "W":
+        totalMonths += n / 4;
+        break;
     }
   }
   if (matched) return Math.round(totalMonths);
@@ -354,12 +412,12 @@ function tenorToTermBucket(tenor?: string): string {
   }
 
   // Categorize based on total months
-  if (totalMonths <= 3) return '0 - 3 months';
-  if (totalMonths > 3 && totalMonths <= 12) return '>3 months - 1 year';
-  if (totalMonths > 12 && totalMonths <= 36) return '>1 year - 3 years';
-  if (totalMonths > 36 && totalMonths <= 60) return '>3 years - 5 years';
-  if (totalMonths > 60 && totalMonths <= 120) return '>5 years - 10 years';
-  return '>10 years';
+  if (totalMonths <= 3) return "0 - 3 months";
+  if (totalMonths > 3 && totalMonths <= 12) return ">3 months - 1 year";
+  if (totalMonths > 12 && totalMonths <= 36) return ">1 year - 3 years";
+  if (totalMonths > 36 && totalMonths <= 60) return ">3 years - 5 years";
+  if (totalMonths > 60 && totalMonths <= 120) return ">5 years - 10 years";
+  return ">10 years";
 }
 /**
  * Term activity - Stacked bars by term categories
@@ -377,7 +435,7 @@ export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
   let pivot = pivotTable(grouped);
 
   // Filter from September 2022
-  pivot = filterByStartDate(pivot, '2023-12-01');
+  pivot = filterByStartDate(pivot, "2023-12-01");
 
   // Ensure all term categories exist
   pivot = ensureCategories(pivot, termCategories);
@@ -393,27 +451,27 @@ export function createTermActivityGraph(transactions: TreasuryTransaction[]) {
   // Create traces for each term category
   const traces: any[] = termCategories.map((category, index) => ({
     x: dates,
-    y: dates.map(d => pivot[d]?.[category] || 0),
+    y: dates.map((d) => pivot[d]?.[category] || 0),
     name: category,
-    type: 'bar',
-    marker: { color: PLOTLY_COLORS.T10[index % PLOTLY_COLORS.T10.length] }
+    type: "bar",
+    marker: { color: PLOTLY_COLORS.T10[index % PLOTLY_COLORS.T10.length] },
   }));
 
   const layout = withDarkTheme(
     {
-      title: 'Bond Activity by Term Category',
+      title: "Bond Activity by Term Category",
       xaxis: {
-        title: 'Date',
-        tickangle: -45
+        title: "Date",
+        tickangle: -45,
       },
       yaxis: {
-        title: 'Directed Quantity (Billions)',
-        side: 'left'
+        title: "Directed Quantity (Billions)",
+        side: "left",
       },
-      barmode: 'stack',
+      barmode: "stack",
       legend: {
-        orientation: 'h'
-      }
+        orientation: "h",
+      },
     },
     { legendBelow: true, margin: { b: 180 } } // Increase bottom margin further to accommodate lower 2-row legend
   );
@@ -429,7 +487,6 @@ export function createRecentActivityGraph(
   transactions: TreasuryTransaction[],
   treasuryYieldData?: { dates: string[]; values: number[] }
 ) {
-
   // OPTION 1: Filter to only BUY transactions (purchases only)
   // This might be what "Recent Activity" should show - only new purchases
   // Uncomment the next line and comment out the line after if this is the case:
@@ -440,7 +497,7 @@ export function createRecentActivityGraph(
   const filteredTransactions = transactions;
 
   // Group by date and product type
-  let grouped = groupByDateAndCategory(filteredTransactions, 'PRODUCT_TYPE');
+  let grouped = groupByDateAndCategory(filteredTransactions, "PRODUCT_TYPE");
 
   // Resample to monthly
   grouped = resampleMonthly(grouped);
@@ -449,7 +506,7 @@ export function createRecentActivityGraph(
   let pivot = pivotTable(grouped);
 
   // Filter from September 2022
-  pivot = filterByStartDate(pivot, '2023-12-01');
+  pivot = filterByStartDate(pivot, "2023-12-01");
 
   // Convert to billions
   pivot = convertToBillions(pivot);
@@ -458,7 +515,7 @@ export function createRecentActivityGraph(
 
   // Calculate total
   const totals = calculateTotal(pivot, []);
-  const totalValues = dates.map(d => totals[d] || 0);
+  const totalValues = dates.map((d) => totals[d] || 0);
 
   // Calculate 6-month moving average
   const movingAvg = movingAverage(totalValues, 6);
@@ -469,22 +526,22 @@ export function createRecentActivityGraph(
   // Create traces for each product type
   const traces: any[] = productTypes.map((productType, index) => ({
     x: dates,
-    y: dates.map(d => pivot[d]?.[productType] || 0),
+    y: dates.map((d) => pivot[d]?.[productType] || 0),
     name: productType,
-    type: 'bar',
+    type: "bar",
     marker: { color: PLOTLY_COLORS.T10[index % PLOTLY_COLORS.T10.length] },
-    yaxis: 'y1'
+    yaxis: "y1",
   }));
 
   // Add moving average line
   traces.push({
     x: dates,
     y: movingAvg,
-    name: '6-Month Moving Avg',
-    type: 'scatter',
-    mode: 'lines',
-    line: { color: 'white', width: 2, dash: 'dot' },
-    yaxis: 'y1'
+    name: "6-Month Moving Avg",
+    type: "scatter",
+    mode: "lines",
+    line: { color: "white", width: 2, dash: "dot" },
+    yaxis: "y1",
   });
 
   // Add Treasury yield line if provided
@@ -492,26 +549,26 @@ export function createRecentActivityGraph(
     traces.push({
       x: treasuryYieldData.dates,
       y: treasuryYieldData.values,
-      name: '10-Year Treasury Yield',
-      type: 'scatter',
-      mode: 'lines',
-      line: { color: 'yellow', width: 2 },
-      yaxis: 'y2'
+      name: "10-Year Treasury Yield",
+      type: "scatter",
+      mode: "lines",
+      line: { color: "yellow", width: 2 },
+      yaxis: "y2",
     });
   }
 
   const layout: any = withDarkTheme(
     {
-      title: 'Net Bond Activity by Product Type',
-      xaxis: { title: 'Date', tickangle: -45 },
+      title: "Net Bond Activity by Product Type",
+      xaxis: { title: "Date", tickangle: -45 },
       yaxis: {
-        title: 'Directed Quantity (Billions)',
-        side: 'left'
+        title: "Directed Quantity (Billions)",
+        side: "left",
       },
-      barmode: 'stack',
+      barmode: "stack",
       legend: {
-        orientation: 'h'
-      }
+        orientation: "h",
+      },
     },
     { legendBelow: true, margin: { b: 140 } }
   );
@@ -521,14 +578,13 @@ export function createRecentActivityGraph(
     const minYield = Math.min(...treasuryYieldData.values);
     const maxYield = Math.max(...treasuryYieldData.values);
     layout.yaxis2 = {
-      title: '10-Year Treasury Yield (%)',
-      side: 'right',
-      overlaying: 'y',
+      title: "10-Year Treasury Yield (%)",
+      side: "right",
+      overlaying: "y",
       showgrid: false,
-      range: [minYield * 0.9, maxYield * 1.1]
+      range: [minYield * 0.9, maxYield * 1.1],
     };
   }
 
   return { data: traces, layout };
 }
-

@@ -2,7 +2,7 @@
 </script>
 
 <svelte:head>
-  <title>{'Sign up'}</title>
+  <title>{"Sign up"}</title>
 </svelte:head>
 
 <slot />

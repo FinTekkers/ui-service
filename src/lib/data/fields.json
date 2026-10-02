@@ -17,7 +17,13 @@
       "description": "The unique identifier (UUID) of the entity.",
       "data_type": "UUID",
       "category": "identity",
-      "applies_to": ["security", "portfolio", "transaction", "position", "price"]
+      "applies_to": [
+        "security",
+        "portfolio",
+        "transaction",
+        "position",
+        "price"
+      ]
     },
     {
       "name": "AS_OF",
@@ -26,7 +32,13 @@
       "description": "The timestamp at which this entity's state is observed.",
       "data_type": "ZonedDateTime",
       "category": "identity",
-      "applies_to": ["security", "portfolio", "transaction", "position", "price"]
+      "applies_to": [
+        "security",
+        "portfolio",
+        "transaction",
+        "position",
+        "price"
+      ]
     },
     {
       "name": "EFFECTIVE_DATE",

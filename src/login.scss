@@ -12,7 +12,6 @@
     width: 60vw;
     height: 500px;
 
-
     .branding-form {
       position: absolute;
       left: 40%;
@@ -23,15 +22,12 @@
       justify-content: center;
       align-items: center;
     }
-
   }
 }
 
 .login-container-parent {
-
   .login_container {
     height: 70vh;
-
   }
 }
 
@@ -51,7 +47,8 @@
 .form_container {
   color: $grey;
 
-  p, a {
+  p,
+  a {
     color: inherit;
   }
 
@@ -93,18 +90,14 @@
     p {
       width: 70%;
       color: $primary-color;
-
     }
 
     button {
       font-weight: bold;
       color: $primary-color;
-
     }
   }
 }
-
-
 
 @media screen and (max-width: $breakingpoint_medium) {
   .login-container-parent {
@@ -139,12 +132,10 @@
 
           label:nth-child(1) {
             grid-area: 1/1/1/2;
-
           }
         }
 
         .sign_in_fields {
-
           label {
             height: max-content;
             position: relative;
@@ -155,34 +146,28 @@
               color: $grey;
             }
           }
-
         }
-
 
         .form_btn {
           background-color: $primary-color;
-          transition: all .5s ease-in-out;
+          transition: all 0.5s ease-in-out;
 
           &:hover {
             background-color: $primary-button;
-
           }
         }
 
         .google_OAuth {
           button {
             span {
-              font-size: .8rem;
+              font-size: 0.8rem;
             }
           }
         }
 
-
         .form_headline {
           padding-top: 0;
         }
-
-
       }
 
       .form_headline {
@@ -190,24 +175,9 @@
         margin-bottom: 1em;
         font-size: 1.2rem;
       }
-
-
-
-
     }
-
-
-
   }
-
-
-
-
 }
-
-
-
-
 
 @media screen and (max-width: $breakingpoint_mobile) {
   .login-container-parent {
@@ -218,17 +188,13 @@
         .sign_up_fields {
           label {
             input {
-              font-size: .8rem;
+              font-size: 0.8rem;
               height: 3rem;
-
             }
-
           }
         }
-
       }
     }
-
   }
 
   .loginpage_bgc_overlay {
@@ -243,16 +209,11 @@
 
   .sign_in_fields {
     input {
-      font-size: .8rem;
-
+      font-size: 0.8rem;
     }
   }
 
-
-
-
   form {
-
     .form_container {
       width: 90% !important;
       height: 88%;
@@ -261,7 +222,6 @@
 
       .form_headline {
         margin: 1em 0;
-
       }
     }
 
@@ -287,13 +247,12 @@
       display: flex;
       position: relative;
 
-
       .logo {
         width: 30vw;
         position: absolute;
         top: 25%;
         left: 2.5%;
-        transition: color .5s ease-in-out;
+        transition: color 0.5s ease-in-out;
         cursor: pointer;
         color: $white;
 
@@ -312,7 +271,7 @@
         top: 25%;
         right: 2.5%;
         text-align: right;
-        transition: all .5s ease-in-out;
+        transition: all 0.5s ease-in-out;
         color: $white;
 
         &:hover {
@@ -320,18 +279,13 @@
         }
       }
     }
-
-
-
-
   }
 
   .google_OAuth {
     width: 100%;
 
     span {
-      font-size: .8rem;
+      font-size: 0.8rem;
     }
   }
-
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { formatAmount } from '$lib/formatUtils';
+  import { createEventDispatcher } from "svelte";
+  import { formatAmount } from "$lib/formatUtils";
 
   type SecurityData = {
     identifier: string;
@@ -35,47 +35,47 @@
   // without a UI edit. Map kept terse because the productType name
   // itself is the label — no friendly-string lookup needed.
   const PRODUCT_TYPE_BADGE_CLASSES: Record<string, string> = {
-    CURRENCY: 'badge-cash',
-    MONEY_MARKET_FUND: 'badge-cash',
-    COMMON_STOCK: 'badge-equity',
-    PREFERRED_STOCK: 'badge-equity',
-    ADR: 'badge-equity',
-    ETF: 'badge-equity',
-    TREASURY_NOTE: 'badge-bond',
-    TREASURY_BOND: 'badge-bond',
-    TBILL: 'badge-bond',
-    STRIPS: 'badge-bond',
-    SOVEREIGN_BOND: 'badge-bond',
-    CORP_BOND: 'badge-bond',
-    MUNI_BOND: 'badge-bond',
-    TIPS: 'badge-tips',
-    TREASURY_FRN: 'badge-frn',
-    EQUITY_INDEX: 'badge-index',
-    BOND_INDEX: 'badge-index',
-    COMMODITY_INDEX: 'badge-index',
-    VIX_SPOT: 'badge-index',
-    CPI_SERIES: 'badge-index',
-    SOFR_SERIES: 'badge-index',
+    CURRENCY: "badge-cash",
+    MONEY_MARKET_FUND: "badge-cash",
+    COMMON_STOCK: "badge-equity",
+    PREFERRED_STOCK: "badge-equity",
+    ADR: "badge-equity",
+    ETF: "badge-equity",
+    TREASURY_NOTE: "badge-bond",
+    TREASURY_BOND: "badge-bond",
+    TBILL: "badge-bond",
+    STRIPS: "badge-bond",
+    SOVEREIGN_BOND: "badge-bond",
+    CORP_BOND: "badge-bond",
+    MUNI_BOND: "badge-bond",
+    TIPS: "badge-tips",
+    TREASURY_FRN: "badge-frn",
+    EQUITY_INDEX: "badge-index",
+    BOND_INDEX: "badge-index",
+    COMMODITY_INDEX: "badge-index",
+    VIX_SPOT: "badge-index",
+    CPI_SERIES: "badge-index",
+    SOFR_SERIES: "badge-index",
   };
 
   $: productTypeBadgeClass = security.productType
-    ? (PRODUCT_TYPE_BADGE_CLASSES[security.productType] ?? 'badge-bond')
-    : 'badge-bond';
+    ? PRODUCT_TYPE_BADGE_CLASSES[security.productType] ?? "badge-bond"
+    : "badge-bond";
 
   $: couponDisplay = security.couponRate
     ? `${parseFloat(security.couponRate).toFixed(3)}%`
-    : '—';
+    : "—";
 
   $: faceValueDisplay = security.faceValue
     ? formatAmount(security.faceValue)
-    : '—';
+    : "—";
 
   $: outstandingDisplay = security.outstandingAmount
     ? formatAmount(security.outstandingAmount)
-    : '—';
+    : "—";
 
   function handleDelete() {
-    dispatch('requestDelete', {
+    dispatch("requestDelete", {
       cusip: security.identifier || security.cusip,
       uuidHex: security.uuidHex,
       issuerName: security.issuerName,
@@ -84,7 +84,6 @@
 </script>
 
 <div class="detail-container">
-
   <!-- Header -->
   <div class="detail-header">
     <div class="header-left">
@@ -92,15 +91,23 @@
         <span class="identifier-value">{security.identifier}</span>
         <span class="id-type-tag">{security.identifierType}</span>
         {#if security.productType}
-          <span class="badge {productTypeBadgeClass}">{security.productType}</span>
+          <span class="badge {productTypeBadgeClass}"
+            >{security.productType}</span
+          >
         {/if}
       </div>
       <div class="issuer-name">{security.issuerName}</div>
       <div class="sub-meta">
         {#if security.assetClass}<span>{security.assetClass}</span>{/if}
-        {#if security.productType}<span class="sep">·</span><span>{security.productType}</span>{/if}
-        {#if security.productClass}<span class="sep">·</span><span>{security.productClass}</span>{/if}
-        {#if security.tenor}<span class="sep">·</span><span class="tenor">{security.tenor}</span>{/if}
+        {#if security.productType}<span class="sep">·</span><span
+            >{security.productType}</span
+          >{/if}
+        {#if security.productClass}<span class="sep">·</span><span
+            >{security.productClass}</span
+          >{/if}
+        {#if security.tenor}<span class="sep">·</span><span class="tenor"
+            >{security.tenor}</span
+          >{/if}
       </div>
     </div>
     <div class="header-right">
@@ -112,13 +119,12 @@
 
   <!-- Key metrics -->
   <div class="section-grid">
-
     <div class="card">
       <div class="card-title">Dates</div>
       <div class="field-list">
         <div class="field-row">
           <span class="field-label">Issue Date</span>
-          <span class="field-value">{security.issueDate || '—'}</span>
+          <span class="field-value">{security.issueDate || "—"}</span>
         </div>
         {#if security.datedDate && security.datedDate !== security.issueDate}
           <div class="field-row">
@@ -128,7 +134,9 @@
         {/if}
         <div class="field-row">
           <span class="field-label">Maturity Date</span>
-          <span class="field-value highlight">{security.maturityDate || '—'}</span>
+          <span class="field-value highlight"
+            >{security.maturityDate || "—"}</span
+          >
         </div>
         {#if security.tenor}
           <div class="field-row">
@@ -174,7 +182,7 @@
         </div>
         <div class="field-row">
           <span class="field-label">Settlement CCY</span>
-          <span class="field-value">{security.settlementCurrency || '—'}</span>
+          <span class="field-value">{security.settlementCurrency || "—"}</span>
         </div>
       </div>
     </div>
@@ -184,17 +192,18 @@
       <div class="field-list">
         <div class="field-row">
           <span class="field-label">As Of</span>
-          <span class="field-value">{security.asOf || '—'}</span>
+          <span class="field-value">{security.asOf || "—"}</span>
         </div>
         {#if security.uuidHex}
           <div class="field-row uuid-row">
             <span class="field-label">UUID</span>
-            <span class="field-value uuid-value" title={security.uuidHex}>{security.uuidStr ?? security.uuidHex}</span>
+            <span class="field-value uuid-value" title={security.uuidHex}
+              >{security.uuidStr ?? security.uuidHex}</span
+            >
           </div>
         {/if}
       </div>
     </div>
-
   </div>
 </div>
 
@@ -235,7 +244,7 @@
     font-size: 0.7rem;
     font-weight: 700;
     color: $grey;
-    background-color: rgba(255,255,255,0.06);
+    background-color: rgba(255, 255, 255, 0.06);
     border: 1px solid $border-color;
     border-radius: 3px;
     padding: 2px 7px;
@@ -260,7 +269,9 @@
     gap: 4px;
   }
 
-  .sep { color: $border-color; }
+  .sep {
+    color: $border-color;
+  }
 
   .tenor {
     color: $success;
@@ -278,12 +289,36 @@
     align-self: center;
   }
 
-  .badge-bond  { background-color: #1e4d7b; color: #93c5fd; border: 1px solid #2563eb44; }
-  .badge-tips  { background-color: #3b2f00; color: #fcd34d; border: 1px solid #d9770044; }
-  .badge-frn   { background-color: #1e3a2f; color: #6ee7b7; border: 1px solid #05966444; }
-  .badge-cash  { background-color: #1e3a1e; color: #86efac; border: 1px solid #16a34a44; }
-  .badge-equity{ background-color: #3b1e3a; color: #e879f9; border: 1px solid #a21caf44; }
-  .badge-index { background-color: #2a1e3a; color: #c4b5fd; border: 1px solid #7c3aed44; }
+  .badge-bond {
+    background-color: #1e4d7b;
+    color: #93c5fd;
+    border: 1px solid #2563eb44;
+  }
+  .badge-tips {
+    background-color: #3b2f00;
+    color: #fcd34d;
+    border: 1px solid #d9770044;
+  }
+  .badge-frn {
+    background-color: #1e3a2f;
+    color: #6ee7b7;
+    border: 1px solid #05966444;
+  }
+  .badge-cash {
+    background-color: #1e3a1e;
+    color: #86efac;
+    border: 1px solid #16a34a44;
+  }
+  .badge-equity {
+    background-color: #3b1e3a;
+    color: #e879f9;
+    border: 1px solid #a21caf44;
+  }
+  .badge-index {
+    background-color: #2a1e3a;
+    color: #c4b5fd;
+    border: 1px solid #7c3aed44;
+  }
 
   /* ── Cards ── */
   .section-grid {
@@ -299,7 +334,9 @@
     padding: 18px 20px;
     border-right: 1px solid $border-color;
 
-    &:last-child { border-right: none; }
+    &:last-child {
+      border-right: none;
+    }
   }
 
   .card-title {
@@ -363,6 +400,8 @@
     cursor: pointer;
     transition: background-color 0.15s;
 
-    &:hover { background-color: #a33049; }
+    &:hover {
+      background-color: #a33049;
+    }
   }
 </style>

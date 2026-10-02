@@ -12,4 +12,3 @@
 <style lang="scss">
   @import "../../styles/layout";
 </style>
-

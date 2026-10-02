@@ -1,26 +1,29 @@
-import { FetchTransactionWithFilter, type TransactionData } from "$lib/transactions";
+import {
+  FetchTransactionWithFilter,
+  type TransactionData,
+} from "$lib/transactions";
 import { FieldProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import { PositionFilterOperator } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js";
 import { TransactionTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/transaction/transaction_type_pb.js";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import { PositionClient } from '@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js';
+import { PositionClient } from "@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js";
 import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
-import { getServiceConnection } from '$lib/grpc-auth';
-import { Position } from '@fintekkers/ledger-models/node/wrappers/models/position/position';
-import type { QueryPositionResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_response_pb';
-import { QueryPositionRequest } from '@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest';
-import { QuerySecurityRequestProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js';
-import type { QuerySecurityResponseProto } from '@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_response_pb';
-import { ZonedDateTime } from '@fintekkers/ledger-models/node/wrappers/models/utils/datetime';
-import type { FieldProto as FieldProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/field_pb';
-import type { MeasureProto as MeasureProtoType } from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb';
-import measurePkg from '@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js';
+import { getServiceConnection } from "$lib/grpc-auth";
+import { Position } from "@fintekkers/ledger-models/node/wrappers/models/position/position";
+import type { QueryPositionResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_response_pb";
+import { QueryPositionRequest } from "@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest";
+import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js";
+import type { QuerySecurityResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_response_pb";
+import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import type { FieldProto as FieldProtoType } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
+import type { MeasureProto as MeasureProtoType } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
+import measurePkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 const { MeasureProto } = measurePkg;
-import positionPkg from '@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js';
+import positionPkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
 const { PositionTypeProto, PositionViewProto } = positionPkg;
-import { IdentifierProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb';
-import { IdentifierTypeProto } from '@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb';
-import { Identifier } from '@fintekkers/ledger-models/node/wrappers/models/security/identifier';
+import { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb";
+import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb";
+import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 // M5 / #260: SecurityTypeProto retired. Bond narrowing via wrapper
 // helper; product-type display string via Security.getProductType().
@@ -36,21 +39,30 @@ function createTreasuryTransactionBuyFilter(): PositionFilter {
   const sixWeeksAgo = new Date();
   sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42); // 6 weeks = 42 days
 
-  filter.addFilter(FieldProto.ISSUE_DATE, PositionFilterOperator.MORE_THAN, sixWeeksAgo);
+  filter.addFilter(
+    FieldProto.ISSUE_DATE,
+    PositionFilterOperator.MORE_THAN,
+    sixWeeksAgo
+  );
   filter.addEqualsFilter(FieldProto.TRANSACTION_TYPE, TransactionTypeProto.BUY);
 
   return filter;
 }
 
-function createTreasuryTransactionMaturityFilter(transactionType: TransactionTypeProto): PositionFilter {
+function createTreasuryTransactionMaturityFilter(
+  transactionType: TransactionTypeProto
+): PositionFilter {
   const filter = new PositionFilter();
   filter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
 
   const sixWeeksAgo = new Date();
   sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42); // 6 weeks = 42 days
 
-
-  filter.addFilter(FieldProto.MATURITY_DATE, PositionFilterOperator.MORE_THAN, sixWeeksAgo);
+  filter.addFilter(
+    FieldProto.MATURITY_DATE,
+    PositionFilterOperator.MORE_THAN,
+    sixWeeksAgo
+  );
   // filter.addFilter(FieldProto.TRADE_DATE, PositionFilterOperator.MORE_THAN, sixWeeksAgo);
   filter.addEqualsFilter(FieldProto.TRANSACTION_TYPE, transactionType);
 
@@ -60,11 +72,20 @@ function createTreasuryTransactionMaturityFilter(transactionType: TransactionTyp
 /**
  * Fetches transactions using position service and converts to TransactionData format
  */
-async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: string): Promise<TransactionData[]> {
+async function fetchTransactionsFromPositions(
+  filter: PositionFilter,
+  apiKey?: string
+): Promise<TransactionData[]> {
   try {
     const conn = getServiceConnection(apiKey);
-    const positionClient = new PositionClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
-    const securityClient = new SecurityClient(conn.url, conn.credentials, { interceptors: conn.interceptors, ...conn.clientOptions });
+    const positionClient = new PositionClient(conn.url, conn.credentials, {
+      interceptors: conn.interceptors,
+      ...conn.clientOptions,
+    });
+    const securityClient = new SecurityClient(conn.url, conn.credentials, {
+      interceptors: conn.interceptors,
+      ...conn.clientOptions,
+    });
     const now = ZonedDateTime.now();
 
     // Define fields to request: IDENTIFIER and TRANSACTION_TYPE as required
@@ -88,15 +109,19 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
     );
 
     // Search positions
-    const positions: Position[] = await new Promise<Position[]>((resolve, reject) => {
-      const list: Position[] = [];
-      const stream = positionClient.search(request.toProto());
-      stream.on('data', (response: QueryPositionResponseProto) => {
-        response.getPositionsList().forEach(p => list.push(new Position(p)));
-      });
-      stream.on('end', () => resolve(list));
-      stream.on('error', (err) => reject(err));
-    });
+    const positions: Position[] = await new Promise<Position[]>(
+      (resolve, reject) => {
+        const list: Position[] = [];
+        const stream = positionClient.search(request.toProto());
+        stream.on("data", (response: QueryPositionResponseProto) => {
+          response
+            .getPositionsList()
+            .forEach((p) => list.push(new Position(p)));
+        });
+        stream.on("end", () => resolve(list));
+        stream.on("error", (err) => reject(err));
+      }
+    );
 
     if (positions.length === 0) {
       return [];
@@ -105,35 +130,52 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
     // Process positions and fetch security details
     const transactionDataPromises = positions.map(async (position) => {
       // Extract identifier from position using getFieldValue to get the Identifier object
-      const identifierField = position.getFields().find(f => f.getField() === FieldProto.IDENTIFIER);
+      const identifierField = position
+        .getFields()
+        .find((f) => f.getField() === FieldProto.IDENTIFIER);
       if (!identifierField) {
         return null;
       }
 
       // Get the Identifier object from getFieldValue, then extract the value
-      const identifierObj = position.getFieldValue(FieldProto.IDENTIFIER) as Identifier | null | undefined;
+      const identifierObj = position.getFieldValue(FieldProto.IDENTIFIER) as
+        | Identifier
+        | null
+        | undefined;
       if (!identifierObj) {
         return null;
       }
 
       // Extract the identifier value from the Identifier object
       let identifierStr: string;
-      if (typeof identifierObj.getIdentifierValue === 'function') {
+      if (typeof identifierObj.getIdentifierValue === "function") {
         identifierStr = identifierObj.getIdentifierValue();
       } else {
         return null;
       }
 
-      if (!identifierStr || identifierStr.trim() === '' || identifierStr.includes('USD')) {
+      if (
+        !identifierStr ||
+        identifierStr.trim() === "" ||
+        identifierStr.includes("USD")
+      ) {
         return null;
       }
 
       // Extract other fields from position
-      const transactionTypeField = position.getFields().find(f => f.getField() === FieldProto.TRANSACTION_TYPE);
-      const transactionType = transactionTypeField ? position.getFieldDisplay(transactionTypeField) : '';
+      const transactionTypeField = position
+        .getFields()
+        .find((f) => f.getField() === FieldProto.TRANSACTION_TYPE);
+      const transactionType = transactionTypeField
+        ? position.getFieldDisplay(transactionTypeField)
+        : "";
 
-      const tradeDateField = position.getFields().find(f => f.getField() === FieldProto.TRADE_DATE);
-      const tradeDate = tradeDateField ? position.getFieldDisplay(tradeDateField) : '';
+      const tradeDateField = position
+        .getFields()
+        .find((f) => f.getField() === FieldProto.TRADE_DATE);
+      const tradeDate = tradeDateField
+        ? position.getFieldDisplay(tradeDateField)
+        : "";
 
       const quantity = position.getMeasureValue(MeasureProto.DIRECTED_QUANTITY);
 
@@ -148,24 +190,29 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
       let security: Security | null = null;
       try {
         const secReq = new QuerySecurityRequestProto();
-        secReq.setObjectClass('SecurityRequest');
-        secReq.setVersion('0.0.1');
+        secReq.setObjectClass("SecurityRequest");
+        secReq.setVersion("0.0.1");
         secReq.setAsOf(ZonedDateTime.now().toProto());
         secReq.setSearchSecurityInput(securityFilter.toProto());
         const securities = await new Promise<Security[]>((resolve, reject) => {
           const list: Security[] = [];
           const stream = securityClient.search(secReq);
-          stream.on('data', (response: QuerySecurityResponseProto) => {
-            response.getSecurityResponseList().forEach(s => list.push(Security.create(s)));
+          stream.on("data", (response: QuerySecurityResponseProto) => {
+            response
+              .getSecurityResponseList()
+              .forEach((s) => list.push(Security.create(s)));
           });
-          stream.on('end', () => resolve(list));
-          stream.on('error', (err) => reject(err));
+          stream.on("end", () => resolve(list));
+          stream.on("error", (err) => reject(err));
         });
         if (securities && securities.length > 0) {
           security = securities[0];
         }
       } catch (error) {
-        console.error(`Error fetching security for identifier ${identifierStr}:`, error);
+        console.error(
+          `Error fetching security for identifier ${identifierStr}:`,
+          error
+        );
       }
 
       if (!security) {
@@ -180,25 +227,27 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
       // Build TransactionData
       return {
         transactionId: identifierStr,
-        transactionSettlementDate: '',
-        transactionIssuerName: security.getIssuerName() ?? '',
-        transactionIssueDate: security.getIssueDate()?.toString() ?? '',
-        transactionQuantity: quantity?.toString() ?? '0',
-        transactionProductType: security.getProductType() ?? '',
-        transactionProductClass: security.proto.getAssetClass() ?? '',
+        transactionSettlementDate: "",
+        transactionIssuerName: security.getIssuerName() ?? "",
+        transactionIssueDate: security.getIssueDate()?.toString() ?? "",
+        transactionQuantity: quantity?.toString() ?? "0",
+        transactionProductType: security.getProductType() ?? "",
+        transactionProductClass: security.proto.getAssetClass() ?? "",
         // M5 / #260: this field historically duplicated productType
         // for legacy consumers. Now that productType IS the canonical
         // name, this slot just mirrors it. Field-name kept for the
         // existing UI binding; deprecated in favour of
         // transactionProductType.
-        transactionSecurityType: security.getProductType() ?? '',
-        transactionCouponRate: bondSecurity?.getCouponRate()?.toString() ?? '',
-        transactionCouponType: bondSecurity?.getCouponType().name() ?? '',
-        transactionTenor: bondSecurity?.getTenor(asOfDate).getTenorDescription() ?? '',
-        transactionCouponFrequency: bondSecurity?.getCouponFrequency()?.toString() ?? '',
-        transactionMaturityDate: security.getMaturityDate()?.toString() ?? '',
+        transactionSecurityType: security.getProductType() ?? "",
+        transactionCouponRate: bondSecurity?.getCouponRate()?.toString() ?? "",
+        transactionCouponType: bondSecurity?.getCouponType().name() ?? "",
+        transactionTenor:
+          bondSecurity?.getTenor(asOfDate).getTenorDescription() ?? "",
+        transactionCouponFrequency:
+          bondSecurity?.getCouponFrequency()?.toString() ?? "",
+        transactionMaturityDate: security.getMaturityDate()?.toString() ?? "",
         transactionTradeDate: tradeDate,
-        transactionSide: transactionType ?? ''
+        transactionSide: transactionType ?? "",
       };
     });
 
@@ -219,14 +268,19 @@ async function fetchTransactionsFromPositions(filter: PositionFilter, apiKey?: s
  * BUY and MATURATION_OFFSET should be positive, MATURATION should be negative.
  * The server provides absolute numbers, so we apply the appropriate sign.
  */
-function adjustQuantityDirection(transactions: TransactionData[], shouldBeNegative: boolean): TransactionData[] {
-  return transactions.map(txn => {
-    const quantity = parseFloat(txn.transactionQuantity || '0');
+function adjustQuantityDirection(
+  transactions: TransactionData[],
+  shouldBeNegative: boolean
+): TransactionData[] {
+  return transactions.map((txn) => {
+    const quantity = parseFloat(txn.transactionQuantity || "0");
     const absoluteQuantity = Math.abs(quantity);
-    const directionalQuantity = shouldBeNegative ? -absoluteQuantity : absoluteQuantity;
+    const directionalQuantity = shouldBeNegative
+      ? -absoluteQuantity
+      : absoluteQuantity;
     return {
       ...txn,
-      transactionQuantity: directionalQuantity.toString()
+      transactionQuantity: directionalQuantity.toString(),
     };
   });
 }
@@ -235,19 +289,22 @@ function adjustQuantityDirection(transactions: TransactionData[], shouldBeNegati
  * Combines two transaction lists by CUSIP, summing quantities where there are duplicates.
  * Returns a single entry per CUSIP with the summed quantity.
  */
-function combineTransactionsByCusip(transactions1: TransactionData[], transactions2: TransactionData[]): TransactionData[] {
+function combineTransactionsByCusip(
+  transactions1: TransactionData[],
+  transactions2: TransactionData[]
+): TransactionData[] {
   // Create a map to group by CUSIP (transactionId)
   const cusipMap = new Map<string, TransactionData>();
 
   // Process first list
   for (const txn of transactions1) {
     const cusip = txn.transactionId;
-    const quantity = parseFloat(txn.transactionQuantity || '0');
+    const quantity = parseFloat(txn.transactionQuantity || "0");
 
     if (cusipMap.has(cusip)) {
       // Add to existing quantity
       const existing = cusipMap.get(cusip)!;
-      const existingQuantity = parseFloat(existing.transactionQuantity || '0');
+      const existingQuantity = parseFloat(existing.transactionQuantity || "0");
       existing.transactionQuantity = (existingQuantity + quantity).toString();
     } else {
       // Create new entry
@@ -258,12 +315,12 @@ function combineTransactionsByCusip(transactions1: TransactionData[], transactio
   // Process second list
   for (const txn of transactions2) {
     const cusip = txn.transactionId;
-    const quantity = parseFloat(txn.transactionQuantity || '0');
+    const quantity = parseFloat(txn.transactionQuantity || "0");
 
     if (cusipMap.has(cusip)) {
       // Add to existing quantity
       const existing = cusipMap.get(cusip)!;
-      const existingQuantity = parseFloat(existing.transactionQuantity || '0');
+      const existingQuantity = parseFloat(existing.transactionQuantity || "0");
       existing.transactionQuantity = (existingQuantity + quantity).toString();
     } else {
       // Create new entry
@@ -285,23 +342,42 @@ export async function load({ locals }) {
   const apiKey = locals.user?.apiKey;
 
   // Fetch MATURATION transactions - should be negative (using position service)
-  const filter2 = createTreasuryTransactionMaturityFilter(TransactionTypeProto.MATURATION);
-  let maturationTransactions = await fetchTransactionsFromPositions(filter2, apiKey);
-  maturationTransactions = adjustQuantityDirection(maturationTransactions, true);
+  const filter2 = createTreasuryTransactionMaturityFilter(
+    TransactionTypeProto.MATURATION
+  );
+  let maturationTransactions = await fetchTransactionsFromPositions(
+    filter2,
+    apiKey
+  );
+  maturationTransactions = adjustQuantityDirection(
+    maturationTransactions,
+    true
+  );
 
   // Fetch MATURATION_OFFSET transactions - should be positive (using position service)
-  const filter3 = createTreasuryTransactionMaturityFilter(TransactionTypeProto.MATURATION_OFFSET);
-  let maturationTransactions2 = await fetchTransactionsFromPositions(filter3, apiKey);
-  maturationTransactions2 = adjustQuantityDirection(maturationTransactions2, false);
+  const filter3 = createTreasuryTransactionMaturityFilter(
+    TransactionTypeProto.MATURATION_OFFSET
+  );
+  let maturationTransactions2 = await fetchTransactionsFromPositions(
+    filter3,
+    apiKey
+  );
+  maturationTransactions2 = adjustQuantityDirection(
+    maturationTransactions2,
+    false
+  );
 
   // Combine MATURATION and MATURATION_OFFSET transactions by CUSIP, summing quantities
-  const combinedMaturationTransactions = combineTransactionsByCusip(maturationTransactions, maturationTransactions2);
+  const combinedMaturationTransactions = combineTransactionsByCusip(
+    maturationTransactions,
+    maturationTransactions2
+  );
 
   // Concatenate all transactions
   const transactions = buyTransactions.concat(combinedMaturationTransactions);
 
   return {
     transactions: transactions,
-    user: locals.user
+    user: locals.user,
   };
 }
