@@ -132,6 +132,7 @@ export function positionToPlainObject(position: Position): Record<string, any> {
           if (packed) {
             const {
               StringValue,
+              // eslint-disable-next-line @typescript-eslint/no-var-requires -- lazy load inside try/catch; a static import would change module loading.
             } = require("google-protobuf/google/protobuf/wrappers_pb");
             const sv = packed.unpack(
               StringValue.deserializeBinary,

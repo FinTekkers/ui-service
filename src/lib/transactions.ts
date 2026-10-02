@@ -67,7 +67,7 @@ interface TransactionData {
   transactionPrice: string;
 }
 
-let FetchTransactionWithFilter = async function FetchTransactionWithFilter(
+const FetchTransactionWithFilter = async function FetchTransactionWithFilter(
   filter: positionFilter.PositionFilter,
   apiKey?: string
 ): Promise<TransactionData[]> {
@@ -210,7 +210,7 @@ function applyTradeDateFilter(
   filter.addFilter(FieldProto.TRADE_DATE, operator, tradeDateObj);
 }
 
-let FetchTransaction = async function FetchTransaction(
+const FetchTransaction = async function FetchTransaction(
   apiKey?: string,
   tradeDate?: string,
   tradeDateOperator?: string
@@ -221,7 +221,7 @@ let FetchTransaction = async function FetchTransaction(
   return FetchTransactionWithFilter(filter, apiKey);
 };
 
-let FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(
+const FetchTransactionByPortfolio = async function FetchTransactionByPortfolio(
   portfolioId: string,
   apiKey?: string,
   tradeDate?: string,
