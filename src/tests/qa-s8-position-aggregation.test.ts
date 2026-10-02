@@ -63,13 +63,11 @@ vi.mock(
 );
 
 vi.mock("$lib/grpc-auth", () => ({
-  getServiceConnection: vi
-    .fn()
-    .mockReturnValue({
-      url: "localhost:80",
-      credentials: {},
-      interceptors: [],
-    }),
+  getServiceConnection: vi.fn().mockReturnValue({
+    url: "localhost:80",
+    credentials: {},
+    interceptors: [],
+  }),
 }));
 
 vi.mock(

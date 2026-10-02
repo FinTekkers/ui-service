@@ -252,9 +252,7 @@ beforeAll(async () => {
  * full whenever the universe is populated.
  */
 
-async function findValidatableSecurity(
-  apiKeyArg: string
-): Promise<{
+async function findValidatableSecurity(apiKeyArg: string): Promise<{
   identifier: string;
   identifierType: string;
   uuidHex: string;
