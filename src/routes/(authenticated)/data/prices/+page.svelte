@@ -24,12 +24,16 @@
   // so we translate at the URL boundary in `navigateTo` and on initial
   // load below. Keeping the URL convention preserves existing bookmarks.
   const PROTO_TO_URL: Record<IdentifierTypeName, string> = {
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     CUSIP: 'cusip',
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     EXCH_TICKER: 'ticker',
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     ISIN: 'isin',
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     SERIES_ID: 'series',
     // Not currently surfaced on /data/prices but defined for completeness;
@@ -64,6 +68,7 @@
 
   // Order matters in the dropdown — keep CUSIP first so legacy users on
   // the default "no params" landing don't get a surprise type change.
+  // Source text asserted by src/tests/prices-default-10y.test.ts.
   // prettier-ignore
   const PRICES_SUPPORTED_TYPES: readonly IdentifierTypeName[] = [
     'CUSIP',
@@ -91,8 +96,10 @@
 
   function navigateTo(type: IdentifierTypeName, id: string) {
     const u = new URL("/data/prices", window.location.origin);
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     u.searchParams.set('type', PROTO_TO_URL[type]);
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     u.searchParams.set('id', id);
     window.location.href = u.pathname + u.search;
@@ -117,6 +124,7 @@
   }
 
   function handleKeydown(e: KeyboardEvent, filtered: UniverseEntry[]) {
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -124,6 +132,7 @@
       return;
     }
     if (!showSuggestions || filtered.length === 0) return;
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -157,6 +166,7 @@
   // chartPrices changes after initial render.
   onMount(async () => {
     if (chartPrices.length === 0 || !chartEl) return;
+    // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     const Plotly: any =
       ((await import('plotly.js-dist')) as any).default ??
@@ -179,6 +189,7 @@
         gridcolor: "#164e63",
         rangeslider: { visible: true, bgcolor: "#0a2e38", thickness: 0.05 },
         rangeselector: {
+          // Source text asserted by src/tests/prices-default-10y.test.ts.
           // prettier-ignore
           buttons: [
             { count: 1, label: '1M', step: 'month', stepmode: 'backward' },

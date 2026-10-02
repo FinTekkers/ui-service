@@ -55,6 +55,7 @@
   // so onMount fires fresh per visit. No reactive re-render needed.
   onMount(async () => {
     if (data.cpiData.length === 0 || !chartEl) return;
+    // Source text asserted by src/tests/cpi-index-display.test.ts.
     // prettier-ignore
     const Plotly: any =
       ((await import('plotly.js-dist')) as any).default ??
@@ -63,6 +64,7 @@
       x: data.cpiData.map((d) => d.date),
       y: data.cpiData.map((d) => d.value),
       mode: "lines",
+      // Source text asserted by src/tests/cpi-index-display.test.ts.
       // prettier-ignore
       line: { color: '#7cd2ba', width: 1.5 },
       hovertemplate: "%{x}<br>%{y:.3f}<extra></extra>",
@@ -73,6 +75,7 @@
       plot_bgcolor: "#0c3a46",
       font: { color: "#a0adb7", size: 11 },
       margin: { t: 30, r: 20, b: 50, l: 60 },
+      // Source text asserted by src/tests/cpi-index-display.test.ts.
       // prettier-ignore
       hovermode: 'x unified',
       xaxis: {

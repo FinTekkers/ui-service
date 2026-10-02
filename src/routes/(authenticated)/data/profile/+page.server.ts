@@ -9,6 +9,7 @@ import {
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, cookies }) {
   const user = locals.user;
+  // Source text asserted by src/tests/profile-fixes-39.test.ts.
   // prettier-ignore
   const apiKey = getApiKeyFromCookies(cookies) ?? '';
 
@@ -30,8 +31,10 @@ export const actions = {
 
   regenerateKey: async ({ request, cookies }) => {
     const formData = await request.formData();
+    // Source text asserted by src/tests/profile-fixes-39.test.ts.
     // prettier-ignore
     const email = formData.get('email')?.toString() ?? '';
+    // Source text asserted by src/tests/profile-fixes-39.test.ts.
     // prettier-ignore
     const password = formData.get('password')?.toString() ?? '';
 

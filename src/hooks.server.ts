@@ -27,6 +27,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   // Fall back to legacy Google OAuth session auth
+  // Source text asserted by src/tests/profile-fixes-39.test.ts.
   // prettier-ignore
   const sessionCookie = event.cookies.get('session');
 

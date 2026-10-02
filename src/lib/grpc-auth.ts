@@ -9,6 +9,7 @@ import path from "path";
 import type { Cookies } from "@sveltejs/kit";
 
 const BROKER_HOST = process.env.BROKER_HOST ?? "localhost:80";
+// Source text asserted by src/tests/profile-fixes-39.test.ts.
 // prettier-ignore
 const AUTH_COOKIE = 'ft_api_key';
 const AUTH_PROTO_PATH = path.resolve(
@@ -203,10 +204,12 @@ export async function brokerProvisionApiKey(
 
 export function setApiKeyCookie(cookies: Cookies, apiKey: string) {
   cookies.set(AUTH_COOKIE, apiKey, {
+    // Source text asserted by src/tests/profile-fixes-39.test.ts.
     // prettier-ignore
     path: '/',
     httpOnly: true,
     secure: import.meta.env.PROD,
+    // Source text asserted by src/tests/profile-fixes-39.test.ts.
     // prettier-ignore
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30, // 30 days

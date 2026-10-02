@@ -95,6 +95,7 @@
           </button>
         {:else}
           <div class="confirm-row">
+            <!-- Source text asserted by src/tests/profile-fixes-39.test.ts. -->
             <!-- prettier-ignore -->
             <span class="confirm-text">This will invalidate your current key. Enter your credentials to confirm.</span>
           </div>
@@ -109,8 +110,10 @@
             }}
           >
             <div class="regen-form">
+              <!-- Source text asserted by src/tests/profile-fixes-39.test.ts. -->
               <!-- prettier-ignore -->
               <input type="email" name="email" placeholder="Email" required class="regen-input" />
+              <!-- Source text asserted by src/tests/profile-fixes-39.test.ts. -->
               <!-- prettier-ignore -->
               <input type="password" name="password" placeholder="Password" required class="regen-input" />
               <div class="confirm-row">
@@ -128,6 +131,7 @@
       </div>
     {:else}
       <div class="no-key-notice">
+        <!-- Source text asserted by src/tests/profile-fixes-39.test.ts. -->
         <!-- prettier-ignore -->
         <p>No API key available. Register with an email and password at <a href="/register">/register</a> to get an API key for API access.</p>
       </div>
