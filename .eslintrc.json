@@ -1,13 +1,81 @@
 {
-    "env": {
-        "browser": true,
-        "es2021": true
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2017": true,
+    "node": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "extraFileExtensions": [".svelte"]
+  },
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:svelte/recommended",
+    "prettier"
+  ],
+  // Generated output only.
+  "ignorePatterns": [
+    ".svelte-kit/",
+    "build/",
+    "node_modules/",
+    "test-results/",
+    "playwright-report/",
+    "*.timestamp-*.mjs"
+  ],
+  "rules": {
+    // TypeScript already resolves names; no-undef misreads TS globals such as App.Locals and NodeListOf.
+    "no-undef": "off",
+    // Empty catch blocks deliberately skip optional proto getters (src/lib/security.ts).
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    // _-prefixed names are intentionally unused, e.g. _frame in svelte.config.js onwarn.
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
+    // Explicit annotations on Svelte props document their API; removing 57 of them is churn, not a fix.
+    "@typescript-eslint/no-inferrable-types": "off",
+    // `Function` types gRPC interceptor callbacks and test mocks; narrowing them is a typing refactor.
+    "@typescript-eslint/ban-types": [
+      "error",
+      { "types": { "Function": false }, "extendDefaults": true }
+    ],
+    // Compiler warnings (a11y, unused export let) are already reported by svelte-check.
+    "svelte/valid-compile": ["error", { "ignoreWarnings": true }]
+  },
+  "overrides": [
+    {
+      "files": ["*.svelte"],
+      "parser": "svelte-eslint-parser",
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser"
+      }
     },
-    "extends": "standard-with-typescript",
-    "parserOptions": {
-        "ecmaVersion": "latest",
-        "sourceType": "module"
+    // No rules: this entry makes ESLint 8 `eslint .` pick up .ts/.mjs/.cjs files, which it skips otherwise.
+    {
+      "files": ["*.ts", "*.mjs", "*.cjs"]
     },
-    "rules": {
+    {
+      "files": ["*.cjs"],
+      "rules": {
+        // CommonJS scripts load modules with require() by design.
+        "@typescript-eslint/no-var-requires": "off"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "src/tests/**", "tests/**"],
+      "rules": {
+        // Playwright fixtures need `async ({}, testInfo)`; tests may only be reformatted in this item.
+        "no-empty-pattern": "off",
+        // Escaped quotes in test fixture strings; tests may only be reformatted in this item.
+        "no-useless-escape": "off",
+        // Empty mock constructors in test doubles; tests may only be reformatted in this item.
+        "@typescript-eslint/no-empty-function": "off"
+      }
     }
+  ]
 }
