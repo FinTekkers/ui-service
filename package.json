@@ -23,7 +23,8 @@
 		"db:drop": "drizzle-kit drop",
 		"db:check": "drizzle-kit check:sqlite",
 		"db:studio": "drizzle-kit studio",
-		"prepare": "husky"
+		"prepare": "husky",
+		"test:smoke:prod": "playwright test -c playwright.smoke.config.ts"
 	},
 	"dependencies": {
 		"@auth/core": "^0.27.0",
