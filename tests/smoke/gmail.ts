@@ -19,7 +19,7 @@ export interface GmailEnv {
 }
 
 /** Thrown for 429/5xx so polling can back off instead of failing the run. */
-class GmailTransientError extends Error {}
+export class GmailTransientError extends Error {}
 
 /**
  * Exchanges the refresh token for an access token and rejects it unless its

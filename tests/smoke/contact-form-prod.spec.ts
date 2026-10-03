@@ -6,6 +6,7 @@ import {
   resolveEmailTimeoutMs,
 } from "./checks";
 import {
+  GmailTransientError,
   anywhereQuery,
   findMessage,
   getReadonlyAccessToken,
@@ -66,11 +67,16 @@ test("contact form submission is delivered to the Gmail inbox", async ({
     deadline: submittedAt + timeoutMs,
   });
   if (!found) {
+    // Best-effort diagnostic only: a transient Gmail error here must not
+    // mask the "never arrived" failure.
     const elsewhere = await findMessage(
       token,
       anywhereQuery(searchMarker),
       searchMarker
-    );
+    ).catch((err) => {
+      if (err instanceof GmailTransientError) return null;
+      throw err;
+    });
     throw new Error(
       elsewhere
         ? `Email with marker ${searchMarker} not in inbox after ${timeoutS}s (found outside inbox: ${elsewhere.id})`
