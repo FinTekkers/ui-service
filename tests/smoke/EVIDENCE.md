@@ -27,8 +27,8 @@ A human must mint a `gmail.readonly`-only refresh token for the
 `$CONTACT_GMAIL_APP_PASSWORD` or IMAP was used. The item is not Done until
 both runs are recorded here.
 
-Still open after review cycle 1 (re-checked 2026-10-04): none of the three
-vars is set in the build environment. These contract cases stay unverified
+Still open after review cycles 1 and 2 (re-checked 2026-10-04, fix-pass
+attempt 6): none of the three vars is set in the build environment. These contract cases stay unverified
 until a human provides them and runs the two commands above:
 
 - pass run exits 0 with `PASS marker=… messageId=… elapsedS=…` (M1, M2)
