@@ -27,6 +27,40 @@ A human must mint a `gmail.readonly`-only refresh token for the
 `$CONTACT_GMAIL_APP_PASSWORD` or IMAP was used. The item is not Done until
 both runs are recorded here.
 
+Still open after review cycle 1 (re-checked 2026-10-04): none of the three
+vars is set in the build environment. These contract cases stay unverified
+until a human provides them and runs the two commands above:
+
+- pass run exits 0 with `PASS marker=… messageId=… elapsedS=…` (M1, M2)
+- `SMOKE_SELFTEST_WRONG_MARKER=1` run exits 1 with `never arrived` (M3)
+- in-spec `/contactus` POST count of `1` and the success-banner assertion,
+  which only execute after preflight passes (M1, G4)
+- R5 log-leak grep on the output of those two runs (G7)
+
+## Read-only check of the live form (no submission)
+
+To show the spec's selectors match production without sending mail, a
+throwaway script (not committed) loaded `https://www.fintekkers.org/contactus`
+in Playwright Chromium, counted the selectors the spec uses and clicked
+nothing:
+
+```
+status 200
+#firstname 1
+#lastname 1
+#email 1
+#message 1
+input.submit_btn 1
+form[method=POST] 1
+form action ?/message
+non-GET requests 1
+```
+
+The single non-GET request was `POST www.google-analytics.com/g/collect`, the
+page's analytics beacon. The spec counts only requests whose path is
+`/contactus`, so the beacon does not affect the POST-count assertion. No
+`/contactus` POST was made and no email was sent.
+
 ## Results without credentials
 
 | Contract case                                      | Command                                                                                        | Result                                                                                                               |
