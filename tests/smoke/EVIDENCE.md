@@ -63,6 +63,12 @@ To unblock, a human with the secrets must:
      → expect exit 1 with `never arrived within 60s`
 4. Paste both outputs here. The item is not Done until they are recorded.
 
+Re-checked 2026-10-04 on the fix pass after review cycle 1: still blocked.
+`/opt/fintekkers/ui-service/.env` is unchanged since Sep 15, both vars are
+still empty, the `fintekkers-ui` unit still sets only `PORT`, `HOST` and
+`ORIGIN`, and the shell running the tests has neither var set. No form was
+submitted and no code was changed, because every open finding needs a live run.
+
 Still unverified until then: metric lines 1–3, the in-spec `/contactus` POST
 count, the exact-subject match and `elapsedS` on a live message, the IMAP
 read-only open against Gmail, and the R5 log grep on those two runs.
