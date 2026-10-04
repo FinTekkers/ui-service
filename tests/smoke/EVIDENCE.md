@@ -5,102 +5,88 @@ Recorded 2026-10-04 (UTC) on the `horizon/us-193` branch. Compare against
 
 ## Test code in this change
 
-| File                                    | Role                                                                        |
-| --------------------------------------- | --------------------------------------------------------------------------- |
-| `tests/smoke/contact-form-prod.spec.ts` | The production smoke test (Playwright, `npm run test:smoke:prod`)           |
-| `tests/smoke/checks.ts`                 | Pure helpers: env preflight, marker, scope check, timeout, subject match    |
-| `tests/smoke/gmail.ts`                  | Read-only Gmail REST helpers (`messages.list` / `messages.get` metadata)    |
-| `playwright.smoke.config.ts`            | Separate config: `tests/smoke/`, prod `baseURL`, `retries: 0`, `workers: 1` |
-| `src/tests/smoke-checks.test.ts`        | 12 vitest unit tests for `checks.ts`                                        |
+| File                                    | Role                                                                         |
+| --------------------------------------- | ---------------------------------------------------------------------------- |
+| `tests/smoke/contact-form-prod.spec.ts` | The production smoke test (Playwright, `npm run test:smoke:prod`)            |
+| `tests/smoke/checks.ts`                 | Pure helpers: env preflight, marker, read-only mailbox check, timeout, match |
+| `tests/smoke/gmail.ts`                  | Read-only IMAP helpers (`imapflow`): EXAMINE INBOX, SEARCH, FETCH ENVELOPE   |
+| `playwright.smoke.config.ts`            | Separate config: `tests/smoke/`, prod `baseURL`, `retries: 0`, `workers: 1`  |
+| `src/tests/smoke-checks.test.ts`        | 12 vitest unit tests for `checks.ts`                                         |
 
-## Blocking gap: metrics 1–3 not yet run
+Per the operator ruling of 2026-10-04, the inbox is read over IMAP
+(`imap.gmail.com:993`) with the contact form's own `CONTACT_GMAIL_USER` and
+`CONTACT_GMAIL_APP_PASSWORD`. The Gmail REST/OAuth code and the `GMAIL_*`
+variables are gone. `imapflow` is the only new dependency (dev).
 
-`GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET` and `GMAIL_REFRESH_TOKEN` are not set
-in the build environment, so the credentialed runs have **not** been done:
+## Blocker: no contact-form credentials on the host, and production can't send mail
 
-- pass run: `npm run test:smoke:prod` → expect `PASS marker=… messageId=… elapsedS=…`
-- negative run: `SMOKE_SELFTEST_WRONG_MARKER=1 SMOKE_EMAIL_TIMEOUT_MS=60000 npm run test:smoke:prod`
-  → expect exit 1 with `never arrived within 60s`
+The credentialed runs (pass run and wrong-marker run) were **not** made:
 
-A human must mint a `gmail.readonly`-only refresh token for the
-`$CONTACT_GMAIL_USER` inbox (see README). No fallback to
-`$CONTACT_GMAIL_APP_PASSWORD` or IMAP was used. The item is not Done until
-both runs are recorded here.
+- `/opt/fintekkers/ui-service/.env` is byte-identical to `.env.example`, so
+  `CONTACT_GMAIL_USER=` and `CONTACT_GMAIL_APP_PASSWORD=` are both empty.
+- The running `fintekkers-ui` service (systemd, `www.fintekkers.org` →
+  `98.88.153.145`, this host) has neither variable in its environment. The
+  unit file only sets `PORT`, `HOST` and `ORIGIN`.
+- The only real values are GitHub Actions secrets used by
+  `.github/workflows/deploy.yml`. The host deploy path
+  (`infra/host/deploy-ui-service.sh`) never writes them to the host.
 
-Still open after review cycles 1 and 2 (re-checked 2026-10-04, fix-pass
-attempt 6): none of the three vars is set in the build environment. These contract cases stay unverified
-until a human provides them and runs the two commands above:
+`set -a; . /opt/fintekkers/ui-service/.env; set +a; npm run test:smoke:prod`
+therefore stopped at preflight with
+`Missing required env var(s): CONTACT_GMAIL_USER, CONTACT_GMAIL_APP_PASSWORD`.
+No form was submitted.
 
-- pass run exits 0 with `PASS marker=… messageId=… elapsedS=…` (M1, M2)
-- `SMOKE_SELFTEST_WRONG_MARKER=1` run exits 1 with `never arrived` (M3)
-- in-spec `/contactus` POST count of `1` and the success-banner assertion,
-  which only execute after preflight passes (M1, G4)
-- R5 log-leak grep on the output of those two runs (G7)
-
-## Read-only check of the live form (no submission)
-
-To show the spec's selectors match production without sending mail, a
-throwaway script (not committed) loaded `https://www.fintekkers.org/contactus`
-in Playwright Chromium, counted the selectors the spec uses and clicked
-nothing:
+**Production delivery finding (reported, not patched, per guardrail 5).** The
+live contact form can't send email. The service journal logs this on every
+submission, most recently 2026-10-03:
 
 ```
-status 200
-#firstname 1
-#lastname 1
-#email 1
-#message 1
-input.submit_btn 1
-form[method=POST] 1
-form action ?/message
-non-GET requests 1
+Oct 02 20:00:59 … Contact form: CONTACT_GMAIL_USER / CONTACT_GMAIL_APP_PASSWORD env vars not configured.
+Oct 03 16:42:15 … Contact form: CONTACT_GMAIL_USER / CONTACT_GMAIL_APP_PASSWORD env vars not configured.
 ```
 
-The single non-GET request was `POST www.google-analytics.com/g/collect`, the
-page's analytics beacon. The spec counts only requests whose path is
-`/contactus`, so the beacon does not affect the POST-count assertion. No
-`/contactus` POST was made and no email was sent.
+The handler returns a "temporarily unavailable" `formError` that the page
+never displays. Visitors get no error and no email is sent. Once the vars
+are on the host, this smoke test is what would have caught it.
+
+To unblock, a human with the secrets must:
+
+1. Put real `CONTACT_GMAIL_USER` and `CONTACT_GMAIL_APP_PASSWORD` values in the
+   `fintekkers-ui` service environment (for example in
+   `/opt/fintekkers/ui-service/.env` plus an `EnvironmentFile=` line), then
+   restart the service.
+2. Confirm IMAP is enabled on that Gmail account.
+3. Run, exactly once each:
+   - `set -a; . /opt/fintekkers/ui-service/.env; set +a; npm run test:smoke:prod`
+     → expect `PASS marker=FTSMOKE… messageId=<…> elapsedS=<n>`
+   - the same with `SMOKE_SELFTEST_WRONG_MARKER=1 SMOKE_EMAIL_TIMEOUT_MS=60000`
+     → expect exit 1 with `never arrived within 60s`
+4. Paste both outputs here. The item is not Done until they are recorded.
+
+Still unverified until then: metric lines 1–3, the in-spec `/contactus` POST
+count, the exact-subject match and `elapsedS` on a live message, the IMAP
+read-only open against Gmail, and the R5 log grep on those two runs.
 
 ## Results without credentials
 
-| Contract case                                      | Command                                                                                        | Result                                                                                                               |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Unit tests for `checks.ts` (G3, M6)                | `npx vitest run src/tests/smoke-checks.test.ts`                                                | `12 passed`                                                                                                          |
-| Full unit suite, smoke spec not collected (M4, G1) | `CI=true npx vitest run`                                                                       | exit 0, `39 passed` files, `442 passed`; no `tests/smoke/*` file in the list                                         |
-| `npm run test` (M4, G1)                            | `CI=true npm run test -- --run`                                                                | exit 0, `39 passed`; no `tests/smoke/*` or `contact-form-prod`                                                       |
-| Integration tier (M4, G1)                          | `npx vitest run --config vitest.integration.config.js`                                         | no `tests/smoke/*` or `contact-form-prod` collected                                                                  |
-| Default Playwright config (M4, G1)                 | `npx playwright test --list`                                                                   | `67 tests in 28 files`; `contact-form-prod` not listed                                                               |
-| Smoke config collects only the smoke spec          | `npx playwright test -c playwright.smoke.config.ts --list`                                     | `1 test in 1 file`: `contact-form-prod.spec.ts`                                                                      |
-| Refresh token unset (M6)                           | `env -u GMAIL_REFRESH_TOKEN GMAIL_CLIENT_ID=… GMAIL_CLIENT_SECRET=… npm run test:smoke:prod`   | exit 1, `1 failed`, `Missing required env var(s): GMAIL_REFRESH_TOKEN`                                               |
-| Refresh token empty (M6, R3)                       | `GMAIL_REFRESH_TOKEN= … npm run test:smoke:prod`                                               | exit 1, `1 failed`, `Missing required env var(s): GMAIL_REFRESH_TOKEN`                                               |
-| All three unset (M6)                               | `env -u GMAIL_CLIENT_ID -u GMAIL_CLIENT_SECRET -u GMAIL_REFRESH_TOKEN npm run test:smoke:prod` | exit 1, `1 failed`, `Missing required env var(s): GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN`         |
-| Invalid credentials fail before submit             | dummy values for all three                                                                     | exit 1, `1 failed`, `Gmail OAuth token refresh failed (check GMAIL_* vars)`                                          |
-| Invalid timeout fails before submit                | `SMOKE_EMAIL_TIMEOUT_MS=5m …`                                                                  | exit 1, `1 failed`, `SMOKE_EMAIL_TIMEOUT_MS must be a positive integer, got "5m"`                                    |
-| No email sent by any failing preflight run         | grep the five run logs for `marker=` / `contactus`                                             | no hits: every run stopped before `page.goto`                                                                        |
-| No secrets or bodies in logs (G7, R5)              | R5 grep (token prefixes, body text, the dummy values) on the five logs                         | no hits                                                                                                              |
-| No credential values in repo (M5, G2)              | Test contract `git grep` for Google secret, refresh and access token prefixes                  | no hits; no `.env` in the diff                                                                                       |
-| No mutating Gmail calls (G3)                       | Test contract `git grep` for write methods and modify and trash endpoints in `tests/smoke`     | no hits                                                                                                              |
-| No app, CI, hook or deploy change (G5, G6)         | `git diff origin/main --stat`                                                                  | only `.env.example`, `package.json`, `playwright.smoke.config.ts`, `src/tests/smoke-checks.test.ts`, `tests/smoke/*` |
-| `package.json` adds one script, no deps (G8)       | `git diff origin/main -- package.json`                                                         | only `"test:smoke:prod"` added                                                                                       |
-| Lint                                               | `npm run lint`                                                                                 | exit 0, 0 errors; no warnings in the new files                                                                       |
-| Formatting                                         | `npx prettier --check playwright.smoke.config.ts tests/smoke src/tests/smoke-checks.test.ts`   | all files pass                                                                                                       |
-| Type check                                         | `npx svelte-check --tsconfig ./tsconfig.json`                                                  | no errors or warnings in the new files (existing errors elsewhere are unchanged)                                     |
+| Contract case                                      | Command                                                                                       | Result                                                                                                                |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Unit tests for `checks.ts` (G3, M6)                | `npx vitest run src/tests/smoke-checks.test.ts`                                               | `12 passed`                                                                                                           |
+| Full unit suite, smoke spec not collected (M4, G1) | `CI=true npx vitest run`                                                                      | exit 0, `39 passed` files, `442 passed`; no `tests/smoke/*` file collected                                            |
+| Integration tier (M4, G1)                          | `npx vitest run --config vitest.integration.config.js`                                        | no `tests/smoke/*` or `contact-form-prod` collected                                                                   |
+| Default Playwright config (M4, G1)                 | `npx playwright test --list`                                                                  | `67 tests in 28 files`; `contact-form-prod` not listed                                                                |
+| Smoke config collects only the smoke spec          | `npx playwright test -c playwright.smoke.config.ts --list`                                    | `1 test in 1 file`: `contact-form-prod.spec.ts`                                                                       |
+| Both vars unset (M6)                               | `env -u CONTACT_GMAIL_USER -u CONTACT_GMAIL_APP_PASSWORD npm run test:smoke:prod`             | exit 1, `1 failed`, `Missing required env var(s): CONTACT_GMAIL_USER, CONTACT_GMAIL_APP_PASSWORD`                     |
+| Password empty (M6, R3)                            | `CONTACT_GMAIL_USER=x@example.com CONTACT_GMAIL_APP_PASSWORD= npm run test:smoke:prod`        | exit 1, `1 failed`, `Missing required env var(s): CONTACT_GMAIL_APP_PASSWORD`                                         |
+| Host `.env` (empty values)                         | `set -a; . /opt/fintekkers/ui-service/.env; set +a; npm run test:smoke:prod`                  | exit 1, `1 failed`, `Missing required env var(s): CONTACT_GMAIL_USER, CONTACT_GMAIL_APP_PASSWORD`                     |
+| No email sent by any failing preflight run         | grep the run logs for `marker=`                                                               | no hits: every run stopped before `page.goto`                                                                         |
+| No secrets or bodies in logs (G7, R5)              | grep the run logs for `Automated smoke test` and `PASSWORD=` values                           | no hits                                                                                                               |
+| No credential values in repo (M5, G2)              | Test contract `git grep` for Google secret, refresh and access token prefixes                 | no hits; no `.env` in the diff                                                                                        |
+| No mutating mail calls (G3)                        | `git grep` in `tests/smoke` for delete, move, copy, flag, append, mailbox-edit and send calls | no hits; every mailbox is opened `readOnly: true` and checked by `assertReadOnlyMailbox`                              |
+| No app, CI, hook or deploy change (G5, G6)         | `git diff origin/main --stat`                                                                 | only `.env.example`, `package*.json`, `playwright.smoke.config.ts`, `src/tests/smoke-checks.test.ts`, `tests/smoke/*` |
+| `package.json` changes (G8)                        | `git diff origin/main -- package.json`                                                        | `"test:smoke:prod"` script and the `imapflow` dev dependency only                                                     |
+| Lint                                               | `npm run lint`                                                                                | exit 0, 0 errors; no warnings in the new files                                                                        |
+| Formatting                                         | `npx prettier --check playwright.smoke.config.ts tests/smoke src/tests/smoke-checks.test.ts`  | all files pass                                                                                                        |
 
 `npx vitest list` is not available in the repo's vitest 0.34.6 (it is treated
 as a name filter), so collection was checked with `vitest run` instead.
-
-### Sample output: all three vars unset
-
-```
-Running 1 test using 1 worker
-
-  ✘  1 [chromium] › tests/smoke/contact-form-prod.spec.ts:22:1 › contact form submission is delivered to the Gmail inbox (665ms)
-
-  1) [chromium] › tests/smoke/contact-form-prod.spec.ts:22:1 › contact form submission is delivered to the Gmail inbox
-
-    Error: Missing required env var(s): GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN
-
-       at checks.ts:39
-
-  1 failed
-```

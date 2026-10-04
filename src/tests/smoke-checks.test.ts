@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  GMAIL_READONLY_SCOPE,
   REQUIRED_ENV,
-  assertReadonlyScopes,
+  assertReadOnlyMailbox,
   makeMarker,
   requireEnv,
   resolveEmailTimeoutMs,
@@ -12,30 +11,30 @@ import {
 // Unit coverage for the pure helpers behind `npm run test:smoke:prod`.
 // The smoke spec itself (tests/smoke/*.spec.ts) is never collected here.
 
-describe("assertReadonlyScopes", () => {
-  it("accepts gmail.readonly alone", () => {
-    expect(() => assertReadonlyScopes([GMAIL_READONLY_SCOPE])).not.toThrow();
-  });
-
-  it("rejects gmail.readonly plus gmail.modify", () => {
+describe("assertReadOnlyMailbox", () => {
+  it("accepts a mailbox opened read-only (EXAMINE)", () => {
     expect(() =>
-      assertReadonlyScopes([
-        GMAIL_READONLY_SCOPE,
-        "https://www.googleapis.com/auth/gmail.modify",
-      ])
-    ).toThrow(/gmail\.modify/);
+      assertReadOnlyMailbox({ path: "INBOX", readOnly: true })
+    ).not.toThrow();
   });
 
-  it("rejects an empty scope list", () => {
-    expect(() => assertReadonlyScopes([])).toThrow(/no scopes/);
+  it("rejects a mailbox opened read-write", () => {
+    expect(() =>
+      assertReadOnlyMailbox({ path: "INBOX", readOnly: false })
+    ).toThrow(/INBOX was not opened read-only/);
+  });
+
+  it("rejects a mailbox with no read-only confirmation", () => {
+    expect(() => assertReadOnlyMailbox({ path: "INBOX" })).toThrow(
+      /not opened read-only/
+    );
   });
 });
 
 describe("requireEnv", () => {
   const full = {
-    GMAIL_CLIENT_ID: "id",
-    GMAIL_CLIENT_SECRET: "secret",
-    GMAIL_REFRESH_TOKEN: "refresh",
+    CONTACT_GMAIL_USER: "user",
+    CONTACT_GMAIL_APP_PASSWORD: "password",
   };
 
   it("returns the values when all are set", () => {
@@ -44,7 +43,7 @@ describe("requireEnv", () => {
 
   it("names every missing variable", () => {
     expect(() => requireEnv(REQUIRED_ENV, {})).toThrow(
-      "Missing required env var(s): GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN"
+      "Missing required env var(s): CONTACT_GMAIL_USER, CONTACT_GMAIL_APP_PASSWORD"
     );
   });
 
@@ -52,22 +51,19 @@ describe("requireEnv", () => {
     expect(() =>
       requireEnv(REQUIRED_ENV, {
         ...full,
-        GMAIL_CLIENT_SECRET: "  ",
-        GMAIL_REFRESH_TOKEN: "",
+        CONTACT_GMAIL_USER: "  ",
+        CONTACT_GMAIL_APP_PASSWORD: "",
       })
     ).toThrow(
-      "Missing required env var(s): GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN"
+      "Missing required env var(s): CONTACT_GMAIL_USER, CONTACT_GMAIL_APP_PASSWORD"
     );
   });
 
   it("ignores inherited keys", () => {
-    const inherited = Object.create({ GMAIL_REFRESH_TOKEN: "x" });
-    Object.assign(inherited, {
-      GMAIL_CLIENT_ID: "id",
-      GMAIL_CLIENT_SECRET: "s",
-    });
+    const inherited = Object.create({ CONTACT_GMAIL_APP_PASSWORD: "x" });
+    Object.assign(inherited, { CONTACT_GMAIL_USER: "user" });
     expect(() => requireEnv(REQUIRED_ENV, inherited)).toThrow(
-      "Missing required env var(s): GMAIL_REFRESH_TOKEN"
+      "Missing required env var(s): CONTACT_GMAIL_APP_PASSWORD"
     );
   });
 });
