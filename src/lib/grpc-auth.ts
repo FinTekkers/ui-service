@@ -5,6 +5,8 @@
  */
 import grpc from "@grpc/grpc-js";
 import protoLoader from "@grpc/proto-loader";
+import protobuf from "protobufjs";
+import fs from "fs";
 import path from "path";
 import type { Cookies } from "@sveltejs/kit";
 
@@ -40,8 +42,24 @@ export function getTenantHeaderValue(): string {
 
 let authClient: any = null;
 
+// protobufjs looks up `fs` and `buffer` through an eval'd CommonJS loader,
+// which doesn't exist in the bundled ESM server build. Without fs, loadSync()
+// fails with "Cannot read properties of null (reading 'readFileSync')";
+// without Buffer, requests encode to a plain Uint8Array and grpc-js fails
+// with "message.copy is not a function" (surfacing as "undefined undefined:
+// undefined"). Hand both over explicitly; configure() rebuilds the writers.
+function ensureProtobufNodeDeps(): void {
+  if (!protobuf.util.fs) protobuf.util.fs = fs;
+  if (!protobuf.util.Buffer) {
+    protobuf.util.Buffer = Buffer;
+    protobuf.configure();
+  }
+}
+
 function getAuthClient(): any {
   if (authClient) return authClient;
+
+  ensureProtobufNodeDeps();
 
   const packageDef = protoLoader.loadSync(AUTH_PROTO_PATH, {
     keepCase: false,
