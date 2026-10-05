@@ -86,6 +86,10 @@ export async function waitForInboxMessage(
   { deadline, intervalMs = 10_000 }: { deadline: number; intervalMs?: number }
 ): Promise<{ messageId: string } | null> {
   for (;;) {
+    // Re-select INBOX each poll: Gmail does not show messages that arrive
+    // after a mailbox was selected to a search on that same selection, so
+    // polling the selection opened at login never sees the new email.
+    assertReadOnlyMailbox(await client.mailboxOpen("INBOX", { readOnly: true }));
     const found = await findMessage(client, marker);
     if (found) return found;
     const remaining = deadline - Date.now();
