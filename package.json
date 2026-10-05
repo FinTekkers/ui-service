@@ -23,7 +23,8 @@
 		"db:drop": "drizzle-kit drop",
 		"db:check": "drizzle-kit check:sqlite",
 		"db:studio": "drizzle-kit studio",
-		"prepare": "husky"
+		"prepare": "husky",
+		"test:smoke:prod": "playwright test -c playwright.smoke.config.ts"
 	},
 	"dependencies": {
 		"@auth/core": "^0.27.0",
@@ -95,6 +96,7 @@
 		"esm": "^3.2.25",
 		"google-protobuf": "^4.0.2",
 		"husky": "^9.1.7",
+		"imapflow": "^2.2.4",
 		"jest": "^29.7.0",
 		"jest-dom": "^4.0.0",
 		"jsdom": "^22.1.0",
