@@ -1,7 +1,14 @@
+import { redirect } from "@sveltejs/kit";
 import { getTreasuryTransactions } from "$lib/treasury_positions";
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ locals }) {
+export async function load({ locals, url }) {
+  // These pages read positions through the broker, which needs the login's
+  // API key; without one, send the visitor to log in instead of a 500.
+  if (!locals.user?.apiKey) {
+    const redirectTo = encodeURIComponent(url.pathname + url.search);
+    throw redirect(302, `/login?redirectTo=${redirectTo}`);
+  }
   // Thread apiKey through so the underlying PositionService.search goes via
   // the broker's authenticated route. Without it the call fails with
   // `16 UNAUTHENTICATED: API key required`. Same fix as 5d8f052 for /treasuries3.

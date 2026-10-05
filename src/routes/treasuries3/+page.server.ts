@@ -1,8 +1,15 @@
+import { redirect } from "@sveltejs/kit";
 import { getTreasuryTransactions } from "$lib/treasury_positions";
 import type { TreasuryTransaction } from "$lib/treasury_positions";
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ locals }) {
+export async function load({ locals, url }) {
+  // These pages read positions through the broker, which needs the login's
+  // API key; without one, send the visitor to log in instead of a 500.
+  if (!locals.user?.apiKey) {
+    const redirectTo = encodeURIComponent(url.pathname + url.search);
+    throw redirect(302, `/login?redirectTo=${redirectTo}`);
+  }
   // Filter for December 2025: get all transactions up to December 31, 2025
   // Then filter client-side for December 2025 only
   const endDate = new Date("2026-01-01T00:59:59");

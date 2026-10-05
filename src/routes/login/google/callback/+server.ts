@@ -45,13 +45,6 @@ export async function GET(event: RequestEvent): Promise<Response> {
   const code = event.url.searchParams.get("code");
   const state = event.url.searchParams.get("state");
 
-  console.log(`
-		storedState=${storedState}
-		codeVerifier=${codeVerifier}
-		code=${code}
-		state=${state}
-	`);
-
   if (storedState === null || codeVerifier === null) {
     return new Response(
       `Expected non-null cookies: 
