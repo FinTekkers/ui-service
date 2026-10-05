@@ -69,6 +69,14 @@ still empty, the `fintekkers-ui` unit still sets only `PORT`, `HOST` and
 `ORIGIN`, and the shell running the tests has neither var set. No form was
 submitted and no code was changed, because every open finding needs a live run.
 
+Re-ran all tests 2026-10-05 (attempt 10, no code change): still blocked.
+`/opt/fintekkers/ui-service/.env` is still the Sep 15 copy with both vars
+empty, the `fintekkers-ui` unit still sets only `PORT`, `HOST` and `ORIGIN`,
+and the test shell has neither var. No form was submitted. Every case in the
+table below was re-run and gave the same result, plus
+`env -u CONTACT_GMAIL_APP_PASSWORD CONTACT_GMAIL_USER=x@example.com npm run test:smoke:prod`
+→ exit 1, `1 failed`, `Missing required env var(s): CONTACT_GMAIL_APP_PASSWORD`.
+
 Still unverified until then: metric lines 1–3, the in-spec `/contactus` POST
 count, the exact-subject match and `elapsedS` on a live message, the IMAP
 read-only open against Gmail, and the R5 log grep on those two runs.
