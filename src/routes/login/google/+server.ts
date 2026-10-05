@@ -12,9 +12,6 @@ export function GET(event: RequestEvent): Response {
     "email",
   ]);
 
-  console.log(`State generated was: ${state}`);
-  console.log(`Code verifier was: ${codeVerifier}`);
-
   const secure = import.meta.env.PROD;
   console.log(`Secure: ${secure}`);
 
@@ -32,11 +29,6 @@ export function GET(event: RequestEvent): Response {
     path: "/",
     sameSite: "lax",
   });
-
-  console.log(`google_oauth_state: ${event.cookies.get("google_oauth_state")}`);
-  console.log(
-    `google_code_verifier: ${event.cookies.get("google_code_verifier")}`
-  );
 
   console.log(`url: ${url}`);
 
