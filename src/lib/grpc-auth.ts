@@ -194,9 +194,17 @@ export async function brokerProvisionApiKey(
 ): Promise<ProvisionApiKeyResult> {
   try {
     const client = getAuthClient();
+    // An existing account is only served with proof of ownership or the
+    // admin credential (broker-service BS-3). This runs server-side after
+    // Google has verified the email, so it presents BROKER_ADMIN_KEY; without
+    // it, a returning SSO user gets "Account already exists" and no API key.
+    const metadata = new grpc.Metadata();
+    const adminKey = process.env.BROKER_ADMIN_KEY?.trim();
+    if (adminKey) metadata.set("x-admin-key", adminKey);
     const response = await new Promise<any>((resolve, reject) => {
       client.provisionApiKey(
         { email, name, signupCode },
+        metadata,
         (err: any, resp: any) => {
           if (err) reject(err);
           else resolve(resp);
