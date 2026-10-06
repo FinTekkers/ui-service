@@ -215,6 +215,15 @@ TODO - Need to write the Java server script
 const commonIconStyle = "width: 25px; height: 25px;";
 
 export const dashboardMenuData: dashboardMenuType = {
+  profile: {
+    location: "PROFILE",
+    navigateTo: "PORTFOLIO",
+    style: commonIconStyle,
+    iconName: "mdi:account-circle-outline",
+    url: "profile",
+    menuName: "Profile",
+  },
+
   portfolio: {
     location: "PORTFOLIO",
     navigateTo: "PORTFOLIO",
@@ -294,15 +303,6 @@ export const dashboardMenuData: dashboardMenuType = {
     iconName: "mdi:chart-box-outline",
     url: "cpi_index",
     menuName: "CPI Index",
-  },
-
-  profile: {
-    location: "PROFILE",
-    navigateTo: "PORTFOLIO",
-    style: commonIconStyle,
-    iconName: "mdi:account-circle-outline",
-    url: "profile",
-    menuName: "Profile",
   },
 
   catalog: {
