@@ -14,18 +14,22 @@
  */
 
 import { test, expect, type Locator, type Page } from "@playwright/test";
-import { TEST_USER } from "./fixtures/auth";
 
 // storageState is provided by the chromium project (auth.setup.ts dependency).
 test.use({
   viewport: { width: 1920, height: 1080 },
 });
 
-const GREETING = new RegExp(`Hi ${TEST_USER.name}`);
+// Password login doesn't set ft_user_name, so the greeting reads "Hi User"
+// rather than the test user's name; match any "Hi <name>".
+const GREETING = /\bHi \S/;
 
 const sidebar = (page: Page) => page.locator(".dashboard-sidebar");
 const greetingLink = (page: Page) =>
   sidebar(page).getByRole("link", { name: GREETING });
+// Collapsed, the "Hi" span is hidden and the link's name is just "Profile".
+const greetingAvatar = (page: Page) =>
+  sidebar(page).locator('a[href="/data/profile"] > img');
 const menuLinks = (page: Page) =>
   sidebar(page).locator(".dashboard_user_menu_options a");
 
@@ -114,7 +118,7 @@ test("collapsed: greeting hides, avatar fits, Profile is the first icon", async 
   await expect(sidebar(page).getByText(GREETING)).toBeHidden();
 
   const sidebarBox = await sidebar(page).boundingBox();
-  const avatarBox = await greetingLink(page).locator("img").boundingBox();
+  const avatarBox = await greetingAvatar(page).boundingBox();
   const firstLink = menuLinks(page).first();
   const firstLinkBox = await firstLink.boundingBox();
   expect(sidebarBox && avatarBox && firstLinkBox).toBeTruthy();
