@@ -89,7 +89,9 @@ export async function waitForInboxMessage(
     // Re-select INBOX each poll: Gmail does not show messages that arrive
     // after a mailbox was selected to a search on that same selection, so
     // polling the selection opened at login never sees the new email.
-    assertReadOnlyMailbox(await client.mailboxOpen("INBOX", { readOnly: true }));
+    assertReadOnlyMailbox(
+      await client.mailboxOpen("INBOX", { readOnly: true })
+    );
     const found = await findMessage(client, marker);
     if (found) return found;
     const remaining = deadline - Date.now();

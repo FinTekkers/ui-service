@@ -13,6 +13,8 @@
   let userAvatar: string = data.user ? data.user.picture : "";
 
   let sidebarExpanded = true; // Variable to track sidebar state
+  // a 50px avatar would overflow the 70px collapsed rail
+  $: avatarSize = sidebarExpanded ? 50 : 30;
 
   const toggleSidebar = () => {
     sidebarExpanded = !sidebarExpanded; // Toggle sidebar state
@@ -57,11 +59,19 @@
       style="width:30px; height:30px; color:#000000"
     /></button
   >
-  <div class=" dashboard_menu_icon user-menu cursor-pointer">
-    <!-- svelte-ignore a11y-missing-attribute -->
-    <img style="width: 50px; height:50px" src={userAvatar} />
-    <span style="color:#7cd2ba">Hi {userInfo}</span>
-  </div>
+  <a
+    href="/data/profile"
+    class="dashboard_menu_icon user-menu cursor-pointer rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-900"
+    on:click={() =>
+      selectedDashboardMenuUpdater(dashboardMenuData.profile.location)}
+  >
+    <img
+      alt="Profile"
+      style="width: {avatarSize}px; height: {avatarSize}px"
+      src={userAvatar}
+    />
+    <span class="text-cyan-900 hover:underline">Hi {userInfo}</span>
+  </a>
 
   <div class="dashboard_user_menu_options">
     {#each Object.entries(dashboardMenuData) as [_menukey, menuValue]}
