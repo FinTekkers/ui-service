@@ -24,7 +24,7 @@ export const userArchetypeData: userArchetypes[] = [
 
 export const sideBarURLText: NavbarURL[] = [
   {
-    url: "data/portfolios",
+    url: "/data/portfolios",
     text: "Look at data now",
     id: "get-started",
     icon: "mdi:ray-start-arrow",
@@ -220,7 +220,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "PORTFOLIO",
     style: commonIconStyle,
     iconName: "mdi:account-circle-outline",
-    url: "profile",
+    url: "/data/profile",
     menuName: "Profile",
   },
 
@@ -229,7 +229,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "PORTFOLIO",
     style: commonIconStyle,
     iconName: "mdi:briefcase-eye-outline",
-    url: "portfolios",
+    url: "/data/portfolios",
     menuName: "Portfolio",
   },
 
@@ -238,7 +238,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "SECURITY",
     style: commonIconStyle,
     iconName: "mdi:camera-document",
-    url: "securities",
+    url: "/data/securities",
     menuName: "Security",
   },
 
@@ -247,7 +247,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "TRANSACTION",
     style: commonIconStyle,
     iconName: "mdi:briefcase-arrow-left-right-outline",
-    url: "transactions",
+    url: "/data/transactions",
     menuName: "Transaction",
   },
 
@@ -256,7 +256,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "POSITION",
     style: commonIconStyle,
     iconName: "mdi:table-plus",
-    url: "positions",
+    url: "/data/positions",
     menuName: "Position",
   },
 
@@ -265,7 +265,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "CALCULATORS",
     style: commonIconStyle,
     iconName: "mdi:calculator",
-    url: "calculators",
+    url: "/data/calculators",
     menuName: "Calculators",
   },
 
@@ -274,7 +274,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "PORTFOLIO",
     style: commonIconStyle,
     iconName: "mdi:currency-usd",
-    url: "prices",
+    url: "/data/prices",
     menuName: "Prices",
   },
 
@@ -283,7 +283,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "PORTFOLIO",
     style: commonIconStyle,
     iconName: "mdi:chart-line",
-    url: "treasury_curve",
+    url: "/data/treasury_curve",
     menuName: "Treasuries",
   },
 
@@ -292,7 +292,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "PORTFOLIO",
     style: commonIconStyle,
     iconName: "mdi:chart-multiple",
-    url: "curves",
+    url: "/data/curves",
     menuName: "Curves",
   },
 
@@ -301,7 +301,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "PORTFOLIO",
     style: commonIconStyle,
     iconName: "mdi:chart-box-outline",
-    url: "cpi_index",
+    url: "/data/cpi_index",
     menuName: "CPI Index",
   },
 
@@ -310,7 +310,7 @@ export const dashboardMenuData: dashboardMenuType = {
     navigateTo: "PORTFOLIO",
     style: commonIconStyle,
     iconName: "mdi:book-open-page-variant-outline",
-    url: "catalog",
+    url: "/data/catalog",
     menuName: "Data Catalog",
   },
 };

@@ -6,6 +6,7 @@
   import { selectedDashboardMenuUpdater } from "../store/store";
   import type { dashboardMenuList } from "$lib/Util";
   import { dashboardMenuData } from "$lib/uidata";
+  import { menuHref } from "$lib/links";
 
   export let data;
   console.log(`User: ${data.user}`);
@@ -60,7 +61,7 @@
     /></button
   >
   <a
-    href="/data/profile"
+    href={menuHref("/data/profile")}
     class="dashboard_menu_icon user-menu cursor-pointer rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-900"
     on:click={() =>
       selectedDashboardMenuUpdater(dashboardMenuData.profile.location)}
@@ -76,7 +77,7 @@
   <div class="dashboard_user_menu_options">
     {#each Object.entries(dashboardMenuData) as [_menukey, menuValue]}
       <a
-        href={menuValue.url}
+        href={menuHref(menuValue.url)}
         class="p-2 user-menu cursor-pointer"
         on:keydown={() => handleKeyDown("PORTFOLIO")}
         on:click={() => selectedDashboardMenuUpdater(menuValue.location)}

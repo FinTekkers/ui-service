@@ -1,6 +1,7 @@
 <script lang="ts">
   import IconLink from "./custom_components/IconLink.svelte";
   import { sideBarURLText } from "../lib/uidata";
+  import { menuHref } from "../lib/links";
 </script>
 
 <div class="navigation_bar">
@@ -12,7 +13,7 @@
       {#each sideBarURLText as urlText}
         <li>
           <IconLink iconName={urlText.icon} />
-          <a href={urlText.url}>{urlText.text}</a>
+          <a href={menuHref(urlText.url)}>{urlText.text}</a>
         </li>
       {/each}
     </ul>

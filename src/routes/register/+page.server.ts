@@ -3,6 +3,7 @@ import * as Yup from "yup";
 import { superValidate } from "sveltekit-superforms/server";
 import { yup } from "sveltekit-superforms/adapters";
 import { brokerRegister, brokerLogin, setApiKeyCookie } from "$lib/grpc-auth";
+import { safeRedirectTarget } from "$lib/redirectTarget";
 
 const DASHBOARD_ROUTE = "/data/portfolios";
 
@@ -55,7 +56,10 @@ export const actions = {
 
     if (loginResult.success && loginResult.apiKey) {
       setApiKeyCookie(cookies, loginResult.apiKey);
-      const redirectTo = url.searchParams.get("redirectTo") ?? DASHBOARD_ROUTE;
+      const redirectTo = safeRedirectTarget(
+        url.searchParams.get("redirectTo"),
+        DASHBOARD_ROUTE
+      );
       throw redirect(303, redirectTo);
     }
 
