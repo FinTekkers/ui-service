@@ -41,7 +41,8 @@ export default defineConfig({
   use: {
     // The dev server runs plain HTTP on :443 (vite dev with no https config).
     // Matches what src/tests/auth-flow-e2e.test.ts uses (http://localhost:443).
-    baseURL: "http://localhost:443",
+    // PLAYWRIGHT_BASE_URL lets scripts/checks/e2e.sh point at its own server.
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:443",
     // Trace on first retry so flake reproduction is one click away.
     trace: "on-first-retry",
     screenshot: "only-on-failure",

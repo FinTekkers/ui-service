@@ -63,9 +63,11 @@ describe("DashboardSideBar greeting", () => {
 
   test("clicking the first menu link selects the PROFILE menu", async () => {
     renderSidebar();
+    // The greeting links to /data/profile too; the menu link is the one
+    // named just "Profile".
     const menuLinks = screen
-      .getAllByRole("link")
-      .filter((a) => a.getAttribute("href") === "profile");
+      .getAllByRole("link", { name: "Profile" })
+      .filter((a) => a.getAttribute("href") === "/data/profile");
     expect(menuLinks).toHaveLength(1);
     expect(menuLinks[0]).toHaveTextContent("Profile");
     await fireEvent.click(menuLinks[0]);

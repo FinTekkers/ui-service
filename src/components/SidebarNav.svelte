@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { sideBarURLText } from "../lib/uidata";
+  import { menuHref } from "../lib/links";
   import IconLink from "./custom_components/IconLink.svelte";
 
   let menuOpen = false;
@@ -43,7 +44,7 @@
     <nav class="p-6 space-y-4">
       <IconLink iconName="mdi:finance" href="/">Fintekkers</IconLink>
       {#each sideBarURLText as urlText}
-        <IconLink iconName={urlText.icon} href={urlText.url}
+        <IconLink iconName={urlText.icon} href={menuHref(urlText.url)}
           >{urlText.text}</IconLink
         >
         <!--                    <a href={urlText.url}>{urlText.text}</a>-->
