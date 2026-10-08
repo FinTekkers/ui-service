@@ -3,10 +3,14 @@
  *
  * Logs a dedicated test user in once per run and persists the SvelteKit
  * `ft_api_key` cookie into Playwright's storageState. Tests opt in via
- * `playwright.config.ts`'s `storageState` field — they don't call this
- * directly.
+ * `playwright.config.ts`'s `storageState` field — they don't call the
+ * grpcurl helpers directly.
  *
- * Pre-reqs (will skip-with-warn if any are missing):
+ * Specs that run without the setup project (`--no-deps`, as
+ * scripts/checks/e2e.sh does) call ensureTestUserSession instead: it
+ * registers and logs in through the app's own form actions, no grpcurl.
+ *
+ * Pre-reqs for the grpcurl path (will skip-with-warn if any are missing):
  *   - broker-service on 127.0.0.1:80
  *   - ui-service dev server on https://localhost:443
  *   - grpcurl on PATH
@@ -16,6 +20,11 @@
  *   Re-registration is idempotent (the broker returns AlreadyExists, which
  *   we ignore — only Login matters for state).
  */
+import {
+  expect,
+  type APIRequestContext,
+  type PlaywrightWorkerArgs,
+} from "@playwright/test";
 import { execSync } from "child_process";
 import * as path from "path";
 
@@ -124,5 +133,52 @@ export function brokerAvailable(): boolean {
     return true;
   } catch {
     return false;
+  }
+}
+
+export type StorageState = Awaited<
+  ReturnType<APIRequestContext["storageState"]>
+>;
+
+/**
+ * Register the test user (the broker rejects a repeat, which is fine) and
+ * log in through the app's form actions at `baseURL`. Returns the session's
+ * storageState, which holds the `ft_api_key` cookie. Fails with a clear
+ * message if the user can't log in.
+ */
+export async function ensureTestUserSession(
+  playwright: PlaywrightWorkerArgs["playwright"],
+  baseURL: string
+): Promise<StorageState> {
+  const headers = { origin: new URL(baseURL).origin };
+  const ctx = await playwright.request.newContext({ baseURL });
+  try {
+    await ctx.post("/register?/register", {
+      form: {
+        email: TEST_USER.email,
+        password: TEST_USER.password,
+        confirmpassword: TEST_USER.password,
+        firstname: TEST_USER.name,
+        signupcode: SIGNUP_CODE,
+      },
+      headers,
+      maxRedirects: 0,
+    });
+
+    const login = await ctx.post("/login?/login", {
+      form: { email: TEST_USER.email, password: TEST_USER.password },
+      headers,
+      maxRedirects: 0,
+    });
+    const state = await ctx.storageState();
+    expect(
+      state.cookies.some((c) => c.name === "ft_api_key"),
+      `test user ${
+        TEST_USER.email
+      } cannot log in (POST /login returned ${login.status()})`
+    ).toBe(true);
+    return state;
+  } finally {
+    await ctx.dispose();
   }
 }
