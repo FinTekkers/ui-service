@@ -8,7 +8,7 @@
  * /data/<route>. Before the fix, Portfolio went to /data/portfolios/portfolios.
  */
 import { test, expect, type Page } from "@playwright/test";
-import { TEST_USER } from "./fixtures/auth";
+import { TEST_USER, ensureTestUserSession } from "./fixtures/auth";
 
 // Fresh, logged-out context: this spec logs in itself.
 test.use({
@@ -38,38 +38,9 @@ const menuLink = (page: Page, name: string) =>
 const pathname = (page: Page) => new URL(page.url()).pathname;
 
 test.beforeAll(async ({ playwright }) => {
-  // Make sure the test user exists (the broker rejects a repeat, which is
-  // fine). auth.setup.ts does this over grpcurl, which may not be installed.
-  const baseURL = test.info().project.use.baseURL!;
-  const headers = { origin: new URL(baseURL).origin };
-  const ctx = await playwright.request.newContext({ baseURL });
-  await ctx.post("/register?/register", {
-    form: {
-      email: TEST_USER.email,
-      password: TEST_USER.password,
-      confirmpassword: TEST_USER.password,
-      firstname: TEST_USER.name,
-      signupcode: "S1GNUP",
-    },
-    headers,
-    maxRedirects: 0,
-  });
-
-  // Fail here, with a clear message, if the user still can't log in —
+  // Fails here, with a clear message, if the test user can't log in —
   // rather than as a URL timeout after the form submit below.
-  const login = await ctx.post("/login?/login", {
-    form: { email: TEST_USER.email, password: TEST_USER.password },
-    headers,
-    maxRedirects: 0,
-  });
-  const cookies = (await ctx.storageState()).cookies;
-  await ctx.dispose();
-  expect(
-    cookies.some((c) => c.name === "ft_api_key"),
-    `test user ${
-      TEST_USER.email
-    } cannot log in (POST /login returned ${login.status()})`
-  ).toBe(true);
+  await ensureTestUserSession(playwright, test.info().project.use.baseURL!);
 });
 
 test("after login from /data/portfolios/, every sidebar link goes to its fixed path", async ({

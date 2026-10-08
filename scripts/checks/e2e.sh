@@ -2,12 +2,21 @@
 # Browser e2e: the sidebar-links-after-login journey (US-203), against a
 # production build this script starts and the broker already running on the
 # host. (vite dev can't load @grpc/grpc-js in SSR here, so build like prod.)
-# Fails if the spec is skipped or not run, not only if it fails.
+# Fails if the journey is skipped or not run, not only if it fails.
+#
+# Also captures the key screens into e2e/__screenshots__/ (US-205), which
+# Horizon publishes on the PR. Missing screenshots only warn, unless
+# E2E_SCREENSHOTS_STRICT=1.
 set -euo pipefail
 
 PORT="${E2E_PORT:-4203}"
 BASE_URL="http://127.0.0.1:${PORT}"
-SPEC="tests/e2e/sidebar-links-after-login.spec.ts"
+JOURNEY="sidebar-links-after-login.spec.ts"
+SPECS=(
+  "tests/e2e/$JOURNEY"
+  tests/e2e/key-screens.spec.ts
+  tests/e2e/capture-screenshot.spec.ts
+)
 REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
 LOG="$(mktemp -t e2e-server.XXXXXX.log)"
 
@@ -53,13 +62,38 @@ curl -sf -o /dev/null "$BASE_URL/login" || {
   exit 1
 }
 
-# --no-deps: the spec logs in itself, so the grpcurl-based setup project
+# Stale PNGs from an earlier run must never reach the published set.
+rm -rf e2e/__screenshots__
+
+# --no-deps: the specs log in themselves, so the grpcurl-based setup project
 # isn't needed.
 PLAYWRIGHT_BASE_URL="$BASE_URL" PLAYWRIGHT_JSON_OUTPUT_FILE="$REPORT" \
-  npx playwright test "$SPEC" --project=chromium --no-deps --reporter=list,json
+  npx playwright test "${SPECS[@]}" --project=chromium --no-deps --reporter=list,json
 
+# The journey's test must have run and passed, whatever the other specs did.
 node -e '
-  const s = require(process.argv[1]).stats;
+  const report = require(process.argv[1]);
+  const s = report.stats;
   console.log(`e2e: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed, ${s.flaky} flaky`);
-  if (s.expected < 1 || s.skipped > 0 || s.unexpected > 0) process.exit(1);
-' "$REPORT"
+  const specs = [];
+  const walk = (suite) => {
+    specs.push(...(suite.specs ?? []));
+    (suite.suites ?? []).forEach(walk);
+  };
+  report.suites.forEach(walk);
+  const journey = specs
+    .filter((spec) => spec.file.endsWith(process.argv[2]))
+    .flatMap((spec) => spec.tests);
+  const passed = journey.filter((t) => t.status === "expected").length;
+  console.log(`e2e: ${process.argv[2]}: ${passed}/${journey.length} passed`);
+  if (journey.length < 1 || passed < journey.length) process.exit(1);
+  if (s.skipped > 0 || s.unexpected > 0) process.exit(1);
+' "$REPORT" "$JOURNEY"
+
+echo "e2e: took ${SECONDS}s"
+
+if [ "${E2E_SCREENSHOTS_STRICT:-}" = 1 ]; then
+  node scripts/checks/verify-screenshots.mjs --strict
+else
+  node scripts/checks/verify-screenshots.mjs || true
+fi

@@ -75,6 +75,24 @@ test("something", async ({ page }) => {
 Name files `*.spec.ts` (Playwright's default) — vitest tests use `*.test.ts`,
 so the two suites stay disjoint.
 
+## Key-screen screenshots
+
+`key-screens.spec.ts` captures 6 screens (`login`, `portfolios`,
+`positions`, `securities`, `transactions`, `profile`) in 3 variants
+(`light--desktop`, `dark--desktop`, `dark--phone`) as
+`e2e/__screenshots__/<screen>--<variant>.png` at the repo root, e.g.
+`portfolios--dark--phone.png`. The folder is gitignored; Horizon publishes
+it on the PR with a diff against the `e2e-baseline` branch.
+
+- The list lives in `scripts/checks/verify-screenshots.mjs`, which also
+  checks the 18 files after `scripts/checks/e2e.sh` runs. It only warns,
+  unless `E2E_SCREENSHOTS_STRICT=1`.
+- Use `captureScreenshot(page, name)` from `fixtures/screenshot.ts` for a
+  named full-page PNG. It never throws: a failed capture logs a warning.
+- The app is dark-only, so the light variant removes `<html class="dark">`.
+- The API key display is always masked, and a page that shows the full key
+  is not captured.
+
 ## Debugging
 
 - **`npx playwright test --ui`** — best for writing tests; gives a time-travel

@@ -35,4 +35,6 @@ AWSCLIV2.pkg
 /playwright-report/
 /playwright/.cache/
 /playwright/.auth/
+# Key-screen PNGs; Horizon publishes them on the PR (US-205).
+/e2e/__screenshots__/
 .claude/
