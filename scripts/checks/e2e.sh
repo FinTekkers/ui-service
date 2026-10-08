@@ -5,7 +5,8 @@
 # Fails if the journey is skipped or not run, not only if it fails.
 #
 # Also captures the key screens into e2e/__screenshots__/ (US-205), which
-# Horizon publishes on the PR. Missing screenshots only warn, unless
+# Horizon publishes on the PR. Every run logs each test's result and a
+# screenshots PASS/INCOMPLETE verdict; an incomplete set only warns, unless
 # E2E_SCREENSHOTS_STRICT=1.
 set -euo pipefail
 
@@ -81,6 +82,10 @@ node -e '
     (suite.suites ?? []).forEach(walk);
   };
   report.suites.forEach(walk);
+  // One line per test, so the stored check log shows every result.
+  for (const spec of specs) {
+    for (const t of spec.tests) console.log(`e2e:   ${t.status} ${spec.file} > ${spec.title}`);
+  }
   const journey = specs
     .filter((spec) => spec.file.endsWith(process.argv[2]))
     .flatMap((spec) => spec.tests);
@@ -90,10 +95,16 @@ node -e '
   if (s.skipped > 0 || s.unexpected > 0) process.exit(1);
 ' "$REPORT" "$JOURNEY"
 
-echo "e2e: took ${SECONDS}s"
-
-if [ "${E2E_SCREENSHOTS_STRICT:-}" = 1 ]; then
-  node scripts/checks/verify-screenshots.mjs --strict
+# Always verify strictly so every run's log records a pass/fail verdict for
+# the 18 key screens; only E2E_SCREENSHOTS_STRICT=1 lets it fail the check.
+if node scripts/checks/verify-screenshots.mjs --strict; then
+  echo "e2e: screenshots: PASS (all key screens captured)"
+elif [ "${E2E_SCREENSHOTS_STRICT:-}" = 1 ]; then
+  echo "e2e: screenshots: FAIL (E2E_SCREENSHOTS_STRICT=1)" >&2
+  echo "e2e: took ${SECONDS}s"
+  exit 1
 else
-  node scripts/checks/verify-screenshots.mjs || true
+  echo "e2e: screenshots: INCOMPLETE (warn-only, see above)" >&2
 fi
+
+echo "e2e: took ${SECONDS}s"
