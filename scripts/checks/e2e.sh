@@ -6,8 +6,8 @@
 #
 # Also captures the key screens into e2e/__screenshots__/ (US-205), which
 # Horizon publishes on the PR. Every run logs each test's result and a
-# screenshots PASS/INCOMPLETE verdict; an incomplete set only warns, unless
-# E2E_SCREENSHOTS_STRICT=1.
+# screenshots PASS/INCOMPLETE verdict, then runs key-screens-files.spec.ts,
+# whose assertions fail the check unless all 18 named PNGs are valid.
 set -euo pipefail
 
 PORT="${E2E_PORT:-4203}"
@@ -19,6 +19,7 @@ SPECS=(
   tests/e2e/capture-screenshot.spec.ts
 )
 REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
+FILES_REPORT="$(mktemp -t e2e-files-report.XXXXXX.json)"
 LOG="$(mktemp -t e2e-server.XXXXXX.log)"
 
 # Host backends (see the fintekkers-ui unit); overridable for local runs.
@@ -44,7 +45,7 @@ SERVER_PID=$!
 cleanup() {
   kill "$SERVER_PID" 2>/dev/null || true
   wait "$SERVER_PID" 2>/dev/null || true
-  rm -f "$REPORT" "$LOG"
+  rm -f "$REPORT" "$FILES_REPORT" "$LOG"
 }
 trap cleanup EXIT
 
@@ -106,5 +107,17 @@ elif [ "${E2E_SCREENSHOTS_STRICT:-}" = 1 ]; then
 else
   echo "e2e: screenshots: INCOMPLETE (warn-only, see above)" >&2
 fi
+
+# Its own run, so it only starts once every capture above has finished. It
+# must run and pass: a skip here means the env flag didn't reach it.
+E2E_KEY_SCREENS_FILES=1 PLAYWRIGHT_BASE_URL="$BASE_URL" \
+  PLAYWRIGHT_JSON_OUTPUT_FILE="$FILES_REPORT" \
+  npx playwright test tests/e2e/key-screens-files.spec.ts --project=chromium \
+  --no-deps --reporter=list,json
+node -e '
+  const s = require(process.argv[1]).stats;
+  console.log(`e2e: key-screens-files: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed`);
+  if (s.expected < 1 || s.skipped > 0 || s.unexpected > 0) process.exit(1);
+' "$FILES_REPORT"
 
 echo "e2e: took ${SECONDS}s"
