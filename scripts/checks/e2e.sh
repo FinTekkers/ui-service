@@ -8,6 +8,9 @@
 # Horizon publishes on the PR. Every run logs each test's result and a
 # screenshots PASS/INCOMPLETE verdict, then runs key-screens-files.spec.ts,
 # whose assertions fail the check unless all 18 named PNGs are valid.
+#
+# Last it runs the prices page and the sibling data pages' suites (US-209),
+# and the US-209 AAPL journey must pass.
 set -euo pipefail
 
 PORT="${E2E_PORT:-4203}"
@@ -19,9 +22,37 @@ SPECS=(
   tests/e2e/capture-screenshot.spec.ts
   tests/e2e/securities-filters-ledger-models.spec.ts
 )
+# US-209: the prices page and the sibling data pages' suites. They use the
+# config's storageState, which this script writes (no grpcurl setup project).
+# Data-dependent tests may skip. Every spec must be in the report, and no test
+# may fail unless it is listed in KNOWN_FAILING below.
+REGRESSION_SPECS=(
+  tests/e2e/prices.spec.ts
+  tests/e2e/securities-*.spec.ts
+  tests/e2e/transactions-*.spec.ts
+  tests/e2e/portfolio*.spec.ts
+  tests/e2e/curves-*.spec.ts
+)
+# These tests already failed on the host before US-209, on the pre-bump
+# baseline (978e521, ledger-models 0.4.29), because the host data lacks what
+# they need: no transactions, about 3.4k securities rather than 10k+, and no
+# buildable curve. They run and are logged as "known", but they don't fail the
+# check. Any other failure does.
+KNOWN_FAILING=(
+  'curves-pages-render.spec.ts > /data/curves: 200, no "Insufficient curve inputs", chart SVG has rendered traces'
+  'curves-pages-render.spec.ts > /data/treasury_curve part B: par yields rendered (Y axis ≠ couponRate column)'
+  'securities-default-issuer.spec.ts > no params: returns the full ledger (≥10k rows, ≥100 distinct issuers, both US Government AND non-US-Government)'
+  'transactions-page-render.spec.ts > grid renders at least one row when the DB has transactions'
+  'transactions-portfolio-columns.spec.ts > at least one data row renders a non-empty Portfolio name + a Portfolio ID toggle'
+)
 REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
 FILES_REPORT="$(mktemp -t e2e-files-report.XXXXXX.json)"
+REGRESSION_REPORT="$(mktemp -t e2e-regression-report.XXXXXX.json)"
 LOG="$(mktemp -t e2e-server.XXXXXX.log)"
+# The chromium project's storageState (playwright.config.ts).
+AUTH_STATE=playwright/.auth/user.json
+AUTH_BACKUP="$(mktemp -t e2e-auth-backup.XXXXXX.json)"
+if [ -f "$AUTH_STATE" ]; then cp "$AUTH_STATE" "$AUTH_BACKUP"; fi
 
 # Host backends (see the fintekkers-ui unit); overridable for local runs.
 export BROKER_HOST="${BROKER_HOST:-127.0.0.1:8085}"
@@ -46,7 +77,14 @@ SERVER_PID=$!
 cleanup() {
   kill "$SERVER_PID" 2>/dev/null || true
   wait "$SERVER_PID" 2>/dev/null || true
-  rm -f "$REPORT" "$FILES_REPORT" "$LOG"
+  rm -f "$REPORT" "$FILES_REPORT" "$REGRESSION_REPORT" "$LOG"
+  # The session written below is gitignored but not prettier-clean; don't
+  # leave it for the lint check. Put back any session that was there before.
+  if [ -s "$AUTH_BACKUP" ]; then
+    mv -f "$AUTH_BACKUP" "$AUTH_STATE"
+  else
+    rm -f "$AUTH_STATE" "$AUTH_BACKUP"
+  fi
 }
 trap cleanup EXIT
 
@@ -120,5 +158,66 @@ node -e '
   console.log(`e2e: key-screens-files: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed`);
   if (s.expected < 1 || s.skipped > 0 || s.unexpected > 0) process.exit(1);
 ' "$FILES_REPORT"
+
+# Log the test user in through the app and save the session where the
+# chromium project's storageState expects it.
+node --input-type=module -e '
+  import { request } from "@playwright/test";
+  import { STORAGE_STATE_PATH, ensureTestUserSession } from "./tests/e2e/fixtures/auth.ts";
+  import { mkdirSync, writeFileSync } from "fs";
+  import { dirname } from "path";
+  const state = await ensureTestUserSession({ request }, process.argv[1]);
+  mkdirSync(dirname(STORAGE_STATE_PATH), { recursive: true });
+  writeFileSync(STORAGE_STATE_PATH, JSON.stringify(state));
+' "$BASE_URL"
+
+PLAYWRIGHT_BASE_URL="$BASE_URL" PLAYWRIGHT_JSON_OUTPUT_FILE="$REGRESSION_REPORT" \
+  npx playwright test "${REGRESSION_SPECS[@]}" --project=chromium --no-deps \
+  --reporter=list,json || true
+KNOWN_FAILING="$(printf '%s\n' "${KNOWN_FAILING[@]}")" node -e '
+  const report = require(process.argv[1]);
+  const s = report.stats;
+  console.log(`e2e: regression: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed, ${s.flaky} flaky`);
+  const known = new Set(process.env.KNOWN_FAILING.split("\n").filter(Boolean));
+  const specs = [];
+  const walk = (suite) => {
+    specs.push(...(suite.specs ?? []));
+    (suite.suites ?? []).forEach(walk);
+  };
+  report.suites.forEach(walk);
+  let ok = true;
+  for (const e of report.errors ?? []) {
+    console.log(`e2e: regression: FAIL error: ${e.message}`);
+    ok = false;
+  }
+  const files = new Set();
+  for (const spec of specs) {
+    files.add(spec.file);
+    for (const t of spec.tests) {
+      const id = `${spec.file} > ${spec.title}`;
+      if (t.status === "expected" || t.status === "skipped") {
+        console.log(`e2e:   ${t.status} ${id}`);
+      } else if (known.has(id)) {
+        console.log(`e2e:   known (pre-US-209) ${t.status} ${id}`);
+      } else {
+        console.log(`e2e:   FAIL ${t.status} ${id}`);
+        ok = false;
+      }
+    }
+  }
+  for (const file of process.argv.slice(2).map((p) => p.replace(/^tests\/e2e\//, ""))) {
+    if (!files.has(file)) {
+      console.log(`e2e: regression: FAIL ${file} not run`);
+      ok = false;
+    }
+  }
+  // The US-209 AAPL journey must run and pass, never skip.
+  const aapl = specs.filter((spec) => spec.file === "prices.spec.ts" && spec.title.includes("AAPL price rows"));
+  if (aapl.length !== 1 || aapl[0].tests.some((t) => t.status !== "expected")) {
+    console.log("e2e: regression: FAIL prices.spec.ts AAPL journey did not pass");
+    ok = false;
+  }
+  if (!ok) process.exit(1);
+' "$REGRESSION_REPORT" "${REGRESSION_SPECS[@]}"
 
 echo "e2e: took ${SECONDS}s"

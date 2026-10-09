@@ -77,6 +77,7 @@ import {
 } from "$lib/securityFilterTypes";
 import { FetchSecurity } from "$lib/security";
 import { load } from "../routes/(authenticated)/data/securities/+page.server";
+import { expectLedgerModelsAtLeast } from "./ledgerModelsPin";
 
 const { FieldProto } = fieldPkg;
 const ROOT = path.resolve(__dirname, "../..");
@@ -179,28 +180,8 @@ describe("metric 1: SecuritySelect dropdowns come from ledger-models", () => {
 });
 
 describe("guardrail 1: ledger-models is the LM-275 release", () => {
-  test(`package-lock pins ${LM_RELEASE} and package.json's range resolves to it`, () => {
-    const lock = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "package-lock.json"), "utf-8")
-    );
-    const pkg = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "package.json"), "utf-8")
-    );
-    const locked = lock.packages["node_modules/@fintekkers/ledger-models"];
-    expect(locked.version).toBe(LM_RELEASE);
-    expect(lock.packages[""].dependencies["@fintekkers/ledger-models"]).toBe(
-      pkg.dependencies["@fintekkers/ledger-models"]
-    );
-    expect(pkg.dependencies["@fintekkers/ledger-models"]).toBe(
-      `^${LM_RELEASE}`
-    );
-    const installed = JSON.parse(
-      fs.readFileSync(
-        path.join(ROOT, "node_modules/@fintekkers/ledger-models/package.json"),
-        "utf-8"
-      )
-    );
-    expect(installed.version).toBe(LM_RELEASE);
+  test(`package-lock pins ${LM_RELEASE} or later and package.json's range resolves to it`, () => {
+    expectLedgerModelsAtLeast(LM_RELEASE);
   });
 });
 

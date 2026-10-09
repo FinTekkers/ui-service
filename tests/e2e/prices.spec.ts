@@ -11,6 +11,48 @@
  * playwright.config.ts), and use page.* APIs to drive the UI.
  */
 import { test, expect } from "@playwright/test";
+import { ensureTestUserSession, type StorageState } from "./fixtures/auth";
+
+// US-209: the price client reaches the price service through the broker.
+// Before @fintekkers/ledger-models 0.4.31 it called ledger-service on 8082 and
+// the page showed "UNIMPLEMENTED: Method not found: …Price/Search".
+test.describe("/data/prices?type=ticker&id=AAPL (US-209)", () => {
+  // Logs in itself, so it also runs with --no-deps (no setup project).
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  let session: StorageState;
+  test.beforeAll(async ({ playwright }) => {
+    session = await ensureTestUserSession(
+      playwright,
+      test.info().project.use.baseURL!
+    );
+  });
+
+  test("logged-in user sees AAPL price rows and no Price/Search error", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: test.info().project.use.baseURL,
+      storageState: session,
+    });
+    const page = await context.newPage();
+    try {
+      await page.goto("/data/prices?type=ticker&id=AAPL");
+
+      await expect(page.locator("p.security-desc")).toContainText("AAPL");
+      const priceRows = page
+        .getByRole("row")
+        .filter({ has: page.getByRole("cell") });
+      await expect(priceRows.first()).toBeVisible({ timeout: 15_000 });
+
+      await expect(page.getByText(/UNIMPLEMENTED/)).toHaveCount(0);
+      await expect(page.getByText(/Method not found/)).toHaveCount(0);
+      await expect(page).toHaveURL(/\/data\/prices\?type=ticker&id=AAPL$/);
+    } finally {
+      await context.close();
+    }
+  });
+});
 
 test.describe("/data/prices", () => {
   test("default landing renders the AAPL chart and price table", async ({
@@ -59,10 +101,9 @@ test.describe("/data/prices", () => {
     // ?type=cusip, but the form's internal state speaks proto names.
     await page.locator("select.type-select").selectOption("CUSIP");
     await expect(input).toHaveValue("");
-    // Placeholder consolidated to the IdentifierFilter default ("e.g.
-    // 912828ZT0") — the bare value, no "CUSIP" prefix. Use the example
-    // CUSIP as a stable proxy for "the CUSIP placeholder is showing".
-    await expect(input).toHaveAttribute("placeholder", /912828ZT0/);
+    // The per-type placeholder hint comes from ledger-models (US-207), so
+    // don't pin its example: just require a 9-character CUSIP example.
+    await expect(input).toHaveAttribute("placeholder", /^e\.g\. [0-9A-Z]{9}$/);
   });
 
   test("autocomplete suggests TSLA and selecting it navigates to /data/prices?id=TSLA (#239)", async ({
