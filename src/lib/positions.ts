@@ -30,7 +30,6 @@ import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid"
 // references like `EQUALS` go through the same `fromName` API so the
 // wrapper stays the single mapping point.
 import { PositionFilterOperator } from "@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator";
-import type { IdentifierTypeName } from "$lib/securityFilterTypes";
 
 function searchPositions(
   request: ReturnType<QueryPositionRequest["toProto"]>,
@@ -66,7 +65,7 @@ export async function FetchPosition(
   assetClass?: string,
   portfolioId?: string,
   apiKey?: string,
-  identifierType?: IdentifierTypeName
+  identifierType?: string
 ): Promise<any> {
   // Add IDENTIFIER filter if provided. identifierType defaults to CUSIP
   // for backward compat with the pre-#227 callers that only knew about

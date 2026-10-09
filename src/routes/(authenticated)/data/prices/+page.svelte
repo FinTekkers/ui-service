@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import IdentifierFilter from "../../../../components/filters/IdentifierFilter.svelte";
-  import type { IdentifierTypeName } from "$lib/securityFilterTypes";
   export let data: import("./$types").PageData;
 
   type PriceEntry = { date: string; price: number };
@@ -19,11 +18,11 @@
   $: priceError = (data.priceError ?? "") as string;
 
   // Phase 2 of second-brain#226: identifier UX moved to <IdentifierFilter>.
-  // Internal state is the proto name (IdentifierTypeName) — the page-server
+  // Internal state is the proto enum name — the page-server
   // still expects/emits short URL keys (?type=cusip|ticker|isin|series),
   // so we translate at the URL boundary in `navigateTo` and on initial
   // load below. Keeping the URL convention preserves existing bookmarks.
-  const PROTO_TO_URL: Record<IdentifierTypeName, string> = {
+  const PROTO_TO_URL: Record<string, string> = {
     // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore
     CUSIP: 'cusip',
@@ -43,9 +42,7 @@
     INDEX_NAME: "index",
     CASH: "cash",
   };
-  function urlKeyToProto(
-    urlKey: string | undefined | null
-  ): IdentifierTypeName {
+  function urlKeyToProto(urlKey: string | undefined | null): string {
     switch ((urlKey ?? "").toLowerCase()) {
       case "ticker":
         return "EXCH_TICKER";
@@ -59,9 +56,7 @@
   }
 
   // UI state — initialized from the URL on every load
-  let identifierType: IdentifierTypeName = urlKeyToProto(
-    data.selectedIdentifierType
-  );
+  let identifierType: string = urlKeyToProto(data.selectedIdentifierType);
   let identifierInput: string = data.selectedIdentifier ?? "";
   let showSuggestions = false;
   let selectedSuggestionIndex = -1;
@@ -70,7 +65,7 @@
   // the default "no params" landing don't get a surprise type change.
   // Source text asserted by src/tests/prices-default-10y.test.ts.
   // prettier-ignore
-  const PRICES_SUPPORTED_TYPES: readonly IdentifierTypeName[] = [
+  const PRICES_SUPPORTED_TYPES: readonly string[] = [
     'CUSIP',
     'EXCH_TICKER',
     'ISIN',
@@ -79,7 +74,7 @@
 
   function filterUniverse(
     universe: UniverseEntry[],
-    type: IdentifierTypeName,
+    type: string,
     input: string
   ): UniverseEntry[] {
     const q = input.toUpperCase();
@@ -94,7 +89,7 @@
       .slice(0, 10);
   }
 
-  function navigateTo(type: IdentifierTypeName, id: string) {
+  function navigateTo(type: string, id: string) {
     const u = new URL("/data/prices", window.location.origin);
     // Source text asserted by src/tests/prices-default-10y.test.ts.
     // prettier-ignore

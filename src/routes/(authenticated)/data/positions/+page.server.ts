@@ -6,10 +6,7 @@ import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/positi
 const { MeasureProto } = measure_pkg;
 
 import { FetchPosition } from "$lib/positions";
-import {
-  IDENTIFIER_TYPE_NAMES,
-  type IdentifierTypeName,
-} from "$lib/securityFilterTypes";
+import { IDENTIFIER_TYPE_NAMES } from "$lib/securityFilterTypes";
 import {
   FetchPortfolioUniverse,
   type PortfolioUniverseEntry,
@@ -86,10 +83,9 @@ export async function load({ locals, request }) {
   // state without crashing.
   const identifier = searchParams.get("identifier");
   const rawIdentifierType = searchParams.get("identifierType");
-  const identifierType: IdentifierTypeName | undefined =
-    rawIdentifierType &&
-    (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(rawIdentifierType)
-      ? (rawIdentifierType as IdentifierTypeName)
+  const identifierType: string | undefined =
+    rawIdentifierType && IDENTIFIER_TYPE_NAMES.includes(rawIdentifierType)
+      ? rawIdentifierType
       : undefined;
   const tradeDate = searchParams.get("tradeDate");
   // Operator passes through untransformed — PositionFilterOperator's
