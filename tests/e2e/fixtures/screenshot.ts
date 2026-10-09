@@ -15,6 +15,8 @@ import { isSafeToCapture } from "../../../scripts/checks/verify-screenshots.mjs"
 
 // Anything else could escape the folder or clash with Horizon's naming.
 const NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+// Taller pages are captured from the top down to this height.
+const MAX_HEIGHT = 10_000;
 
 /**
  * <repo root>/e2e/__screenshots__, from the Playwright config's location.
@@ -37,9 +39,19 @@ export async function captureScreenshot(
     const dir = screenshotDir();
     fs.mkdirSync(dir, { recursive: true });
     const file = path.join(dir, `${name}.png`);
+    // A very tall page (/data/securities lists every security, ~180,000px)
+    // times out or crashes the browser as one full-page PNG, so cap it.
+    const { width, height } = await page.evaluate(() => ({
+      width: document.documentElement.scrollWidth,
+      height: document.documentElement.scrollHeight,
+    }));
     await page.screenshot({
       path: file,
       fullPage: true,
+      clip:
+        height > MAX_HEIGHT
+          ? { x: 0, y: 0, width, height: MAX_HEIGHT }
+          : undefined,
       animations: "disabled",
       mask: opts.mask,
       timeout: 10_000,
