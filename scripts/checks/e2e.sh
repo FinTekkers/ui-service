@@ -17,6 +17,7 @@ SPECS=(
   "tests/e2e/$JOURNEY"
   tests/e2e/key-screens.spec.ts
   tests/e2e/capture-screenshot.spec.ts
+  tests/e2e/securities-filters-ledger-models.spec.ts
 )
 REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
 FILES_REPORT="$(mktemp -t e2e-files-report.XXXXXX.json)"

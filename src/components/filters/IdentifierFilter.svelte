@@ -26,26 +26,21 @@
   import { createEventDispatcher } from "svelte";
   import {
     IDENTIFIER_TYPE_NAMES,
-    IDENTIFIER_TYPE_LABELS,
-    IDENTIFIER_TYPE_PLACEHOLDERS,
-    type IdentifierTypeName,
+    identifierTypeNameLabelOf,
+    identifierTypeNamePlaceholderOf,
   } from "$lib/securityFilterTypes";
 
   // Two-way bindings — parent owns the state.
-  export let identifierType: IdentifierTypeName = "CUSIP";
+  export let identifierType: string = "CUSIP";
   export let identifier: string = "";
 
   // Subset of types this consumer wants. Default = all known types.
   // /data/prices passes ['CUSIP','ISIN','EXCH_TICKER','SERIES_ID']; securities
   // passes the full list (or omits this prop).
-  export let supportedTypes: readonly IdentifierTypeName[] =
-    IDENTIFIER_TYPE_NAMES;
+  export let supportedTypes: readonly string[] = IDENTIFIER_TYPE_NAMES;
 
-  // Built-in human-friendly labels + per-type placeholder hints. Defaults
-  // live in $lib/securityFilterTypes (single source for the proto-enum
-  // vocabulary); consumers can override per-type via the props below.
-  export let labels: Partial<Record<IdentifierTypeName, string>> = {};
-  export let placeholders: Partial<Record<IdentifierTypeName, string>> = {};
+  // Labels and per-type placeholder hints come from ledger-models
+  // (US-207) — there is no per-consumer override.
 
   // When true (default), switching the type clears the value input — a
   // CUSIP isn't a ticker, so leaving the previous value would lead to
@@ -61,14 +56,9 @@
   export let selectClass: string = "";
   export let inputId: string = "identifier-filter-value";
 
-  $: resolvedLabels = { ...IDENTIFIER_TYPE_LABELS, ...labels };
-  $: resolvedPlaceholders = {
-    ...IDENTIFIER_TYPE_PLACEHOLDERS,
-    ...placeholders,
-  };
-  $: currentPlaceholder = resolvedPlaceholders[identifierType];
+  $: currentPlaceholder = identifierTypeNamePlaceholderOf(identifierType);
 
-  const dispatch = createEventDispatcher<{ typeChange: IdentifierTypeName }>();
+  const dispatch = createEventDispatcher<{ typeChange: string }>();
 
   function handleTypeChange() {
     if (clearOnTypeChange) {
@@ -87,7 +77,7 @@
       aria-label="Identifier type"
     >
       {#each supportedTypes as type}
-        <option value={type}>{resolvedLabels[type]}</option>
+        <option value={type}>{identifierTypeNameLabelOf(type)}</option>
       {/each}
     </select>
   </div>

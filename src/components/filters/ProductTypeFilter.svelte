@@ -12,31 +12,24 @@
    * not picked directly).
    *
    * Friendly labels come from `labelOf(name)` (hierarchy.json's
-   * `label` field) and are exposed through `PRODUCT_TYPE_LABELS` in
-   * $lib/securityFilterTypes. Adding a new active leaf upstream lights
-   * up the dropdown automatically with its registry label.
+   * `label` field), re-exported by $lib/securityFilterTypes. Adding a
+   * new active leaf upstream lights up the dropdown automatically with
+   * its registry label.
    *
    * API conventions mirror IdentifierFilter / DateFilter / AssetClassFilter:
    *   - Two-way bound state (bind:value).
    *   - No URL knowledge — parent owns serialization.
    *   - Class pass-through (selectClass) for consumer styling.
-   *   - supportedTypes / labels props for subset + override.
+   *   - supportedTypes prop for a subset; labels come from ledger-models.
    */
-  import {
-    PRODUCT_TYPE_NAMES,
-    PRODUCT_TYPE_LABELS,
-    type ProductTypeName,
-  } from "$lib/securityFilterTypes";
+  import { PRODUCT_TYPE_NAMES, labelOf } from "$lib/securityFilterTypes";
 
   // Two-way binding — empty string represents "no filter" / All.
-  export let value: ProductTypeName | "" = "";
+  export let value: string = "";
 
   // Subset of proto names the consumer wants. Default = full active
   // set from product_hierarchy.activeProductTypes().
-  export let supportedTypes: readonly ProductTypeName[] = PRODUCT_TYPE_NAMES;
-
-  // Per-entry label override; merged over PRODUCT_TYPE_LABELS.
-  export let labels: Partial<Record<ProductTypeName, string>> = {};
+  export let supportedTypes: readonly string[] = PRODUCT_TYPE_NAMES;
 
   // Class pass-through.
   export let selectClass: string = "";
@@ -45,16 +38,11 @@
   // Empty-option label. Consumers wanting strict "must pick a type" UX
   // can pass `allLabel=''` and constrain via the parent.
   export let allLabel: string = "All";
-
-  $: resolvedLabels = { ...PRODUCT_TYPE_LABELS, ...labels } as Record<
-    string,
-    string
-  >;
 </script>
 
 <select id={selectId} class={selectClass} bind:value aria-label="Product type">
   <option value="">{allLabel}</option>
   {#each supportedTypes as t}
-    <option value={t}>{resolvedLabels[t] ?? t}</option>
+    <option value={t}>{labelOf(t)}</option>
   {/each}
 </select>

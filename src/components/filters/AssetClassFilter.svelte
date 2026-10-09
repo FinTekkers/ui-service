@@ -31,26 +31,19 @@
    *   - Two-way bound state (bind:value).
    *   - No URL knowledge — parent owns serialization.
    *   - Class pass-through (selectClass).
-   *   - supportedTypes / labels props for subset + override.
+   *   - supportedTypes prop for a subset; labels come from ledger-models.
    */
   import {
     ASSET_CLASS_NAMES,
-    ASSET_CLASS_LABELS,
-    type AssetClassName,
+    assetClassLabelOf,
   } from "$lib/securityFilterTypes";
   import { assetClassParentOf } from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy";
 
-  export let value: AssetClassName | "" = "";
-  export let supportedTypes: readonly AssetClassName[] = ASSET_CLASS_NAMES;
-  export let labels: Partial<Record<AssetClassName, string>> = {};
+  export let value: string = "";
+  export let supportedTypes: readonly string[] = ASSET_CLASS_NAMES;
   export let selectClass: string = "";
   export let selectId: string = "asset-class-filter-value";
   export let allLabel: string = "All";
-
-  $: resolvedLabels = { ...ASSET_CLASS_LABELS, ...labels } as Record<
-    string,
-    string
-  >;
 
   // Compute depth via parent walk so the dropdown can render tree
   // shape visually. Roots return depth 0; their immediate children
@@ -98,13 +91,15 @@
     const da = depthOf(a);
     const db = depthOf(b);
     if (da !== db) return da - db;
-    return (resolvedLabels[a] ?? a).localeCompare(resolvedLabels[b] ?? b);
+    return String(assetClassLabelOf(a)).localeCompare(
+      String(assetClassLabelOf(b))
+    );
   });
 </script>
 
 <select id={selectId} class={selectClass} bind:value aria-label="Asset class">
   <option value="">{allLabel}</option>
   {#each orderedSupportedTypes as t}
-    <option value={t}>{indentFor(t)}{resolvedLabels[t] ?? t}</option>
+    <option value={t}>{indentFor(t)}{assetClassLabelOf(t)}</option>
   {/each}
 </select>

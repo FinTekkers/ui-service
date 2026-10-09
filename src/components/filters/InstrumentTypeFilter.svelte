@@ -29,23 +29,18 @@
    *   - Two-way bound state (bind:value).
    *   - No URL knowledge — parent owns serialization.
    *   - Class pass-through.
-   *   - supportedTypes / labels props for subset + override.
+   *   - supportedTypes prop for a subset; labels come from ledger-models.
    */
   import {
     INSTRUMENT_TYPE_NAMES,
-    INSTRUMENT_TYPE_LABELS,
-    type InstrumentTypeName,
+    instrumentTypeCodeLabelOf,
   } from "$lib/securityFilterTypes";
 
   // Two-way binding — empty string represents "no filter" / All.
-  export let value: InstrumentTypeName | "" = "";
+  export let value: string = "";
 
   // Subset of instrument types the consumer wants. Default = full set.
-  export let supportedTypes: readonly InstrumentTypeName[] =
-    INSTRUMENT_TYPE_NAMES;
-
-  // Per-entry label override; merged over INSTRUMENT_TYPE_LABELS.
-  export let labels: Partial<Record<InstrumentTypeName, string>> = {};
+  export let supportedTypes: readonly string[] = INSTRUMENT_TYPE_NAMES;
 
   // Class pass-through.
   export let selectClass: string = "";
@@ -53,11 +48,6 @@
 
   // Empty-option label.
   export let allLabel: string = "All";
-
-  $: resolvedLabels = { ...INSTRUMENT_TYPE_LABELS, ...labels } as Record<
-    string,
-    string
-  >;
 </script>
 
 <select
@@ -68,6 +58,6 @@
 >
   <option value="">{allLabel}</option>
   {#each supportedTypes as t}
-    <option value={t}>{resolvedLabels[t] ?? t}</option>
+    <option value={t}>{instrumentTypeCodeLabelOf(t)}</option>
   {/each}
 </select>

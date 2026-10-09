@@ -4,13 +4,10 @@
   // Browser-safe import (security.ts pulls in @grpc/grpc-js which crashes
   // in the client bundle).
   import {
+    IDENTIFIER_TYPE_NAMES,
     PRODUCT_TYPE_NAMES,
     ASSET_CLASS_NAMES,
     INSTRUMENT_TYPE_NAMES,
-    type IdentifierTypeName,
-    type ProductTypeName,
-    type AssetClassName,
-    type InstrumentTypeName,
   } from "$lib/securityFilterTypes";
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
   import ProductTypeFilter from "../filters/ProductTypeFilter.svelte";
@@ -27,17 +24,17 @@
   // migration per #256 (Postgres data already wiped in M2).
 
   let identifierInput: string = "";
-  let identifierType: IdentifierTypeName = "CUSIP";
+  let identifierType: string = "CUSIP";
   // Phase 3 PR-B of #226: issueDate UX uses the shared DateFilter
   // primitive. Dropdown shows the full PositionFilterOperator set
   // (post-#229 review): the security search backend supports every
   // operator, so the UI exposes every operator.
   let issueDateInput: string = "";
   let issueDateOperator: string = "";
-  let assetClassInput: AssetClassName | "" = "";
+  let assetClassInput: string = "";
   let issuerNameInput: string = "";
-  let productTypeInput: ProductTypeName | "" = "";
-  let instrumentTypeInput: InstrumentTypeName | "" = "";
+  let productTypeInput: string = "";
+  let instrumentTypeInput: string = "";
 
   function fetchSecurities() {
     if (typeof window === "undefined") return;
@@ -78,19 +75,9 @@
       urlParams.get("identifier") ?? urlParams.get("cusip");
     if (identifierFromUrl) identifierInput = identifierFromUrl;
 
-    // IdentifierFilter validates the type itself via supportedTypes, but we
-    // still guard against a typo'd URL setting an invalid value here so the
-    // bound prop never becomes a string outside the union.
+    // Guard against a typo'd URL setting a value ledger-models doesn't list.
     const idTypeFromUrl = urlParams.get("identifierType");
-    if (
-      idTypeFromUrl === "CUSIP" ||
-      idTypeFromUrl === "ISIN" ||
-      idTypeFromUrl === "EXCH_TICKER" ||
-      idTypeFromUrl === "SERIES_ID" ||
-      idTypeFromUrl === "OSI" ||
-      idTypeFromUrl === "FIGI" ||
-      idTypeFromUrl === "CASH"
-    ) {
+    if (idTypeFromUrl && IDENTIFIER_TYPE_NAMES.includes(idTypeFromUrl)) {
       identifierType = idTypeFromUrl;
     }
 
@@ -109,10 +96,8 @@
       // M5 / #260: hierarchy-tree names sourced from
       // product_hierarchy.allAssetClasses(). Unknown values drop to
       // empty (clean-slate migration; no legacy free-form shim).
-      if (
-        (ASSET_CLASS_NAMES as readonly string[]).includes(assetClassFromUrl)
-      ) {
-        assetClassInput = assetClassFromUrl as AssetClassName;
+      if (ASSET_CLASS_NAMES.includes(assetClassFromUrl)) {
+        assetClassInput = assetClassFromUrl;
       }
     }
 
@@ -120,21 +105,16 @@
     if (issuerNameFromUrl !== null) issuerNameInput = issuerNameFromUrl;
 
     const productTypeFromUrl = urlParams.get("productType");
-    if (
-      productTypeFromUrl &&
-      (PRODUCT_TYPE_NAMES as readonly string[]).includes(productTypeFromUrl)
-    ) {
-      productTypeInput = productTypeFromUrl as ProductTypeName;
+    if (productTypeFromUrl && PRODUCT_TYPE_NAMES.includes(productTypeFromUrl)) {
+      productTypeInput = productTypeFromUrl;
     }
 
     const instrumentTypeFromUrl = urlParams.get("instrumentType");
     if (
       instrumentTypeFromUrl &&
-      (INSTRUMENT_TYPE_NAMES as readonly string[]).includes(
-        instrumentTypeFromUrl
-      )
+      INSTRUMENT_TYPE_NAMES.includes(instrumentTypeFromUrl)
     ) {
-      instrumentTypeInput = instrumentTypeFromUrl as InstrumentTypeName;
+      instrumentTypeInput = instrumentTypeFromUrl;
     }
   });
 </script>

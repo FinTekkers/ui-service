@@ -12,10 +12,7 @@
   import MeasureMultiselectFilter from "../filters/MeasureMultiselectFilter.svelte";
   import HideZerosToggle from "../filters/HideZerosToggle.svelte";
   // Browser-safe import (security.ts pulls in @grpc/grpc-js).
-  import {
-    IDENTIFIER_TYPE_NAMES,
-    type IdentifierTypeName,
-  } from "$lib/securityFilterTypes";
+  import { IDENTIFIER_TYPE_NAMES } from "$lib/securityFilterTypes";
 
   const { FieldProto } = pkg;
 
@@ -44,7 +41,7 @@
   // IdentifierFilter primitive. Was CUSIP-only (cusipInput + ?cusip=...);
   // now matches /data/securities and /data/prices.
   let identifierInput: string = "";
-  let identifierType: IdentifierTypeName = "CUSIP";
+  let identifierType: string = "CUSIP";
   // Phase 3 of #226 (PR-A): tradeDate UX uses the shared DateFilter
   // primitive. State + URL conventions unchanged — the bound
   // `tradeDateInput` and `tradeDateOperator` flow through the same
@@ -168,11 +165,9 @@
         identifierInput = identifierFromUrl;
         if (
           identifierTypeFromUrl &&
-          (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(
-            identifierTypeFromUrl
-          )
+          IDENTIFIER_TYPE_NAMES.includes(identifierTypeFromUrl)
         ) {
-          identifierType = identifierTypeFromUrl as IdentifierTypeName;
+          identifierType = identifierTypeFromUrl;
         }
       }
 

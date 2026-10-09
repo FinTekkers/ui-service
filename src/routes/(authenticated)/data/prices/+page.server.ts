@@ -1,8 +1,4 @@
-import {
-  FetchSecurity,
-  FetchSecurityUniverse,
-  type IdentifierTypeName,
-} from "$lib/security";
+import { FetchSecurity, FetchSecurityUniverse } from "$lib/security";
 import type { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import { PriceService } from "@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService";
 import { UUIDProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js";
@@ -21,7 +17,7 @@ interface PriceEntry {
 
 const VALID_TYPES = new Set(["cusip", "ticker", "isin", "series"]);
 
-function parseIdentifierType(raw: string | null): IdentifierTypeName {
+function parseIdentifierType(raw: string | null): string {
   const v = (raw ?? "").toLowerCase();
   if (v === "ticker") return "EXCH_TICKER";
   if (v === "isin") return "ISIN";

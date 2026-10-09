@@ -13,7 +13,7 @@ import { getServiceConnection } from "$lib/grpc-auth";
 // (name string) via the wrapper.
 import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb";
 import {
-  assetClassDescendantsOf,
+  assetClassMatches,
   instrumentTypeOf,
   allAssetClasses,
 } from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy";
@@ -74,22 +74,11 @@ export interface securityData {
 // platform currently models. The names + iteration order live in
 // $lib/securityFilterTypes (browser-safe, no grpc deps); we re-export them
 // here so existing callers of $lib/security keep working.
-// M5 / #260: SecurityTypeName retired; ProductTypeName is the new
-// per-leaf vocabulary.
 import {
   IDENTIFIER_TYPE_NAMES,
   PRODUCT_TYPE_NAMES,
-  type IdentifierTypeName,
-  type ProductTypeName,
-  type InstrumentTypeName,
 } from "./securityFilterTypes";
-export {
-  IDENTIFIER_TYPE_NAMES,
-  PRODUCT_TYPE_NAMES,
-  type IdentifierTypeName,
-  type ProductTypeName,
-  type InstrumentTypeName,
-};
+export { IDENTIFIER_TYPE_NAMES, PRODUCT_TYPE_NAMES };
 
 // M6 #263 bug 3: BondSecurity.getProductType() in ledger-models 0.2.1
 // overrides the base Security wrapper and returns a tenor-derived
@@ -248,9 +237,7 @@ export function hasMissingIdentifier(security: Security): boolean {
   return primaryIdentifier(security) === undefined;
 }
 
-function identifierTypeNameToProto(
-  name: IdentifierTypeName
-): IdentifierTypeProto {
+function identifierTypeNameToProto(name: string): IdentifierTypeProto {
   switch (name) {
     case "ISIN":
       return IdentifierTypeProto.ISIN;
@@ -276,7 +263,7 @@ export async function FetchSecurity(
   assetClass: string | null,
   issuerName: string | null,
   identifier?: string,
-  identifierType?: IdentifierTypeName,
+  identifierType?: string,
   issueDate?: string,
   // Accepts the full PositionFilterOperator name set — the backend's
   // security search supports every operator (EQUALS, NOT_EQUALS,
@@ -287,8 +274,8 @@ export async function FetchSecurity(
   // not by trimming the type here.
   issueDateOperator?: string,
   apiKey?: string,
-  productType?: ProductTypeName,
-  instrumentType?: InstrumentTypeName
+  productType?: string,
+  instrumentType?: string
 ): Promise<securityData[]> {
   // #306: ledger-service rejects an empty filter ("There was no UUID list
   // nor security filter in the request"), so when EVERY user-driven filter
@@ -365,13 +352,6 @@ export async function FetchSecurity(
     // post-filter widens to the descendant set.
     filterSecurity.addEqualsFilter(FieldProto.ASSET_CLASS, assetClass);
   }
-
-  // Compute the asset-class match set up front. Empty array means
-  // "no asset-class post-filter applied". Includes the input itself
-  // PLUS descendants when the input is an internal node.
-  const assetClassMatchSet: ReadonlySet<string> = assetClass
-    ? new Set([assetClass, ...assetClassDescendantsOf(assetClass)])
-    : new Set<string>();
 
   if (issuerName) {
     filterSecurity.addEqualsFilter(FieldProto.SECURITY_ISSUER_NAME, issuerName);
@@ -468,16 +448,16 @@ export async function FetchSecurity(
           return acc;
         }
 
-        // Tree-aware asset-class post-filter. If the user picked an
-        // internal node like FIXED_INCOME, the eq-filter sent to the
-        // server narrowed to that exact value; widen the match here to
-        // include descendants too (RATES, CREDIT) so server-side
-        // results that came back as 'RATES' (for instance) still pass.
-        if (assetClassMatchSet.size > 0) {
-          const rowAssetClass = security.getAssetClass();
-          if (rowAssetClass && !assetClassMatchSet.has(rowAssetClass)) {
-            return acc;
-          }
+        // Tree-aware asset-class post-filter (US-207): ledger-models'
+        // assetClassMatches is the one rule. Picking an internal node
+        // like FIXED_INCOME keeps rows stored as RATES / CREDIT (and
+        // legacy labels such as "Fixed Income"); rows it doesn't match,
+        // including blank asset classes, are dropped.
+        if (
+          assetClass &&
+          !assetClassMatches(assetClass, security.getAssetClass())
+        ) {
+          return acc;
         }
         const bondSec = security.isBond() ? security : null;
         const issuances = bondSec?.getIssuances() ?? [];

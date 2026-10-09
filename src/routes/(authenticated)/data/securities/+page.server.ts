@@ -3,9 +3,6 @@ import {
   FetchSecurityByUuid,
   IDENTIFIER_TYPE_NAMES,
   PRODUCT_TYPE_NAMES,
-  type IdentifierTypeName,
-  type ProductTypeName,
-  type InstrumentTypeName,
 } from "$lib/security";
 import {
   INSTRUMENT_TYPE_NAMES,
@@ -33,10 +30,9 @@ export async function load({ locals, request }) {
   // (was 'ISIN'|'CUSIP' only). Anything not in the allowlist falls back to
   // undefined → FetchSecurity defaults to CUSIP, preserving prior behavior
   // for malformed / legacy URLs.
-  const identifierType: IdentifierTypeName | undefined =
-    rawIdType &&
-    (IDENTIFIER_TYPE_NAMES as readonly string[]).includes(rawIdType)
-      ? (rawIdType as IdentifierTypeName)
+  const identifierType: string | undefined =
+    rawIdType && IDENTIFIER_TYPE_NAMES.includes(rawIdType)
+      ? rawIdType
       : undefined;
   const issueDate = searchParams.get("issueDate");
   // FetchSecurity accepts the full PositionFilterOperator set; the
@@ -49,8 +45,7 @@ export async function load({ locals, request }) {
   // set (allAssetClasses()).
   const rawAssetClass = searchParams.get("assetClass");
   const assetClass: string | null =
-    rawAssetClass &&
-    (ASSET_CLASS_NAMES as readonly string[]).includes(rawAssetClass)
+    rawAssetClass && ASSET_CLASS_NAMES.includes(rawAssetClass)
       ? rawAssetClass
       : null;
   // #306: rawIssuerName === null means no issuer filter (all issuers),
@@ -61,20 +56,18 @@ export async function load({ locals, request }) {
   // FetchSecurity since PositionFilter has no PRODUCT_TYPE today.
   // Allowlist sourced from product_hierarchy.activeProductTypes().
   const rawProductType = searchParams.get("productType");
-  const productType: ProductTypeName | undefined =
-    rawProductType &&
-    (PRODUCT_TYPE_NAMES as readonly string[]).includes(rawProductType)
-      ? (rawProductType as ProductTypeName)
+  const productType: string | undefined =
+    rawProductType && PRODUCT_TYPE_NAMES.includes(rawProductType)
+      ? rawProductType
       : undefined;
 
   // instrumentType (NEW in M5 / #260) — CASH / DERIVATIVE /
   // REFERENCE_INDEX, sourced from product_hierarchy.allInstrumentTypes().
   // Post-filtered via hierarchy.json's per-leaf instrument_type mapping.
   const rawInstrumentType = searchParams.get("instrumentType");
-  const instrumentType: InstrumentTypeName | undefined =
-    rawInstrumentType &&
-    (INSTRUMENT_TYPE_NAMES as readonly string[]).includes(rawInstrumentType)
-      ? (rawInstrumentType as InstrumentTypeName)
+  const instrumentType: string | undefined =
+    rawInstrumentType && INSTRUMENT_TYPE_NAMES.includes(rawInstrumentType)
+      ? rawInstrumentType
       : undefined;
 
   const security = uuid
