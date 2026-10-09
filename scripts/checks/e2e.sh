@@ -19,8 +19,19 @@ SPECS=(
   tests/e2e/capture-screenshot.spec.ts
   tests/e2e/securities-filters-ledger-models.spec.ts
 )
+# US-209: the prices page and the sibling data pages' suites. They use the
+# config's storageState, which this script writes (no grpcurl setup project).
+# Data-dependent tests may skip; none may fail, and every spec must run one.
+REGRESSION_SPECS=(
+  tests/e2e/prices.spec.ts
+  tests/e2e/securities-*.spec.ts
+  tests/e2e/transactions-*.spec.ts
+  tests/e2e/portfolio*.spec.ts
+  tests/e2e/curves-*.spec.ts
+)
 REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
 FILES_REPORT="$(mktemp -t e2e-files-report.XXXXXX.json)"
+REGRESSION_REPORT="$(mktemp -t e2e-regression-report.XXXXXX.json)"
 LOG="$(mktemp -t e2e-server.XXXXXX.log)"
 
 # Host backends (see the fintekkers-ui unit); overridable for local runs.
@@ -46,7 +57,7 @@ SERVER_PID=$!
 cleanup() {
   kill "$SERVER_PID" 2>/dev/null || true
   wait "$SERVER_PID" 2>/dev/null || true
-  rm -f "$REPORT" "$FILES_REPORT" "$LOG"
+  rm -f "$REPORT" "$FILES_REPORT" "$REGRESSION_REPORT" "$LOG"
 }
 trap cleanup EXIT
 
@@ -120,5 +131,58 @@ node -e '
   console.log(`e2e: key-screens-files: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed`);
   if (s.expected < 1 || s.skipped > 0 || s.unexpected > 0) process.exit(1);
 ' "$FILES_REPORT"
+
+# Log the test user in through the app and save the session where the
+# chromium project's storageState expects it.
+node --input-type=module -e '
+  import { request } from "@playwright/test";
+  import { STORAGE_STATE_PATH, ensureTestUserSession } from "./tests/e2e/fixtures/auth.ts";
+  import { mkdirSync, writeFileSync } from "fs";
+  import { dirname } from "path";
+  const state = await ensureTestUserSession({ request }, process.argv[1]);
+  mkdirSync(dirname(STORAGE_STATE_PATH), { recursive: true });
+  writeFileSync(STORAGE_STATE_PATH, JSON.stringify(state));
+' "$BASE_URL"
+
+PLAYWRIGHT_BASE_URL="$BASE_URL" PLAYWRIGHT_JSON_OUTPUT_FILE="$REGRESSION_REPORT" \
+  npx playwright test "${REGRESSION_SPECS[@]}" --project=chromium --no-deps \
+  --reporter=list,json || true
+node -e '
+  const report = require(process.argv[1]);
+  const s = report.stats;
+  console.log(`e2e: regression: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed, ${s.flaky} flaky`);
+  const specs = [];
+  const walk = (suite) => {
+    specs.push(...(suite.specs ?? []));
+    (suite.suites ?? []).forEach(walk);
+  };
+  report.suites.forEach(walk);
+  const byFile = new Map();
+  for (const spec of specs) {
+    for (const t of spec.tests) {
+      console.log(`e2e:   ${t.status} ${spec.file} > ${spec.title}`);
+      const f = byFile.get(spec.file) ?? { passed: 0, failed: 0 };
+      if (t.status === "expected") f.passed++;
+      else if (t.status !== "skipped") f.failed++;
+      byFile.set(spec.file, f);
+    }
+  }
+  const expectedFiles = process.argv.slice(2).map((p) => p.replace(/^tests\/e2e\//, ""));
+  let ok = report.errors?.length ? false : true;
+  for (const file of expectedFiles) {
+    const f = byFile.get(file);
+    if (!f || f.passed < 1 || f.failed > 0) {
+      console.log(`e2e: regression: FAIL ${file} (${f ? `${f.passed} passed, ${f.failed} failed` : "not run"})`);
+      ok = false;
+    }
+  }
+  // The US-209 AAPL journey must run and pass, never skip.
+  const aapl = specs.filter((spec) => spec.file === "prices.spec.ts" && spec.title.includes("AAPL price rows"));
+  if (aapl.length !== 1 || aapl[0].tests.some((t) => t.status !== "expected")) {
+    console.log("e2e: regression: FAIL prices.spec.ts AAPL journey did not pass");
+    ok = false;
+  }
+  if (!ok) process.exit(1);
+' "$REGRESSION_REPORT" "${REGRESSION_SPECS[@]}"
 
 echo "e2e: took ${SECONDS}s"

@@ -47,7 +47,7 @@ test.describe("/data/prices?type=ticker&id=AAPL (US-209)", () => {
 
       await expect(page.getByText(/UNIMPLEMENTED/)).toHaveCount(0);
       await expect(page.getByText(/Method not found/)).toHaveCount(0);
-      expect(new URL(page.url()).pathname).toBe("/data/prices");
+      await expect(page).toHaveURL(/\/data\/prices\?type=ticker&id=AAPL$/);
     } finally {
       await context.close();
     }
