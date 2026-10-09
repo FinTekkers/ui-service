@@ -49,6 +49,10 @@ REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
 FILES_REPORT="$(mktemp -t e2e-files-report.XXXXXX.json)"
 REGRESSION_REPORT="$(mktemp -t e2e-regression-report.XXXXXX.json)"
 LOG="$(mktemp -t e2e-server.XXXXXX.log)"
+# The chromium project's storageState (playwright.config.ts).
+AUTH_STATE=playwright/.auth/user.json
+AUTH_BACKUP="$(mktemp -t e2e-auth-backup.XXXXXX.json)"
+if [ -f "$AUTH_STATE" ]; then cp "$AUTH_STATE" "$AUTH_BACKUP"; fi
 
 # Host backends (see the fintekkers-ui unit); overridable for local runs.
 export BROKER_HOST="${BROKER_HOST:-127.0.0.1:8085}"
@@ -75,8 +79,12 @@ cleanup() {
   wait "$SERVER_PID" 2>/dev/null || true
   rm -f "$REPORT" "$FILES_REPORT" "$REGRESSION_REPORT" "$LOG"
   # The session written below is gitignored but not prettier-clean; don't
-  # leave it for the lint check.
-  rm -f playwright/.auth/user.json
+  # leave it for the lint check. Put back any session that was there before.
+  if [ -s "$AUTH_BACKUP" ]; then
+    mv -f "$AUTH_BACKUP" "$AUTH_STATE"
+  else
+    rm -f "$AUTH_STATE" "$AUTH_BACKUP"
+  fi
 }
 trap cleanup EXIT
 
