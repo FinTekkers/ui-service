@@ -101,10 +101,9 @@ test.describe("/data/prices", () => {
     // ?type=cusip, but the form's internal state speaks proto names.
     await page.locator("select.type-select").selectOption("CUSIP");
     await expect(input).toHaveValue("");
-    // Placeholder consolidated to the IdentifierFilter default ("e.g.
-    // 912828ZT0") — the bare value, no "CUSIP" prefix. Use the example
-    // CUSIP as a stable proxy for "the CUSIP placeholder is showing".
-    await expect(input).toHaveAttribute("placeholder", /912828ZT0/);
+    // The per-type placeholder hint comes from ledger-models (US-207), so
+    // don't pin its example: just require a 9-character CUSIP example.
+    await expect(input).toHaveAttribute("placeholder", /^e\.g\. [0-9A-Z]{9}$/);
   });
 
   test("autocomplete suggests TSLA and selecting it navigates to /data/prices?id=TSLA (#239)", async ({
