@@ -13,7 +13,10 @@
  * Assumes the SOMA seed is loaded — same dependency as the existing
  * portfolio-soma-positions / portfolio-soma-transactions specs.
  */
-import { test, expect, type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
+// US-211: the ledger has no seed portfolios; this `test` owns one probe
+// portfolio for the run and deletes it again afterwards.
+import { test } from "./fixtures/probe";
 
 /**
  * Resolve a portfolio for autocomplete testing. Pre-M5 the seed was

@@ -9,9 +9,12 @@
  */
 import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 import {
   BROKER_URL,
+  apiKeyFromStorageState,
+  brokerMetadata,
   createProbe,
   deleteProbe,
   isProbeName,
@@ -311,12 +314,47 @@ describe("guardrail 4: broker-only routing", () => {
     expect(src).not.toContain(legacyHost);
   });
 
-  it("live client sends the app's tenant routing header", () => {
-    const src = fs.readFileSync(
-      path.resolve("src/tests/probe-cleanup.ts"),
-      "utf-8"
-    );
-    expect(src).toContain("x-fintekkers-tenant");
-    expect(src).toContain("brokerMetadata()");
+  it("live client sends the app's tenant routing header and API key", () => {
+    const metadata = brokerMetadata("key-123");
+    expect(metadata.get("x-fintekkers-tenant")).toEqual([
+      process.env.FINTEKKERS_TENANT ?? "production",
+    ]);
+    expect(metadata.get("x-api-key")).toEqual(["key-123"]);
+    expect(brokerMetadata(undefined).get("x-api-key")).toEqual([]);
+  });
+});
+
+describe("broker API key from the Playwright session", () => {
+  const writeState = (state: unknown): string => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "probe-cleanup-"));
+    const file = path.join(dir, "user.json");
+    fs.writeFileSync(file, JSON.stringify(state));
+    return file;
+  };
+
+  it("reads the ft_api_key cookie", () => {
+    const file = writeState({
+      cookies: [
+        { name: "other", value: "x" },
+        { name: "ft_api_key", value: "key-abc" },
+      ],
+    });
+    try {
+      expect(apiKeyFromStorageState(file)).toBe("key-abc");
+    } finally {
+      fs.rmSync(path.dirname(file), { recursive: true, force: true });
+    }
+  });
+
+  it("returns undefined when the file or cookie is missing", () => {
+    const file = writeState({ cookies: [] });
+    try {
+      expect(apiKeyFromStorageState(file)).toBeUndefined();
+      expect(
+        apiKeyFromStorageState(path.join(path.dirname(file), "missing.json"))
+      ).toBeUndefined();
+    } finally {
+      fs.rmSync(path.dirname(file), { recursive: true, force: true });
+    }
   });
 });

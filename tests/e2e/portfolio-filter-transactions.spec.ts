@@ -22,7 +22,10 @@
  * regenerated the seed; the helper now picks the first portfolio in
  * the table rather than SOMA-specifically.
  */
-import { test, expect, type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
+// US-211: the ledger has no seed portfolios; this `test` owns one probe
+// portfolio for the run and deletes it again afterwards.
+import { test } from "./fixtures/probe";
 
 async function resolveFirstPortfolio(
   page: Page

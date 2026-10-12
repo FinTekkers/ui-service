@@ -20,11 +20,12 @@
  *
  * Every live call goes through the broker at `BROKER_URL` — the same path
  * the create uses — carrying the same `x-fintekkers-tenant` routing header
- * the app sends. Nothing here calls a backend service directly, touches
+ * and `x-api-key` the app sends. Nothing here calls a backend service directly, touches
  * transactions or securities, or runs SQL.
  */
 
 import grpc from "@grpc/grpc-js";
+import { readFileSync } from "fs";
 
 export const BROKER_URL = "127.0.0.1:8085";
 export const PROBE_RETENTION_MS = 3_600_000;
@@ -42,6 +43,11 @@ const TENANT_HEADER = "x-fintekkers-tenant";
 function tenantValue(): string {
   return process.env.FINTEKKERS_TENANT ?? "production";
 }
+
+// The broker authenticates every call by this header (src/lib/grpc-auth.ts
+// `getAuthenticatedInterceptor`); the app keeps the key in this cookie.
+const API_KEY_HEADER = "x-api-key";
+const API_KEY_COOKIE = "ft_api_key";
 
 const PROBE_NAME_RE = /^qa-.+-probe-.+$/;
 const PROBE_SUFFIX_RE = /^[0-9a-z]+$/i;
@@ -282,16 +288,16 @@ async function ledgerModules(): Promise<LedgerModules> {
     "@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js"
   );
   const filterMod: AnyModule = await import(
-    "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter"
+    "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter.js"
   );
   const fieldMod: AnyModule = await import(
     "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js"
   );
   const uuidMod: AnyModule = await import(
-    "@fintekkers/ledger-models/node/wrappers/models/utils/uuid"
+    "@fintekkers/ledger-models/node/wrappers/models/utils/uuid.js"
   );
   const datetimeMod: AnyModule = await import(
-    "@fintekkers/ledger-models/node/wrappers/models/utils/datetime"
+    "@fintekkers/ledger-models/node/wrappers/models/utils/datetime.js"
   );
   cachedLedgerModules = {
     PortfolioClient: pick(portfolioGrpc, "PortfolioClient"),
@@ -352,14 +358,17 @@ function grpcError(err: any): Error {
   return new Error(`${err.code}: ${err.details ?? err.message}`);
 }
 
-function brokerMetadata() {
+export function brokerMetadata(apiKey: string | undefined): grpc.Metadata {
   const metadata = new grpc.Metadata();
   metadata.add(TENANT_HEADER, tenantValue());
+  // The broker rejects every ledger call without the caller's key.
+  if (apiKey) metadata.add(API_KEY_HEADER, apiKey);
   return metadata;
 }
 
 async function grpcCreatePortfolio(
   brokerUrl: string,
+  apiKey: string | undefined,
   name: string
 ): Promise<void> {
   const mods = await ledgerModules();
@@ -380,7 +389,7 @@ async function grpcCreatePortfolio(
     grpc.credentials.createInsecure()
   );
   await new Promise<void>((resolve, reject) => {
-    client.createOrUpdate(req, brokerMetadata(), (err: any) => {
+    client.createOrUpdate(req, brokerMetadata(apiKey), (err: any) => {
       if (err) reject(grpcError(err));
       else resolve();
     });
@@ -388,7 +397,8 @@ async function grpcCreatePortfolio(
 }
 
 async function grpcSearchPortfolios(
-  brokerUrl: string
+  brokerUrl: string,
+  apiKey: string | undefined
 ): Promise<ProbePortfolio[]> {
   const mods = await ledgerModules();
   const client = new mods.PortfolioClient(
@@ -403,7 +413,7 @@ async function grpcSearchPortfolios(
 
   const found: ProbePortfolio[] = [];
   await new Promise<void>((resolve, reject) => {
-    const stream = client.search(req, brokerMetadata());
+    const stream = client.search(req, brokerMetadata(apiKey));
     stream.on("data", (resp: any) => {
       const list = resp.getPortfolioResponseList?.() ?? [];
       for (const p of list) {
@@ -427,6 +437,7 @@ async function grpcSearchPortfolios(
 
 async function grpcHasLinkedTransactions(
   brokerUrl: string,
+  apiKey: string | undefined,
   name: string
 ): Promise<boolean> {
   const mods = await ledgerModules();
@@ -450,7 +461,7 @@ async function grpcHasLinkedTransactions(
 
   let count = 0;
   await new Promise<void>((resolve, reject) => {
-    const stream = client.search(req, brokerMetadata());
+    const stream = client.search(req, brokerMetadata(apiKey));
     stream.on("data", (resp: any) => {
       count += resp.getTransactionResponseList?.()?.length ?? 0;
     });
@@ -462,9 +473,10 @@ async function grpcHasLinkedTransactions(
 
 async function grpcDeletePortfolio(
   brokerUrl: string,
+  apiKey: string | undefined,
   name: string
 ): Promise<void> {
-  const portfolios = await grpcSearchPortfolios(brokerUrl);
+  const portfolios = await grpcSearchPortfolios(brokerUrl, apiKey);
   const target = portfolios.find((p) => p.name === name);
   if (!target) return;
   if (!target.uuidHex) {
@@ -487,7 +499,7 @@ async function grpcDeletePortfolio(
     grpc.credentials.createInsecure()
   );
   await new Promise<void>((resolve, reject) => {
-    client.delete(request, brokerMetadata(), (err: any) => {
+    client.delete(request, brokerMetadata(apiKey), (err: any) => {
       if (err) reject(grpcError(err));
       else resolve();
     });
@@ -495,14 +507,37 @@ async function grpcDeletePortfolio(
 }
 
 export function createGrpcProbeLedger(
-  brokerUrl: string = BROKER_URL
+  brokerUrl: string = BROKER_URL,
+  apiKey?: string
 ): ProbeLedger {
   return {
     createOrUpdatePortfolio: (name: string) =>
-      grpcCreatePortfolio(brokerUrl, name),
-    searchPortfolios: () => grpcSearchPortfolios(brokerUrl),
+      grpcCreatePortfolio(brokerUrl, apiKey, name),
+    searchPortfolios: () => grpcSearchPortfolios(brokerUrl, apiKey),
     hasLinkedTransactions: (name: string) =>
-      grpcHasLinkedTransactions(brokerUrl, name),
-    deletePortfolio: (name: string) => grpcDeletePortfolio(brokerUrl, name),
+      grpcHasLinkedTransactions(brokerUrl, apiKey, name),
+    deletePortfolio: (name: string) =>
+      grpcDeletePortfolio(brokerUrl, apiKey, name),
   };
+}
+
+/**
+ * The test user's broker API key: the `ft_api_key` cookie in the
+ * Playwright storageState the chromium project logs in with
+ * (scripts/checks/e2e.sh and auth.setup.ts write it). Returns undefined
+ * when the file or cookie is missing; the broker then rejects the call
+ * with "API key required".
+ */
+export function apiKeyFromStorageState(path: string): string | undefined {
+  let state: any;
+  try {
+    state = JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    return undefined;
+  }
+  const cookies = Array.isArray(state?.cookies) ? state.cookies : [];
+  const cookie = cookies.find((c: any) => c?.name === API_KEY_COOKIE);
+  return typeof cookie?.value === "string" && cookie.value !== ""
+    ? cookie.value
+    : undefined;
 }

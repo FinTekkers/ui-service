@@ -17,8 +17,8 @@
  * `qa-*-probe-*` rows, so e2e runs leave no ledger data behind.
  */
 import { test, expect } from "@playwright/test";
+import { probeLedger } from "./fixtures/probe";
 import {
-  createGrpcProbeLedger,
   createProbe,
   deleteProbe,
   makeProbeName,
@@ -31,30 +31,39 @@ import type { ProbeLedger } from "../../src/tests/probe-cleanup";
 const LEDGER_URL = "127.0.0.1:8085";
 
 test.describe("/data/portfolios index (#221)", () => {
-  const ledger: ProbeLedger = createGrpcProbeLedger(LEDGER_URL);
-  let ownedProbeName: string | undefined;
+  let ledger: ProbeLedger;
+  // Probes this spec created and has not deleted yet.
+  let ownedProbeNames: string[] = [];
+
+  test.beforeAll(() => {
+    // Carries the test user's API key, which the broker requires.
+    ledger = probeLedger(LEDGER_URL);
+  });
 
   test.afterEach(async () => {
-    if (ownedProbeName === undefined) return;
-    try {
-      await deleteProbe(ledger, ownedProbeName);
-      ownedProbeName = undefined;
-    } catch (err: any) {
-      // Never mask the test result; afterAll retries the delete below.
-      console.warn(
-        `probe cleanup afterEach failed for "${ownedProbeName}": ` +
-          `${err?.message ?? err}`
-      );
+    const remaining: string[] = [];
+    for (const name of ownedProbeNames) {
+      try {
+        await deleteProbe(ledger, name);
+      } catch (err: any) {
+        // Never mask the test result; afterAll retries the delete below.
+        remaining.push(name);
+        console.warn(
+          `probe cleanup afterEach failed for "${name}": ` +
+            `${err?.message ?? err}`
+        );
+      }
     }
+    ownedProbeNames = remaining;
   });
 
   test.afterAll(async () => {
     try {
-      if (ownedProbeName !== undefined) {
-        await deleteProbe(ledger, ownedProbeName);
+      for (const name of ownedProbeNames) {
+        await deleteProbe(ledger, name);
       }
     } finally {
-      ownedProbeName = undefined;
+      ownedProbeNames = [];
       // Purge crashed-run leftovers older than one hour. Fails this
       // step instead of deleting a probe with linked transactions.
       await sweepStaleProbes(ledger);
@@ -64,14 +73,18 @@ test.describe("/data/portfolios index (#221)", () => {
   test("lists every portfolio (no hardcoded name filter on the search call)", async ({
     page,
   }) => {
-    // Seed a fresh portfolio so the test has a row it owns to assert
+    // Seed two fresh portfolios so the test owns every row it asserts
     // against, regardless of seed contents. (Pre-M5 this also
     // verified SOMA's continued presence; M5's clean-slate migration
-    // dropped SOMA from the seed so the assertion now just checks
-    // "more than one row" + "the fresh probe is among them".)
+    // dropped SOMA from the seed, and US-211 stopped probes piling up,
+    // so the ledger may hold no other portfolio at all.)
     const probeName = makeProbeName();
-    ownedProbeName = probeName;
+    ownedProbeNames.push(probeName);
     await createProbe(ledger, probeName);
+    // Created after the first round trip, so the timestamp differs.
+    const secondProbeName = makeProbeName();
+    ownedProbeNames.push(secondProbeName);
+    await createProbe(ledger, secondProbeName);
 
     await page.goto("/data/portfolios");
     await expect(page.getByRole("heading", { name: "Portfolios" })).toBeVisible(
@@ -82,9 +95,8 @@ test.describe("/data/portfolios index (#221)", () => {
 
     // Multiple rows render — pre-#221 the hardcoded
     // PORTFOLIO_NAME=='Federal Reserve SOMA Holdings' filter would
-    // have truncated to one row. (At minimum 2 rows: the probe we
-    // just created + at least one other from the seed / accumulated
-    // test runs.)
+    // have truncated to one row. (At minimum 2 rows: the two probes
+    // we just created.)
     const allRows = page.locator("table tbody tr");
     await expect(
       allRows,
@@ -100,6 +112,10 @@ test.describe("/data/portfolios index (#221)", () => {
       probeRow,
       "fresh probe portfolio renders post-#221 fix"
     ).toHaveCount(1, { timeout: 10_000 });
+    await expect(
+      page.locator("table tbody tr", { hasText: secondProbeName }),
+      "second probe portfolio renders"
+    ).toHaveCount(1);
 
     // As Of column renders post-#221 amend.
     await expect(
