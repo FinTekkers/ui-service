@@ -88,11 +88,17 @@ describe("metric 1: owned probe deleted even on failure", () => {
     const logs: string[] = [];
     const name = makeProbeName(NOW);
     await createProbe(ledger, name);
+    let failed = false;
     try {
-      throw new Error("assertion failed");
-    } finally {
-      await deleteProbe(ledger, name, { log: (m) => logs.push(m) });
+      try {
+        throw new Error("assertion failed");
+      } finally {
+        await deleteProbe(ledger, name, { log: (m) => logs.push(m) });
+      }
+    } catch {
+      failed = true;
     }
+    expect(failed).toBe(true);
     expect(ledger.created).toEqual([name]);
     expect(ledger.deleted).toEqual([name]);
     expect(logs).toEqual([]);
