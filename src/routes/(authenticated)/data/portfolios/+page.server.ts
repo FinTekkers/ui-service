@@ -5,6 +5,7 @@ import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/p
 import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portfolio/portfolio";
 import { deleteEntity } from "$lib/entity-delete";
 import { FetchTransactionByPortfolio } from "$lib/transactions";
+import { primePortfolioUniverseCache } from "$lib/portfolios";
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
@@ -61,6 +62,9 @@ export async function load({ locals, request }) {
           );
         }
       }
+      // The index just read every portfolio: refresh the cached universe the
+      // transactions and positions filters use, so they match this page.
+      primePortfolioUniverseCache(locals.user?.apiKey, rows);
       return rows;
     })
     .catch((err: Error) => {
