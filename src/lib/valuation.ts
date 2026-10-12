@@ -12,7 +12,6 @@ import {
   SecurityProto,
   TipsExtensionProto,
 } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js";
-import { DecimalValueProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js";
 import { CouponTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb.js";
 import { CouponFrequencyProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb.js";
 import index_type_pkg from "@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb.js";
@@ -30,6 +29,7 @@ import FloatingRateNote from "@fintekkers/ledger-models/node/wrappers/models/sec
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import { Decimal } from "decimal.js";
 import { getServiceConnection } from "$lib/grpc-auth";
+import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
 
 const { MeasureProto } = measure_pkg;
 const { FieldProto } = field_pkg;
@@ -160,10 +160,6 @@ const FRN_VALUATION_MEASURES = [
   MEASURE_PRESENT_VALUE_CASHFLOWS,
 ];
 
-function decimalValue(value: string): DecimalValueProto {
-  return new DecimalValueProto().setArbitraryPrecisionValue(value);
-}
-
 function parseCashflows(response: any): CashflowEntry[] {
   const cashflows: CashflowEntry[] = [];
   const cfList = response.getCashflowsList?.() ?? [];
@@ -174,9 +170,9 @@ function parseCashflows(response: any): CashflowEntry[] {
       2,
       "0"
     )}-${String(d.getDay()).padStart(2, "0")}`;
-    const fvAmount = cf.getFvAmount()?.getArbitraryPrecisionValue() ?? "0";
-    const pvAmount = cf.getPvAmount()?.getArbitraryPrecisionValue() ?? "0";
-    const couponRate = cf.getCouponRate?.()?.getArbitraryPrecisionValue();
+    const fvAmount = fromDecimalProto(cf.getFvAmount()) ?? "0";
+    const pvAmount = fromDecimalProto(cf.getPvAmount()) ?? "0";
+    const couponRate = fromDecimalProto(cf.getCouponRate?.());
     cashflows.push({
       date,
       fvAmount,
@@ -352,7 +348,7 @@ export async function RunBondValuation(
     const productInput = new ProductInput().setBond(
       new BondInput()
         .setSecurity(securityProto)
-        .setCleanPrice(decimalValue(inputs.price))
+        .setCleanPrice(toDecimalProto(inputs.price))
     );
 
     const response = await runValuationCore(
@@ -363,9 +359,7 @@ export async function RunBondValuation(
 
     const result: ValuationResult = {};
     response.getMeasureResultsList().forEach((entry) => {
-      const value = entry
-        .getMeasureDecimalValue()
-        ?.getArbitraryPrecisionValue();
+      const value = fromDecimalProto(entry.getMeasureDecimalValue());
       switch (entry.getMeasure()) {
         case MEASURE_PRESENT_VALUE:
           result.presentValue = value;
@@ -493,7 +487,7 @@ export async function RunTipsValuation(
     if (inputs.referenceCpi && inputs.referenceCpi.trim()) {
       const tipsExt =
         securityProto.getTipsExtension() ?? new TipsExtensionProto();
-      tipsExt.setBaseCpi(decimalValue(inputs.referenceCpi.trim()));
+      tipsExt.setBaseCpi(toDecimalProto(inputs.referenceCpi.trim()));
       if (
         tipsExt.getInflationIndexType() === IndexTypeProto.UNKNOWN_INDEX_TYPE
       ) {
@@ -505,8 +499,8 @@ export async function RunTipsValuation(
     const productInput = new ProductInput().setTips(
       new TipsInput()
         .setSecurity(securityProto)
-        .setCleanPrice(decimalValue(inputs.price))
-        .setCurrentCpi(decimalValue(inputs.currentCpi))
+        .setCleanPrice(toDecimalProto(inputs.price))
+        .setCurrentCpi(toDecimalProto(inputs.currentCpi))
     );
 
     const response = await runValuationCore(
@@ -522,10 +516,9 @@ export async function RunTipsValuation(
     // above); otherwise fall back to the security proto's base_cpi for
     // CUSIP mode where the wire populated it.
     const formReferenceCpi = parseFloat(inputs.referenceCpi ?? "");
-    const protoBaseCpiStr = securityProto
-      .getTipsExtension()
-      ?.getBaseCpi()
-      ?.getArbitraryPrecisionValue();
+    const protoBaseCpiStr = fromDecimalProto(
+      securityProto.getTipsExtension()?.getBaseCpi()
+    );
     const referenceCpi =
       Number.isFinite(formReferenceCpi) && formReferenceCpi > 0
         ? formReferenceCpi
@@ -536,9 +529,7 @@ export async function RunTipsValuation(
     }
 
     response.getMeasureResultsList().forEach((entry) => {
-      const value = entry
-        .getMeasureDecimalValue()
-        ?.getArbitraryPrecisionValue();
+      const value = fromDecimalProto(entry.getMeasureDecimalValue());
       switch (entry.getMeasure()) {
         case MEASURE_PRESENT_VALUE:
           result.presentValue = value;
@@ -660,7 +651,7 @@ export async function RunFrnValuation(
     const productInput = new ProductInput().setFrn(
       new FrnInput()
         .setSecurity(securityProto)
-        .setCleanPrice(decimalValue(priceValue))
+        .setCleanPrice(toDecimalProto(priceValue))
     );
 
     const response = await runValuationCore(
@@ -671,9 +662,7 @@ export async function RunFrnValuation(
 
     const result: FrnValuationResult = {};
     response.getMeasureResultsList().forEach((entry) => {
-      const value = entry
-        .getMeasureDecimalValue()
-        ?.getArbitraryPrecisionValue();
+      const value = fromDecimalProto(entry.getMeasureDecimalValue());
       switch (entry.getMeasure()) {
         case MEASURE_PRESENT_VALUE:
           result.presentValue = value;

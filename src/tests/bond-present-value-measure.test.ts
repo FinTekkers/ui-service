@@ -14,28 +14,29 @@ const capturedRequests: any[] = [];
 
 vi.mock(
   "@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js",
-  () => ({
-    ValuationClient: vi.fn().mockImplementation(() => ({
-      runValuation: vi
-        .fn()
-        .mockImplementation((request: any, callback: Function) => {
-          capturedRequests.push(request);
-          // Return a stub response that includes a PRESENT_VALUE measure result —
-          // proves the switch-case in RunValuation maps it onto result.presentValue.
-          callback(null, {
-            getMeasureResultsList: () => [
-              {
-                getMeasure: () => 9, // MeasureProto.PRESENT_VALUE
-                getMeasureDecimalValue: () => ({
-                  getArbitraryPrecisionValue: () => "99.875",
-                }),
-              },
-            ],
-            getCashflowsList: () => [],
-          });
-        }),
-    })),
-  })
+  async () => {
+    const { toDecimalProto } = await import("$lib/decimal");
+    return {
+      ValuationClient: vi.fn().mockImplementation(() => ({
+        runValuation: vi
+          .fn()
+          .mockImplementation((request: any, callback: Function) => {
+            capturedRequests.push(request);
+            // Return a stub response that includes a PRESENT_VALUE measure result —
+            // proves the switch-case in RunValuation maps it onto result.presentValue.
+            callback(null, {
+              getMeasureResultsList: () => [
+                {
+                  getMeasure: () => 9, // MeasureProto.PRESENT_VALUE
+                  getMeasureDecimalValue: () => toDecimalProto("99.875"),
+                },
+              ],
+              getCashflowsList: () => [],
+            });
+          }),
+      })),
+    };
+  }
 );
 
 vi.mock("$lib/grpc-auth", () => ({

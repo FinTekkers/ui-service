@@ -16,6 +16,7 @@ import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid"
 import type { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import { getServiceConnection } from "$lib/grpc-auth";
+import { fromDecimalProto } from "$lib/decimal";
 
 const { FieldProto } = field_pkg;
 
@@ -64,7 +65,14 @@ export async function fetchPricesForSecurity(
       const list = response.getPriceResponseList?.() ?? [];
       for (const p of list) {
         const asOf = p.getAsOf?.();
-        const value = p.getPrice?.()?.getArbitraryPrecisionValue?.();
+        let value: string | undefined;
+        try {
+          value = fromDecimalProto(p.getPrice?.());
+        } catch (e) {
+          // A throw here would escape the stream handler: skip the row.
+          console.warn("Skipping price, invalid decimal:", e);
+          continue;
+        }
         if (!asOf || !value) continue;
         const ts = asOf.getTimestamp?.();
         if (!ts) continue;

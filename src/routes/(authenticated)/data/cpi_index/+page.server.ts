@@ -6,6 +6,7 @@ import {
 } from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_request_pb.js";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { getServiceConnection } from "$lib/grpc-auth";
+import { fromDecimalProto } from "$lib/decimal";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import type { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
@@ -165,7 +166,14 @@ async function fetchPrices(
       const priceList = response.getPriceResponseList?.() ?? [];
       for (const price of priceList) {
         const asOf = price.getAsOf?.();
-        const priceVal = price.getPrice?.()?.getArbitraryPrecisionValue?.();
+        let priceVal: string | undefined;
+        try {
+          priceVal = fromDecimalProto(price.getPrice?.());
+        } catch (e) {
+          // A throw here would escape the stream handler: skip the row.
+          console.warn("Skipping CPI price, invalid decimal:", e);
+          continue;
+        }
         if (asOf && priceVal) {
           const ts = asOf.getTimestamp?.();
           if (ts) {

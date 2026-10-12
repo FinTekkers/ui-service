@@ -39,8 +39,9 @@ const {
   SecurityTypeProto,
 } = require("@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb.js");
 const {
-  DecimalValueProto,
-} = require("@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js");
+  encodeDecimal,
+  parseDecimalString,
+} = require("@fintekkers/ledger-models/node/wrappers/models/utils/decimal");
 const {
   ZonedDateTime,
 } = require("@fintekkers/ledger-models/node/wrappers/models/utils/datetime");
@@ -59,7 +60,7 @@ function uuidProtoFromString(uuidStr) {
 }
 
 function dv(value) {
-  return new DecimalValueProto().setArbitraryPrecisionValue(value);
+  return encodeDecimal(parseDecimalString(value));
 }
 
 async function createCpiPrice(client, entry) {
