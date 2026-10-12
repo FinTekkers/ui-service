@@ -310,4 +310,13 @@ describe("guardrail 4: broker-only routing", () => {
     expect(src).toContain(BROKER_URL);
     expect(src).not.toContain(legacyHost);
   });
+
+  it("live client sends the app's tenant routing header", () => {
+    const src = fs.readFileSync(
+      path.resolve("src/tests/probe-cleanup.ts"),
+      "utf-8"
+    );
+    expect(src).toContain("x-fintekkers-tenant");
+    expect(src).toContain("brokerMetadata()");
+  });
 });

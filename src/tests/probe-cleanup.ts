@@ -19,7 +19,8 @@
  * - `sweepStaleProbes` — deletes stale probes left behind by crashed runs.
  *
  * Every live call goes through the broker at `BROKER_URL` — the same path
- * the create uses. Nothing here calls a backend service directly, touches
+ * the create uses — carrying the same `x-fintekkers-tenant` routing header
+ * the app sends. Nothing here calls a backend service directly, touches
  * transactions or securities, or runs SQL.
  */
 
@@ -27,6 +28,20 @@ import grpc from "@grpc/grpc-js";
 
 export const BROKER_URL = "127.0.0.1:8085";
 export const PROBE_RETENTION_MS = 3_600_000;
+
+// Same routing header the app sends on every outbound gRPC call
+// (src/lib/grpc-auth.ts `getServiceConnection`: the tenant
+// interceptor). The broker uses it to pick the ledger-service URL,
+// so the raw client here must send it too — otherwise the call may
+// never reach the ledger the UI reads. Value mirrors
+// `getTenantHeaderValue` (`FINTEKKERS_TENANT ?? "production"`); kept
+// local so this module stays free of the `$lib` alias, which
+// Playwright specs cannot resolve.
+const TENANT_HEADER = "x-fintekkers-tenant";
+
+function tenantValue(): string {
+  return process.env.FINTEKKERS_TENANT ?? "production";
+}
 
 const PROBE_NAME_RE = /^qa-.+-probe-.+$/;
 const PROBE_SUFFIX_RE = /^[0-9a-z]+$/i;
@@ -337,6 +352,12 @@ function grpcError(err: any): Error {
   return new Error(`${err.code}: ${err.details ?? err.message}`);
 }
 
+function brokerMetadata() {
+  const metadata = new grpc.Metadata();
+  metadata.add(TENANT_HEADER, tenantValue());
+  return metadata;
+}
+
 async function grpcCreatePortfolio(
   brokerUrl: string,
   name: string
@@ -359,7 +380,7 @@ async function grpcCreatePortfolio(
     grpc.credentials.createInsecure()
   );
   await new Promise<void>((resolve, reject) => {
-    client.createOrUpdate(req, (err: any) => {
+    client.createOrUpdate(req, brokerMetadata(), (err: any) => {
       if (err) reject(grpcError(err));
       else resolve();
     });
@@ -382,7 +403,7 @@ async function grpcSearchPortfolios(
 
   const found: ProbePortfolio[] = [];
   await new Promise<void>((resolve, reject) => {
-    const stream = client.search(req);
+    const stream = client.search(req, brokerMetadata());
     stream.on("data", (resp: any) => {
       const list = resp.getPortfolioResponseList?.() ?? [];
       for (const p of list) {
@@ -429,7 +450,7 @@ async function grpcHasLinkedTransactions(
 
   let count = 0;
   await new Promise<void>((resolve, reject) => {
-    const stream = client.search(req);
+    const stream = client.search(req, brokerMetadata());
     stream.on("data", (resp: any) => {
       count += resp.getTransactionResponseList?.()?.length ?? 0;
     });
@@ -466,7 +487,7 @@ async function grpcDeletePortfolio(
     grpc.credentials.createInsecure()
   );
   await new Promise<void>((resolve, reject) => {
-    client.delete(request, (err: any) => {
+    client.delete(request, brokerMetadata(), (err: any) => {
       if (err) reject(grpcError(err));
       else resolve();
     });
