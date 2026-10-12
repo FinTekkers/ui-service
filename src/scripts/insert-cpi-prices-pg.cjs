@@ -90,8 +90,9 @@ const {
   SecurityTypeProto,
 } = require("@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb.js");
 const {
-  DecimalValueProto,
-} = require("@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js");
+  encodeDecimal,
+  parseDecimalString,
+} = require("@fintekkers/ledger-models/node/wrappers/models/utils/decimal");
 const {
   UUIDProto,
 } = require("@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js");
@@ -142,9 +143,7 @@ function buildPriceProto(entry) {
   price.setUuid(uuidProtoFromString(priceUuid));
   price.setAsOf(asOf);
   price.setValidFrom(asOf);
-  price.setPrice(
-    new DecimalValueProto().setArbitraryPrecisionValue(entry.value)
-  );
+  price.setPrice(encodeDecimal(parseDecimalString(entry.value)));
   price.setSecurity(security);
 
   return {

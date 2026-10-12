@@ -24,10 +24,10 @@ import {
   CurveInputProto,
 } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_request_pb.js";
 import type { CurveResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_response_pb.js";
-import { DecimalValueProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js";
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { getServiceConnection } from "$lib/grpc-auth";
+import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
 import {
   EXPECTED_CONSTITUENT_COUNT,
   findLatestBuildableDate,
@@ -64,10 +64,6 @@ interface PageData {
   latestBuildableDate: string | null;
   /** True when the loader auto-defaulted the asOf (no `?asof=` URL param). */
   asofWasDefaulted: boolean;
-}
-
-function decimal(value: string): DecimalValueProto {
-  return new DecimalValueProto().setArbitraryPrecisionValue(value);
 }
 
 /**
@@ -113,7 +109,7 @@ function buildCurveRequest(
     }
     const input = new CurveInputProto();
     input.setSecurity((c.bond as any).proto);
-    input.setCleanPrice(decimal(c.cleanPrice.toString()));
+    input.setCleanPrice(toDecimalProto(c.cleanPrice.toString()));
     request.addCurveInputs(input);
   }
 
@@ -132,8 +128,8 @@ function parseCurveResponse(response: CurveResponseProto): {
   for (const result of response.getCurveResultsList()) {
     const curveType = result.getCurveType();
     for (const point of result.getPointsList()) {
-      const tenorStr = point.getTenor()?.getArbitraryPrecisionValue();
-      const yieldStr = point.getYield()?.getArbitraryPrecisionValue();
+      const tenorStr = fromDecimalProto(point.getTenor());
+      const yieldStr = fromDecimalProto(point.getYield());
       if (!tenorStr || !yieldStr) continue;
       const years = parseFloat(tenorStr);
       const yieldPct = parseFloat(yieldStr) * 100;

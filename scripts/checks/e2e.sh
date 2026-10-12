@@ -32,13 +32,22 @@ REGRESSION_SPECS=(
   tests/e2e/transactions-*.spec.ts
   tests/e2e/portfolio*.spec.ts
   tests/e2e/curves-*.spec.ts
+  # US-212: the pages whose decimals now go through fromDecimalProto /
+  # toDecimalProto: the calculators send a bytes + scale price to valuation,
+  # and the CPI page reads its prices back.
+  tests/e2e/calculators-numerical.spec.ts
+  tests/e2e/tips-calculator-reference-cpi.spec.ts
+  tests/e2e/cpi-index-page-data.spec.ts
 )
 # These tests already failed on the host before US-209, on the pre-bump
 # baseline (978e521, ledger-models 0.4.29), because the host data lacks what
 # they need: no transactions, about 3.4k securities rather than 10k+, and no
 # buildable curve. They run and are logged as "known", but they don't fail the
-# check. Any other failure does.
+# check. Any other failure does. The cpi_index test fails the same way on the
+# pre-US-212 baseline (8fb8491, ledger-models 0.4.31): the host has no
+# CPI_SERIES securities, so the series picker is empty before any price is read.
 KNOWN_FAILING=(
+  'cpi-index-page-data.spec.ts > series dropdown is non-empty and the historical table has data'
   'curves-pages-render.spec.ts > /data/curves: 200, no "Insufficient curve inputs", chart SVG has rendered traces'
   'curves-pages-render.spec.ts > /data/treasury_curve part B: par yields rendered (Y axis ≠ couponRate column)'
   'securities-default-issuer.spec.ts > no params: returns the full ledger (≥10k rows, ≥100 distinct issuers, both US Government AND non-US-Government)'
@@ -198,7 +207,7 @@ KNOWN_FAILING="$(printf '%s\n' "${KNOWN_FAILING[@]}")" node -e '
       if (t.status === "expected" || t.status === "skipped") {
         console.log(`e2e:   ${t.status} ${id}`);
       } else if (known.has(id)) {
-        console.log(`e2e:   known (pre-US-209) ${t.status} ${id}`);
+        console.log(`e2e:   known (host data) ${t.status} ${id}`);
       } else {
         console.log(`e2e:   FAIL ${t.status} ${id}`);
         ok = false;

@@ -16,6 +16,7 @@ import { PositionFilterOperator } from "@fintekkers/ledger-models/node/wrappers/
 // (returns tenor-derived 'BILL' / 'NOTE' / 'BOND') so the transactions
 // grid shows the canonical leaf name (TREASURY_NOTE, TIPS, TREASURY_FRN).
 import { productTypeNameOf, identifierString } from "$lib/security";
+import { fromDecimalProto } from "$lib/decimal";
 const { FieldProto } = pkg;
 
 /**
@@ -174,9 +175,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(
             ""
           ),
           transactionPrice: safe(
-            () =>
-              element.getPrice()?.getPrice()?.getArbitraryPrecisionValue() ??
-              "",
+            () => fromDecimalProto(element.getPrice()?.getPrice()) ?? "",
             ""
           ),
         });

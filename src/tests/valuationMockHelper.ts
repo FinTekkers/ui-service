@@ -3,6 +3,7 @@
  * Implements a simple bond pricer so tests work without a running service.
  */
 import { vi } from "vitest";
+import { toDecimalProto } from "$lib/decimal";
 
 // MeasureProto enum values (from ledger-models)
 const MP = {
@@ -144,7 +145,7 @@ function countPeriods(matDateProto: any): { periods: number; matDate: Date } {
 function makeMeasureEntry(measure: number, value: string) {
   return {
     getMeasure: () => measure,
-    getMeasureDecimalValue: () => ({ getArbitraryPrecisionValue: () => value }),
+    getMeasureDecimalValue: () => toDecimalProto(value),
   };
 }
 
@@ -156,8 +157,8 @@ function makeCfEntry(date: string, fvAmount: string, pvAmount: string) {
       getMonth: () => parts[1],
       getDay: () => parts[2],
     }),
-    getFvAmount: () => ({ getArbitraryPrecisionValue: () => fvAmount }),
-    getPvAmount: () => ({ getArbitraryPrecisionValue: () => pvAmount }),
+    getFvAmount: () => toDecimalProto(fvAmount),
+    getPvAmount: () => toDecimalProto(pvAmount),
     getCouponRate: () => null,
   };
 }
