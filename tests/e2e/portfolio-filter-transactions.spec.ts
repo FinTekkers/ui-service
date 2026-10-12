@@ -25,7 +25,7 @@
 import { expect, type Page } from "@playwright/test";
 // US-211: the ledger has no seed portfolios; this `test` owns one probe
 // portfolio for the run and deletes it again afterwards.
-import { test } from "./fixtures/probe";
+import { test, waitForPortfolioInUniverse } from "./fixtures/probe";
 
 async function resolveFirstPortfolio(
   page: Page
@@ -46,10 +46,9 @@ async function resolveFirstPortfolio(
   expect(href).toMatch(/portfolioId=[0-9a-f-]{36}/);
   const name = (await link.textContent())?.trim() ?? "";
   expect(name.length, "portfolio has a non-empty name").toBeGreaterThan(0);
-  return {
-    id: new URL(href!, page.url()).searchParams.get("portfolioId")!,
-    name,
-  };
+  const id = new URL(href!, page.url()).searchParams.get("portfolioId")!;
+  await waitForPortfolioInUniverse(page, id, name);
+  return { id, name };
 }
 
 test.describe("/data/transactions PortfolioFilter (#226 Phase 3 PR-B)", () => {

@@ -49,33 +49,6 @@ export function clearPortfolioUniverseCache(): void {
   portfolioUniverseCache.clear();
 }
 
-/**
- * Replace the cached universe for `apiKey` with a list the caller has just
- * fetched in full (the /data/portfolios index). Without this, a portfolio
- * created after another page warmed the cache stays missing from the
- * autocomplete and the ?portfolioId lookup for up to the TTL, even though
- * the index already shows it (US-211).
- */
-export function primePortfolioUniverseCache(
-  apiKey: string | undefined,
-  entries: PortfolioUniverseEntry[]
-): void {
-  const byId = new Map<string, PortfolioUniverseEntry>();
-  for (const e of entries) {
-    if (!e.portfolioId || !e.portfolioName) continue;
-    byId.set(e.portfolioId, {
-      portfolioId: e.portfolioId,
-      portfolioName: e.portfolioName,
-    });
-  }
-  portfolioUniverseCache.set(apiKey ?? "__no_key__", {
-    value: [...byId.values()].sort((a, b) =>
-      a.portfolioName.localeCompare(b.portfolioName)
-    ),
-    fetchedAt: Date.now(),
-  });
-}
-
 export async function FetchPortfolioUniverse(
   apiKey?: string
 ): Promise<PortfolioUniverseEntry[]> {
