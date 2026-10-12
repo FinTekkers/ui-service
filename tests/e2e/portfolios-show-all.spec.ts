@@ -6,78 +6,61 @@
  * filter; this test asserts the un-filtered list shows up.
  *
  * To make the assertion deterministic regardless of seed state, the
- * test creates a fresh portfolio with a unique name via the
- * ledger-service Portfolio/CreateOrUpdate RPC (mirrors the helper in
- * src/tests/qa-s8-price-portfolio.test.ts), then asserts BOTH that
+ * test creates a fresh portfolio with a unique name via the broker's
+ * Portfolio/CreateOrUpdate RPC (shared helper in
+ * src/tests/probe-cleanup.ts), then asserts BOTH that
  * fresh portfolio AND the SOMA seed appear on the page. Pre-#221 fix
  * the SOMA filter would have hidden the fresh one.
+ *
+ * US-211: the probe is deleted again in `afterEach` (even when the test
+ * fails) and each run ends with an `afterAll` sweep of stale
+ * `qa-*-probe-*` rows, so e2e runs leave no ledger data behind.
  */
 import { test, expect } from "@playwright/test";
-import grpc from "@grpc/grpc-js";
+import {
+  createGrpcProbeLedger,
+  createProbe,
+  deleteProbe,
+  makeProbeName,
+  sweepStaleProbes,
+} from "../../src/tests/probe-cleanup";
+import type { ProbeLedger } from "../../src/tests/probe-cleanup";
 
-const LEDGER_URL = "localhost:8082";
-
-async function createPortfolio(name: string): Promise<void> {
-  // ESM dynamic-import-of-CJS quirk: the proto modules export named
-  // bindings the linker doesn't always destructure, so go through
-  // `default` / `module` shapes defensively. (qa-s8-price-portfolio
-  // uses the same pattern under vitest where the destructure works
-  // straight; under playwright runner the wrapper namespace differs.)
-  const grpcPkg = (await import(
-    "@fintekkers/ledger-models/node/fintekkers/services/portfolio-service/portfolio_service_grpc_pb.js"
-  )) as any;
-  const PortfolioClient =
-    grpcPkg.PortfolioClient ?? grpcPkg.default?.PortfolioClient;
-
-  const reqPkg = (await import(
-    "@fintekkers/ledger-models/node/fintekkers/requests/portfolio/create_portfolio_request_pb.js"
-  )) as any;
-  const CreatePortfolioRequestProto =
-    reqPkg.CreatePortfolioRequestProto ??
-    reqPkg.default?.CreatePortfolioRequestProto;
-
-  const protoPkg = (await import(
-    "@fintekkers/ledger-models/node/fintekkers/models/portfolio/portfolio_pb.js"
-  )) as any;
-  const PortfolioProto =
-    protoPkg.PortfolioProto ?? protoPkg.default?.PortfolioProto;
-
-  const uuidPkg = (await import(
-    "@fintekkers/ledger-models/node/wrappers/models/utils/uuid.js"
-  )) as any;
-  const UUID = uuidPkg.UUID ?? uuidPkg.default?.UUID;
-
-  const dtPkg = (await import(
-    "@fintekkers/ledger-models/node/wrappers/models/utils/datetime.js"
-  )) as any;
-  const ZonedDateTime = dtPkg.ZonedDateTime ?? dtPkg.default?.ZonedDateTime;
-
-  const portfolio = new PortfolioProto();
-  portfolio.setObjectClass("Portfolio");
-  portfolio.setVersion("0.0.1");
-  portfolio.setAsOf(ZonedDateTime.now().toProto());
-  portfolio.setPortfolioName(name);
-  portfolio.setUuid(UUID.random().toUUIDProto());
-
-  const req = new CreatePortfolioRequestProto();
-  req.setObjectClass("PortfolioRequest");
-  req.setVersion("0.0.1");
-  req.setCreatePortfolioInput(portfolio);
-
-  const client = new PortfolioClient(
-    LEDGER_URL,
-    grpc.credentials.createInsecure()
-  );
-
-  await new Promise<void>((resolve, reject) => {
-    client.createOrUpdate(req, (err: any) => {
-      if (err) reject(new Error(`${err.code}: ${err.details ?? err.message}`));
-      else resolve();
-    });
-  });
-}
+// Broker path for every ledger call in this spec (create, delete, sweep).
+// Mirrors BROKER_URL in src/tests/probe-cleanup.ts.
+const LEDGER_URL = "127.0.0.1:8085";
 
 test.describe("/data/portfolios index (#221)", () => {
+  const ledger: ProbeLedger = createGrpcProbeLedger(LEDGER_URL);
+  let ownedProbeName: string | undefined;
+
+  test.afterEach(async () => {
+    if (ownedProbeName === undefined) return;
+    try {
+      await deleteProbe(ledger, ownedProbeName);
+      ownedProbeName = undefined;
+    } catch (err: any) {
+      // Never mask the test result; afterAll retries the delete below.
+      console.warn(
+        `probe cleanup afterEach failed for "${ownedProbeName}": ` +
+          `${err?.message ?? err}`
+      );
+    }
+  });
+
+  test.afterAll(async () => {
+    try {
+      if (ownedProbeName !== undefined) {
+        await deleteProbe(ledger, ownedProbeName);
+      }
+    } finally {
+      ownedProbeName = undefined;
+      // Purge crashed-run leftovers older than one hour. Fails this
+      // step instead of deleting a probe with linked transactions.
+      await sweepStaleProbes(ledger);
+    }
+  });
+
   test("lists every portfolio (no hardcoded name filter on the search call)", async ({
     page,
   }) => {
@@ -86,8 +69,9 @@ test.describe("/data/portfolios index (#221)", () => {
     // verified SOMA's continued presence; M5's clean-slate migration
     // dropped SOMA from the seed so the assertion now just checks
     // "more than one row" + "the fresh probe is among them".)
-    const probeName = `qa-221-probe-${Date.now().toString(36)}`;
-    await createPortfolio(probeName);
+    const probeName = makeProbeName();
+    ownedProbeName = probeName;
+    await createProbe(ledger, probeName);
 
     await page.goto("/data/portfolios");
     await expect(page.getByRole("heading", { name: "Portfolios" })).toBeVisible(
