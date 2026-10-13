@@ -48,8 +48,6 @@ REGRESSION_SPECS=(
 # CPI_SERIES securities, so the series picker is empty before any price is read.
 KNOWN_FAILING=(
   'cpi-index-page-data.spec.ts > series dropdown is non-empty and the historical table has data'
-  'curves-pages-render.spec.ts > /data/curves: 200, no "Insufficient curve inputs", chart SVG has rendered traces'
-  'curves-pages-render.spec.ts > /data/treasury_curve part B: par yields rendered (Y axis ≠ couponRate column)'
   'securities-default-issuer.spec.ts > no params: returns the full ledger (≥10k rows, ≥100 distinct issuers, both US Government AND non-US-Government)'
   'transactions-page-render.spec.ts > grid renders at least one row when the DB has transactions'
   'transactions-portfolio-columns.spec.ts > at least one data row renders a non-empty Portfolio name + a Portfolio ID toggle'
