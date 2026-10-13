@@ -21,6 +21,7 @@ import { primaryIdentifier } from "$lib/security";
 // nothing and the page came back empty even though the ledger has
 // thousands of CPI prices for these series.
 import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 
 const { FieldProto } = field_pkg;
 
@@ -133,8 +134,7 @@ async function fetchPrices(
   apiKey?: string
 ): Promise<CpiDataPoint[]> {
   const request = new QueryPriceRequestProto();
-  request.setObjectClass("QueryPriceRequestProto");
-  request.setVersion("0.0.1");
+  stampOwn(request);
   request.setAsOf(ZonedDateTime.now().toProto());
   // CPI is monthly; pull the full available history so spot-checks like
   // 1947-01 = 21.48 work. The largest series (1,358 obs) fits in one response.

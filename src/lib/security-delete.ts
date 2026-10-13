@@ -1,6 +1,7 @@
 import delete_pkg from "@fintekkers/ledger-models/node/fintekkers/requests/util/delete_request_pb.js";
 import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
 import { UUIDProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { getServiceConnection } from "$lib/grpc-auth";
 
 const { DeleteRequestProto, EntityTypeProto } = delete_pkg;
@@ -29,8 +30,7 @@ function buildDeleteRequest(
   force: boolean
 ): any {
   const request = new DeleteRequestProto();
-  request.setObjectClass("DeleteRequestProto");
-  request.setVersion("0.0.1");
+  stampOwn(request);
   request.setUuid(uuidFromHex(uuidHex));
   request.setEntityType(EntityTypeProto.SECURITY);
   request.setDryRun(dryRun);

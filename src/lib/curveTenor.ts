@@ -1,27 +1,24 @@
-import type { DecimalValueProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js";
+import type { CurvePointProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_response_pb.js";
+import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import { fromDecimalProto } from "$lib/decimal";
 
-// Forward-curve points carry their tenor as the text label "from-to" (e.g.
-// "0-10") in the decimal's string form, which the compact decoder rejects as
-// "not a finite decimal". Until ledger-models gives CurvePointProto numeric
-// from/to tenors (LM-313), read the label's start year, as the page did
-// before US-212 (parseFloat("0-10") === 0).
-const FORWARD_LABEL = /^\s*(-?\d+(?:\.\d+)?)\s*-\s*-?\d+(?:\.\d+)?\s*$/;
+const { MeasureProto } = measure_pkg;
+
+// LM-313: par and spot points carry their tenor in `tenor`; forward points
+// carry the forward period in `from_tenor` / `to_tenor` and their `tenor` must
+// not be read. The page plots a forward point at its start year.
 
 /** Decimal years for a curve point's tenor, or null if it has none. */
 export function curvePointYears(
-  tenor: DecimalValueProto | null | undefined
+  point: CurvePointProto,
+  curveType: number
 ): number | null {
-  if (!tenor) return null;
-  try {
-    const s = fromDecimalProto(tenor);
-    if (!s) return null;
-    const years = parseFloat(s);
-    return Number.isFinite(years) ? years : null;
-  } catch {
-    // The deprecated string form, read only for the forward label.
-    const label = tenor.getArbitraryPrecisionValue?.() ?? "";
-    const m = FORWARD_LABEL.exec(label);
-    return m ? parseFloat(m[1]) : null;
-  }
+  const tenor =
+    curveType === MeasureProto.FORWARD_YIELD
+      ? point.getFromTenor()
+      : point.getTenor();
+  const s = fromDecimalProto(tenor);
+  if (!s) return null;
+  const years = parseFloat(s);
+  return Number.isFinite(years) ? years : null;
 }

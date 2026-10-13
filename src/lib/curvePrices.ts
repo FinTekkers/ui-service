@@ -15,6 +15,7 @@ import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/p
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import type { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto } from "$lib/decimal";
 
@@ -35,8 +36,7 @@ export async function fetchPricesForSecurity(
   apiKey?: string
 ): Promise<PricePoint[]> {
   const request = new QueryPriceRequestProto();
-  request.setObjectClass("QueryPriceRequestProto");
-  request.setVersion("0.0.1");
+  stampOwn(request);
   request.setAsOf(ZonedDateTime.now().toProto());
   request.setHorizon(PriceHorizonProto.PRICE_HORIZON_MAX);
   request.setFrequency(PriceFrequencyProto.PRICE_FREQUENCY_DAILY);

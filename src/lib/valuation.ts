@@ -27,6 +27,7 @@ import BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/securit
 import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
 import FloatingRateNote from "@fintekkers/ledger-models/node/wrappers/models/security/FloatingRateNote";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { Decimal } from "decimal.js";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
@@ -202,8 +203,7 @@ async function buildSecurityProtoFromCusip(
     ...conn.clientOptions,
   });
   const searchRequest = new QuerySecurityRequestProto();
-  searchRequest.setObjectClass("SecurityRequest");
-  searchRequest.setVersion("0.0.1");
+  stampOwn(searchRequest);
   searchRequest.setAsOf(ZonedDateTime.now().toProto());
   searchRequest.setSearchSecurityInput(filter.toProto());
 
@@ -254,8 +254,7 @@ function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
       inputs.maturityDate ?? new Date().toISOString().slice(0, 10)
     ),
   });
-  security.setObjectClass("Security");
-  security.setVersion("0.0.1");
+  stampOwn(security);
   security.setUuid(UUID.random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
   security.setAssetClass("Fixed Income");
@@ -280,8 +279,7 @@ async function runValuationCore(
   import("@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js").ValuationResponseProto
 > {
   const request = new ValuationRequestProto();
-  request.setObjectClass("ValuationRequestProto");
-  request.setVersion("0.0.1");
+  stampOwn(request);
   request.setOperationType(RequestOperationTypeProto.GET);
   request.setAsofDatetime(ZonedDateTime.now().toProto());
   request.setProductInput(productInput);
@@ -443,8 +441,7 @@ function buildManualTipsSecurityProto(
     indexDate: issueDate,
     inflationIndexType: IndexTypeProto.CPI_U,
   });
-  security.setObjectClass("Security");
-  security.setVersion("0.0.1");
+  stampOwn(security);
   security.setUuid(UUID.random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
   security.setAssetClass("Fixed Income");
@@ -611,8 +608,7 @@ function buildManualFrnSecurityProto(
       ] ?? IndexTypeProto.SOFR,
     resetFrequency: couponFrequency,
   });
-  security.setObjectClass("Security");
-  security.setVersion("0.0.1");
+  stampOwn(security);
   security.setUuid(UUID.random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
   security.setAssetClass("Fixed Income");

@@ -12,6 +12,7 @@
  */
 import { describe, it, expect } from "vitest";
 import grpc from "@grpc/grpc-js";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 
 const BROKER_HOST = "localhost:80";
 const REQUEST_TIMEOUT_MS = 8000;
@@ -47,8 +48,7 @@ async function brokerSecuritySearch(id: number): Promise<{
   );
   const filter = new PositionFilter();
   const req = new (QuerySecurityRequestProto as any)();
-  req.setObjectClass("SecurityRequest");
-  req.setVersion("0.0.1");
+  stampOwn(req);
   req.setAsOf(ZonedDateTime.now().toProto());
   req.setSearchSecurityInput(filter.toProto());
 
@@ -107,8 +107,7 @@ async function brokerRunValuation(id: number): Promise<{
     grpc.credentials.createInsecure()
   );
   const req = new (ValuationRequestProto as any)();
-  req.setObjectClass("ValuationRequestProto");
-  req.setVersion("0.0.1");
+  stampOwn(req);
   req.setOperationType(RequestOperationTypeProto.GET);
   req.setAsofDatetime(ZonedDateTime.now().toProto());
   // Intentionally incomplete request (no security, no price) to trigger error path

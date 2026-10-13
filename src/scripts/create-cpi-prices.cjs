@@ -51,6 +51,9 @@ const {
 const {
   UUID,
 } = require("@fintekkers/ledger-models/node/wrappers/models/utils/uuid");
+const {
+  stampOwn,
+} = require("@fintekkers/ledger-models/node/wrappers/util/object-types");
 const EnvConfig =
   require("@fintekkers/ledger-models/node/wrappers/models/utils/requestcontext").default;
 
@@ -65,15 +68,13 @@ function dv(value) {
 
 async function createCpiPrice(client, entry) {
   const security = new SecurityProto();
-  security.setObjectClass("Security");
-  security.setVersion("0.0.1");
+  stampOwn(security);
   security.setIsLink(true);
   security.setSecurityType(SecurityTypeProto.INDEX_SECURITY);
   security.setUuid(uuidProtoFromString(CPI_U_SECURITY_UUID));
 
   const price = new PriceProto();
-  price.setObjectClass("PriceProto");
-  price.setVersion("0.0.1");
+  stampOwn(price);
   const randomUuid = require("crypto").randomUUID();
   price.setUuid(uuidProtoFromString(randomUuid));
   price.setAsOf(ZonedDateTime.now().toProto());
@@ -82,8 +83,7 @@ async function createCpiPrice(client, entry) {
   price.setSecurity(security);
 
   const request = new CreatePriceRequestProto();
-  request.setObjectClass("CreatePriceRequestProto");
-  request.setVersion("0.0.1");
+  stampOwn(request);
   request.setCreatePriceInput(price);
 
   return new Promise((resolve, reject) => {

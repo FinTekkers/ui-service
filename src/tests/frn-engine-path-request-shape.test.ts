@@ -34,6 +34,7 @@ vi.mock("$lib/grpc-auth", () => ({
 }));
 
 import { RunFrnValuation } from "$lib/valuation";
+import { fromDecimalProto } from "$lib/decimal";
 import type { FrnCalculatorInputs } from "$lib/valuation";
 
 const MANUAL_FRN: FrnCalculatorInputs = {
@@ -59,7 +60,7 @@ describe("FRN engine-path request shape (#208)", () => {
     expect(frnInput).toBeDefined();
     expect(frnInput.getSecurity()).toBeDefined();
     expect(frnInput.getCleanPrice()).toBeDefined();
-    expect(frnInput.getCleanPrice().getArbitraryPrecisionValue()).toBe("100");
+    expect(fromDecimalProto(frnInput.getCleanPrice())).toBe("100");
 
     // Legacy flat fields are NOT set on FRN requests.
     expect(req.hasSecurityInput()).toBe(false);
@@ -77,11 +78,7 @@ describe("FRN engine-path request shape (#208)", () => {
     expect(capturedRequests.length).toBe(1);
     const req = capturedRequests[0];
     expect(
-      req
-        .getProductInput()
-        ?.getFrn()
-        ?.getCleanPrice()
-        ?.getArbitraryPrecisionValue()
+      fromDecimalProto(req.getProductInput()?.getFrn()?.getCleanPrice())
     ).toBe("100");
   });
 

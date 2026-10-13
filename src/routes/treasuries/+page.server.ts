@@ -25,6 +25,7 @@ import { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/model
 import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb";
 import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 // M5 / #260: SecurityTypeProto retired. Bond narrowing via wrapper
 // helper; product-type display string via Security.getProductType().
 
@@ -190,8 +191,7 @@ async function fetchTransactionsFromPositions(
       let security: Security | null = null;
       try {
         const secReq = new QuerySecurityRequestProto();
-        secReq.setObjectClass("SecurityRequest");
-        secReq.setVersion("0.0.1");
+        stampOwn(secReq);
         secReq.setAsOf(ZonedDateTime.now().toProto());
         secReq.setSearchSecurityInput(securityFilter.toProto());
         const securities = await new Promise<Security[]>((resolve, reject) => {

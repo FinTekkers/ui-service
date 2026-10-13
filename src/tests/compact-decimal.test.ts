@@ -1,15 +1,10 @@
 /**
- * US-212 — compact decimals (LM-294 / LM-306).
+ * US-212 — compact decimals (LM-294 / LM-306); US-220 — LM-318 deleted the
+ * decimal string, so the compact form (unscaled bytes + scale) is the only one.
  *
  * ui-service reads and writes DecimalValueProto only through $lib/decimal,
- * which wraps the ledger-models codec: writes carry both the compact form
- * (unscaled bytes + scale) and the deprecated string; reads prefer the
- * compact form and fall back to the string for old data. Values, scale and
- * display must not change.
- *
- * The npm package does not ship the legacy_v0433 fixtures, so old data here
- * is a string-only proto built the way pre-0.4.34 writers built it. This is
- * the only file allowed to call the deprecated string accessor.
+ * which wraps the ledger-models codec. Values, scale and display must not
+ * change.
  */
 import { createRequire } from "module";
 import { beforeEach, describe, expect, test, vi } from "vitest";
@@ -98,24 +93,9 @@ const FIRST_LM_306_RELEASE = "0.4.39";
 
 const BIG = "12345678901234567890123456.789012"; // 32 digits, scale 6
 
-/** Old data: only the string form, as writers before ledger-models 0.4.34 sent. */
-function stringOnly(value: string): DecimalValueProto {
-  return new DecimalValueProto().setArbitraryPrecisionValue(value);
-}
-
-/** New data from a future writer that has dropped the string (LM-295). */
-function compactOnly(value: string): DecimalValueProto {
-  return toDecimalProto(value).setArbitraryPrecisionValue("");
-}
-
-function expectBothForms(
-  proto: DecimalValueProto,
-  value: string,
-  scale: number
-) {
+function expectCompact(proto: DecimalValueProto, scale: number) {
   expect(proto.getUnscaledValue_asU8().length).toBeGreaterThan(0);
   expect(proto.getScale()).toBe(scale);
-  expect(proto.toObject().arbitraryPrecisionValue).toBe(value);
 }
 
 const MANUAL_BOND: BondCalculatorInputs = {
@@ -186,41 +166,33 @@ describe("US-212 metric 1: ledger-models pin", () => {
   });
 });
 
-describe("US-212 metric 3: old string-only data reads back exactly", () => {
+describe("US-220 metric 3: decimals round-trip exactly through the compact helpers", () => {
   test.each([
-    ["101.250", 3],
-    ["-12345.6700", 4],
-    ["1000000.00", 2],
-  ])("%s decodes with value and scale %i", (value, scale) => {
-    const proto = stringOnly(value);
-    expect(fromDecimalProto(proto)).toBe(value);
-    expect(decodeDecimal(proto).scale).toBe(scale);
-  });
-
-  test("price 101.250 through transactions.ts", async () => {
-    const row = await rowThroughTransactions(
-      stringOnly("101.250"),
-      stringOnly("1000000.00")
+    ["123.4500", 4, "12d644"],
+    ["0.000000000000000000000001", 24, "01"],
+    ["12345678901234567890.123456789", 9, "27e41b3246bec9b16e398115"],
+  ])("%s keeps scale %i", (value, scale, unscaledHex) => {
+    const proto = toDecimalProto(value);
+    expect(Buffer.from(proto.getUnscaledValue_asU8()).toString("hex")).toBe(
+      unscaledHex
     );
-    expect(row.transactionPrice).toBe("101.250");
-  });
-
-  test("quantity 1000000.00 through transactions.ts", async () => {
-    const row = await rowThroughTransactions(
-      stringOnly("101.250"),
-      stringOnly("1000000.00")
+    expect(proto.getScale()).toBe(scale);
+    const decoded = DecimalValueProto.deserializeBinary(
+      proto.serializeBinary()
     );
-    // The ledger-models Transaction wrapper returns quantity as a decimal.js
-    // Decimal, which drops trailing zeros. ledger-models 0.4.31 gave the same
-    // "1000000", so this is the pre-change value, unchanged.
-    expect(row.transactionQuantity).toBe("1000000");
+    expect(decoded.getScale()).toBe(scale);
+    expect(fromDecimalProto(decoded)).toBe(value);
   });
 
-  test("amount -12345.6700 through valuation.ts parseCashflows", async () => {
-    const { cashflow } = await valueThroughValuation(stringOnly("-12345.6700"));
-    expect(cashflow.fvAmount).toBe("-12345.6700");
-    expect(cashflow.pvAmount).toBe("-12345.6700");
-    expect(cashflow.couponRate).toBe("-12345.6700");
+  test("123.4500 keeps its trailing zeros", () => {
+    expect(fromDecimalProto(toDecimalProto("123.4500"))).toBe("123.4500");
+    expect(fromDecimalProto(toDecimalProto("123.4500"))).not.toBe("123.45");
+  });
+
+  test("a value beyond float precision is not rounded", () => {
+    const value = "12345678901234567890.123456789";
+    expect(String(parseFloat(value))).not.toBe(value);
+    expect(fromDecimalProto(toDecimalProto(value))).toBe(value);
   });
 });
 
@@ -230,32 +202,30 @@ describe("US-212 metric 4: new data round-trips through write and read paths", (
     ["0", 0],
     ["-42.125", 3],
     [BIG, 6],
-  ])("%s encodes both forms and decodes with scale %i", (value, scale) => {
+  ])("%s encodes and decodes with scale %i", (value, scale) => {
     const proto = toDecimalProto(value);
-    expectBothForms(proto, value, scale);
+    expectCompact(proto, scale);
     expect(fromDecimalProto(proto)).toBe(value);
     expect(decodeDecimal(proto).scale).toBe(scale);
-    // The compact form alone carries the value: a reader does not need the string.
-    expect(fromDecimalProto(compactOnly(value))).toBe(value);
   });
 
   test.each(["1.50", "0", "-42.125", BIG])(
-    "%s read back through valuation.ts and transactions.ts from the compact form",
+    "%s read back through valuation.ts and transactions.ts",
     async (value) => {
       const { measure, cashflow } = await valueThroughValuation(
-        compactOnly(value)
+        toDecimalProto(value)
       );
       expect(measure).toBe(value);
       expect(cashflow.fvAmount).toBe(value);
       const row = await rowThroughTransactions(
-        compactOnly(value),
-        compactOnly("1000000.00")
+        toDecimalProto(value),
+        toDecimalProto("1000000.00")
       );
       expect(row.transactionPrice).toBe(value);
     }
   );
 
-  test("valuation.ts writes the clean price 1.50 in both forms", async () => {
+  test("valuation.ts writes the clean price 1.50", async () => {
     respondWith(toDecimalProto("4.25"));
     await RunValuation({ ...MANUAL_BOND, price: "1.50" });
     expect(capturedValuations).toHaveLength(1);
@@ -263,11 +233,11 @@ describe("US-212 metric 4: new data round-trips through write and read paths", (
       .getProductInput()
       .getBond()
       .getCleanPrice();
-    expectBothForms(cleanPrice, "1.50", 2);
+    expectCompact(cleanPrice, 2);
     expect(fromDecimalProto(cleanPrice)).toBe("1.50");
   });
 
-  test("runCurve.ts writes each clean price in both forms", async () => {
+  test("runCurve.ts writes each clean price", async () => {
     // cleanPrice is a number on CurveConstituent (pre-existing), so trailing
     // zeros cannot reach this path; 99.25 still shows scale 2 is kept.
     const constituent = (tenor: string, cleanPrice: number) =>
@@ -282,8 +252,10 @@ describe("US-212 metric 4: new data round-trips through write and read paths", (
     );
     expect(capturedCurves).toHaveLength(1);
     const [first, second] = capturedCurves[0].getCurveInputsList();
-    expectBothForms(first.getCleanPrice(), "99.25", 2);
-    expectBothForms(second.getCleanPrice(), "101.5", 1);
+    expectCompact(first.getCleanPrice(), 2);
+    expect(fromDecimalProto(first.getCleanPrice())).toBe("99.25");
+    expectCompact(second.getCleanPrice(), 1);
+    expect(fromDecimalProto(second.getCleanPrice())).toBe("101.5");
   });
 });
 
@@ -304,13 +276,9 @@ describe("US-212 metric 5: display is unchanged", () => {
     ],
   ];
 
-  const SOURCES: Array<[string, (value: string) => DecimalValueProto]> = [
-    ["old string-only data", stringOnly],
-    ["new data, both forms", toDecimalProto],
-    ["compact form only", compactOnly],
-  ];
+  const build = toDecimalProto;
 
-  describe.each(SOURCES)("%s", (_label, build) => {
+  describe("compact form", () => {
     test.each(DISPLAY)(
       "%s shows as %s and %s",
       async (value, amount, percent) => {
@@ -350,8 +318,14 @@ describe("US-212 guardrail: absent and unset decimals read as before", () => {
       getPrice: () => decimal,
     });
     priceResponses = [
-      priceRow(stringOnly("not a number"), 1_700_000_000),
-      priceRow(stringOnly("99.250"), 1_700_086_400),
+      // Scale over the codec's 4096 limit: decoding throws.
+      priceRow(
+        new DecimalValueProto()
+          .setUnscaledValue(new Uint8Array([1]))
+          .setScale(5000),
+        1_700_000_000
+      ),
+      priceRow(toDecimalProto("99.250"), 1_700_086_400),
     ];
     const prices = await fetchPricesForSecurity(UUID.random().toString());
     expect(prices).toHaveLength(1);
@@ -368,6 +342,6 @@ describe("US-212: the src/scripts/*.cjs encode helpers resolve", () => {
     } = require("@fintekkers/ledger-models/node/wrappers/models/utils/decimal");
     expect(typeof encodeDecimal).toBe("function");
     expect(typeof parseDecimalString).toBe("function");
-    expectBothForms(encodeDecimal(parseDecimalString("1.50")), "1.50", 2);
+    expectCompact(encodeDecimal(parseDecimalString("1.50")), 2);
   });
 });

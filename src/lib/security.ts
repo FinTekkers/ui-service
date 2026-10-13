@@ -26,6 +26,7 @@ import { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/model
 import { PositionFilterOperator } from "@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 
 const { FieldProto } = pkg;
 
@@ -394,8 +395,7 @@ export async function FetchSecurity(
       ...conn.clientOptions,
     });
     const searchRequest = new QuerySecurityRequestProto();
-    searchRequest.setObjectClass("SecurityRequest");
-    searchRequest.setVersion("0.0.1");
+    stampOwn(searchRequest);
     searchRequest.setAsOf(ZonedDateTime.now().toProto());
     searchRequest.setSearchSecurityInput(filterSecurity.toProto());
 
@@ -811,8 +811,7 @@ async function fetchDistinctIssuerNames(apiKey?: string): Promise<string[]> {
       ...conn.clientOptions,
     });
     const req = new GetFieldValuesRequestProto();
-    req.setObjectClass("GetFieldValuesRequestProto");
-    req.setVersion("0.0.1");
+    stampOwn(req);
     req.setField(FieldProto.SECURITY_ISSUER_NAME);
 
     const issuers: string[] = await new Promise((resolve, reject) => {
