@@ -16,7 +16,7 @@
 import { expect, type Page } from "@playwright/test";
 // US-211: the ledger has no seed portfolios; this `test` owns one probe
 // portfolio for the run and deletes it again afterwards.
-import { test, waitForPortfolioInUniverse } from "./fixtures/probe";
+import { test } from "./fixtures/probe";
 
 /**
  * Resolve a portfolio for autocomplete testing. Pre-M5 the seed was
@@ -52,7 +52,6 @@ async function resolveFirstPortfolio(
   const name = (await link.textContent())?.trim() ?? "";
   expect(name.length, "portfolio has a non-empty name").toBeGreaterThan(0);
   const id = new URL(href!, page.url()).searchParams.get("portfolioId")!;
-  await waitForPortfolioInUniverse(page, id, name);
   return { id, name };
 }
 

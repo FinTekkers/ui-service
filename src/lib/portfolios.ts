@@ -49,6 +49,29 @@ export function clearPortfolioUniverseCache(): void {
   portfolioUniverseCache.clear();
 }
 
+/**
+ * US-211: refresh the cached portfolio universe from the portfolios index
+ * load. The transactions and positions filters read through
+ * `FetchPortfolioUniverse` (5-minute TTL per API key); without a refresh,
+ * a probe created mid-run stays invisible to those filters until the TTL
+ * expires. The `/data/portfolios` page already lists every portfolio via
+ * a direct search, so its load primes the same cache entries the filters
+ * read — e2e probes are visible immediately with no test-side wait.
+ */
+export function primePortfolioUniverseCache(
+  apiKey: string | undefined,
+  entries: PortfolioUniverseEntry[]
+): void {
+  const cacheKey = apiKey ?? "__no_key__";
+  const sorted = [...entries].sort((a, b) =>
+    a.portfolioName.localeCompare(b.portfolioName)
+  );
+  portfolioUniverseCache.set(cacheKey, {
+    value: sorted,
+    fetchedAt: Date.now(),
+  });
+}
+
 export async function FetchPortfolioUniverse(
   apiKey?: string
 ): Promise<PortfolioUniverseEntry[]> {
