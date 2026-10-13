@@ -7,7 +7,7 @@
  * broker path (`127.0.0.1:8085`) is asserted statically below, and the
  * one live purge of the 11 legacy probes is a Manual check on the item.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
@@ -24,6 +24,34 @@ import {
   sweepStaleProbes,
 } from "./probe-cleanup";
 import type { ProbeLedger, ProbePortfolio } from "./probe-cleanup";
+
+// The metric 1 cases run the real e2e hooks and fixture teardown. This
+// stand-in for @playwright/test records hooks/tests instead of running a
+// browser, and `extend` hands back the fixture definitions.
+const pw = vi.hoisted(() => {
+  type Fn = (...args: any[]) => any;
+  const hooks = {
+    beforeAll: [] as Fn[],
+    afterEach: [] as Fn[],
+    afterAll: [] as Fn[],
+    tests: [] as { name: string; fn: Fn }[],
+  };
+  const test: any = (name: string, fn: Fn) => hooks.tests.push({ name, fn });
+  test.describe = (_name: string, fn: Fn) => fn();
+  test.beforeAll = (fn: Fn) => hooks.beforeAll.push(fn);
+  test.afterEach = (fn: Fn) => hooks.afterEach.push(fn);
+  test.afterAll = (fn: Fn) => hooks.afterAll.push(fn);
+  test.extend = (fixtures: unknown) => fixtures;
+  return { hooks, test, ledger: { current: null as unknown } };
+});
+vi.mock("@playwright/test", () => ({ test: pw.test, expect: vi.fn() }));
+vi.mock("../../tests/e2e/fixtures/auth", () => ({
+  STORAGE_STATE_PATH: "/nonexistent/user.json",
+}));
+vi.mock("./probe-cleanup", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./probe-cleanup")>()),
+  createGrpcProbeLedger: () => pw.ledger.current,
+}));
 
 interface RecordedCall {
   op: string;
@@ -86,25 +114,39 @@ function expectSweepOnly(ledger: FakeProbeLedger, allowed: string[]): void {
 }
 
 describe("metric 1: owned probe deleted even on failure", () => {
-  it("forced failure still records one Delete per Create", async () => {
+  it("forced failure in the spec: afterEach/afterAll Delete every Create", async () => {
     const ledger = new FakeProbeLedger();
-    const logs: string[] = [];
-    const name = makeProbeName(NOW);
-    await createProbe(ledger, name);
-    let failed = false;
-    try {
-      try {
-        throw new Error("assertion failed");
-      } finally {
-        await deleteProbe(ledger, name, { log: (m) => logs.push(m) });
-      }
-    } catch {
-      failed = true;
-    }
-    expect(failed).toBe(true);
-    expect(ledger.created).toEqual([name]);
-    expect(ledger.deleted).toEqual([name]);
-    expect(logs).toEqual([]);
+    pw.ledger.current = ledger;
+    await import("../../tests/e2e/portfolios-show-all.spec");
+    for (const hook of pw.hooks.beforeAll) await hook();
+    const failingPage = {
+      goto: async () => {
+        throw new Error("forced failure");
+      },
+    };
+    await expect(pw.hooks.tests[0].fn({ page: failingPage })).rejects.toThrow(
+      "forced failure"
+    );
+    for (const hook of pw.hooks.afterEach) await hook();
+    for (const hook of pw.hooks.afterAll) await hook();
+    expect(ledger.created).toHaveLength(2);
+    expect([...ledger.deleted].sort()).toEqual([...ledger.created].sort());
+  });
+
+  it("forced failure under the probePortfolio fixture still Deletes", async () => {
+    const ledger = new FakeProbeLedger();
+    pw.ledger.current = ledger;
+    const { test: fixtures } = (await import(
+      "../../tests/e2e/fixtures/probe"
+    )) as any;
+    const [probePortfolio] = fixtures.probePortfolio;
+    await expect(
+      probePortfolio({}, async () => {
+        throw new Error("forced failure");
+      })
+    ).rejects.toThrow("forced failure");
+    expect(ledger.created).toHaveLength(1);
+    expect(ledger.deleted).toEqual(ledger.created);
   });
 
   it("success path: two Creates then two Deletes", async () => {

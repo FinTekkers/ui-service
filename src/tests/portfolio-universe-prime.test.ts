@@ -36,6 +36,17 @@ describe("primePortfolioUniverseCache (US-211)", () => {
     );
   });
 
+  it("dedupes streamed versions on portfolioId, like FetchPortfolioUniverse", async () => {
+    clearPortfolioUniverseCache();
+    primePortfolioUniverseCache(undefined, [
+      { portfolioId: "id-a", portfolioName: "Alpha" },
+      { portfolioId: "id-a", portfolioName: "Alpha" },
+      { portfolioId: "id-b", portfolioName: "Beta" },
+    ]);
+    const universe = await FetchPortfolioUniverse(undefined);
+    expect(universe.map((e) => e.portfolioId)).toEqual(["id-a", "id-b"]);
+  });
+
   it("cache entries are keyed by apiKey", async () => {
     clearPortfolioUniverseCache();
     primePortfolioUniverseCache("key-a", [

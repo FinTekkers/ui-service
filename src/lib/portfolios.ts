@@ -63,7 +63,17 @@ export function primePortfolioUniverseCache(
   entries: PortfolioUniverseEntry[]
 ): void {
   const cacheKey = apiKey ?? "__no_key__";
-  const sorted = [...entries].sort((a, b) =>
+  // Dedupe on portfolioId — searchPortfolio can stream historical versions,
+  // and FetchPortfolioUniverse returns each portfolio once.
+  const byId = new Map<string, PortfolioUniverseEntry>();
+  for (const e of entries) {
+    if (!e.portfolioId || !e.portfolioName) continue;
+    byId.set(e.portfolioId, {
+      portfolioId: e.portfolioId,
+      portfolioName: e.portfolioName,
+    });
+  }
+  const sorted = [...byId.values()].sort((a, b) =>
     a.portfolioName.localeCompare(b.portfolioName)
   );
   portfolioUniverseCache.set(cacheKey, {
