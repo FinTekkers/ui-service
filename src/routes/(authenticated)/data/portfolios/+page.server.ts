@@ -79,7 +79,13 @@ export async function load({ locals, request }) {
   // US-211: the index already searched every portfolio above — prime the
   // shared universe cache the transactions/positions filters read, so a
   // probe created mid-run is visible there immediately (no 5-minute wait).
+  // A failed search returns a single "Error: …" row: keep the cached list
+  // rather than replace it with an empty one.
+  const searchFailed =
+    Array.isArray(portfolioData) &&
+    portfolioData.some((row) => row.portfolioName?.startsWith("Error: "));
   try {
+    if (searchFailed) throw new Error("portfolio search failed");
     const universe = (Array.isArray(portfolioData) ? portfolioData : [])
       .filter(
         (row) =>

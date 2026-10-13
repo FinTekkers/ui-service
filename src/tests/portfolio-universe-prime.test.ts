@@ -31,9 +31,9 @@ describe("primePortfolioUniverseCache (US-211)", () => {
       { portfolioId: "id-old", portfolioName: "Old" },
     ]);
     const universe = await FetchPortfolioUniverse(undefined);
-    expect(
-      universe.some((e) => e.portfolioName === "qa-221-probe-xyz")
-    ).toBe(true);
+    expect(universe.some((e) => e.portfolioName === "qa-221-probe-xyz")).toBe(
+      true
+    );
   });
 
   it("cache entries are keyed by apiKey", async () => {
