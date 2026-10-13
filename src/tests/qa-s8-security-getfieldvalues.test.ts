@@ -8,6 +8,8 @@
  */
 import { describe, it, expect } from "vitest";
 import grpc from "@grpc/grpc-js";
+import { ObjectTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js";
+import { stamp } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 
 // ---------------------------------------------------------------------------
 // 1. Proto structure test — no AS_OF in GetFieldValuesRequestProto
@@ -27,7 +29,7 @@ describe("Security/GetFieldValues — proto structure", () => {
     expect(typeof (req as any).setAsOfDatetime).toBe("undefined");
 
     // Proto DOES have these fields
-    expect(typeof req.setObjectClass).toBe("function");
+    expect(typeof req.setObjectType).toBe("function");
     expect(typeof req.setVersion).toBe("function");
     expect(typeof req.setField).toBe("function");
 
@@ -86,8 +88,7 @@ describe("Security/GetFieldValues — live service (ledger-service:8082)", () =>
     );
 
     const req = new (GetFieldValuesRequestProto as any)();
-    req.setObjectClass("SecurityRequest");
-    req.setVersion("0.0.1");
+    stamp(req, ObjectTypeProto.OBJECT_TYPE_GET_FIELD_VALUES_REQUEST);
     req.setField(fieldValue);
 
     return new Promise((resolve) => {

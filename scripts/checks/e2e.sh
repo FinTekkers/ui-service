@@ -38,6 +38,11 @@ REGRESSION_SPECS=(
   tests/e2e/calculators-numerical.spec.ts
   tests/e2e/tips-calculator-reference-cpi.spec.ts
   tests/e2e/cpi-index-page-data.spec.ts
+  # US-218: pages that list models and whose requests are now stamped with
+  # object_type + version through ledger-models' `stamp`.
+  tests/e2e/positions-*.spec.ts
+  tests/e2e/treasuries*.spec.ts
+  tests/e2e/treasury-curve-*.spec.ts
 )
 # These tests already failed on the host before US-209, on the pre-bump
 # baseline (978e521, ledger-models 0.4.29), because the host data lacks what

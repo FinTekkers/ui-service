@@ -7,6 +7,8 @@
  * 3. Testing that adding both fields doesn't cause silent data loss
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { ObjectTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js";
+import { stamp } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 
 // ---- Mock setup (same pattern as positions.test.ts) ----
 
@@ -345,8 +347,7 @@ describe("Position/Search — SECURITY + SECURITY_ID live (ledger-service:8082)"
     now.setTimeZone("America/New_York");
 
     const req = new (QReq as any)();
-    req.setObjectClass("PositionRequest");
-    req.setVersion("0.0.1");
+    stamp(req, ObjectTypeProto.OBJECT_TYPE_QUERY_POSITION_REQUEST);
     req.setAsOf(now);
     req.setPositionType(PositionTypeProto.CALCULATED);
     req.setPositionView(PositionViewProto.DEFAULT);

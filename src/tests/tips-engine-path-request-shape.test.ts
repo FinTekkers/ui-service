@@ -34,6 +34,7 @@ vi.mock("$lib/grpc-auth", () => ({
 }));
 
 import { RunTipsValuation } from "$lib/valuation";
+import { fromDecimalProto } from "$lib/decimal";
 import type { TipsCalculatorInputs } from "$lib/valuation";
 
 const MANUAL_TIPS: TipsCalculatorInputs = {
@@ -61,11 +62,9 @@ describe("TIPS engine-path request shape (#207)", () => {
     expect(tipsInput).toBeDefined();
     expect(tipsInput.getSecurity()).toBeDefined();
     expect(tipsInput.getCleanPrice()).toBeDefined();
-    expect(tipsInput.getCleanPrice().getArbitraryPrecisionValue()).toBe("98.5");
+    expect(fromDecimalProto(tipsInput.getCleanPrice())).toBe("98.5");
     expect(tipsInput.getCurrentCpi()).toBeDefined();
-    expect(tipsInput.getCurrentCpi().getArbitraryPrecisionValue()).toBe(
-      "314.175"
-    );
+    expect(fromDecimalProto(tipsInput.getCurrentCpi())).toBe("314.175");
 
     // Legacy flat fields are NOT set on TIPS requests.
     expect(req.hasSecurityInput()).toBe(false);

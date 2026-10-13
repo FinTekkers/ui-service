@@ -243,6 +243,8 @@ interface LedgerModules {
   FieldProto: any;
   UUID: any;
   ZonedDateTime: any;
+  ObjectTypeProto: any;
+  stamp: any;
 }
 
 function pick(mod: AnyModule, name: string): any {
@@ -299,6 +301,12 @@ async function ledgerModules(): Promise<LedgerModules> {
   const datetimeMod: AnyModule = await import(
     "@fintekkers/ledger-models/node/wrappers/models/utils/datetime.js"
   );
+  const objectTypeProto: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js"
+  );
+  const objectTypesMod: AnyModule = await import(
+    "@fintekkers/ledger-models/node/wrappers/util/object-types.js"
+  );
   cachedLedgerModules = {
     PortfolioClient: pick(portfolioGrpc, "PortfolioClient"),
     QueryPortfolioRequestProto: pick(
@@ -322,6 +330,8 @@ async function ledgerModules(): Promise<LedgerModules> {
     FieldProto: fieldMod.FieldProto ?? fieldMod.default?.FieldProto,
     UUID: pick(uuidMod, "UUID"),
     ZonedDateTime: pick(datetimeMod, "ZonedDateTime"),
+    ObjectTypeProto: pick(objectTypeProto, "ObjectTypeProto"),
+    stamp: pick(objectTypesMod, "stamp"),
   };
   if (!cachedLedgerModules.FieldProto) {
     throw new Error(
@@ -373,15 +383,13 @@ async function grpcCreatePortfolio(
 ): Promise<void> {
   const mods = await ledgerModules();
   const portfolio = new mods.PortfolioProto();
-  portfolio.setObjectClass("Portfolio");
-  portfolio.setVersion("0.0.1");
+  mods.stamp(portfolio, mods.ObjectTypeProto.OBJECT_TYPE_PORTFOLIO);
   portfolio.setAsOf(mods.ZonedDateTime.now().toProto());
   portfolio.setPortfolioName(name);
   portfolio.setUuid(mods.UUID.random().toUUIDProto());
 
   const req = new mods.CreatePortfolioRequestProto();
-  req.setObjectClass("PortfolioRequest");
-  req.setVersion("0.0.1");
+  mods.stamp(req, mods.ObjectTypeProto.OBJECT_TYPE_CREATE_PORTFOLIO_REQUEST);
   req.setCreatePortfolioInput(portfolio);
 
   const client = new mods.PortfolioClient(
@@ -406,8 +414,7 @@ async function grpcSearchPortfolios(
     grpc.credentials.createInsecure()
   );
   const req = new mods.QueryPortfolioRequestProto();
-  req.setObjectClass("PortfolioRequest");
-  req.setVersion("0.0.1");
+  mods.stamp(req, mods.ObjectTypeProto.OBJECT_TYPE_QUERY_PORTFOLIO_REQUEST);
   req.setAsOf(mods.ZonedDateTime.now().toProto());
   req.setSearchPortfolioInput(new mods.PositionFilter().toProto());
 
@@ -453,8 +460,7 @@ async function grpcHasLinkedTransactions(
   const filter = new mods.PositionFilter();
   filter.addEqualsFilter(mods.FieldProto.PORTFOLIO_NAME, name);
   const req = new mods.QueryTransactionRequestProto();
-  req.setObjectClass("SecurityRequest");
-  req.setVersion("0.0.1");
+  mods.stamp(req, mods.ObjectTypeProto.OBJECT_TYPE_QUERY_TRANSACTION_REQUEST);
   req.setAsOf(mods.ZonedDateTime.now().toProto());
   req.setSearchTransactionInput(filter.toProto());
   req.setLimit(TRANSACTION_CHECK_LIMIT);
@@ -486,8 +492,7 @@ async function grpcDeletePortfolio(
   }
   const mods = await ledgerModules();
   const request = new mods.DeleteRequestProto();
-  request.setObjectClass("DeleteRequestProto");
-  request.setVersion("0.0.1");
+  mods.stamp(request, mods.ObjectTypeProto.OBJECT_TYPE_DELETE_REQUEST);
   request.setUuid(
     mods.UUIDProto.deserializeBinary(
       new Uint8Array(Buffer.from(target.uuidHex, "hex"))

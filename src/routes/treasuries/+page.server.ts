@@ -8,6 +8,8 @@ import { TransactionTypeProto } from "@fintekkers/ledger-models/node/fintekkers/
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { PositionClient } from "@fintekkers/ledger-models/node/fintekkers/services/position-service/position_service_grpc_pb.js";
 import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
+import { ObjectTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js";
+import { stamp } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { Position } from "@fintekkers/ledger-models/node/wrappers/models/position/position";
 import type { QueryPositionResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/position/query_position_response_pb";
@@ -190,8 +192,7 @@ async function fetchTransactionsFromPositions(
       let security: Security | null = null;
       try {
         const secReq = new QuerySecurityRequestProto();
-        secReq.setObjectClass("SecurityRequest");
-        secReq.setVersion("0.0.1");
+        stamp(secReq, ObjectTypeProto.OBJECT_TYPE_QUERY_SECURITY_REQUEST);
         secReq.setAsOf(ZonedDateTime.now().toProto());
         secReq.setSearchSecurityInput(securityFilter.toProto());
         const securities = await new Promise<Security[]>((resolve, reject) => {

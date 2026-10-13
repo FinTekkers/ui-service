@@ -20,6 +20,8 @@ import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/mode
 import { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb";
 import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
+import { ObjectTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js";
+import { stamp } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 
 import {
   primaryIdentifier,
@@ -32,9 +34,7 @@ function buildSecurity(
   productType: number,
   ids: Array<{ type: IdentifierTypeProto; value: string }>
 ): Security {
-  const proto = new SecurityProto()
-    .setObjectClass("Security")
-    .setVersion("0.0.1")
+  const proto = stamp(new SecurityProto(), ObjectTypeProto.OBJECT_TYPE_SECURITY)
     .setUuid(UUID.random().toUUIDProto())
     .setProductType(productType)
     .setIssuerName("Test Issuer");

@@ -26,6 +26,8 @@ import {
 import type { CurveResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/curve_response_pb.js";
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { ObjectTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js";
+import { stamp } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
 import { curvePointYears } from "$lib/curveTenor";
@@ -93,8 +95,7 @@ function buildCurveRequest(
 ): { request: CurveRequestProto; warnings: string[] } {
   const warnings: string[] = [];
   const request = new CurveRequestProto();
-  request.setObjectClass("CurveRequestProto");
-  request.setVersion("0.0.1");
+  stamp(request, ObjectTypeProto.OBJECT_TYPE_CURVE_REQUEST);
   request.setAsofDatetime(endOfDayProto(asOf));
   request.setCurveTypesList([
     MeasureProto.PAR_YIELD,
@@ -133,7 +134,10 @@ function parseCurveResponse(response: CurveResponseProto): {
       let years: number | null;
       let yieldStr: string | undefined;
       try {
-        years = curvePointYears(point.getTenor());
+        years = curvePointYears(
+          point,
+          curveType === MeasureProto.FORWARD_YIELD
+        );
         yieldStr = fromDecimalProto(point.getYield());
       } catch {
         continue;

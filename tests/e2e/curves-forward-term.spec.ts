@@ -61,20 +61,22 @@ test.describe("/data/curves — forward-term selector (#264)", () => {
     // RunCurve errors (e.g. pre-existing M6 bug 5 coupon-rate gap), we skip
     // — we don't want UI-correctness signal swallowed by a separate
     // data-sourcing regression.
+    //
+    // US-218: the host now builds a curve (US-216), so a backend error fails
+    // this test instead of skipping it: a skip would not prove the page
+    // rendered on the new ledger-models release.
     await page.goto("/data/curves");
     await expect(
       page.getByRole("heading", { name: /Par & Spot Curves/ })
     ).toBeVisible({ timeout: 15_000 });
 
     const errorBanner = page.locator(".error-banner");
-    if (await errorBanner.isVisible().catch(() => false)) {
-      test.skip(
-        true,
-        `backend RunCurve returned an error — out of scope for this UI spec: ${
-          (await errorBanner.textContent()) ?? ""
-        }`
-      );
-    }
+    expect(
+      await errorBanner.isVisible().catch(() => false),
+      `backend RunCurve returned an error: ${
+        (await errorBanner.textContent().catch(() => null)) ?? ""
+      }`
+    ).toBe(false);
 
     const tenorCells = await page
       .locator(".table-wrapper")
@@ -89,5 +91,33 @@ test.describe("/data/curves — forward-term selector (#264)", () => {
         tenorCells
       )}`
     ).toBeDefined();
+  });
+
+  test("forward table renders start-year rows from the LM-313 from/to tenors (US-218)", async ({
+    page,
+  }) => {
+    // Forward points now take their start year from CurvePointProto's
+    // from_tenor (LM-313). If the backend left it unset every forward point
+    // would be dropped and the table would show only its empty-state row,
+    // while the par trace alone still drew the chart.
+    await page.goto("/data/curves");
+    const heading = page.getByRole("heading", {
+      name: /Forward Rate by Start Year/,
+    });
+    await expect(heading).toBeVisible({ timeout: 15_000 });
+
+    const errorBanner = page.locator(".error-banner");
+    expect(
+      await errorBanner.isVisible().catch(() => false),
+      `backend RunCurve returned an error: ${
+        (await errorBanner.textContent().catch(() => null)) ?? ""
+      }`
+    ).toBe(false);
+
+    const startYears = page
+      .locator(".table-wrapper", { has: heading })
+      .locator("tbody td strong");
+    await expect(startYears.first()).toBeVisible({ timeout: 15_000 });
+    expect((await startYears.first().textContent())?.trim()).toBeTruthy();
   });
 });

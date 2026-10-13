@@ -21,6 +21,8 @@ import type { SecurityProto } from "@fintekkers/ledger-models/node/fintekkers/mo
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
+import { ObjectTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js";
+import { stamp } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { getServiceConnection } from "$lib/grpc-auth";
 
 /**
@@ -49,8 +51,7 @@ function buildGetByIdsRequest(
   lookthrough: boolean
 ): QuerySecurityRequestProto {
   const request = new QuerySecurityRequestProto();
-  request.setObjectClass("SecurityRequest");
-  request.setVersion("0.0.1");
+  stamp(request, ObjectTypeProto.OBJECT_TYPE_QUERY_SECURITY_REQUEST);
   request.setAsOf(ZonedDateTime.from(asOf).toProto());
   request.setLookthrough(lookthrough);
   for (const uuidStr of uuidStrs) {

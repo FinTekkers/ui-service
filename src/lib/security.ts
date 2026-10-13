@@ -7,6 +7,8 @@ import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb.js";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { ObjectTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js";
+import { stamp } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { getServiceConnection } from "$lib/grpc-auth";
 // M5 / #260: ProductTypeProto + product_hierarchy registry. SecurityType
 // wrapper retired in 0.2.1; consumer-side filtering is by productType
@@ -394,8 +396,7 @@ export async function FetchSecurity(
       ...conn.clientOptions,
     });
     const searchRequest = new QuerySecurityRequestProto();
-    searchRequest.setObjectClass("SecurityRequest");
-    searchRequest.setVersion("0.0.1");
+    stamp(searchRequest, ObjectTypeProto.OBJECT_TYPE_QUERY_SECURITY_REQUEST);
     searchRequest.setAsOf(ZonedDateTime.now().toProto());
     searchRequest.setSearchSecurityInput(filterSecurity.toProto());
 
@@ -811,8 +812,7 @@ async function fetchDistinctIssuerNames(apiKey?: string): Promise<string[]> {
       ...conn.clientOptions,
     });
     const req = new GetFieldValuesRequestProto();
-    req.setObjectClass("GetFieldValuesRequestProto");
-    req.setVersion("0.0.1");
+    stamp(req, ObjectTypeProto.OBJECT_TYPE_GET_FIELD_VALUES_REQUEST);
     req.setField(FieldProto.SECURITY_ISSUER_NAME);
 
     const issuers: string[] = await new Promise((resolve, reject) => {

@@ -5,6 +5,8 @@ import {
   PriceFrequencyProto,
 } from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_request_pb.js";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { ObjectTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/object_type_pb.js";
+import { stamp } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto } from "$lib/decimal";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
@@ -133,8 +135,7 @@ async function fetchPrices(
   apiKey?: string
 ): Promise<CpiDataPoint[]> {
   const request = new QueryPriceRequestProto();
-  request.setObjectClass("QueryPriceRequestProto");
-  request.setVersion("0.0.1");
+  stamp(request, ObjectTypeProto.OBJECT_TYPE_QUERY_PRICE_REQUEST);
   request.setAsOf(ZonedDateTime.now().toProto());
   // CPI is monthly; pull the full available history so spot-checks like
   // 1947-01 = 21.48 work. The largest series (1,358 obs) fits in one response.

@@ -52,6 +52,7 @@ vi.mock("$lib/grpc-auth", () => ({
 }));
 
 import { RunTipsValuation } from "$lib/valuation";
+import { fromDecimalProto } from "$lib/decimal";
 import type { TipsCalculatorInputs } from "$lib/valuation";
 
 const BASE_MANUAL: TipsCalculatorInputs = {
@@ -71,10 +72,7 @@ function readBaseCpiFromLastRequest(): string | undefined {
   const last = capturedRequests[capturedRequests.length - 1];
   const tipsInput = last?.getProductInput?.()?.getTips?.();
   const sec = tipsInput?.getSecurity?.();
-  return sec
-    ?.getTipsExtension?.()
-    ?.getBaseCpi?.()
-    ?.getArbitraryPrecisionValue?.();
+  return fromDecimalProto(sec?.getTipsExtension?.()?.getBaseCpi?.());
 }
 
 describe("RunTipsValuation — Reference CPI override (#263 bug 2)", () => {
