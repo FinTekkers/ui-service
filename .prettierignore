@@ -6,6 +6,7 @@ build/
 node_modules/
 test-results/
 playwright-report/
+playwright/.auth/
 *.timestamp-*.mjs
 # npm owns the formatting of these files; they must stay byte-identical to main (R9).
 package.json
