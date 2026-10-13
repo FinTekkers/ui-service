@@ -5,6 +5,7 @@ import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/p
 import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portfolio/portfolio";
 import { deleteEntity } from "$lib/entity-delete";
 import { FetchTransactionByPortfolio } from "$lib/transactions";
+import { primePortfolioUniverseCache } from "$lib/portfolios";
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
@@ -74,6 +75,34 @@ export async function load({ locals, request }) {
         },
       ];
     });
+
+  // US-211: the index already searched every portfolio above — prime the
+  // shared universe cache the transactions/positions filters read, so a
+  // probe created mid-run is visible there immediately (no 5-minute wait).
+  // A failed search returns a single "Error: …" row: keep the cached list
+  // rather than replace it with an empty one.
+  const searchFailed =
+    Array.isArray(portfolioData) &&
+    portfolioData.some((row) => row.portfolioName?.startsWith("Error: "));
+  try {
+    if (searchFailed) throw new Error("portfolio search failed");
+    const universe = (Array.isArray(portfolioData) ? portfolioData : [])
+      .filter(
+        (row) =>
+          typeof row.portfolioId === "string" &&
+          row.portfolioId !== "" &&
+          typeof row.portfolioName === "string" &&
+          row.portfolioName !== "" &&
+          !row.portfolioName.startsWith("Error: ")
+      )
+      .map((row) => ({
+        portfolioId: row.portfolioId,
+        portfolioName: row.portfolioName,
+      }));
+    primePortfolioUniverseCache(locals.user?.apiKey, universe);
+  } catch {
+    // Priming is best-effort; the page result below is authoritative.
+  }
 
   const searchParams = new URLSearchParams(request.url.split("?")[1]);
   const selectedPortfolioId = searchParams.get("portfolioId");

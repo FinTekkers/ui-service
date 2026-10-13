@@ -13,7 +13,10 @@
  * Assumes the SOMA seed is loaded — same dependency as the existing
  * portfolio-soma-positions / portfolio-soma-transactions specs.
  */
-import { test, expect, type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
+// US-211: the ledger has no seed portfolios; this `test` owns one probe
+// portfolio for the run and deletes it again afterwards.
+import { test } from "./fixtures/probe";
 
 /**
  * Resolve a portfolio for autocomplete testing. Pre-M5 the seed was
@@ -48,10 +51,8 @@ async function resolveFirstPortfolio(
   expect(href).toMatch(/portfolioId=[0-9a-f-]{36}/);
   const name = (await link.textContent())?.trim() ?? "";
   expect(name.length, "portfolio has a non-empty name").toBeGreaterThan(0);
-  return {
-    id: new URL(href!, page.url()).searchParams.get("portfolioId")!,
-    name,
-  };
+  const id = new URL(href!, page.url()).searchParams.get("portfolioId")!;
+  return { id, name };
 }
 
 test.describe("/data/positions PortfolioFilter (#226 Phase 3 PR-A)", () => {
