@@ -28,6 +28,7 @@ import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/positi
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
+import { curvePointYears } from "$lib/curveTenor";
 import {
   EXPECTED_CONSTITUENT_COUNT,
   findLatestBuildableDate,
@@ -128,10 +129,16 @@ function parseCurveResponse(response: CurveResponseProto): {
   for (const result of response.getCurveResultsList()) {
     const curveType = result.getCurveType();
     for (const point of result.getPointsList()) {
-      const tenorStr = fromDecimalProto(point.getTenor());
-      const yieldStr = fromDecimalProto(point.getYield());
-      if (!tenorStr || !yieldStr) continue;
-      const years = parseFloat(tenorStr);
+      // One undecodable point must not fail the whole page (a 500).
+      let years: number | null;
+      let yieldStr: string | undefined;
+      try {
+        years = curvePointYears(point.getTenor());
+        yieldStr = fromDecimalProto(point.getYield());
+      } catch {
+        continue;
+      }
+      if (years === null || !yieldStr) continue;
       const yieldPct = parseFloat(yieldStr) * 100;
       const cp: CurvePoint = {
         tenor: formatYears(years),
