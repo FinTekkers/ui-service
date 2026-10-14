@@ -69,6 +69,7 @@ import { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/model
 import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import fieldPkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import SecuritySelect from "../components/widgets/SecuritySelect.svelte";
 import {
@@ -358,9 +359,7 @@ describe("metric 3: each asset class reaches Security/Search unchanged", () => {
 // ----- metric 4 -----
 
 function securityProto(ticker: string, assetClass: string) {
-  const proto = new SecurityProto()
-    .setObjectClass("Security")
-    .setVersion("0.0.1")
+  const proto = stampOwn(new SecurityProto())
     .setUuid(UUID.random().toUUIDProto())
     .setAsOf(ZonedDateTime.now().toProto())
     .setProductType(ProductTypeProto.COMMON_STOCK)

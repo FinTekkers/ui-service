@@ -3,7 +3,7 @@
  * Implements a simple bond pricer so tests work without a running service.
  */
 import { vi } from "vitest";
-import { toDecimalProto } from "$lib/decimal";
+import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
 
 // MeasureProto enum values (from ledger-models)
 const MP = {
@@ -203,7 +203,7 @@ export function createValuationClientMock() {
             tipsInput?.getCleanPrice?.() ??
             frnInput?.getCleanPrice?.() ??
             request.getPriceInput?.()?.getPrice?.();
-          const priceStr = priceProto?.getArbitraryPrecisionValue?.() ?? "100";
+          const priceStr = fromDecimalProto(priceProto) ?? "100";
           const price = parseFloat(priceStr);
 
           // v0.4.1 cutover (PR #170) moved face_value / coupon_rate /
@@ -213,13 +213,13 @@ export function createValuationClientMock() {
           // with any pre-cutover caller that still sets them.
           const bd = sec?.getBondDetails?.();
           const faceValue = parseFloat(
-            bd?.getFaceValue?.()?.getArbitraryPrecisionValue?.() ??
-              sec?.getFaceValue?.()?.getArbitraryPrecisionValue?.() ??
+            fromDecimalProto(bd?.getFaceValue?.()) ??
+              fromDecimalProto(sec?.getFaceValue?.()) ??
               "1000"
           );
           const couponRatePct = parseFloat(
-            bd?.getCouponRate?.()?.getArbitraryPrecisionValue?.() ??
-              sec?.getCouponRate?.()?.getArbitraryPrecisionValue?.() ??
+            fromDecimalProto(bd?.getCouponRate?.()) ??
+              fromDecimalProto(sec?.getCouponRate?.()) ??
               "5"
           );
           const couponRate = couponRatePct / 100;
@@ -258,16 +258,15 @@ export function createValuationClientMock() {
             // at-coupon-reset assumption). The mock falls back to a sensible default
             // when neither is set so legacy tests continue to work.
             const refRateLegacy = parseFloat(
-              request
-                .getReferenceRateInput?.()
-                ?.getPrice?.()
-                ?.getArbitraryPrecisionValue?.() ?? "0.04"
+              fromDecimalProto(
+                request.getReferenceRateInput?.()?.getPrice?.()
+              ) ?? "0.04"
             );
             // FRN spread also moved to the frn_extension sub-message in v0.4.1.
             const frnExt = sec?.getFrnExtension?.();
             const spreadBps = parseFloat(
-              frnExt?.getSpread?.()?.getArbitraryPrecisionValue?.() ??
-                sec?.getSpread?.()?.getArbitraryPrecisionValue?.() ??
+              fromDecimalProto(frnExt?.getSpread?.()) ??
+                fromDecimalProto(sec?.getSpread?.()) ??
                 "50"
             );
             const couponPerPeriod =
@@ -332,17 +331,14 @@ export function createValuationClientMock() {
           const periods = bondPeriods;
           if (isTips) {
             const referenceCpi = parseFloat(
-              sec?.getBaseCpi?.()?.getArbitraryPrecisionValue?.() ?? "256.394"
+              fromDecimalProto(sec?.getBaseCpi?.()) ?? "256.394"
             );
             // Engine-path TIPS carries current_cpi on the TipsInput; legacy
             // path used a separate cpi_price_input PriceProto. Read from
             // whichever is set.
             const currentCpiStr =
-              tipsInput?.getCurrentCpi?.()?.getArbitraryPrecisionValue?.() ??
-              request
-                .getCpiPriceInput?.()
-                ?.getPrice?.()
-                ?.getArbitraryPrecisionValue?.() ??
+              fromDecimalProto(tipsInput?.getCurrentCpi?.()) ??
+              fromDecimalProto(request.getCpiPriceInput?.()?.getPrice?.()) ??
               "314.175";
             const currentCpi = parseFloat(currentCpiStr);
             const indexRatio = referenceCpi > 0 ? currentCpi / referenceCpi : 1;

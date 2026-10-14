@@ -14,6 +14,7 @@
  */
 import { describe, it, expect } from "vitest";
 import grpc from "@grpc/grpc-js";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 
 const LEDGER_URL = "localhost:8082";
 
@@ -46,8 +47,7 @@ async function transactionSearch(limit: number): Promise<{
   const filter = new PositionFilter();
 
   const req = new (QueryTransactionRequestProto as any)();
-  req.setObjectClass("SecurityRequest");
-  req.setVersion("0.0.1");
+  stampOwn(req);
   req.setAsOf(ZonedDateTime.now().toProto());
   req.setSearchTransactionInput(filter.toProto());
   req.setLimit(limit);

@@ -18,6 +18,8 @@
  */
 import { describe, it, expect } from "vitest";
 import grpc from "@grpc/grpc-js";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
+import { toDecimalProto } from "$lib/decimal";
 
 const LEDGER_URL = "localhost:8082";
 const PRICE_URL = "localhost:8083";
@@ -52,8 +54,7 @@ async function buildTestBondSecurity() {
     issueDate: new Date("2023-01-01"),
     maturityDate: new Date("2033-01-01"),
   });
-  security.setObjectClass("Security");
-  security.setVersion("0.0.1");
+  stampOwn(security);
   security.setUuid((UUID as any).random().toUUIDProto());
   security.setAsOf(ZonedDateTime.now().toProto());
   security.setAssetClass("RATES");
@@ -66,20 +67,14 @@ async function buildPriceProto(security: any, priceStr: string) {
   const { PriceProto } = await import(
     "@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js"
   );
-  const { DecimalValueProto } = await import(
-    "@fintekkers/ledger-models/node/fintekkers/models/util/decimal_value_pb.js"
-  );
   const { ZonedDateTime } = await import(
     "@fintekkers/ledger-models/node/wrappers/models/utils/datetime"
   );
 
   const price = new (PriceProto as any)();
-  price.setObjectClass("PriceProto");
-  price.setVersion("0.0.1");
+  stampOwn(price);
   price.setAsOf(ZonedDateTime.now().toProto());
-  price.setPrice(
-    new (DecimalValueProto as any)().setArbitraryPrecisionValue(priceStr)
-  );
+  price.setPrice(toDecimalProto(priceStr));
   if (security) price.setSecurity(security);
   return price;
 }
@@ -99,8 +94,7 @@ async function createPrice(
     grpc.credentials.createInsecure()
   );
   const req = new (CreatePriceRequestProto as any)();
-  req.setObjectClass("PriceRequest");
-  req.setVersion("0.0.1");
+  stampOwn(req);
   req.setCreatePriceInput(priceProto);
 
   return new Promise((resolve) => {
@@ -142,8 +136,7 @@ async function createPortfolio(
   );
 
   const portfolio = new (PortfolioProto as any)();
-  portfolio.setObjectClass("Portfolio");
-  portfolio.setVersion("0.0.1");
+  stampOwn(portfolio);
   portfolio.setAsOf(ZonedDateTime.now().toProto());
   portfolio.setPortfolioName(name);
   if (withUuid) {
@@ -151,8 +144,7 @@ async function createPortfolio(
   }
 
   const req = new (CreatePortfolioRequestProto as any)();
-  req.setObjectClass("PortfolioRequest");
-  req.setVersion("0.0.1");
+  stampOwn(req);
   req.setCreatePortfolioInput(portfolio);
 
   const client = new (PortfolioClient as any)(
@@ -261,8 +253,7 @@ describe("Price/CreateOrUpdate — write path (price-service-rust:8083)", () => 
     const price = await buildPriceProto(security, "0");
 
     const req = new (CreatePriceRequestProto as any)();
-    req.setObjectClass("PriceRequest");
-    req.setVersion("0.0.1");
+    stampOwn(req);
     req.setCreatePriceInput(price);
 
     const client = new (PriceClient as any)(
@@ -410,8 +401,7 @@ describe("Portfolio/CreateOrUpdate — edge cases (ledger-service:8082)", () => 
       );
       const filter = new PositionFilter();
       const req = new (QueryPortfolioRequestProto as any)();
-      req.setObjectClass("PortfolioRequest");
-      req.setVersion("0.0.1");
+      stampOwn(req);
       req.setAsOf(ZonedDateTime.now().toProto());
       req.setSearchPortfolioInput(filter.toProto());
 
@@ -481,15 +471,13 @@ describe("Portfolio/CreateOrUpdate — edge cases (ledger-service:8082)", () => 
     );
 
     const portfolio = new (PortfolioProto as any)();
-    portfolio.setObjectClass("Portfolio");
-    portfolio.setVersion("0.0.1");
+    stampOwn(portfolio);
     portfolio.setAsOf(ZonedDateTime.now().toProto());
     portfolio.setPortfolioName(""); // empty name
     portfolio.setUuid((UUID as any).random().toUUIDProto());
 
     const req = new (CreatePortfolioRequestProto as any)();
-    req.setObjectClass("PortfolioRequest");
-    req.setVersion("0.0.1");
+    stampOwn(req);
     req.setCreatePortfolioInput(portfolio);
 
     const client = new (PortfolioClient as any)(

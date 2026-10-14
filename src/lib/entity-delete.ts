@@ -3,6 +3,7 @@ import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/servic
 import { TransactionClient } from "@fintekkers/ledger-models/node/fintekkers/services/transaction-service/transaction_service_grpc_pb.js";
 import { PortfolioClient } from "@fintekkers/ledger-models/node/fintekkers/services/portfolio-service/portfolio_service_grpc_pb.js";
 import { UUIDProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js";
+import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import { getServiceConnection } from "$lib/grpc-auth";
 
 const { DeleteRequestProto, EntityTypeProto } = delete_pkg;
@@ -56,8 +57,7 @@ export async function deleteEntity(
 ): Promise<DeleteResult> {
   try {
     const request = new DeleteRequestProto();
-    request.setObjectClass("DeleteRequestProto");
-    request.setVersion("0.0.1");
+    stampOwn(request);
     request.setUuid(
       UUIDProto.deserializeBinary(new Uint8Array(Buffer.from(uuidHex, "hex")))
     );

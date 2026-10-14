@@ -42,6 +42,7 @@ vi.mock("$lib/grpc-auth", () => ({
 }));
 
 import { RunValuation } from "$lib/valuation";
+import { fromDecimalProto } from "$lib/decimal";
 import type { BondCalculatorInputs } from "$lib/valuation";
 
 const MANUAL_BOND: BondCalculatorInputs = {
@@ -66,7 +67,7 @@ describe("Bond engine-path request shape (#182)", () => {
     expect(bondInput).toBeDefined();
     expect(bondInput.getSecurity()).toBeDefined();
     expect(bondInput.getCleanPrice()).toBeDefined();
-    expect(bondInput.getCleanPrice().getArbitraryPrecisionValue()).toBe("98.5");
+    expect(fromDecimalProto(bondInput.getCleanPrice())).toBe("98.5");
 
     // Legacy flat fields are NOT set on bond requests.
     expect(req.hasSecurityInput()).toBe(false);

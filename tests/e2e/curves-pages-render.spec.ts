@@ -92,14 +92,37 @@ test.describe("/data/curves + /data/treasury_curve render real data (#302)", () 
     // <g class="trace scatter ..."> inside the scatterlayer. Pre-#302
     // we'd render the SVG shell with no .trace nodes (Plotly's
     // newPlot was never called — see above). Post-fix: 3 traces.
+    // US-220: all three must render, so par and spot can't vanish while
+    // forward (now read from LM-313's from/to tenors) still plots.
     const traces = chart.locator("svg.main-svg g.scatterlayer g.trace");
     await expect
       .poll(async () => traces.count(), {
         message:
-          "no scatter traces rendered inside the curves chart — par/spot/forward arrays were empty",
+          "fewer than 3 scatter traces in the curves chart — one of par/spot/forward was empty",
         timeout: 15_000,
       })
-      .toBeGreaterThan(0);
+      .toBeGreaterThanOrEqual(3);
+
+    // US-220: the forward table has at least one data row, not only the
+    // "No forward points returned" placeholder.
+    const forwardTable = page
+      .locator(".table-wrapper")
+      .filter({
+        has: page.getByRole("heading", {
+          name: "10Y Forward Rate by Start Year",
+        }),
+      })
+      .getByRole("table");
+    const forwardRows = forwardTable
+      .locator("tbody")
+      .getByRole("row")
+      .filter({ hasNotText: "No forward points returned" });
+    await expect
+      .poll(async () => forwardRows.count(), {
+        message: "the 10Y forward table has no data rows",
+        timeout: 15_000,
+      })
+      .toBeGreaterThanOrEqual(1);
   });
 
   test("/data/treasury_curve: row count in [8, 11] range, all non-Bill tenors have non-zero coupon", async ({

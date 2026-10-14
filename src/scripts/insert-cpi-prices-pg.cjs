@@ -102,6 +102,9 @@ const {
 const {
   UUID,
 } = require("@fintekkers/ledger-models/node/wrappers/models/utils/uuid");
+const {
+  stampOwn,
+} = require("@fintekkers/ledger-models/node/wrappers/util/object-types");
 const crypto = require("crypto");
 const {
   Timestamp,
@@ -128,8 +131,7 @@ function buildPriceProto(entry) {
 
   // Security link
   const security = new SecurityProto();
-  security.setObjectClass("Security");
-  security.setVersion("0.0.1");
+  stampOwn(security);
   security.setIsLink(true);
   security.setSecurityType(SecurityTypeProto.INDEX_SECURITY);
   security.setUuid(uuidProtoFromString(CPI_U_SECURITY_UUID));
@@ -138,8 +140,7 @@ function buildPriceProto(entry) {
   const asOf = makeTimestamp(entry.year, entry.month, 1);
 
   const price = new PriceProto();
-  price.setObjectClass("PriceProto");
-  price.setVersion("0.0.1");
+  stampOwn(price);
   price.setUuid(uuidProtoFromString(priceUuid));
   price.setAsOf(asOf);
   price.setValidFrom(asOf);
