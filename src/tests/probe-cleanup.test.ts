@@ -8,6 +8,7 @@
  * one live purge of the 11 legacy probes is a Manual check on the item.
  */
 import { describe, expect, it, vi } from "vitest";
+import { EventEmitter } from "events";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
@@ -21,6 +22,7 @@ import {
   makeProbeName,
   probeAgeMs,
   probeTimestampMs,
+  streamHasRows,
   sweepStaleProbes,
 } from "./probe-cleanup";
 import type { ProbeLedger, ProbePortfolio } from "./probe-cleanup";
@@ -398,5 +400,48 @@ describe("broker API key from the Playwright session", () => {
     } finally {
       fs.rmSync(path.dirname(file), { recursive: true, force: true });
     }
+  });
+});
+
+// US-225: the data-precondition check behind the e2e skips. A skip must
+// only ever follow a clean "no rows" answer from the ledger; a broker
+// error or deadline has to throw so the test fails instead.
+describe("streamHasRows (e2e data preconditions)", () => {
+  class FakeStream extends EventEmitter {
+    cancel = vi.fn();
+  }
+  const rowsIn = (resp: { rows: number }) => resp.rows;
+
+  it("resolves false when the stream ends with no rows", async () => {
+    const stream = new FakeStream();
+    const result = streamHasRows(stream, rowsIn);
+    stream.emit("data", { rows: 0 });
+    stream.emit("end");
+    await expect(result).resolves.toBe(false);
+    expect(stream.cancel).not.toHaveBeenCalled();
+  });
+
+  it("resolves true on the first row and cancels the stream", async () => {
+    const stream = new FakeStream();
+    const result = streamHasRows(stream, rowsIn);
+    stream.emit("data", { rows: 1 });
+    // What grpc-js emits once the call is cancelled: ignored, already true.
+    stream.emit("error", { code: 1, details: "Cancelled on client" });
+    await expect(result).resolves.toBe(true);
+    expect(stream.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects on a gRPC error, never resolving false", async () => {
+    const stream = new FakeStream();
+    const result = streamHasRows(stream, rowsIn);
+    stream.emit("error", { code: 14, details: "No connection established" });
+    await expect(result).rejects.toThrow("14: No connection established");
+  });
+
+  it("rejects when the deadline is exceeded", async () => {
+    const stream = new FakeStream();
+    const result = streamHasRows(stream, rowsIn);
+    stream.emit("error", { code: 4, details: "Deadline exceeded" });
+    await expect(result).rejects.toThrow("4: Deadline exceeded");
   });
 });

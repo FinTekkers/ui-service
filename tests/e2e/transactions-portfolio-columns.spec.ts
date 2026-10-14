@@ -9,6 +9,7 @@
  * Portfolio ID cell.
  */
 import { test, expect } from "@playwright/test";
+import { ledgerHasTransactions } from "./fixtures/data-preconditions";
 
 test.describe("/data/transactions portfolio columns (#263 bug 4)", () => {
   test("Portfolio + Portfolio ID column headers are present", async ({
@@ -33,6 +34,13 @@ test.describe("/data/transactions portfolio columns (#263 bug 4)", () => {
   test("at least one data row renders a non-empty Portfolio name + a Portfolio ID toggle", async ({
     page,
   }) => {
+    // US-225: ask the ledger, not the page, so an empty grid from a UI
+    // bug still fails.
+    test.skip(
+      !(await ledgerHasTransactions()),
+      "no transactions in the ledger: Portfolio column row check not applicable"
+    );
+
     await page.goto("/data/transactions");
     await expect(
       page.getByRole("heading", { name: /Transactions/ })

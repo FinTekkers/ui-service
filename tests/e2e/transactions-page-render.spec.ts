@@ -22,14 +22,17 @@
  *      throwing through the page-server load).
  *   3. The grid renders at least one transaction row when the seed
  *      DB has transactions (catches the silent-empty regression).
- *      We seed-detect via /data/portfolios — if the env has zero
- *      portfolios the smoke is informational only (a fresh local
- *      env may have no transactions yet).
+ *      US-225: we ask the ledger over the broker whether any
+ *      transaction matches the page's filter, and skip when none does
+ *      (a fresh env, or the e2e host, may have no transactions). The
+ *      answer never comes from the page, so a silently empty grid
+ *      still fails.
  */
 import { test, expect } from "@playwright/test";
+import { ledgerHasTransactions } from "./fixtures/data-preconditions";
 
-const TXN_URL =
-  "/data/transactions?tradeDate=2026-05-15&tradeDateOperator=LESS_THAN_OR_EQUALS";
+const TRADE_DATE = "2026-05-15";
+const TXN_URL = `/data/transactions?tradeDate=${TRADE_DATE}&tradeDateOperator=LESS_THAN_OR_EQUALS`;
 
 test.describe("/data/transactions page renders correctly (#300)", () => {
   test('title is "Dashboard Transactions" (not "Dashboard Securities")', async ({
@@ -53,16 +56,9 @@ test.describe("/data/transactions page renders correctly (#300)", () => {
   test("grid renders at least one row when the DB has transactions", async ({
     page,
   }) => {
-    // Seed-detect: if /data/portfolios has zero rows the env is fresh
-    // and we can't expect transactions either. Skip rather than fail.
-    await page.goto("/data/portfolios");
-    const portfolioRowCount = await page
-      .locator("table tbody tr")
-      .count()
-      .catch(() => 0);
     test.skip(
-      portfolioRowCount === 0,
-      "no portfolios in seed — transactions smoke not applicable"
+      !(await ledgerHasTransactions({ tradeDateOnOrBefore: TRADE_DATE })),
+      `no transactions in the ledger on or before ${TRADE_DATE}: #300 row check not applicable`
     );
 
     const response = await page.goto(TXN_URL);

@@ -240,6 +240,7 @@ interface LedgerModules {
   EntityTypeProto: any;
   UUIDProto: any;
   PositionFilter: any;
+  PositionFilterOperator: any;
   FieldProto: any;
   UUID: any;
   ZonedDateTime: any;
@@ -291,6 +292,9 @@ async function ledgerModules(): Promise<LedgerModules> {
   const filterMod: AnyModule = await import(
     "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter.js"
   );
+  const operatorMod: AnyModule = await import(
+    "@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator.js"
+  );
   const fieldMod: AnyModule = await import(
     "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js"
   );
@@ -323,6 +327,7 @@ async function ledgerModules(): Promise<LedgerModules> {
     EntityTypeProto: pick(deleteProto, "EntityTypeProto"),
     UUIDProto: pick(uuidProto, "UUIDProto"),
     PositionFilter: pick(filterMod, "PositionFilter"),
+    PositionFilterOperator: pick(operatorMod, "PositionFilterOperator"),
     FieldProto: fieldMod.FieldProto ?? fieldMod.default?.FieldProto,
     UUID: pick(uuidMod, "UUID"),
     ZonedDateTime: pick(datetimeMod, "ZonedDateTime"),
@@ -470,6 +475,99 @@ async function grpcHasLinkedTransactions(
     stream.on("error", (err: any) => reject(grpcError(err)));
   });
   return count > 0;
+}
+
+// --- Data preconditions for e2e skips (US-225) ---
+//
+// A spec whose assertions need ledger data the host may lack asks the
+// ledger first, over the broker, and skips with a reason when the data is
+// absent. The answer never comes from the page under test, so a UI bug that
+// renders an empty grid still fails the spec. Any gRPC error (broker down,
+// deadline) rejects: an outage fails the test, it never turns into a skip.
+
+export const PRECONDITION_DEADLINE_MS = 5_000;
+
+export interface PreconditionStream {
+  on(event: string, listener: (arg: any) => void): unknown;
+  cancel(): void;
+}
+
+/**
+ * Resolves `true` on the first response carrying at least one row (and
+ * cancels the stream: one row answers the question), `false` when the
+ * stream ends without rows. Rejects on a stream error.
+ */
+export function streamHasRows(
+  stream: PreconditionStream,
+  rowsIn: (response: any) => number
+): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    let settled = false;
+    stream.on("data", (resp: any) => {
+      if (settled || rowsIn(resp) === 0) return;
+      settled = true;
+      resolve(true);
+      // The CANCELLED error this triggers arrives after we settled.
+      stream.cancel();
+    });
+    stream.on("end", () => {
+      if (settled) return;
+      settled = true;
+      resolve(false);
+    });
+    stream.on("error", (err: any) => {
+      if (settled) return;
+      settled = true;
+      reject(grpcError(err));
+    });
+  });
+}
+
+export interface TransactionPrecondition {
+  /** `YYYY-MM-DD`: only count trades on or before this date. */
+  tradeDateOnOrBefore?: string;
+}
+
+/**
+ * Does the ledger hold any transaction /data/transactions would list? Same
+ * filter as `FetchTransaction` in src/lib/transactions.ts (asset class
+ * "Fixed Income", plus the optional trade-date bound the page's
+ * `?tradeDate=…&tradeDateOperator=LESS_THAN_OR_EQUALS` applies).
+ */
+export async function ledgerHasTransactions(
+  brokerUrl: string = BROKER_URL,
+  apiKey?: string,
+  options: TransactionPrecondition = {}
+): Promise<boolean> {
+  const mods = await ledgerModules();
+  const client = new mods.TransactionClient(
+    brokerUrl,
+    grpc.credentials.createInsecure()
+  );
+  const filter = new mods.PositionFilter();
+  filter.addEqualsFilter(mods.FieldProto.ASSET_CLASS, "Fixed Income");
+  if (options.tradeDateOnOrBefore) {
+    filter.addFilter(
+      mods.FieldProto.TRADE_DATE,
+      mods.PositionFilterOperator.fromName("LESS_THAN_OR_EQUALS"),
+      new Date(options.tradeDateOnOrBefore)
+    );
+  }
+  const req = new mods.QueryTransactionRequestProto();
+  mods.stampOwn(req);
+  req.setAsOf(mods.ZonedDateTime.now().toProto());
+  req.setSearchTransactionInput(filter.toProto());
+  req.setLimit(1);
+  try {
+    return await streamHasRows(
+      client.search(req, brokerMetadata(apiKey), {
+        deadline: Date.now() + PRECONDITION_DEADLINE_MS,
+      }),
+      (resp: any) => resp.getTransactionResponseList?.()?.length ?? 0
+    );
+  } finally {
+    client.close();
+  }
 }
 
 async function grpcDeletePortfolio(
