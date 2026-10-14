@@ -77,6 +77,17 @@ describe("ledger-models-cutover.sh", () => {
     expect(runCheck(tree("0.4.44"))).not.toBe(0);
   });
 
+  // US-221: the range floats within 0.4 from 0.4.45, never 0.5 or later.
+  test("passes on a later 0.4.x", () => {
+    expect(runCheck(tree("0.4.50"))).toBe(0);
+    expect(runCheck(tree("0.4.100"))).toBe(0);
+  });
+
+  test("fails when the lockfile resolves 0.5 or later", () => {
+    expect(runCheck(tree("0.5.0"))).not.toBe(0);
+    expect(runCheck(tree("1.4.50"))).not.toBe(0);
+  });
+
   test("fails on the old type setter in a .ts file", () => {
     const root = tree("0.4.45", {
       "src/lib/a.ts": `req.${OLD_TYPE_SETTER}("CurveRequestProto");\n`,
