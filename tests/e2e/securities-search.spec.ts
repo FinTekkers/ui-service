@@ -162,7 +162,11 @@ test.describe("/data/securities filter extension", () => {
   test("AssetClassFilter — ?assetClass=FIXED_INCOME (internal node) round-trips and shows tree-indented options", async ({
     page,
   }) => {
-    await page.goto("/data/securities?assetClass=FIXED_INCOME");
+    // US-225: identifier=AAPL narrows the search; FIXED_INCOME alone
+    // streamed every bond (~16 s). Only the select and URL are asserted.
+    await page.goto(
+      "/data/securities?identifier=AAPL&identifierType=EXCH_TICKER&assetClass=FIXED_INCOME"
+    );
     await expect(
       page.getByRole("button", { name: /Fetch Securities/ })
     ).toBeVisible({
@@ -263,8 +267,11 @@ test.describe("/data/securities filter extension", () => {
     // LESS_THAN_OR_EQUALS, EQUALS, NOT_EQUALS, MORE_THAN_OR_EQUALS) load
     // the value into the dropdown directly — the operator round-trips
     // cleanly through the backend without any silent drop.
+    // US-225: identifier=AAPL narrows the search; issueDate alone ran the
+    // full per-issuer fanout (~11 s). Only the dropdown is asserted.
     await page.goto(
-      "/data/securities?issueDate=2024-01-15&issueDateOperator=LESS_THAN_OR_EQUALS"
+      "/data/securities?identifier=AAPL&identifierType=EXCH_TICKER" +
+        "&issueDate=2024-01-15&issueDateOperator=LESS_THAN_OR_EQUALS"
     );
     await expect(
       page.getByRole("button", { name: /Fetch Securities/ })

@@ -15,13 +15,16 @@
  *
  * Asserts:
  *   1. /data/securities (no params) returns ≥1 row whose issuer is NOT
- *      'US Government'. Pre-#306 this was 0 by construction.
+ *      'US Government', and ≥1 that is, across ≥100 distinct issuers.
+ *      Pre-#306 this was 0 by construction. US-225: every no-params
+ *      check reads one shared page load (beforeAll).
  *   2. /data/securities?issuerName=US%20Government still returns ≥1 row
  *      and EVERY rendered row's issuer is 'US Government' (sampling
  *      first 50 rows for perf — explicit filter is exclusive by design).
  *   3. <title> on each of the 4 dashboard data routes matches the route.
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type BrowserContext, type Page } from "@playwright/test";
+import { STORAGE_STATE_PATH } from "./fixtures/auth";
 
 const ROUTE_TITLES: { url: string; expected: string }[] = [
   { url: "/data/securities", expected: "Dashboard Securities" },
@@ -30,49 +33,53 @@ const ROUTE_TITLES: { url: string; expected: string }[] = [
   { url: "/data/transactions", expected: "Dashboard Transactions" },
 ];
 
+// US-225: one unfiltered /data/securities load per file. The per-issuer
+// fanout takes ~15 s, so the no-params tests below read this one page
+// instead of each loading their own. Serial-in-file keeps every test in
+// the worker that ran the hook.
+test.describe.configure({ mode: "default" });
+
+let ledgerContext: BrowserContext;
+let ledgerPage: Page;
+let ledgerStatus: number | undefined;
+
+test.beforeAll(async ({ browser }) => {
+  test.setTimeout(60_000); // per-issuer fanout takes ~15s on a warm cache
+  ledgerContext = await browser.newContext({
+    baseURL: test.info().project.use.baseURL,
+    storageState: STORAGE_STATE_PATH,
+  });
+  ledgerPage = await ledgerContext.newPage();
+  const response = await ledgerPage.goto("/data/securities");
+  ledgerStatus = response?.status();
+});
+
+test.afterAll(async () => {
+  await ledgerContext?.close();
+});
+
 test.describe("/data/securities default issuer filter (#306)", () => {
-  test("no params: returns the full ledger (≥10k rows, ≥100 distinct issuers, both US Government AND non-US-Government)", async ({
-    page,
-  }) => {
-    test.setTimeout(60_000); // per-issuer fanout takes ~15s on a warm cache
-
-    const response = await page.goto("/data/securities");
-    expect(response, "GET /data/securities returns a response").not.toBeNull();
-    expect(response!.status(), "no 5xx — load() must not throw").toBeLessThan(
-      500
-    );
-
-    // Total rendered row count. Pre-#306-followup the asset-class fanout
-    // returned ~20 rows because the per-class queries either hit the
-    // 4 MB broker ceiling (Fixed Income → 6.5 MB → ServiceError) or
-    // returned only the few rows whose wire `asset_class` literally
-    // matched the M5 enum. Post-fix the per-issuer fanout should reach
-    // ~12-13k rows. Floor at 10k catches any partial regression.
-    const rows = page.locator("table tbody tr.table-row");
-    const rowCount = await rows.count();
+  // US-225: the "≥10k rows" floor that used to lead this test was deleted:
+  // the e2e host holds ~3.5k securities, so it could never pass there, and
+  // a ledger-side count would need the same fanout. The rest of the #306
+  // checks stay here and run on every host.
+  test("no params: shows both US Government AND non-US-Government issuers (≥100 distinct)", async () => {
     expect(
-      rowCount,
-      "no-filter landing must render the full ledger (≥10k rows) — pre-#306-followup it returned ≤20"
-    ).toBeGreaterThanOrEqual(10_000);
+      ledgerStatus,
+      "GET /data/securities returns a response"
+    ).toBeDefined();
+    expect(ledgerStatus!, "no 5xx — load() must not throw").toBeLessThan(500);
 
-    // Issuer column is index 3 in SecurityGrid. Sample first 200 rows
-    // (sufficient to show issuer diversity across asset classes; the
-    // full per-row scan would take many minutes against 12k rows).
-    const sampleSize = Math.min(200, rowCount);
-    const issuers = await Promise.all(
-      Array.from({ length: sampleSize }, (_, i) =>
-        rows
-          .nth(i)
-          .locator("td")
-          .nth(3)
-          .innerText()
-          .then((t) => t.trim())
-      )
+    // Issuer column is index 3 in SecurityGrid (nth-child is 1-indexed).
+    // One evaluate reads every row; per-row locators would take minutes.
+    const issuers: string[] = await ledgerPage.$$eval(
+      "table tbody tr.table-row td:nth-child(4)",
+      (cells) => cells.map((c) => (c.textContent ?? "").trim())
     );
     const distinct = new Set(issuers.filter(Boolean));
     expect(
       distinct.size,
-      `expected ≥100 distinct issuers in first ${sampleSize} rows; saw ${distinct.size}`
+      `expected ≥100 distinct issuers across ${issuers.length} rows; saw ${distinct.size}`
     ).toBeGreaterThanOrEqual(100);
 
     // Both buckets must be present (asymmetric coverage was the original
@@ -103,19 +110,13 @@ test.describe("/data/securities default issuer filter (#306)", () => {
       .toBeGreaterThan(0);
 
     // Same 50-row sample — assert every sampled issuer is exactly
-    // 'US Government'. With ~3,300 US-Gov rows this would hang for
-    // many minutes if we walked all rows sequentially.
-    const sampleSize = Math.min(50, await rows.count());
-    const issuers = await Promise.all(
-      Array.from({ length: sampleSize }, (_, i) =>
-        rows
-          .nth(i)
-          .locator("td")
-          .nth(3)
-          .innerText()
-          .then((t) => t.trim())
+    // 'US Government'. US-225: one evaluate reads the sample; 50
+    // per-row locators took ~4 s.
+    const issuers: string[] = (
+      await page.$$eval("table tbody tr.table-row td:nth-child(4)", (cells) =>
+        cells.map((c) => (c.textContent ?? "").trim())
       )
-    );
+    ).slice(0, 50);
     const distinct = new Set(issuers.filter(Boolean));
     expect(
       [...distinct],
@@ -127,6 +128,12 @@ test.describe("/data/securities default issuer filter (#306)", () => {
 test.describe("Dashboard route <title> matches route (#306 title-typo cleanup)", () => {
   for (const { url, expected } of ROUTE_TITLES) {
     test(`${url} → "${expected}"`, async ({ page }) => {
+      if (url === "/data/securities") {
+        // US-225: reuse the page beforeAll loaded, not a second fanout.
+        expect(ledgerStatus!).toBeLessThan(500);
+        await expect(ledgerPage).toHaveTitle(expected, { timeout: 10_000 });
+        return;
+      }
       const response = await page.goto(url);
       expect(response!.status()).toBeLessThan(500);
       await expect(page).toHaveTitle(expected, { timeout: 10_000 });

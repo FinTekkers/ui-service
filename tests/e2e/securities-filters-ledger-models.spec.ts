@@ -66,7 +66,12 @@ async function checkSecuritiesFilters(page: Page) {
   const pageErrors: Error[] = [];
   page.on("pageerror", (err) => pageErrors.push(err));
 
-  await page.goto("/data/securities");
+  // US-225: a server-side identifier filter instead of the full ~15 s
+  // per-issuer fanout. The selects and their options don't depend on the
+  // results.
+  await page.goto(
+    "/data/securities?identifier=AAPL&identifierType=EXCH_TICKER"
+  );
   await expect(fetchButton(page)).toBeVisible({ timeout: 15_000 });
 
   for (const [selector, count, hasAll] of SELECTS) {

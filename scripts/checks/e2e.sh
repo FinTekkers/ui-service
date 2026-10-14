@@ -26,9 +26,15 @@ SPECS=(
 # config's storageState, which this script writes (no grpcurl setup project).
 # Data-dependent tests may skip. Every spec must be in the report, and no test
 # may fail unless it is listed in KNOWN_FAILING below.
+# US-225: the securities specs are listed by name, not by a securities-*
+# glob, because securities-filters-ledger-models.spec.ts already runs in
+# SPECS above and the glob ran it twice. Add any new securities-*.spec.ts
+# here by name, or it will not run.
 REGRESSION_SPECS=(
   tests/e2e/prices.spec.ts
-  tests/e2e/securities-*.spec.ts
+  tests/e2e/securities-default-issuer.spec.ts
+  tests/e2e/securities-product-type-leaf.spec.ts
+  tests/e2e/securities-search.spec.ts
   tests/e2e/transactions-*.spec.ts
   tests/e2e/portfolio*.spec.ts
   tests/e2e/curves-*.spec.ts
@@ -39,19 +45,14 @@ REGRESSION_SPECS=(
   tests/e2e/tips-calculator-reference-cpi.spec.ts
   tests/e2e/cpi-index-page-data.spec.ts
 )
-# These tests already failed on the host before US-209, on the pre-bump
-# baseline (978e521, ledger-models 0.4.29), because the host data lacks what
-# they need: no transactions, about 3.4k securities rather than 10k+, and no
-# buildable curve. They run and are logged as "known", but they don't fail the
-# check. Any other failure does. The cpi_index test fails the same way on the
-# pre-US-212 baseline (8fb8491, ledger-models 0.4.31): the host has no
-# CPI_SERIES securities, so the series picker is empty before any price is read.
-KNOWN_FAILING=(
-  'cpi-index-page-data.spec.ts > series dropdown is non-empty and the historical table has data'
-  'securities-default-issuer.spec.ts > no params: returns the full ledger (≥10k rows, ≥100 distinct issuers, both US Government AND non-US-Government)'
-  'transactions-page-render.spec.ts > grid renders at least one row when the DB has transactions'
-  'transactions-portfolio-columns.spec.ts > at least one data row renders a non-empty Portfolio name + a Portfolio ID toggle'
-)
+# Tests that fail on the host for lack of data, logged as "known" without
+# failing the check. Any other failure fails it, and so does a listed test
+# that passes. US-225 emptied the list: a test whose data the host may lack
+# now asks the ledger first and skips with the reason (the transactions
+# specs), the ≥10k-securities floor was deleted (the host has ~3.5k), and
+# the cpi_index test passes since the 14 Oct reload loaded CPI data. Prefer
+# such a data-precondition skip to a new entry here.
+KNOWN_FAILING=()
 REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
 FILES_REPORT="$(mktemp -t e2e-files-report.XXXXXX.json)"
 REGRESSION_REPORT="$(mktemp -t e2e-regression-report.XXXXXX.json)"
@@ -130,8 +131,9 @@ node -e '
   };
   report.suites.forEach(walk);
   // One line per test, so the stored check log shows every result.
+  const ms = (t) => t.results.reduce((sum, r) => sum + r.duration, 0);
   for (const spec of specs) {
-    for (const t of spec.tests) console.log(`e2e:   ${t.status} ${spec.file} > ${spec.title}`);
+    for (const t of spec.tests) console.log(`e2e:   ${t.status} ${ms(t)}ms ${spec.file} > ${spec.title}`);
   }
   const journey = specs
     .filter((spec) => spec.file.endsWith(process.argv[2]))
@@ -192,6 +194,13 @@ KNOWN_FAILING="$(printf '%s\n' "${KNOWN_FAILING[@]}")" node -e '
     (suite.suites ?? []).forEach(walk);
   };
   report.suites.forEach(walk);
+  // Duration and, for a skip, its reason, so the log shows a data skip
+  // took under a second and why it skipped.
+  const ms = (t) => t.results.reduce((sum, r) => sum + r.duration, 0);
+  const skipReason = (t) => {
+    const skip = (t.annotations ?? []).find((a) => a.type === "skip");
+    return skip?.description ? ` (skip: ${skip.description})` : " (skip: no reason given)";
+  };
   let ok = true;
   for (const e of report.errors ?? []) {
     console.log(`e2e: regression: FAIL error: ${e.message}`);
@@ -202,12 +211,17 @@ KNOWN_FAILING="$(printf '%s\n' "${KNOWN_FAILING[@]}")" node -e '
     files.add(spec.file);
     for (const t of spec.tests) {
       const id = `${spec.file} > ${spec.title}`;
-      if (t.status === "expected" || t.status === "skipped") {
-        console.log(`e2e:   ${t.status} ${id}`);
+      if (t.status === "expected" && known.has(id)) {
+        console.log(`e2e:   FAIL passed but listed in KNOWN_FAILING ${ms(t)}ms ${id}`);
+        ok = false;
+      } else if (t.status === "expected") {
+        console.log(`e2e:   ${t.status} ${ms(t)}ms ${id}`);
+      } else if (t.status === "skipped") {
+        console.log(`e2e:   ${t.status} ${ms(t)}ms ${id}${skipReason(t)}`);
       } else if (known.has(id)) {
-        console.log(`e2e:   known (host data) ${t.status} ${id}`);
+        console.log(`e2e:   known (host data) ${t.status} ${ms(t)}ms ${id}`);
       } else {
-        console.log(`e2e:   FAIL ${t.status} ${id}`);
+        console.log(`e2e:   FAIL ${t.status} ${ms(t)}ms ${id}`);
         ok = false;
       }
     }

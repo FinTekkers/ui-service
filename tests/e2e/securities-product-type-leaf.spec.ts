@@ -26,7 +26,10 @@ test.describe("/data/securities Product Type column (#263 bug 3)", () => {
   test("Product Type cells never show the wrapper-override labels BILL/NOTE/BOND", async ({
     page,
   }) => {
-    await page.goto("/data/securities");
+    // US-225: issuer-filtered, not the full ~15 s per-issuer fanout. The
+    // phantom labels came from the bond wrapper, and US Government rows
+    // are all bond leaves, so this sample still exercises it.
+    await page.goto("/data/securities?issuerName=US%20Government");
     await expect(page.getByRole("heading", { name: /Security/ })).toBeVisible({
       timeout: 15_000,
     });
