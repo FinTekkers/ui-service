@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # US-220, cutover step 3: ui-service runs on @fintekkers/ledger-models 0.4.45
-# (LM-318 + LM-320). Fails when package-lock.json resolves another version, or
+# (LM-318 + LM-320) or a later 0.4.x (US-221: the range floats within 0.4).
+# Fails when package-lock.json resolves a version below 0.4.45 or outside 0.4, or
 # when non-generated code still uses the old wire form (the type string, a
 # string version, the decimal string) or sets object_type / version by hand
 # instead of through the library's stampOwn.
@@ -9,7 +10,7 @@
 set -euo pipefail
 
 ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
-EXPECTED="0.4.45"
+FLOOR="0.4.45"
 SELF="$(basename "${BASH_SOURCE[0]}")"
 failed=0
 
@@ -18,8 +19,8 @@ locked="$(node -e '
   const pkg = (lock.packages || {})["node_modules/@fintekkers/ledger-models"];
   process.stdout.write(pkg && pkg.version ? pkg.version : "");
 ' "$ROOT/package-lock.json" 2>/dev/null || true)"
-if [ "$locked" != "$EXPECTED" ]; then
-  echo "ledger-models-cutover: package-lock.json resolves @fintekkers/ledger-models to '${locked:-nothing}', not $EXPECTED"
+if ! [[ "$locked" =~ ^0\.4\.([0-9]+)$ ]] || [ "${BASH_REMATCH[1]}" -lt "${FLOOR##*.}" ]; then
+  echo "ledger-models-cutover: package-lock.json resolves @fintekkers/ledger-models to '${locked:-nothing}', not 0.4.x at or above $FLOOR"
   failed=1
 fi
 
@@ -53,4 +54,4 @@ scan "set object_type and version only through stampOwn" "" '\.(setObjectType|se
 if [ "$failed" -ne 0 ]; then
   exit 1
 fi
-echo "ledger-models-cutover: OK (@fintekkers/ledger-models $EXPECTED)"
+echo "ledger-models-cutover: OK (@fintekkers/ledger-models $locked)"

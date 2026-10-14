@@ -22,24 +22,34 @@ export function versionAtLeast(version: string, floor: string): boolean {
   return true;
 }
 
+/** package.json's range for ledger-models: floats within 0.4 from 0.4.45. */
+export const LEDGER_MODELS_RANGE = "^0.4.45";
+
 /**
- * Asserts package-lock pins ledger-models at or above `floor`, package.json's
- * range is a caret on that pinned version, and node_modules has it installed.
+ * Asserts package-lock pins ledger-models to a 0.4.x at or above both `floor`
+ * and 0.4.45, package.json's range is LEDGER_MODELS_RANGE, and node_modules
+ * has the pinned version installed.
  */
 export function expectLedgerModelsAtLeast(floor: string) {
   const lock = readJson("package-lock.json");
   const pkg = readJson("package.json");
   const locked =
     lock.packages["node_modules/@fintekkers/ledger-models"].version;
-  expect(locked).toMatch(/^\d+\.\d+\.\d+$/);
+  expect(locked).toMatch(/^0\.4\.\d+$/);
   expect(
     versionAtLeast(locked, floor),
     `ledger-models ${locked} is below ${floor}`
   ).toBe(true);
+  expect(
+    versionAtLeast(locked, "0.4.45"),
+    `ledger-models ${locked} is below 0.4.45`
+  ).toBe(true);
   expect(lock.packages[""].dependencies["@fintekkers/ledger-models"]).toBe(
     pkg.dependencies["@fintekkers/ledger-models"]
   );
-  expect(pkg.dependencies["@fintekkers/ledger-models"]).toBe(`^${locked}`);
+  expect(pkg.dependencies["@fintekkers/ledger-models"]).toBe(
+    LEDGER_MODELS_RANGE
+  );
   const installed = readJson(
     "node_modules/@fintekkers/ledger-models/package.json"
   );
