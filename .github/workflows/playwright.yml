@@ -44,6 +44,9 @@ jobs:
       - name: npm ci
         run: npm ci --ignore-scripts
 
+      - name: refresh ledger-models within range (as build.py --local)
+        run: npm update @fintekkers/ledger-models --ignore-scripts && npm ls @fintekkers/ledger-models
+
       - name: Install Playwright browsers (chromium only)
         run: npx playwright install --with-deps chromium
 
