@@ -11,7 +11,13 @@
 #
 # Last it runs the prices page and the sibling data pages' suites (US-209),
 # and the US-209 AAPL journey must pass.
+#
+# First (US-224) it logs the ledger-models version under test (install.sh
+# refreshes it within package.json's range) and runs build-local.sh, the
+# box's `python build.py --local` build, end to end in a fresh clone.
 set -euo pipefail
+npm ls @fintekkers/ledger-models
+bash scripts/checks/build-local.sh
 
 PORT="${E2E_PORT:-4203}"
 BASE_URL="http://127.0.0.1:${PORT}"
