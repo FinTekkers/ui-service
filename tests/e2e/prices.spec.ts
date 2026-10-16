@@ -11,18 +11,20 @@
  * playwright.config.ts), and use page.* APIs to drive the UI.
  */
 import { test, expect } from "@playwright/test";
-import { ensureTestUserSession, type StorageState } from "./fixtures/auth";
+import { savedOrNewTestUserSession, type StorageState } from "./fixtures/auth";
 
 // US-209: the price client reaches the price service through the broker.
 // Before @fintekkers/ledger-models 0.4.31 it called ledger-service on 8082 and
 // the page showed "UNIMPLEMENTED: Method not found: …Price/Search".
 test.describe("/data/prices?type=ticker&id=AAPL (US-209)", () => {
-  // Logs in itself, so it also runs with --no-deps (no setup project).
+  // Reuses the run's saved session, or logs in itself when there is none,
+  // so it also runs with --no-deps (no setup project). A fresh login here
+  // would revoke the saved session's key for the specs that follow.
   test.use({ storageState: { cookies: [], origins: [] } });
 
   let session: StorageState;
   test.beforeAll(async ({ playwright }) => {
-    session = await ensureTestUserSession(
+    session = await savedOrNewTestUserSession(
       playwright,
       test.info().project.use.baseURL!
     );

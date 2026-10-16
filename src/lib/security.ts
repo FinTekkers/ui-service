@@ -5,7 +5,6 @@ import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintek
 import { GetFieldValuesRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/get_field_values_request_pb.js";
 import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb.js";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
-import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { getServiceConnection } from "$lib/grpc-auth";
 // M5 / #260: ProductTypeProto + product_hierarchy registry. SecurityType
@@ -99,6 +98,26 @@ export function productTypeNameOf(security: Security): string {
   const entries = Object.entries(ProductTypeProto) as Array<[string, number]>;
   const found = entries.find(([, v]) => v === value);
   return found?.[0] ?? "UNKNOWN_PRODUCT_TYPE";
+}
+
+// US-232: TIPS-only base CPI (tips_extension.base_cpi) as a string, for
+// the TIPS Pricer's Reference CPI auto-fill. Keyed on the proto product
+// type and the wrapper's own getBaseCpi() accessor, not on class
+// identity: a TIPSBond class imported into this module is not the one
+// Security.create instantiates (ESM/CJS default-import interop, and the
+// SSR build bundles the wrapper in more than one chunk), so an identity
+// check is always false at runtime. Returns undefined for non-TIPS rows,
+// a missing base CPI, or an accessor that throws.
+function baseCpiOf(security: Security): string | undefined {
+  if (security.proto.getProductType() !== ProductTypeProto.TIPS)
+    return undefined;
+  const getBaseCpi = (security as any).getBaseCpi;
+  if (typeof getBaseCpi !== "function") return undefined;
+  try {
+    return getBaseCpi.call(security)?.toString();
+  } catch {
+    return undefined;
+  }
 }
 
 // #347 (clean redo of #313): identifier display contract.
@@ -635,15 +654,11 @@ export async function FetchSecurity(
               // Dated date might not be available
             }
 
-            // #266: TIPS-only base CPI for the calculator auto-populate.
-            // TIPSBond.getBaseCpi() returns a Decimal | null read from
-            // tips_extension.base_cpi (v0.4.1). Other bond subclasses
-            // don't carry it; the `instanceof` guard makes the narrowing
-            // explicit so TS picks the TIPSBond overload.
-            if (bondSecurity instanceof TIPSBond) {
-              const baseCpi = bondSecurity.getBaseCpi();
-              if (baseCpi) result.baseCpi = baseCpi.toString();
-            }
+            // #266 / US-232: TIPS-only base CPI for the calculator
+            // auto-populate. See baseCpiOf for why this avoids a class
+            // identity check.
+            const baseCpi = baseCpiOf(security);
+            if (baseCpi) result.baseCpi = baseCpi;
           }
 
           acc.push(result);
@@ -738,10 +753,8 @@ function mapSecuritiesToData(securities: Security[]): securityData[] {
         if (dd)
           result.datedDate = dd.toISOString().slice(0, 10).replace(/-/g, "/");
       } catch {}
-      if (bondSecurity instanceof TIPSBond) {
-        const baseCpi = bondSecurity.getBaseCpi();
-        if (baseCpi) result.baseCpi = baseCpi.toString();
-      }
+      const baseCpi = baseCpiOf(security);
+      if (baseCpi) result.baseCpi = baseCpi;
     }
 
     acc.push(result);
