@@ -56,7 +56,7 @@ async function buildProtos() {
     "@fintekkers/ledger-models/node/wrappers/models/utils/datetime"
   );
   // Security.create needs a UUID and as_of, as a stored row has.
-  const stored = <T extends any>(proto: T): T =>
+  const stored = <T>(proto: T): T =>
     (proto as any)
       .setUuid(UUID.random().toUUIDProto())
       .setAsOf(ZonedDateTime.now().toProto())
