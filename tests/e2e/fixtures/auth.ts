@@ -11,10 +11,6 @@
  *
  * FT_E2E_PASSWORD is kept only for re-provisioning; tests don't read it.
  *
- * A variable not set in the environment is read from BS-31's host file,
- * E2E_ENV_FILE (FT_E2E_ENV_FILE overrides the path), when it exists: the
- * checks run main's scripts/checks/e2e.sh, which doesn't source it.
- *
  * When a variable is missing, or the app can't load data with the key,
  * the logged-in tests skip with E2E_KEY_MISSING_OR_EXPIRED and the
  * variable's name. Messages hold names only, never values.
@@ -28,7 +24,6 @@ import {
   type PlaywrightWorkerArgs,
   type TestType,
 } from "@playwright/test";
-import { readFileSync } from "fs";
 import * as path from "path";
 
 export const STORAGE_STATE_PATH = path.resolve("playwright/.auth/user.json");
@@ -51,38 +46,13 @@ export type StorageState = Awaited<
 
 type Env = Record<string, string | undefined>;
 
-export const E2E_ENV_FILE = "/etc/fintekkers/ui-e2e.env";
-
-/**
- * `env`, with each e2e variable it lacks taken from the host file
- * (`KEY=value` lines). Only E2E_VARIABLES are read from the file.
- */
-export function e2eEnv(env: Env = process.env): Env {
-  let text: string;
-  try {
-    text = readFileSync(env.FT_E2E_ENV_FILE || E2E_ENV_FILE, "utf8");
-  } catch {
-    return env;
-  }
-  const merged: Env = { ...env };
-  for (const line of text.split("\n")) {
-    const match = /^\s*(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*?)\s*$/.exec(line);
-    if (!match) continue;
-    const [, name, raw] = match;
-    if (!(E2E_VARIABLES as readonly string[]).includes(name)) continue;
-    if (merged[name]) continue;
-    merged[name] = raw.replace(/^(["'])(.*)\1$/, "$2");
-  }
-  return merged;
-}
-
 /** Names of the e2e variables that are unset or empty. */
-export function missingE2EVariables(env: Env = e2eEnv()): string[] {
+export function missingE2EVariables(env: Env = process.env): string[] {
   return E2E_VARIABLES.filter((name) => !env[name]);
 }
 
 /** Why the logged-in tests skip, naming the missing variables; null if none. */
-export function e2eSkipReason(env: Env = e2eEnv()): string | null {
+export function e2eSkipReason(env: Env = process.env): string | null {
   const missing = missingE2EVariables(env);
   if (missing.length === 0) return null;
   const verb = missing.length === 1 ? "is" : "are";
@@ -91,8 +61,8 @@ export function e2eSkipReason(env: Env = e2eEnv()): string | null {
   )} ${verb} not set)`;
 }
 
-/** The e2e user's email and API key, from the environment (or host file) only. */
-export function getE2ECredentials(env: Env = e2eEnv()): E2ECredentials {
+/** The e2e user's email and API key, from the environment only. */
+export function getE2ECredentials(env: Env = process.env): E2ECredentials {
   const reason = e2eSkipReason(env);
   if (reason !== null) throw new Error(reason);
   return { email: env.FT_E2E_EMAIL!, apiKey: env.FT_E2E_API_KEY! };
@@ -163,20 +133,6 @@ export async function e2eSessionRejection(
 }
 
 /**
- * Skips the current test (or, from beforeAll, its group) with `reason`.
- * Outside a test, e.g. scripts/checks/e2e.sh's session step, throws it.
- */
-function skipWith(reason: string): never {
-  try {
-    test.info();
-  } catch {
-    throw new Error(reason);
-  }
-  test.skip(true, reason);
-  throw new Error(reason);
-}
-
-/**
  * The e2e user's session for `baseURL`, from FT_E2E_EMAIL and
  * FT_E2E_API_KEY. Call from a hook or test: skips the current test (or,
  * from beforeAll, its group) when a variable is missing or the key is
@@ -186,11 +142,10 @@ export async function ensureTestUserSession(
   playwright: PlaywrightWorkerArgs["playwright"],
   baseURL: string
 ): Promise<StorageState> {
-  const env = e2eEnv();
-  const reason = e2eSkipReason(env);
-  if (reason !== null) skipWith(reason);
-  const state = e2eStorageState(baseURL, getE2ECredentials(env));
+  const reason = e2eSkipReason();
+  test.skip(reason !== null, reason ?? "");
+  const state = e2eStorageState(baseURL, getE2ECredentials());
   const rejection = await e2eSessionRejection(playwright, baseURL, state);
-  if (rejection !== null) skipWith(rejection);
+  test.skip(rejection !== null, rejection ?? "");
   return state;
 }

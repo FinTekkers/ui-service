@@ -3,16 +3,12 @@
  * environment only (FT_E2E_EMAIL, FT_E2E_API_KEY), skips naming the
  * missing variable, and never puts a value in a message.
  */
-import { mkdtempSync, rmSync, writeFileSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
 import { describe, expect, test, vi } from "vitest";
 
 vi.mock("@playwright/test", () => ({ test: { skip: vi.fn() } }));
 
 import {
   E2E_KEY_MISSING_OR_EXPIRED,
-  e2eEnv,
   e2eSessionRejection,
   e2eSkipReason,
   e2eStorageState,
@@ -93,9 +89,7 @@ describe("e2e credentials from the environment", () => {
 
   test("skipUnlessE2ECredentials skips with the reason", () => {
     const saved = process.env.FT_E2E_API_KEY;
-    const savedFile = process.env.FT_E2E_ENV_FILE;
     delete process.env.FT_E2E_API_KEY;
-    process.env.FT_E2E_ENV_FILE = "/nonexistent/ui-e2e.env";
     try {
       const t = { skip: vi.fn() };
       skipUnlessE2ECredentials(t as any);
@@ -105,50 +99,7 @@ describe("e2e credentials from the environment", () => {
       );
     } finally {
       if (saved !== undefined) process.env.FT_E2E_API_KEY = saved;
-      if (savedFile === undefined) delete process.env.FT_E2E_ENV_FILE;
-      else process.env.FT_E2E_ENV_FILE = savedFile;
     }
-  });
-});
-
-describe("e2e credentials from the host file (BS-31)", () => {
-  function withFile(text: string, fn: (file: string) => void) {
-    const dir = mkdtempSync(join(tmpdir(), "e2e-env-"));
-    try {
-      const file = join(dir, "ui-e2e.env");
-      writeFileSync(file, text);
-      fn(file);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  }
-
-  test("fills unset e2e variables only, never others", () => {
-    withFile(
-      `# provisioned\nFT_E2E_EMAIL=${EMAIL_SENTINEL}\nFT_E2E_PASSWORD=pw-sentinel\nexport FT_E2E_API_KEY="${KEY_SENTINEL}"\nOTHER=x\n`,
-      (file) => {
-        const env = e2eEnv({ FT_E2E_ENV_FILE: file });
-        expect(getE2ECredentials(env)).toEqual({
-          email: EMAIL_SENTINEL,
-          apiKey: KEY_SENTINEL,
-        });
-        expect(env.FT_E2E_PASSWORD).toBeUndefined();
-        expect(env.OTHER).toBeUndefined();
-      }
-    );
-  });
-
-  test("the environment wins over the file", () => {
-    withFile(`FT_E2E_API_KEY=${KEY_SENTINEL}\n`, (file) => {
-      const env = e2eEnv({ FT_E2E_ENV_FILE: file, FT_E2E_API_KEY: "from-env" });
-      expect(env.FT_E2E_API_KEY).toBe("from-env");
-      expect(e2eSkipReason(env)).toContain("FT_E2E_EMAIL is not set");
-    });
-  });
-
-  test("no file: the environment as is", () => {
-    const env = { FT_E2E_ENV_FILE: "/nonexistent/ui-e2e.env" };
-    expect(e2eEnv(env)).toBe(env);
   });
 });
 
