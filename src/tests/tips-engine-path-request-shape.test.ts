@@ -6,8 +6,8 @@
  * and the legacy flat fields NOT set. Mirrors the bond engine-path
  * regression test introduced for #182.
  *
- * US-229: the CPI goes in TipsInput.cpi (InflationIndexInput), never the
- * deprecated current_cpi, and the settlement date is the asof_datetime.
+ * US-229: the CPI goes in TipsInput.cpi (InflationIndexInput), and the
+ * settlement date is the asof_datetime.
  */
 import { describe, expect, test, vi } from "vitest";
 
@@ -54,7 +54,7 @@ const MANUAL_TIPS: TipsCalculatorInputs = {
 };
 
 describe("TIPS engine-path request shape (#207)", () => {
-  test("RunTipsValuation sets product_input.tips, not security_input / price_input / cpi_price_input", async () => {
+  test("RunTipsValuation sets product_input.tips, not security_input / price_input", async () => {
     capturedRequests.length = 0;
     await RunTipsValuation(MANUAL_TIPS);
     expect(capturedRequests.length).toBe(1);
@@ -68,8 +68,6 @@ describe("TIPS engine-path request shape (#207)", () => {
     expect(tipsInput.getCleanPrice()).toBeDefined();
     expect(fromDecimalProto(tipsInput.getCleanPrice())).toBe("98.5");
     // US-229: the typed CPI is the reference CPI, sent in TipsInput.cpi.
-    expect(tipsInput.hasCurrentCpi()).toBe(false);
-    expect(tipsInput.getCurrentCpi()).toBeUndefined();
     const cpi = tipsInput.getCpi();
     expect(cpi).toBeInstanceOf(InflationIndexInput);
     expect(cpi.getCpiCase()).toBe(InflationIndexInput.CpiCase.REFERENCE_CPI);
@@ -79,7 +77,6 @@ describe("TIPS engine-path request shape (#207)", () => {
     // Legacy flat fields are NOT set on TIPS requests.
     expect(req.hasSecurityInput()).toBe(false);
     expect(req.hasPriceInput()).toBe(false);
-    expect(req.hasCpiPriceInput()).toBe(false);
 
     // BOND oneof case is NOT chosen.
     expect(req.getProductInput()?.getBond()).toBeUndefined();
@@ -118,7 +115,6 @@ describe("TIPS engine-path request shape (#207)", () => {
     expect(result.error).toBeUndefined();
     expect(result.cpiSource).toBe("Price service");
     const tipsInput = capturedRequests[0].getProductInput().getTips();
-    expect(tipsInput.hasCurrentCpi()).toBe(false);
     const cpi = tipsInput.getCpi();
     expect(cpi.getCpiCase()).toBe(InflationIndexInput.CpiCase.READINGS);
     expect(cpi.hasReferenceCpi()).toBe(false);

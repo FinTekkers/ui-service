@@ -189,7 +189,7 @@ export function createValuationClientMock() {
           //   - Engine path bond (#182): product_input.bond → BondInput
           //   - Engine path TIPS (#207): product_input.tips → TipsInput
           //   - Legacy flat fields (FRN today, bond/TIPS pre-migration):
-          //       security_input + price_input (+ cpi_price_input for TIPS)
+          //       security_input + price_input
           // Read security + price + cpi from whichever shape is set so the
           // mock works against all current and post-migration callers.
           const bondInput = request.getProductInput?.()?.getBond?.();
@@ -254,16 +254,10 @@ export function createValuationClientMock() {
             const periods = Math.max(1, Math.ceil((daysDiff / 365) * ppy));
             const monthsPerPeriod = Math.round(12 / ppy);
 
-            // Pre-engine-path tests passed the reference rate via request.referenceRateInput.
-            // Engine-path inputs no longer carry it on the request — the rate is sourced
-            // from the security's reference_rate_index (or implied by quoted_margin /
-            // at-coupon-reset assumption). The mock falls back to a sensible default
-            // when neither is set so legacy tests continue to work.
-            const refRateLegacy = parseFloat(
-              fromDecimalProto(
-                request.getReferenceRateInput?.()?.getPrice?.()
-              ) ?? "0.04"
-            );
+            // Engine-path inputs do not carry the reference rate on the request — the
+            // rate is sourced from the security's reference_rate_index (or implied by
+            // quoted_margin / at-coupon-reset assumption). The mock uses a fixed default.
+            const refRateLegacy = 0.04;
             // FRN spread also moved to the frn_extension sub-message in v0.4.1.
             const frnExt = sec?.getFrnExtension?.();
             const spreadBps = parseFloat(
