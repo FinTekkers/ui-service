@@ -51,7 +51,7 @@ async function readResultValue(
     .innerText();
   // formatPercent → "5.0000%", formatYears → "3.7000 yrs",
   // formatPrice → "100.0000", formatDollar → "$2.5000",
-  // formatBps → "50.00 bps", formatConvexity → "22.50", formatCpi → "1.034".
+  // formatBps → "50.00 bps", formatConvexity → "22.50", formatIndexRatio → "1.03362".
   const stripped = valueText.replace(/[%$,]|\s*(yrs|bps)$/gi, "").trim();
   const n = parseFloat(stripped);
   if (!Number.isFinite(n)) {
@@ -236,9 +236,15 @@ test.describe("/data/calculators — TIPS Pricer (numerical, real backend)", () 
     );
     const realYield = await readResultValue(page, "Real Yield");
 
-    // Hand-computed: 265.015 / 256.394 = 1.0336240318. formatCpi
-    // displays at 3 decimals → "1.034". Tight tolerance (display
-    // precision, not modeling).
+    // US-229: the typed Current CPI is the reference CPI; the last row
+    // says so.
+    const lastRow = page.locator("table.results-table tr").last();
+    await expect(lastRow.locator("td.label")).toHaveText("CPI source");
+    await expect(lastRow.locator("td.value")).toHaveText("Manual entry");
+
+    // Hand-computed: 265.015 / 256.394 = 1.0336240318. The ratio is
+    // valuation-service's INDEX_RATIO (US-229), shown at 5 decimals →
+    // "1.03362". Tight tolerance (display precision, not modeling).
     expect(
       Math.abs(indexRatio - 1.034),
       "index ratio = currentCpi/baseCpi"

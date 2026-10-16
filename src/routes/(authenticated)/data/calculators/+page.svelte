@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import BondCalculator from "../../../../components/widgets/BondCalculator.svelte";
   import TipsCalculator from "../../../../components/widgets/TipsCalculator.svelte";
   import FrnCalculator from "../../../../components/widgets/FrnCalculator.svelte";
@@ -11,6 +12,27 @@
     bond: "Bond Pricer",
   };
   let activeTab = tabMap[data.activeTab] ?? "Bond Pricer";
+
+  // The securities list is streamed; the TIPS Pricer needs it for the
+  // CUSIP suggestions and the coupon/maturity note (US-229).
+  let tipsSecurities: Awaited<
+    typeof data.streamed.securities
+  >["tipsSecurities"] = [];
+  $: Promise.resolve(data.streamed?.securities).then((s) => {
+    if (s) tipsSecurities = s.tipsSecurities;
+  });
+
+  // US-229: rerun `load` for the Current CPI lookup. Widget state survives
+  // because the page stays mounted. `load` reads request.url, which Kit
+  // does not track, so a new query alone would not rerun it.
+  function lookupCpi(e: CustomEvent<URLSearchParams>) {
+    goto(`/data/calculators?${e.detail.toString()}`, {
+      replaceState: true,
+      keepFocus: true,
+      noScroll: true,
+      invalidateAll: true,
+    });
+  }
 </script>
 
 <!-- Tab bar -->
@@ -29,7 +51,12 @@
 {#if activeTab === "Bond Pricer"}
   <BondCalculator result={data.result} securities={data.bondSecurities} />
 {:else if activeTab === "TIPS Pricer"}
-  <TipsCalculator result={data.tipsResult} securities={data.tipsSecurities} />
+  <TipsCalculator
+    result={data.tipsResult}
+    cpi={data.tipsCpi}
+    securities={tipsSecurities}
+    on:cpilookup={lookupCpi}
+  />
 {:else if activeTab === "FRN Pricer"}
   <FrnCalculator result={data.frnResult} securities={data.frnSecurities} />
 {/if}

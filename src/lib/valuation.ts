@@ -6,6 +6,9 @@ import {
   BondInput,
   TipsInput,
   FrnInput,
+  InflationIndexInput,
+  MonthlyIndexReadings,
+  MonthlyIndexReading,
 } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js";
 import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js";
 import {
@@ -31,6 +34,7 @@ import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-ty
 import { Decimal } from "decimal.js";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
+import { parseSettlementDate, type CpiReading } from "$lib/cpi";
 
 const { MeasureProto } = measure_pkg;
 const { FieldProto } = field_pkg;
@@ -74,8 +78,12 @@ export interface ValuationResult {
 export interface TipsCalculatorInputs {
   mode: "cusip" | "manual";
   price: string;
+  // Typed by the user: sent as InflationIndexInput.reference_cpi.
   currentCpi?: string;
-  settlementDate?: string;
+  // CPI-U months m-3 and m-2 from the price service (US-229): sent as
+  // InflationIndexInput.readings instead of currentCpi when present.
+  cpiReadings?: CpiReading[];
+  settlementDate?: string; // YYYY-MM-DD, sent as asof_datetime
   // CUSIP mode
   cusip?: string;
   // Manual mode
@@ -94,7 +102,9 @@ export interface TipsValuationResult {
   realYield?: string;
   yieldToMaturity?: string;
   macaulayDuration?: string;
-  indexRatio?: string;
+  referenceCpi?: string; // MeasureProto.REFERENCE_CPI
+  indexRatio?: string; // MeasureProto.INDEX_RATIO
+  cpiSource?: "Price service" | "Manual entry";
   cashflows?: CashflowEntry[];
   error?: string;
 }
@@ -151,6 +161,8 @@ const TIPS_VALUATION_MEASURES = [
   MEASURE_MACAULAY_DURATION,
   MEASURE_REAL_YIELD,
   MEASURE_INFLATION_ADJUSTED_PRINCIPAL,
+  MeasureProto.REFERENCE_CPI,
+  MeasureProto.INDEX_RATIO,
   MEASURE_PRESENT_VALUE_CASHFLOWS,
 ];
 
@@ -274,14 +286,15 @@ function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
 async function runValuationCore(
   productInput: ProductInput,
   measures: number[],
-  apiKey?: string
+  apiKey?: string,
+  asOf: ZonedDateTime = ZonedDateTime.now()
 ): Promise<
   import("@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js").ValuationResponseProto
 > {
   const request = new ValuationRequestProto();
   stampOwn(request);
   request.setOperationType(RequestOperationTypeProto.GET);
-  request.setAsofDatetime(ZonedDateTime.now().toProto());
+  request.setAsofDatetime(asOf.toProto());
   request.setProductInput(productInput);
   measures.forEach((m) => request.addMeasures(m));
 
@@ -453,77 +466,167 @@ function buildManualTipsSecurityProto(
 // TIPS
 // ---------------------------------------------------------------------------
 
+function hasCpiReadings(inputs: TipsCalculatorInputs): boolean {
+  return (inputs.cpiReadings?.length ?? 0) > 0;
+}
+
+function validateTipsInputs(inputs: TipsCalculatorInputs): string | null {
+  if (inputs.mode === "cusip" && (!inputs.cusip || !inputs.cusip.trim())) {
+    return "Please enter a CUSIP to look up.";
+  }
+  if (!inputs.price || !inputs.price.trim()) {
+    return "Please enter a price (% of par).";
+  }
+  if (
+    !hasCpiReadings(inputs) &&
+    (!inputs.currentCpi || !inputs.currentCpi.trim())
+  ) {
+    return "Please enter the current CPI value.";
+  }
+  return null;
+}
+
+/**
+ * TipsInput.cpi (US-229): the price service's monthly readings when there
+ * are any, else the user's typed value as the reference CPI. Built from the
+ * generated classes only; valuation-service derives REFERENCE_CPI and
+ * INDEX_RATIO from it.
+ */
+function buildInflationIndexInput(
+  inputs: TipsCalculatorInputs
+): InflationIndexInput {
+  const cpi = new InflationIndexInput();
+  if (inputs.cpiReadings && inputs.cpiReadings.length > 0) {
+    cpi.setReadings(
+      new MonthlyIndexReadings().setReadingsList(
+        inputs.cpiReadings.map((r) =>
+          new MonthlyIndexReading()
+            .setYear(r.year)
+            .setMonth(r.month)
+            .setValue(toDecimalProto(r.value))
+        )
+      )
+    );
+  } else {
+    cpi.setReferenceCpi(toDecimalProto((inputs.currentCpi ?? "").trim()));
+  }
+  return cpi;
+}
+
+/** Settlement date at 00:00 UTC (valuation-service reads its UTC date). */
+function settlementAsOf(settlementDate?: string): ZonedDateTime | undefined {
+  const d = parseSettlementDate(settlementDate?.trim());
+  if (!d) return undefined;
+  return ZonedDateTime.from(new Date(Date.UTC(d.year, d.month - 1, d.day)));
+}
+
+async function buildTipsProductInput(
+  inputs: TipsCalculatorInputs,
+  apiKey?: string
+): Promise<ProductInput> {
+  const securityProto =
+    inputs.mode === "cusip"
+      ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
+      : buildManualTipsSecurityProto(inputs);
+
+  // Reference CPI (base_cpi) override. The form's Reference CPI input is
+  // rendered in both CUSIP and manual modes; the user may need to supply
+  // it in CUSIP mode too because some TIPS records on the wire don't yet
+  // have base_cpi populated (data-sourcing-dev's #263 face_value +
+  // coupon_rate backfills didn't cover base_cpi). The CUSIP-mode proto
+  // comes from a search and may or may not already carry a TipsExtension —
+  // re-use the existing one when present so we don't drop index_date /
+  // inflation_index_type, otherwise stamp a fresh CPI-U extension.
+  if (inputs.referenceCpi && inputs.referenceCpi.trim()) {
+    const tipsExt =
+      securityProto.getTipsExtension() ?? new TipsExtensionProto();
+    tipsExt.setBaseCpi(toDecimalProto(inputs.referenceCpi.trim()));
+    if (tipsExt.getInflationIndexType() === IndexTypeProto.UNKNOWN_INDEX_TYPE) {
+      tipsExt.setInflationIndexType(IndexTypeProto.CPI_U);
+    }
+    securityProto.setTipsExtension(tipsExt);
+  }
+
+  return new ProductInput().setTips(
+    new TipsInput()
+      .setSecurity(securityProto)
+      .setCleanPrice(toDecimalProto(inputs.price))
+      .setCpi(buildInflationIndexInput(inputs))
+  );
+}
+
+function mapTipsValuationError(error: any): string {
+  return mapValuationError(
+    error.details ?? error.message ?? "Valuation failed",
+    (msg) => {
+      if (msg.includes("Invalid Coupon Frequency")) {
+        return "This security has an unsupported coupon frequency for TIPS valuation.";
+      }
+      if (msg.includes("Maturity date must be in the future")) {
+        return "This TIPS has already matured and cannot be valued.";
+      }
+      if (msg.includes("Periods to maturity must be at least 1")) {
+        return "This TIPS matures too soon (less than one coupon period remaining).";
+      }
+      if (
+        msg.includes("No security found") ||
+        msg.includes("TIPS") ||
+        msg.includes("inflation")
+      ) {
+        return msg;
+      }
+      return null;
+    }
+  );
+}
+
+/**
+ * The reference CPI valuation-service derives from the price service's
+ * readings for the settlement date, to show in the Current CPI field before
+ * Calculate. Needs the price: valuation-service requires clean_price.
+ */
+export async function LookupCurrentCpi(
+  inputs: TipsCalculatorInputs,
+  apiKey?: string
+): Promise<{ value?: string; error?: string }> {
+  if (!hasCpiReadings(inputs)) return { error: "No CPI-U readings to send." };
+  const invalid = validateTipsInputs(inputs);
+  if (invalid) return { error: invalid };
+  try {
+    const response = await runValuationCore(
+      await buildTipsProductInput(inputs, apiKey),
+      [MeasureProto.REFERENCE_CPI],
+      apiKey,
+      settlementAsOf(inputs.settlementDate)
+    );
+    const entry = response
+      .getMeasureResultsList()
+      .find((e) => e.getMeasure() === MeasureProto.REFERENCE_CPI);
+    const value = fromDecimalProto(entry?.getMeasureDecimalValue());
+    return value ? { value } : { error: "No reference CPI was returned." };
+  } catch (error: any) {
+    return { error: mapTipsValuationError(error) };
+  }
+}
+
 export async function RunTipsValuation(
   inputs: TipsCalculatorInputs,
   apiKey?: string
 ): Promise<TipsValuationResult> {
-  if (inputs.mode === "cusip" && (!inputs.cusip || !inputs.cusip.trim())) {
-    return { error: "Please enter a CUSIP to look up." };
-  }
-  if (!inputs.price || !inputs.price.trim()) {
-    return { error: "Please enter a price (% of par)." };
-  }
-  if (!inputs.currentCpi || !inputs.currentCpi.trim()) {
-    return { error: "Please enter the current CPI value." };
-  }
+  const invalid = validateTipsInputs(inputs);
+  if (invalid) return { error: invalid };
 
   try {
-    const securityProto =
-      inputs.mode === "cusip"
-        ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
-        : buildManualTipsSecurityProto(inputs);
-
-    // Reference CPI (base_cpi) override. The form's Reference CPI input is
-    // rendered in both CUSIP and manual modes; the user may need to supply
-    // it in CUSIP mode too because some TIPS records on the wire don't yet
-    // have base_cpi populated (data-sourcing-dev's #263 face_value +
-    // coupon_rate backfills didn't cover base_cpi). The CUSIP-mode proto
-    // comes from a search and may or may not already carry a TipsExtension —
-    // re-use the existing one when present so we don't drop index_date /
-    // inflation_index_type, otherwise stamp a fresh CPI-U extension.
-    if (inputs.referenceCpi && inputs.referenceCpi.trim()) {
-      const tipsExt =
-        securityProto.getTipsExtension() ?? new TipsExtensionProto();
-      tipsExt.setBaseCpi(toDecimalProto(inputs.referenceCpi.trim()));
-      if (
-        tipsExt.getInflationIndexType() === IndexTypeProto.UNKNOWN_INDEX_TYPE
-      ) {
-        tipsExt.setInflationIndexType(IndexTypeProto.CPI_U);
-      }
-      securityProto.setTipsExtension(tipsExt);
-    }
-
-    const productInput = new ProductInput().setTips(
-      new TipsInput()
-        .setSecurity(securityProto)
-        .setCleanPrice(toDecimalProto(inputs.price))
-        .setCurrentCpi(toDecimalProto(inputs.currentCpi))
-    );
-
     const response = await runValuationCore(
-      productInput,
+      await buildTipsProductInput(inputs, apiKey),
       TIPS_VALUATION_MEASURES,
-      apiKey
+      apiKey,
+      settlementAsOf(inputs.settlementDate)
     );
 
-    const result: TipsValuationResult = {};
-
-    // Compute index ratio client-side from CPI inputs. Use the form's
-    // referenceCpi when supplied (works for both modes after the override
-    // above); otherwise fall back to the security proto's base_cpi for
-    // CUSIP mode where the wire populated it.
-    const formReferenceCpi = parseFloat(inputs.referenceCpi ?? "");
-    const protoBaseCpiStr = fromDecimalProto(
-      securityProto.getTipsExtension()?.getBaseCpi()
-    );
-    const referenceCpi =
-      Number.isFinite(formReferenceCpi) && formReferenceCpi > 0
-        ? formReferenceCpi
-        : parseFloat(protoBaseCpiStr ?? "0");
-    const currentCpi = parseFloat(inputs.currentCpi);
-    if (referenceCpi > 0 && currentCpi > 0) {
-      result.indexRatio = (currentCpi / referenceCpi).toString();
-    }
+    const result: TipsValuationResult = {
+      cpiSource: hasCpiReadings(inputs) ? "Price service" : "Manual entry",
+    };
 
     response.getMeasureResultsList().forEach((entry) => {
       const value = fromDecimalProto(entry.getMeasureDecimalValue());
@@ -546,35 +649,18 @@ export async function RunTipsValuation(
         case MEASURE_INFLATION_ADJUSTED_PRINCIPAL:
           result.inflationAdjustedPrincipal = value;
           break;
+        case MeasureProto.REFERENCE_CPI:
+          result.referenceCpi = value;
+          break;
+        case MeasureProto.INDEX_RATIO:
+          result.indexRatio = value;
+          break;
       }
     });
     result.cashflows = parseCashflows(response);
     return result;
   } catch (error: any) {
-    return {
-      error: mapValuationError(
-        error.details ?? error.message ?? "Valuation failed",
-        (msg) => {
-          if (msg.includes("Invalid Coupon Frequency")) {
-            return "This security has an unsupported coupon frequency for TIPS valuation.";
-          }
-          if (msg.includes("Maturity date must be in the future")) {
-            return "This TIPS has already matured and cannot be valued.";
-          }
-          if (msg.includes("Periods to maturity must be at least 1")) {
-            return "This TIPS matures too soon (less than one coupon period remaining).";
-          }
-          if (
-            msg.includes("No security found") ||
-            msg.includes("TIPS") ||
-            msg.includes("inflation")
-          ) {
-            return msg;
-          }
-          return null;
-        }
-      ),
-    };
+    return { error: mapTipsValuationError(error) };
   }
 }
 

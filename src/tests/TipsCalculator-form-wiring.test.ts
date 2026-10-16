@@ -79,7 +79,7 @@ describe("TipsCalculator — form-to-URL wiring for Reference CPI (#263 bug 2)",
     await fireEvent.input(getByLabelText("Price (% of par)"), {
       target: { value: "98" },
     });
-    await fireEvent.input(getByLabelText("Current CPI"), {
+    await fireEvent.input(getByLabelText(/^Current CPI/), {
       target: { value: "350" },
     });
     await fireEvent.input(getByLabelText(/Reference CPI/), {
@@ -133,7 +133,7 @@ describe("TipsCalculator — form-to-URL wiring for Reference CPI (#263 bug 2)",
     await fireEvent.input(getByLabelText("Price (% of par)"), {
       target: { value: "98" },
     });
-    await fireEvent.input(getByLabelText("Current CPI"), {
+    await fireEvent.input(getByLabelText(/^Current CPI/), {
       target: { value: "350" },
     });
     // Don't touch referenceCpi.
