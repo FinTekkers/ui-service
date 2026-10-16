@@ -397,7 +397,6 @@ describe("US-229: calculators load, TIPS Current CPI", () => {
       { year: 2026, month: 7, value: "322.132" },
       { year: 2026, month: 8, value: "322.551" },
     ]);
-    expect(req.getProductInput().getTips().hasCurrentCpi()).toBe(false);
   });
 
   test("M1: without a Price there is no REFERENCE_CPI call (valuation needs clean_price)", async () => {

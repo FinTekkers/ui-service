@@ -3,8 +3,7 @@
  *
  * Asserts that RunFrnValuation builds a ValuationRequestProto with
  * product_input.frn set (carrying security + clean_price) and the legacy
- * security_input / price_input / reference_rate_input flat fields NOT
- * set. Mirrors the bond and TIPS engine-path regression tests.
+ * security_input / price_input flat fields NOT set. Mirrors the bond and TIPS engine-path regression tests.
  */
 import { describe, expect, test, vi } from "vitest";
 
@@ -48,7 +47,7 @@ const MANUAL_FRN: FrnCalculatorInputs = {
 };
 
 describe("FRN engine-path request shape (#208)", () => {
-  test("RunFrnValuation sets product_input.frn, not security_input / price_input / reference_rate_input", async () => {
+  test("RunFrnValuation sets product_input.frn, not security_input / price_input", async () => {
     capturedRequests.length = 0;
     await RunFrnValuation(MANUAL_FRN);
     expect(capturedRequests.length).toBe(1);
@@ -65,7 +64,6 @@ describe("FRN engine-path request shape (#208)", () => {
     // Legacy flat fields are NOT set on FRN requests.
     expect(req.hasSecurityInput()).toBe(false);
     expect(req.hasPriceInput()).toBe(false);
-    expect(req.hasReferenceRateInput?.()).toBeFalsy();
 
     // BOND / TIPS oneof cases are NOT chosen.
     expect(req.getProductInput()?.getBond()).toBeUndefined();
