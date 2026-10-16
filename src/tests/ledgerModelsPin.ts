@@ -23,10 +23,11 @@ export function versionAtLeast(version: string, floor: string): boolean {
 }
 
 /**
- * package.json's range for ledger-models: floats within 0.4 from 0.4.57,
- * the first release with TipsInput.cpi / InflationIndexInput (US-229).
+ * package.json's range for ledger-models: floats within 0.4 from 0.4.60,
+ * the first release without ValuationRequestProto fields 24 and 25 and
+ * TipsInput field 3 (US-230).
  */
-export const LEDGER_MODELS_RANGE = "^0.4.57";
+export const LEDGER_MODELS_RANGE = "^0.4.60";
 
 /**
  * Asserts package-lock pins ledger-models to a 0.4.x at or above both `floor`
