@@ -142,10 +142,18 @@ export async function ensureTestUserSession(
   playwright: PlaywrightWorkerArgs["playwright"],
   baseURL: string
 ): Promise<StorageState> {
-  const reason = e2eSkipReason();
-  test.skip(reason !== null, reason ?? "");
+  skipFor(e2eSkipReason());
   const state = e2eStorageState(baseURL, getE2ECredentials());
-  const rejection = await e2eSessionRejection(playwright, baseURL, state);
-  test.skip(rejection !== null, rejection ?? "");
+  skipFor(await e2eSessionRejection(playwright, baseURL, state));
   return state;
+}
+
+/**
+ * test.skip with `reason` when there is one. test.skip throws outside a
+ * test even when its condition is false, and scripts/checks/e2e.sh calls
+ * ensureTestUserSession from plain node to save the session.
+ */
+function skipFor(reason: string | null): void {
+  if (reason === null) return;
+  test.skip(reason !== null, reason);
 }

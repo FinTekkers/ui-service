@@ -4,6 +4,7 @@
  * missing variable, and never puts a value in a message.
  */
 import { describe, expect, test, vi } from "vitest";
+import { test as playwrightTest } from "@playwright/test";
 
 vi.mock("@playwright/test", () => ({ test: { skip: vi.fn() } }));
 
@@ -12,6 +13,7 @@ import {
   e2eSessionRejection,
   e2eSkipReason,
   e2eStorageState,
+  ensureTestUserSession,
   getE2ECredentials,
   missingE2EVariables,
   skipUnlessE2ECredentials,
@@ -185,4 +187,34 @@ describe("e2e session", () => {
       expect(fake.dispose).toHaveBeenCalled();
     }
   );
+
+  test("ensureTestUserSession with an accepted key never calls test.skip", async () => {
+    // test.skip throws outside a test even with a false condition, and
+    // scripts/checks/e2e.sh calls ensureTestUserSession from plain node.
+    const saved = { ...process.env };
+    Object.assign(process.env, BOTH);
+    const skip = vi.mocked(playwrightTest.skip);
+    skip.mockClear();
+    try {
+      const fake = fakePlaywright(200, "<table>CPI rows</table>");
+      expect(
+        await ensureTestUserSession(fake.playwright, "http://127.0.0.1:4203")
+      ).toEqual(state);
+      expect(skip).not.toHaveBeenCalled();
+
+      await ensureTestUserSession(
+        fakePlaywright(500).playwright,
+        "http://127.0.0.1:4203"
+      );
+      expect(skip).toHaveBeenCalledWith(
+        true,
+        expect.stringContaining(E2E_KEY_MISSING_OR_EXPIRED)
+      );
+    } finally {
+      process.env.FT_E2E_EMAIL = saved.FT_E2E_EMAIL;
+      process.env.FT_E2E_API_KEY = saved.FT_E2E_API_KEY;
+      if (saved.FT_E2E_EMAIL === undefined) delete process.env.FT_E2E_EMAIL;
+      if (saved.FT_E2E_API_KEY === undefined) delete process.env.FT_E2E_API_KEY;
+    }
+  });
 });
