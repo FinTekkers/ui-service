@@ -1,184 +1,151 @@
 /**
- * Auth fixture for Playwright E2E tests.
+ * Auth fixture for Playwright E2E and deploy smoke tests (US-233).
  *
- * Logs a dedicated test user in once per run and persists the SvelteKit
- * `ft_api_key` cookie into Playwright's storageState. Tests opt in via
- * `playwright.config.ts`'s `storageState` field — they don't call the
- * grpcurl helpers directly.
+ * Tests never register or log in. Since BS-33 every broker login rotates
+ * the user's API key, so suites that logged in per run invalidated each
+ * other mid-test. Instead the e2e user's API key is provisioned once
+ * (BS-31) and Horizon passes it in (HZ-494):
  *
- * Specs that run without the setup project (`--no-deps`, as
- * scripts/checks/e2e.sh does) call ensureTestUserSession instead: it
- * registers and logs in through the app's own form actions, no grpcurl.
+ *   FT_E2E_EMAIL    the e2e user's email, set as the `ft_user_email` cookie
+ *   FT_E2E_API_KEY  the provisioned key, set as the `ft_api_key` cookie
  *
- * Pre-reqs for the grpcurl path (will skip-with-warn if any are missing):
- *   - broker-service on 127.0.0.1:80
- *   - ui-service dev server on https://localhost:443
- *   - grpcurl on PATH
+ * FT_E2E_PASSWORD is kept only for re-provisioning; tests don't read it.
  *
- * Test user:
- *   playwright@fintekkers-test.local / PlaywrightTest123 / signup_code S1GNUP.
- *   Re-registration is idempotent (the broker returns AlreadyExists, which
- *   we ignore — only Login matters for state).
+ * When a variable is missing, or the app can't load data with the key,
+ * the logged-in tests skip with E2E_KEY_MISSING_OR_EXPIRED and the
+ * variable's name. Messages hold names only, never values.
+ *
+ * `auth.setup.ts` and scripts/checks/e2e.sh write the session to
+ * STORAGE_STATE_PATH, a gitignored temp file (`/playwright/.auth/`).
  */
 import {
-  expect,
+  test,
   type APIRequestContext,
   type PlaywrightWorkerArgs,
+  type TestType,
 } from "@playwright/test";
-import { execSync } from "child_process";
 import * as path from "path";
-
-export const TEST_USER = {
-  email: "playwright@fintekkers-test.local",
-  password: "PlaywrightTest123",
-  name: "Playwright",
-} as const;
 
 export const STORAGE_STATE_PATH = path.resolve("playwright/.auth/user.json");
 
-const BROKER_HOST = "127.0.0.1:80";
-const PROTO_PATH = path.resolve(
-  process.env.HOME!,
-  "projects/broker-service/proto"
-);
-const SIGNUP_CODE = "S1GNUP";
+export const E2E_VARIABLES = ["FT_E2E_EMAIL", "FT_E2E_API_KEY"] as const;
 
-function grpcurl(
-  method: string,
-  data: Record<string, string>
-): { code: number; stdout: string; stderr: string } {
-  const cmd = [
-    "grpcurl -plaintext",
-    `-import-path ${PROTO_PATH}`,
-    "-proto auth.proto",
-    `-d '${JSON.stringify(data)}'`,
-    BROKER_HOST,
-    `fintekkers.services.auth.Auth/${method}`,
-  ].join(" ");
-  try {
-    return {
-      code: 0,
-      stdout: execSync(cmd, {
-        encoding: "utf-8",
-        timeout: 10_000,
-        stdio: ["ignore", "pipe", "pipe"],
-      }),
-      stderr: "",
-    };
-  } catch (err: any) {
-    // grpcurl writes its own error message to stderr AND throws; we capture
-    // both so callers can decide whether to ignore (e.g. AlreadyExists on
-    // re-register is fine).
-    return {
-      code: err.status ?? 1,
-      stdout: err.stdout?.toString() ?? "",
-      stderr: err.stderr?.toString() ?? "",
-    };
-  }
-}
+export const E2E_KEY_MISSING_OR_EXPIRED =
+  "e2e API key missing or expired; re-run BS-31's provisioning";
 
-/**
- * Ensure the Playwright test user exists in the broker. Idempotent — re-running
- * is a no-op when the user already exists.
- */
-export function ensureTestUserRegistered(): void {
-  const result = grpcurl("Register", {
-    email: TEST_USER.email,
-    password: TEST_USER.password,
-    name: TEST_USER.name,
-    signup_code: SIGNUP_CODE,
-  });
-  // code 0 = newly created. Anything else is fine if it's AlreadyExists (the
-  // broker rejects duplicate emails, which is what we want — the user already
-  // existed from a prior run).
-  if (
-    result.code !== 0 &&
-    !/AlreadyExists|already registered/i.test(result.stderr)
-  ) {
-    throw new Error(
-      `Failed to register Playwright test user: ${result.stderr}`
-    );
-  }
-}
+// A broker-backed page every logged-in suite can load: with a rejected key
+// the CPI series search fails and the page shows this notice.
+const SESSION_PROBE_PATH = "/data/cpi_index";
+const SESSION_PROBE_FAILURE = "Could not load CPI series";
 
-/**
- * Login the test user via the broker and return the apiKey. The apiKey is
- * what the SvelteKit form action expects to set as `ft_api_key` cookie.
- */
-export function loginTestUser(): string {
-  const result = grpcurl("Login", {
-    email: TEST_USER.email,
-    password: TEST_USER.password,
-  });
-  if (result.code !== 0) {
-    throw new Error(`Failed to login Playwright test user: ${result.stderr}`);
-  }
-  const apiKey = JSON.parse(result.stdout).apiKey;
-  if (!apiKey) {
-    throw new Error(`Login returned no apiKey: ${result.stdout}`);
-  }
-  return apiKey;
-}
-
-/**
- * Probe whether the broker + grpcurl are available. Used by setup to skip
- * gracefully when the local infra isn't running.
- */
-export function brokerAvailable(): boolean {
-  try {
-    execSync(`grpcurl -plaintext ${BROKER_HOST} list`, {
-      timeout: 3000,
-      stdio: "pipe",
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
+export type E2ECredentials = { email: string; apiKey: string };
 
 export type StorageState = Awaited<
   ReturnType<APIRequestContext["storageState"]>
 >;
 
+type Env = Record<string, string | undefined>;
+
+/** Names of the e2e variables that are unset or empty. */
+export function missingE2EVariables(env: Env = process.env): string[] {
+  return E2E_VARIABLES.filter((name) => !env[name]);
+}
+
+/** Why the logged-in tests skip, naming the missing variables; null if none. */
+export function e2eSkipReason(env: Env = process.env): string | null {
+  const missing = missingE2EVariables(env);
+  if (missing.length === 0) return null;
+  const verb = missing.length === 1 ? "is" : "are";
+  return `${E2E_KEY_MISSING_OR_EXPIRED} (${missing.join(
+    " and "
+  )} ${verb} not set)`;
+}
+
+/** The e2e user's email and API key, from the environment only. */
+export function getE2ECredentials(env: Env = process.env): E2ECredentials {
+  const reason = e2eSkipReason(env);
+  if (reason !== null) throw new Error(reason);
+  return { email: env.FT_E2E_EMAIL!, apiKey: env.FT_E2E_API_KEY! };
+}
+
+/** Skips the calling file or describe block when a variable is missing. */
+export function skipUnlessE2ECredentials(t: TestType<any, any>): void {
+  const reason = e2eSkipReason();
+  t.skip(reason !== null, reason ?? "");
+}
+
 /**
- * Register the test user (the broker rejects a repeat, which is fine) and
- * log in through the app's form actions at `baseURL`. Returns the session's
- * storageState, which holds the `ft_api_key` cookie. Fails with a clear
- * message if the user can't log in.
+ * The session cookies hooks.server.ts reads, for `baseURL`'s host. The
+ * same shape the login form action sets (setApiKeyCookie,
+ * setUserInfoCookies), without a login.
+ */
+export function e2eStorageState(
+  baseURL: string,
+  creds: E2ECredentials
+): StorageState {
+  const url = new URL(baseURL);
+  const cookie = (name: string, value: string) => ({
+    name,
+    value: encodeURIComponent(value),
+    domain: url.hostname,
+    path: "/",
+    expires: -1,
+    httpOnly: true,
+    secure: url.protocol === "https:",
+    sameSite: "Lax" as const,
+  });
+  return {
+    cookies: [
+      cookie("ft_api_key", creds.apiKey),
+      cookie("ft_user_email", creds.email),
+    ],
+    origins: [],
+  };
+}
+
+/**
+ * Null if the app loads broker data with the session, else the reason to
+ * skip. A redirect to /login or the probe page's load failure both mean
+ * the key was not accepted.
+ */
+export async function e2eSessionRejection(
+  playwright: PlaywrightWorkerArgs["playwright"],
+  baseURL: string,
+  state: StorageState
+): Promise<string | null> {
+  const ctx = await playwright.request.newContext({
+    baseURL,
+    storageState: state,
+  });
+  try {
+    const res = await ctx.get(SESSION_PROBE_PATH, { maxRedirects: 0 });
+    const location = res.headers()["location"] ?? "";
+    if (res.status() >= 300 && res.status() < 400 && /\/login/.test(location))
+      return `${E2E_KEY_MISSING_OR_EXPIRED} (${SESSION_PROBE_PATH} redirected to /login with FT_E2E_API_KEY)`;
+    if (!res.ok())
+      return `${E2E_KEY_MISSING_OR_EXPIRED} (${SESSION_PROBE_PATH} returned ${res.status()} with FT_E2E_API_KEY)`;
+    if ((await res.text()).includes(SESSION_PROBE_FAILURE))
+      return `${E2E_KEY_MISSING_OR_EXPIRED} (${SESSION_PROBE_PATH} could not load data with FT_E2E_API_KEY)`;
+    return null;
+  } finally {
+    await ctx.dispose();
+  }
+}
+
+/**
+ * The e2e user's session for `baseURL`, from FT_E2E_EMAIL and
+ * FT_E2E_API_KEY. Call from a hook or test: skips the current test (or,
+ * from beforeAll, its group) when a variable is missing or the key is
+ * rejected. Never logs in, so concurrent runs can't rotate the key.
  */
 export async function ensureTestUserSession(
   playwright: PlaywrightWorkerArgs["playwright"],
   baseURL: string
 ): Promise<StorageState> {
-  const headers = { origin: new URL(baseURL).origin };
-  const ctx = await playwright.request.newContext({ baseURL });
-  try {
-    await ctx.post("/register?/register", {
-      form: {
-        email: TEST_USER.email,
-        password: TEST_USER.password,
-        confirmpassword: TEST_USER.password,
-        firstname: TEST_USER.name,
-        signupcode: SIGNUP_CODE,
-      },
-      headers,
-      maxRedirects: 0,
-    });
-
-    const login = await ctx.post("/login?/login", {
-      form: { email: TEST_USER.email, password: TEST_USER.password },
-      headers,
-      maxRedirects: 0,
-    });
-    const state = await ctx.storageState();
-    expect(
-      state.cookies.some((c) => c.name === "ft_api_key"),
-      `test user ${
-        TEST_USER.email
-      } cannot log in (POST /login returned ${login.status()})`
-    ).toBe(true);
-    return state;
-  } finally {
-    await ctx.dispose();
-  }
+  const reason = e2eSkipReason();
+  test.skip(reason !== null, reason ?? "");
+  const state = e2eStorageState(baseURL, getE2ECredentials());
+  const rejection = await e2eSessionRejection(playwright, baseURL, state);
+  test.skip(rejection !== null, rejection ?? "");
+  return state;
 }

@@ -11,7 +11,15 @@
  * playwright.config.ts), and use page.* APIs to drive the UI.
  */
 import { test, expect } from "@playwright/test";
-import { ensureTestUserSession, type StorageState } from "./fixtures/auth";
+import {
+  ensureTestUserSession,
+  skipUnlessE2ECredentials,
+  type StorageState,
+} from "./fixtures/auth";
+
+skipUnlessE2ECredentials(test);
+// Traces and failure screenshots would record the session cookie.
+test.use({ trace: "off", screenshot: "off", video: "off" });
 
 // US-209: the price client reaches the price service through the broker.
 // Before @fintekkers/ledger-models 0.4.31 it called ledger-service on 8082 and
@@ -55,6 +63,12 @@ test.describe("/data/prices?type=ticker&id=AAPL (US-209)", () => {
 });
 
 test.describe("/data/prices", () => {
+  // Uses the setup project's session; skips, naming the reason, when the
+  // e2e API key is missing or rejected.
+  test.beforeAll(async ({ playwright }) => {
+    await ensureTestUserSession(playwright, test.info().project.use.baseURL!);
+  });
+
   test("default landing renders the AAPL chart and price table", async ({
     page,
   }) => {

@@ -40,25 +40,42 @@ Before running, ensure:
 - `ui-service` dev server on `https://localhost:443`
   (`~/second-brain/services.sh restart ui-service`)
 - `broker-service` on `127.0.0.1:80`
-- `grpcurl` on `PATH` (used by the auth fixture)
-
-If the broker is unreachable, `auth.setup.ts` skips with a `console.warn`
-and downstream tests fail with auth-redirect errors. That's the right
-signal — fix the infra rather than the test.
+- `FT_E2E_EMAIL` and `FT_E2E_API_KEY` set (see below)
 
 ## Auth fixture
 
-`auth.setup.ts` runs once before any test. It registers (idempotent) and
-logs in a dedicated test user — `playwright@fintekkers-test.local` — then
-saves the SvelteKit `ft_api_key` session cookie to
-`playwright/.auth/user.json`. Every test in the `chromium` project picks
-that up via `storageState` in `playwright.config.ts`.
+Tests never register a user or log in. Since BS-33 every broker login
+rotates the user's API key, so a suite that logged in per run broke any
+other run using the same user. Instead the e2e user's API key is
+provisioned once (BS-31) and Horizon passes it in (HZ-494):
+
+| Variable          | Used as                                           |
+| ----------------- | ------------------------------------------------- |
+| `FT_E2E_EMAIL`    | the `ft_user_email` cookie                        |
+| `FT_E2E_API_KEY`  | the `ft_api_key` cookie                           |
+| `FT_E2E_PASSWORD` | re-provisioning only (BS-31); tests never read it |
+
+`auth.setup.ts` writes those cookies to `playwright/.auth/user.json`, a
+temp file under the gitignored `/playwright/.auth/`. Every test in the
+`chromium` project picks that up via `storageState` in
+`playwright.config.ts`. Specs that build their own session call
+`ensureTestUserSession` from `fixtures/auth.ts`.
+
+If a variable is unset, or the app can't load data with the key,
+`auth.setup.ts` and the specs that call `ensureTestUserSession` skip with
+"e2e API key missing or expired; re-run BS-31's provisioning" and the
+variable's name. Messages hold names only, never values. Specs that use the
+session turn traces, screenshots and videos off: they would record the cookie.
+
+## Deploy smoke check
+
+`npm run test:smoke:deploy` runs `tests/deploy-smoke/` against
+`https://www.fintekkers.org/` with the same variables: the TIPS Pricer
+CUSIP flow, the CPI index page and the securities list. It is read-only:
+each test fails if its page sends anything but a GET.
 
 Tests don't need to call any auth helpers themselves — they just navigate
 to `/data/anything` and the cookie is already attached.
-
-To rotate the session (e.g. after broker auth changes), delete
-`playwright/.auth/user.json` and re-run.
 
 ## Adding a test
 

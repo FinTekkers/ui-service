@@ -1,19 +1,31 @@
 /**
  * US-203 — sidebar links go to the same page straight after login.
  *
- * Starts logged out at /data/portfolios/ (trailing slash) and signs in from
- * /login?redirectTo=%2Fdata%2Fportfolios%2F. Signing in through the form
- * (use:enhance, so the redirect and later clicks are client-side) must land
- * on /data/portfolios, and every sidebar link must then go to its fixed
- * /data/<route>. Before the fix, Portfolio went to /data/portfolios/portfolios.
+ * Starts at /data/portfolios/ (trailing slash) with the e2e user's session,
+ * and every sidebar link must then go to its fixed /data/<route> (clicks
+ * are client-side). Before the fix, Portfolio went to
+ * /data/portfolios/portfolios.
+ *
+ * US-233: no form login. A login rotates the e2e user's API key (BS-33)
+ * and breaks any other run using it; the session is the provisioned key.
  */
 import { test, expect, type Page } from "@playwright/test";
-import { TEST_USER, ensureTestUserSession } from "./fixtures/auth";
+import {
+  ensureTestUserSession,
+  skipUnlessE2ECredentials,
+  type StorageState,
+} from "./fixtures/auth";
 
-// Fresh, logged-out context: this spec logs in itself.
+skipUnlessE2ECredentials(test);
+
+// The session comes from beforeAll, never the setup project's file. Traces
+// and failure screenshots would record the session cookie.
 test.use({
   storageState: { cookies: [], origins: [] },
   viewport: { width: 1920, height: 1080 },
+  trace: "off",
+  screenshot: "off",
+  video: "off",
 });
 
 const MENU: [string, string][] = [
@@ -37,28 +49,23 @@ const menuLink = (page: Page, name: string) =>
 
 const pathname = (page: Page) => new URL(page.url()).pathname;
 
+let session: StorageState;
+
 test.beforeAll(async ({ playwright }) => {
-  // Fails here, with a clear message, if the test user can't log in —
-  // rather than as a URL timeout after the form submit below.
-  await ensureTestUserSession(playwright, test.info().project.use.baseURL!);
+  // Skips here, naming the reason, if the key is missing or rejected —
+  // rather than as a URL timeout on the /login redirect below.
+  session = await ensureTestUserSession(
+    playwright,
+    test.info().project.use.baseURL!
+  );
 });
 
-test("after login from /data/portfolios/, every sidebar link goes to its fixed path", async ({
+test("logged in at /data/portfolios/, every sidebar link goes to its fixed path", async ({
   page,
 }) => {
+  await page.context().addCookies(session.cookies);
   await page.goto("/data/portfolios/");
-  await expect(page).toHaveURL(/\/login\?redirectTo=%2Fdata%2Fportfolios/);
-  // SvelteKit may already have dropped the slash on the way here; pin the
-  // trailing-slash redirectTo so the case that broke is always exercised.
-  await page.goto("/login?redirectTo=%2Fdata%2Fportfolios%2F");
-
-  // SignInForm's <label for> points at ids the inputs don't have, so
-  // getByLabel can't find them; use the field names.
-  await page.locator('input[name="email"]').fill(TEST_USER.email);
-  await page.locator('input[name="password"]').fill(TEST_USER.password);
-  await page.getByRole("button", { name: /Sign In/ }).click();
-
-  await expect(page).toHaveURL(/\/data\/portfolios$/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/data\/portfolios\/?$/, { timeout: 15_000 });
 
   for (const [name, path] of MENU) {
     await menuLink(page, name).click();
