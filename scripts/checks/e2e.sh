@@ -50,6 +50,8 @@ REGRESSION_SPECS=(
   tests/e2e/calculators-numerical.spec.ts
   tests/e2e/tips-calculator-reference-cpi.spec.ts
   tests/e2e/cpi-index-page-data.spec.ts
+  # US-229: Current CPI from the price service's CPI-U readings.
+  tests/e2e/tips-calculator-current-cpi.spec.ts
 )
 # Tests that fail on the host for lack of data, logged as "known" without
 # failing the check. Any other failure fails it, and so does a listed test

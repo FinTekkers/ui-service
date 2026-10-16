@@ -88,15 +88,22 @@ describe("RunTipsValuation — Reference CPI override (#263 bug 2)", () => {
     expect(readBaseCpiFromLastRequest()).toBe("300.123");
   });
 
-  test("manual mode: indexRatio prefers form-supplied referenceCpi over proto fallback", async () => {
+  test("manual mode: both CPIs reach valuation-service, which owns the index ratio (US-229)", async () => {
     capturedRequests.length = 0;
     const result = await RunTipsValuation({
       ...BASE_MANUAL,
       referenceCpi: "250",
       currentCpi: "500",
     });
-    // currentCpi=500, referenceCpi=250 → ratio = 2.0
-    expect(parseFloat(result.indexRatio ?? "0")).toBeCloseTo(2.0, 6);
+    expect(readBaseCpiFromLastRequest()).toBe("250");
+    const cpi = capturedRequests[capturedRequests.length - 1]
+      .getProductInput()
+      .getTips()
+      .getCpi();
+    expect(fromDecimalProto(cpi.getReferenceCpi())).toBe("500");
+    // No INDEX_RATIO in this mock's response, so none in the result: the
+    // browser never divides the CPIs itself.
+    expect(result.indexRatio).toBeUndefined();
   });
 
   test('whitespace-only referenceCpi is treated as "not supplied" — no override applied', async () => {

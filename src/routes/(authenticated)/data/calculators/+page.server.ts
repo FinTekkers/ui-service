@@ -2,6 +2,7 @@ import {
   RunValuation,
   RunTipsValuation,
   RunFrnValuation,
+  LookupCurrentCpi,
 } from "$lib/valuation";
 import type {
   BondCalculatorInputs,
@@ -9,6 +10,12 @@ import type {
   FrnCalculatorInputs,
 } from "$lib/valuation";
 import { FetchSecurity } from "$lib/security";
+import {
+  currentCpiFromLookup,
+  fetchCpiReadings,
+  parseSettlementDate,
+  type CurrentCpiState,
+} from "$lib/cpi";
 
 type SecurityItem = {
   cusip: string;
@@ -75,16 +82,41 @@ export async function load({ locals, request }) {
     });
 
   const tab = searchParams.get("tab");
-  const emptyResults = { result: null, tipsResult: null, frnResult: null };
+  const emptyResults = {
+    result: null,
+    tipsResult: null,
+    frnResult: null,
+    tipsCpi: null as CurrentCpiState | null,
+  };
 
   // --- TIPS Calculator ---
   if (tab === "tips") {
     const tipsMode = searchParams.get("tipsMode") as "cusip" | "manual" | null;
     const tipsPrice = searchParams.get("tipsPrice");
+    const settlementDate = searchParams.get("settlementDate") ?? undefined;
+    const tipsCusip = searchParams.get("tipsCusip") ?? undefined;
+
+    // US-229: in CUSIP mode, Current CPI comes from the price service's
+    // CPI-U readings for the settlement date, unless the user typed one
+    // (currentCpiSource=manual), which is never looked up or overwritten.
+    let tipsCpi: CurrentCpiState | null = null;
+    if (
+      tipsMode === "cusip" &&
+      tipsCusip?.trim() &&
+      settlementDate &&
+      parseSettlementDate(settlementDate) &&
+      searchParams.get("currentCpiSource") !== "manual"
+    ) {
+      tipsCpi = currentCpiFromLookup(
+        settlementDate,
+        await fetchCpiReadings(settlementDate, apiKey)
+      );
+    }
 
     if (!tipsMode || !tipsPrice) {
       return {
         ...emptyResults,
+        tipsCpi,
         streamed: { securities: securitiesPromise },
         activeTab: "tips",
         user: locals.user,
@@ -95,8 +127,9 @@ export async function load({ locals, request }) {
       mode: tipsMode,
       price: tipsPrice,
       currentCpi: searchParams.get("currentCpi") ?? undefined,
-      settlementDate: searchParams.get("settlementDate") ?? undefined,
-      cusip: searchParams.get("tipsCusip") ?? undefined,
+      cpiReadings: tipsCpi?.readings,
+      settlementDate,
+      cusip: tipsCusip,
       faceValue: searchParams.get("tipsFaceValue") ?? undefined,
       realCouponRate: searchParams.get("realCouponRate") ?? undefined,
       couponFrequency:
@@ -108,10 +141,32 @@ export async function load({ locals, request }) {
       maturityDate: searchParams.get("tipsMaturityDate") ?? undefined,
     };
 
+    // Preview (cpiPreview=1): only the REFERENCE_CPI for the field, no
+    // results. valuation-service needs clean_price, so the widget asks
+    // for it only once Price is filled in.
+    if (searchParams.get("cpiPreview") === "1") {
+      if (tipsCpi?.source === "price-service") {
+        const preview = await LookupCurrentCpi(tipsInputs, apiKey);
+        if (preview.value) tipsCpi.value = preview.value;
+        else console.error("REFERENCE_CPI preview failed:", preview.error);
+      }
+      return {
+        ...emptyResults,
+        tipsCpi,
+        streamed: { securities: securitiesPromise },
+        activeTab: "tips",
+        user: locals.user,
+      };
+    }
+
     const tipsResult = await RunTipsValuation(tipsInputs, apiKey);
+    if (tipsCpi?.source === "price-service" && tipsResult.referenceCpi) {
+      tipsCpi.value = tipsResult.referenceCpi;
+    }
     return {
       ...emptyResults,
       tipsResult,
+      tipsCpi,
       streamed: { securities: securitiesPromise },
       activeTab: "tips",
       user: locals.user,

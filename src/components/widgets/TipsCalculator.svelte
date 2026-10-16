@@ -1,8 +1,12 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import type { CashflowEntry } from "$lib/valuation";
+  import type { CpiReading, CurrentCpiState } from "$lib/cpi";
 
   export let result: import("$lib/valuation").TipsValuationResult | null = null;
+  // US-229: the page's Current CPI lookup for the CUSIP and settlement date
+  // (null when there was none). The widget asks for one with `cpilookup`.
+  export let cpi: CurrentCpiState | null = null;
   // #266: `baseCpi` carries the canonical TIPS reference CPI from the
   // Security record (data-sourcing-dev's market-data-inputs PR #17
   // populates it from TreasuryDirect's RefCPIDatedDate). When the user
@@ -37,6 +41,77 @@
   type ReferenceCpiSource = "auto" | "manual" | "empty";
   let referenceCpiSource: ReferenceCpiSource = "empty";
 
+  // US-229: indicator state for Current CPI (CUSIP mode).
+  //   'price-service' — valuation-service's REFERENCE_CPI from the price
+  //                     service's CPI-U readings for the settlement date
+  //   'manual'        — typed by the user, or no reading to use
+  //   'empty'         — no lookup yet
+  // A typed value is never overwritten by a lookup until the CUSIP or
+  // Settlement Date changes. It is sent as reference_cpi and never saved.
+  type CurrentCpiSource = "price-service" | "manual" | "empty";
+  let currentCpiSource: CurrentCpiSource = "empty";
+  let currentCpiTyped = false;
+  let currentCpiNote: string | null = null;
+  let cpiReadings: CpiReading[] = [];
+
+  const dispatch = createEventDispatcher<{ cpilookup: URLSearchParams }>();
+
+  $: applyCpiLookup(cpi);
+
+  function applyCpiLookup(lookup: CurrentCpiState | null): void {
+    if (!lookup || currentCpiTyped) return;
+    currentCpi = lookup.value;
+    currentCpiSource = lookup.source;
+    currentCpiNote = lookup.note;
+    cpiReadings = lookup.readings;
+  }
+
+  function isSettlementDate(value: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
+  }
+
+  // Ask the page to look up Current CPI. With a Price, valuation-service
+  // can also return the REFERENCE_CPI (it requires clean_price).
+  function requestCpiLookup(): void {
+    if (mode !== "cusip" || currentCpiTyped) return;
+    if (!cusip.trim() || !isSettlementDate(settlementDate)) return;
+    const params = new URLSearchParams({
+      tab: "tips",
+      tipsMode: "cusip",
+      tipsCusip: cusip.trim(),
+      settlementDate: settlementDate.trim(),
+    });
+    const p = String(price ?? "").trim();
+    if (p) {
+      params.set("tipsPrice", p);
+      params.set("cpiPreview", "1");
+    }
+    if (referenceCpi) params.set("referenceCpi", String(referenceCpi));
+    dispatch("cpilookup", params);
+  }
+
+  // A new CUSIP or Settlement Date needs a new CPI: drop the old one, typed
+  // or not, and look it up again.
+  function handleCusipOrDateChange(): void {
+    if (mode !== "cusip") return;
+    if (!cusip.trim() || !isSettlementDate(settlementDate)) return;
+    currentCpiTyped = false;
+    currentCpi = "";
+    currentCpiSource = "empty";
+    currentCpiNote = null;
+    cpiReadings = [];
+    requestCpiLookup();
+  }
+
+  function handlePriceChange(): void {
+    if (currentCpiSource === "price-service" && !currentCpi) requestCpiLookup();
+  }
+
+  function handleCurrentCpiInput(): void {
+    currentCpiTyped = true;
+    currentCpiSource = "manual";
+  }
+
   $: filteredSecurities =
     cusip.length > 0
       ? securities
@@ -65,7 +140,12 @@
     showSuggestions = false;
     selectedIndex = -1;
     autofillReferenceCpiFor(value);
+    handleCusipOrDateChange();
   }
+
+  $: pickedSecurity = securities.find(
+    (s) => s.cusip === cusip.trim().toUpperCase()
+  );
 
   // Manual edits to Reference CPI flip the indicator to 'manual' so a
   // subsequent CUSIP pick doesn't silently clobber the override. Empty
@@ -117,7 +197,14 @@
     if (m === "cusip" || m === "manual") mode = m;
 
     price = params.get("tipsPrice") ?? "";
-    currentCpi = params.get("currentCpi") ?? "";
+    // US-229: a looked-up value (from `cpi`) wins over the URL unless the
+    // user typed one, which the URL marks with currentCpiSource=manual.
+    currentCpiTyped =
+      mode === "cusip" && params.get("currentCpiSource") === "manual";
+    if (!cpi || currentCpiTyped) {
+      currentCpi = params.get("currentCpi") ?? "";
+      if (currentCpiTyped) currentCpiSource = "manual";
+    }
     settlementDate = params.get("settlementDate") ?? "";
     cusip = params.get("tipsCusip") ?? "";
     faceValue = params.get("tipsFaceValue") ?? "1000";
@@ -155,7 +242,17 @@
       tipsPrice: price,
     });
 
-    if (currentCpi) params.set("currentCpi", currentCpi);
+    // A price-service value is looked up again by `load` (readings, not
+    // currentCpi); only a typed one travels in the URL, marked so `load`
+    // never overwrites it.
+    const cpiFromPriceService =
+      mode === "cusip" && currentCpiSource === "price-service";
+    if (currentCpi && !cpiFromPriceService) {
+      params.set("currentCpi", currentCpi);
+    }
+    if (mode === "cusip" && currentCpiTyped) {
+      params.set("currentCpiSource", "manual");
+    }
     if (settlementDate) params.set("settlementDate", settlementDate);
 
     if (mode === "cusip") {
@@ -195,10 +292,22 @@
     return isNaN(n) ? val : `${n.toFixed(4)}`;
   }
 
-  function formatCpi(val: string | undefined): string {
+  // Treasury publishes index ratios to 5 decimals.
+  function formatIndexRatio(val: string | undefined): string {
     if (!val) return "—";
     const n = parseFloat(val);
-    return isNaN(n) ? val : `${n.toFixed(3)}`;
+    return isNaN(n) ? val : `${n.toFixed(5)}`;
+  }
+
+  function formatAmount(val: string | undefined): string {
+    if (!val) return "—";
+    const n = parseFloat(val);
+    return isNaN(n)
+      ? val
+      : n.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
   }
 </script>
 
@@ -241,10 +350,12 @@
             }}
             on:blur={handleCusipBlur}
             on:keydown={handleCusipKeydown}
+            on:change={handleCusipOrDateChange}
             on:input={() => {
               showSuggestions = true;
               selectedIndex = -1;
             }}
+            aria-describedby={pickedSecurity ? "tipsCusipNote" : undefined}
           />
           {#if showSuggestions && filteredSecurities.length > 0}
             <ul class="suggestions">
@@ -261,6 +372,34 @@
               {/each}
             </ul>
           {/if}
+          {#if pickedSecurity}
+            <p id="tipsCusipNote" class="field-note">
+              {pickedSecurity.couponRate
+                ? pickedSecurity.couponRate + "%"
+                : "Zero"} — matures {pickedSecurity.maturityDate}
+            </p>
+          {/if}
+        </div>
+        <div class="field-group">
+          <label for="settlementDate">Settlement Date</label>
+          <input
+            id="settlementDate"
+            type="text"
+            bind:value={settlementDate}
+            on:change={handleCusipOrDateChange}
+            placeholder="YYYY-MM-DD"
+          />
+        </div>
+        <div class="field-group">
+          <label for="tipsPrice">Price (% of par)</label>
+          <input
+            id="tipsPrice"
+            type="number"
+            step="0.001"
+            bind:value={price}
+            on:change={handlePriceChange}
+            placeholder="e.g. 98.5"
+          />
         </div>
       {:else}
         <div class="field-group">
@@ -340,34 +479,72 @@
         />
       </div>
       <div class="field-group">
-        <label for="currentCpi">Current CPI</label>
+        {#if mode === "cusip"}
+          <label for="currentCpi">
+            Current CPI (for settlement date)
+            {#if currentCpiSource === "price-service"}
+              <span
+                class="cpi-source cpi-source-auto"
+                title="Reference CPI from valuation-service, interpolated from the price service's CPI-U readings"
+              >
+                from price service
+              </span>
+            {:else if currentCpiSource === "manual"}
+              <span
+                class="cpi-source cpi-source-manual"
+                title="Typed value, sent as the reference CPI. It is not saved."
+              >
+                manual entry
+              </span>
+            {/if}
+          </label>
+        {:else}
+          <label for="currentCpi">Current CPI</label>
+        {/if}
         <input
           id="currentCpi"
           type="number"
           step="0.001"
           bind:value={currentCpi}
+          on:input={handleCurrentCpiInput}
           placeholder="e.g. 312.230"
+          aria-describedby={mode === "cusip" &&
+          (cpiReadings.length > 0 || currentCpiNote)
+            ? "currentCpiNote"
+            : undefined}
         />
+        {#if mode === "cusip" && currentCpiSource === "price-service" && cpiReadings.length > 0}
+          <p id="currentCpiNote" class="field-note">
+            From {cpiReadings
+              .map((r) => `${r.label} (${r.value})`)
+              .join(" and ")}.
+            {#if !currentCpi}Enter Price to see the value.{/if}
+          </p>
+        {:else if mode === "cusip" && currentCpiNote}
+          <p id="currentCpiNote" class="field-note">{currentCpiNote}</p>
+        {/if}
       </div>
-      <div class="field-group">
-        <label for="settlementDate">Settlement Date</label>
-        <input
-          id="settlementDate"
-          type="text"
-          bind:value={settlementDate}
-          placeholder="YYYY-MM-DD"
-        />
-      </div>
-      <div class="field-group">
-        <label for="tipsPrice">Price (% of par)</label>
-        <input
-          id="tipsPrice"
-          type="number"
-          step="0.001"
-          bind:value={price}
-          placeholder="e.g. 98.5"
-        />
-      </div>
+      {#if mode === "manual"}
+        <div class="field-group">
+          <label for="settlementDate">Settlement Date</label>
+          <input
+            id="settlementDate"
+            type="text"
+            bind:value={settlementDate}
+            placeholder="YYYY-MM-DD"
+          />
+        </div>
+        <div class="field-group">
+          <label for="tipsPrice">Price (% of par)</label>
+          <input
+            id="tipsPrice"
+            type="number"
+            step="0.001"
+            bind:value={price}
+            placeholder="e.g. 98.5"
+          />
+        </div>
+      {/if}
 
       <button class="calc-button mt-4" on:click={calculate}> Calculate </button>
     </div>
@@ -384,7 +561,7 @@
             <tr>
               <td class="label">Inflation-Adjusted Principal</td>
               <td class="value"
-                >{formatPrice(result.inflationAdjustedPrincipal)}</td
+                >{formatAmount(result.inflationAdjustedPrincipal)}</td
               >
             </tr>
             <tr>
@@ -409,7 +586,11 @@
             </tr>
             <tr>
               <td class="label">Index Ratio (CPI)</td>
-              <td class="value">{formatCpi(result.indexRatio)}</td>
+              <td class="value">{formatIndexRatio(result.indexRatio)}</td>
+            </tr>
+            <tr>
+              <td class="label">CPI source</td>
+              <td class="value">{result.cpiSource ?? "—"}</td>
             </tr>
           </tbody>
         </table>
@@ -577,6 +758,14 @@
         color: $grey;
       }
     }
+  }
+
+  // US-229: a short hint under a field (coupon/maturity, CPI readings).
+  .field-note {
+    margin: 2px 0 0;
+    font-size: 0.75rem;
+    color: $ltgrey;
+    overflow-wrap: anywhere;
   }
 
   .autocomplete-wrapper {

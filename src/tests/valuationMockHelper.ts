@@ -16,6 +16,8 @@ const MP = {
   PRESENT_VALUE_CASHFLOWS: 12,
   DISCOUNT_MARGIN: 13,
   SPREAD_DURATION: 14,
+  REFERENCE_CPI: 28,
+  INDEX_RATIO: 29,
 };
 
 // M5 / #260: ProductTypeProto enum values. TIPS = 4 in both the old
@@ -331,16 +333,26 @@ export function createValuationClientMock() {
           const periods = bondPeriods;
           if (isTips) {
             const referenceCpi = parseFloat(
-              fromDecimalProto(sec?.getBaseCpi?.()) ?? "256.394"
+              fromDecimalProto(sec?.getTipsExtension?.()?.getBaseCpi?.()) ??
+                "256.394"
             );
-            // Engine-path TIPS carries current_cpi on the TipsInput; legacy
-            // path used a separate cpi_price_input PriceProto. Read from
-            // whichever is set.
-            const currentCpiStr =
-              fromDecimalProto(tipsInput?.getCurrentCpi?.()) ??
-              fromDecimalProto(request.getCpiPriceInput?.()?.getPrice?.()) ??
-              "314.175";
-            const currentCpi = parseFloat(currentCpiStr);
+            // US-229: TipsInput.cpi carries either the reference CPI as-is
+            // or the m-3 / m-2 readings. Like valuation-service, the mock
+            // returns REFERENCE_CPI and INDEX_RATIO; it averages readings
+            // rather than interpolating by day, which is enough for tests.
+            const cpiInput = tipsInput?.getCpi?.();
+            const readings =
+              cpiInput?.getReadings?.()?.getReadingsList?.() ?? [];
+            const currentCpi =
+              readings.length > 0
+                ? readings.reduce(
+                    (sum: number, r: any) =>
+                      sum + parseFloat(fromDecimalProto(r.getValue()) ?? "0"),
+                    0
+                  ) / readings.length
+                : parseFloat(
+                    fromDecimalProto(cpiInput?.getReferenceCpi?.()) ?? "314.175"
+                  );
             const indexRatio = referenceCpi > 0 ? currentCpi / referenceCpi : 1;
             const adjustedPrincipal = faceValue * indexRatio;
             const adjustedCouponPeriodic = (adjustedPrincipal * couponRate) / 2;
@@ -400,6 +412,8 @@ export function createValuationClientMock() {
                     measure: MP.INFLATION_ADJUSTED_PRINCIPAL,
                     value: adjustedPrincipal.toFixed(8),
                   },
+                  { measure: MP.REFERENCE_CPI, value: currentCpi.toFixed(5) },
+                  { measure: MP.INDEX_RATIO, value: indexRatio.toFixed(10) },
                 ],
                 tipsCfs
               )
