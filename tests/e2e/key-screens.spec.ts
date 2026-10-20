@@ -15,7 +15,7 @@
 import { test, devices, type BrowserContextOptions } from "@playwright/test";
 import { SCREENS, VARIANTS } from "../../scripts/checks/verify-screenshots.mjs";
 import {
-  ensureTestUserSession,
+  e2eSessionOrSkip,
   skipUnlessE2ECredentials,
   type StorageState,
 } from "./fixtures/auth";
@@ -67,7 +67,8 @@ test.beforeAll(async ({ playwright }) => {
   deadline = Date.now() + CAPTURE_BUDGET_MS;
   // Skips the file, naming the reason, when the e2e API key is missing or
   // rejected.
-  const state = await ensureTestUserSession(
+  const state = await e2eSessionOrSkip(
+    test,
     playwright,
     test.info().project.use.baseURL!
   );

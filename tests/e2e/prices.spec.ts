@@ -12,7 +12,7 @@
  */
 import { test, expect } from "@playwright/test";
 import {
-  ensureTestUserSession,
+  e2eSessionOrSkip,
   skipUnlessE2ECredentials,
   type StorageState,
 } from "./fixtures/auth";
@@ -30,7 +30,8 @@ test.describe("/data/prices?type=ticker&id=AAPL (US-209)", () => {
 
   let session: StorageState;
   test.beforeAll(async ({ playwright }) => {
-    session = await ensureTestUserSession(
+    session = await e2eSessionOrSkip(
+      test,
       playwright,
       test.info().project.use.baseURL!
     );
@@ -66,7 +67,7 @@ test.describe("/data/prices", () => {
   // Uses the setup project's session; skips, naming the reason, when the
   // e2e API key is missing or rejected.
   test.beforeAll(async ({ playwright }) => {
-    await ensureTestUserSession(playwright, test.info().project.use.baseURL!);
+    await e2eSessionOrSkip(test, playwright, test.info().project.use.baseURL!);
   });
 
   test("default landing renders the AAPL chart and price table", async ({

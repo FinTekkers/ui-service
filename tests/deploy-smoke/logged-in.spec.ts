@@ -22,7 +22,7 @@ import {
   type Page,
 } from "@playwright/test";
 import {
-  ensureTestUserSession,
+  e2eSessionOrSkip,
   skipUnlessE2ECredentials,
   type StorageState,
 } from "../e2e/fixtures/auth";
@@ -40,10 +40,11 @@ type YearMonth = { year: number; month: number };
 
 let session: StorageState;
 
-// The session check (ensureTestUserSession's GET) uses its own request
+// The session check (e2eSessionOrSkip's GET) uses its own request
 // context, so it is outside the per-test read-only guard below.
 test.beforeAll(async ({ playwright }) => {
-  session = await ensureTestUserSession(
+  session = await e2eSessionOrSkip(
+    test,
     playwright,
     test.info().project.use.baseURL!
   );

@@ -16,7 +16,7 @@ import {
 } from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy.js";
 import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier.js";
 import {
-  ensureTestUserSession,
+  e2eSessionOrSkip,
   skipUnlessE2ECredentials,
   type StorageState,
 } from "./fixtures/auth";
@@ -35,7 +35,8 @@ test.use({
 let session: StorageState;
 
 test.beforeAll(async ({ playwright }) => {
-  session = await ensureTestUserSession(
+  session = await e2eSessionOrSkip(
+    test,
     playwright,
     test.info().project.use.baseURL!
   );

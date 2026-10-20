@@ -11,7 +11,7 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import {
-  ensureTestUserSession,
+  e2eSessionOrSkip,
   skipUnlessE2ECredentials,
   type StorageState,
 } from "./fixtures/auth";
@@ -54,7 +54,8 @@ let session: StorageState;
 test.beforeAll(async ({ playwright }) => {
   // Skips here, naming the reason, if the key is missing or rejected —
   // rather than as a URL timeout on the /login redirect below.
-  session = await ensureTestUserSession(
+  session = await e2eSessionOrSkip(
+    test,
     playwright,
     test.info().project.use.baseURL!
   );

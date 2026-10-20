@@ -10,6 +10,7 @@ vi.mock("@playwright/test", () => ({ test: { skip: vi.fn() } }));
 
 import {
   E2E_KEY_MISSING_OR_EXPIRED,
+  e2eSessionOrSkip,
   e2eSessionRejection,
   e2eSkipReason,
   e2eStorageState,
@@ -188,33 +189,100 @@ describe("e2e session", () => {
     }
   );
 
-  test("ensureTestUserSession with an accepted key never calls test.skip", async () => {
-    // test.skip throws outside a test even with a false condition, and
-    // scripts/checks/e2e.sh calls ensureTestUserSession from plain node.
-    const saved = { ...process.env };
-    Object.assign(process.env, BOTH);
+  function withEnv(
+    env: Record<string, string | undefined>,
+    fn: () => Promise<void>
+  ) {
+    const saved = {
+      FT_E2E_EMAIL: process.env.FT_E2E_EMAIL,
+      FT_E2E_API_KEY: process.env.FT_E2E_API_KEY,
+    };
+    const set = (vars: Record<string, string | undefined>) => {
+      for (const [k, v] of Object.entries(vars)) {
+        if (v === undefined) delete process.env[k];
+        else process.env[k] = v;
+      }
+    };
+    set(env);
+    return fn().finally(() => set(saved));
+  }
+
+  test("ensureTestUserSession never calls test.skip (plain node, e2e.sh)", async () => {
+    // Outside a test Playwright's test.skip throws, even with a false
+    // condition; scripts/checks/e2e.sh calls this from plain node.
     const skip = vi.mocked(playwrightTest.skip);
     skip.mockClear();
+    skip.mockImplementation(() => {
+      throw new Error("test.skip() can only be called inside test");
+    });
     try {
-      const fake = fakePlaywright(200, "<table>CPI rows</table>");
-      expect(
-        await ensureTestUserSession(fake.playwright, "http://127.0.0.1:4203")
-      ).toEqual(state);
+      await withEnv(BOTH, async () => {
+        const fake = fakePlaywright(500);
+        expect(
+          await ensureTestUserSession(fake.playwright, "http://127.0.0.1:4203")
+        ).toEqual(state);
+        // No login, and no probe: it only builds the cookies.
+        expect(fake.get).not.toHaveBeenCalled();
+      });
+      for (const name of ["FT_E2E_EMAIL", "FT_E2E_API_KEY"]) {
+        await withEnv({ ...BOTH, [name]: undefined }, async () => {
+          const err = await ensureTestUserSession(
+            fakePlaywright(200).playwright,
+            "http://127.0.0.1:4203"
+          ).catch((e: Error) => e);
+          expect(err).toBeInstanceOf(Error);
+          expect((err as Error).message).toContain(`${name} is not set`);
+          expect((err as Error).message).not.toContain(KEY_SENTINEL);
+          expect((err as Error).message).not.toContain(EMAIL_SENTINEL);
+        });
+      }
       expect(skip).not.toHaveBeenCalled();
+    } finally {
+      skip.mockReset();
+    }
+  });
 
-      await ensureTestUserSession(
+  test("e2eSessionOrSkip skips via the given test, naming the reason", async () => {
+    const t = { skip: vi.fn() };
+    await withEnv(BOTH, async () => {
+      expect(
+        await e2eSessionOrSkip(
+          t as any,
+          fakePlaywright(200, "<table>CPI rows</table>").playwright,
+          "http://127.0.0.1:4203"
+        )
+      ).toEqual(state);
+      expect(t.skip).toHaveBeenLastCalledWith(false, "");
+
+      t.skip.mockClear();
+      await e2eSessionOrSkip(
+        t as any,
         fakePlaywright(500).playwright,
         "http://127.0.0.1:4203"
       );
-      expect(skip).toHaveBeenCalledWith(
+      expect(t.skip).toHaveBeenLastCalledWith(
         true,
         expect.stringContaining(E2E_KEY_MISSING_OR_EXPIRED)
       );
-    } finally {
-      process.env.FT_E2E_EMAIL = saved.FT_E2E_EMAIL;
-      process.env.FT_E2E_API_KEY = saved.FT_E2E_API_KEY;
-      if (saved.FT_E2E_EMAIL === undefined) delete process.env.FT_E2E_EMAIL;
-      if (saved.FT_E2E_API_KEY === undefined) delete process.env.FT_E2E_API_KEY;
-    }
+    });
+    // A missing variable: the real test.skip(true) throws to end the test
+    // there, before the session is built.
+    t.skip.mockReset();
+    t.skip.mockImplementation((cond: boolean) => {
+      if (cond) throw new Error("skipped");
+    });
+    await withEnv({ ...BOTH, FT_E2E_API_KEY: undefined }, async () => {
+      await expect(
+        e2eSessionOrSkip(
+          t as any,
+          fakePlaywright(200).playwright,
+          "http://127.0.0.1:4203"
+        )
+      ).rejects.toThrow("skipped");
+      expect(t.skip).toHaveBeenCalledWith(
+        true,
+        expect.stringContaining("FT_E2E_API_KEY is not set")
+      );
+    });
   });
 });

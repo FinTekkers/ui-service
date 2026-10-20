@@ -13,7 +13,7 @@ import { mkdirSync, writeFileSync } from "fs";
 import { dirname } from "path";
 import {
   STORAGE_STATE_PATH,
-  ensureTestUserSession,
+  e2eSessionOrSkip,
   skipUnlessE2ECredentials,
 } from "./fixtures/auth";
 
@@ -22,7 +22,8 @@ skipUnlessE2ECredentials(setup);
 setup.use({ trace: "off", screenshot: "off", video: "off" });
 
 setup("authenticate", async ({ playwright }) => {
-  const state = await ensureTestUserSession(
+  const state = await e2eSessionOrSkip(
+    setup,
     playwright,
     setup.info().project.use.baseURL!
   );

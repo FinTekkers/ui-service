@@ -18,11 +18,10 @@
  * `auth.setup.ts` and scripts/checks/e2e.sh write the session to
  * STORAGE_STATE_PATH, a gitignored temp file (`/playwright/.auth/`).
  */
-import {
-  test,
-  type APIRequestContext,
-  type PlaywrightWorkerArgs,
-  type TestType,
+import type {
+  APIRequestContext,
+  PlaywrightWorkerArgs,
+  TestType,
 } from "@playwright/test";
 import * as path from "path";
 
@@ -134,26 +133,31 @@ export async function e2eSessionRejection(
 
 /**
  * The e2e user's session for `baseURL`, from FT_E2E_EMAIL and
- * FT_E2E_API_KEY. Call from a hook or test: skips the current test (or,
- * from beforeAll, its group) when a variable is missing or the key is
- * rejected. Never logs in, so concurrent runs can't rotate the key.
+ * FT_E2E_API_KEY. Never logs in, so concurrent runs can't rotate the key,
+ * and never calls test.skip: scripts/checks/e2e.sh calls it from plain node,
+ * where a missing variable throws (naming it) and exits non-zero.
  */
 export async function ensureTestUserSession(
-  playwright: PlaywrightWorkerArgs["playwright"],
+  _playwright: Pick<PlaywrightWorkerArgs["playwright"], "request">,
   baseURL: string
 ): Promise<StorageState> {
-  skipFor(e2eSkipReason());
-  const state = e2eStorageState(baseURL, getE2ECredentials());
-  skipFor(await e2eSessionRejection(playwright, baseURL, state));
-  return state;
+  return e2eStorageState(baseURL, getE2ECredentials());
 }
 
 /**
- * test.skip with `reason` when there is one. test.skip throws outside a
- * test even when its condition is false, and scripts/checks/e2e.sh calls
- * ensureTestUserSession from plain node to save the session.
+ * ensureTestUserSession for Playwright hooks and tests: skips via `t` (from
+ * beforeAll, the whole group) when a variable is missing or the app rejects
+ * the key, naming the reason.
  */
-function skipFor(reason: string | null): void {
-  if (reason === null) return;
-  test.skip(reason !== null, reason);
+export async function e2eSessionOrSkip(
+  t: TestType<any, any>,
+  playwright: PlaywrightWorkerArgs["playwright"],
+  baseURL: string
+): Promise<StorageState> {
+  const missing = e2eSkipReason();
+  t.skip(missing !== null, missing ?? "");
+  const state = await ensureTestUserSession(playwright, baseURL);
+  const rejection = await e2eSessionRejection(playwright, baseURL, state);
+  t.skip(rejection !== null, rejection ?? "");
+  return state;
 }

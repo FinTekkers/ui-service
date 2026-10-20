@@ -59,10 +59,12 @@ provisioned once (BS-31) and Horizon passes it in (HZ-494):
 temp file under the gitignored `/playwright/.auth/`. Every test in the
 `chromium` project picks that up via `storageState` in
 `playwright.config.ts`. Specs that build their own session call
-`ensureTestUserSession` from `fixtures/auth.ts`.
+`e2eSessionOrSkip` from `fixtures/auth.ts`. `ensureTestUserSession` builds
+the same session without ever calling `test.skip`, so plain node (e.g.
+`scripts/checks/e2e.sh`) can call it; a missing variable throws, naming it.
 
 If a variable is unset, or the app can't load data with the key,
-`auth.setup.ts` and the specs that call `ensureTestUserSession` skip with
+`auth.setup.ts` and the specs that call `e2eSessionOrSkip` skip with
 "e2e API key missing or expired; re-run BS-31's provisioning" and the
 variable's name. Messages hold names only, never values. Specs that use the
 session turn traces, screenshots and videos off: they would record the cookie.
