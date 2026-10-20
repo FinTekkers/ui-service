@@ -32,7 +32,7 @@ const SIGNUP_CODE = "S1GNUP";
 
 // Unique email per test run to avoid collisions
 const RUN_ID = Date.now();
-const TEST_EMAIL = `e2e-${RUN_ID}@fintekkers-test.local`;
+const TEST_EMAIL = `e2e-${RUN_ID}@example.invalid`;
 const TEST_PASSWORD = "TestPass123";
 const TEST_NAME = "E2E Test User";
 
@@ -114,9 +114,19 @@ function grpcService(
 // ---------------------------------------------------------------------------
 // Connectivity check
 // ---------------------------------------------------------------------------
+// US-233: these tests register users through the broker. Never against a
+// shared broker: they run only with FT_AUTH_REGISTER_TESTS=1, meant for a
+// disposable local broker.
+const REGISTER_TESTS_ENABLED = process.env.FT_AUTH_REGISTER_TESTS === "1";
 let brokerAvailable = false;
 
 beforeAll(() => {
+  if (!REGISTER_TESTS_ENABLED) {
+    console.warn(
+      "FT_AUTH_REGISTER_TESTS is not 1 — auth E2E tests skipped (they register users; disposable local broker only)"
+    );
+  }
+  if (!REGISTER_TESTS_ENABLED) return;
   try {
     execSync(`grpcurl -plaintext ${BROKER_HOST} list`, { timeout: 3000 });
     brokerAvailable = true;
@@ -153,7 +163,7 @@ describe("Auth.Register", () => {
     if (!brokerAvailable) return;
 
     const result = grpc("fintekkers.services.auth.Auth", "Register", {
-      email: `bad-code-${RUN_ID}@fintekkers-test.local`,
+      email: `bad-code-${RUN_ID}@example.invalid`,
       password: TEST_PASSWORD,
       name: "Bad Code",
       signup_code: "WRONG_CODE",
@@ -184,7 +194,7 @@ describe("Auth.Register", () => {
     if (!brokerAvailable) return;
 
     const result = grpc("fintekkers.services.auth.Auth", "Register", {
-      email: `no-code-${RUN_ID}@fintekkers-test.local`,
+      email: `no-code-${RUN_ID}@example.invalid`,
       password: TEST_PASSWORD,
       name: "No Code",
       signup_code: "",
@@ -197,7 +207,7 @@ describe("Auth.Register", () => {
     if (!brokerAvailable) return;
 
     const result = grpc("fintekkers.services.auth.Auth", "Register", {
-      email: `empty-pw-${RUN_ID}@fintekkers-test.local`,
+      email: `empty-pw-${RUN_ID}@example.invalid`,
       password: "",
       name: "Empty PW",
       signup_code: SIGNUP_CODE,
@@ -247,7 +257,7 @@ describe("Auth.Login", () => {
     if (!brokerAvailable) return;
 
     const result = grpc("fintekkers.services.auth.Auth", "Login", {
-      email: "nobody-ever@fintekkers-test.local",
+      email: "nobody-ever@example.invalid",
       password: TEST_PASSWORD,
     });
 
@@ -386,7 +396,7 @@ describe("API Key lifecycle", () => {
     if (!brokerAvailable) return;
 
     // Register a second user
-    const email2 = `e2e-unique-${RUN_ID}@fintekkers-test.local`;
+    const email2 = `e2e-unique-${RUN_ID}@example.invalid`;
     const reg = grpc("fintekkers.services.auth.Auth", "Register", {
       email: email2,
       password: TEST_PASSWORD,

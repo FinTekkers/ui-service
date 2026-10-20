@@ -15,15 +15,28 @@ import {
   allInstrumentTypes,
 } from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy.js";
 import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier.js";
-import { ensureTestUserSession, type StorageState } from "./fixtures/auth";
+import {
+  e2eSessionOrSkip,
+  skipUnlessE2ECredentials,
+  type StorageState,
+} from "./fixtures/auth";
+
+skipUnlessE2ECredentials(test);
 
 // Never load the setup project's file; the session comes from beforeAll.
-test.use({ storageState: { cookies: [], origins: [] } });
+// Traces and failure screenshots would record the session cookie.
+test.use({
+  storageState: { cookies: [], origins: [] },
+  trace: "off",
+  screenshot: "off",
+  video: "off",
+});
 
 let session: StorageState;
 
 test.beforeAll(async ({ playwright }) => {
-  session = await ensureTestUserSession(
+  session = await e2eSessionOrSkip(
+    test,
     playwright,
     test.info().project.use.baseURL!
   );

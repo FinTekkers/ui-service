@@ -15,7 +15,20 @@
 # First (US-224) it logs the ledger-models version under test (install.sh
 # refreshes it within package.json's range) and runs build-local.sh, the
 # box's `python build.py --local` build, end to end in a fresh clone.
+#
+# The e2e user's session (US-233) is FT_E2E_API_KEY, provisioned by BS-31
+# and passed in by Horizon (HZ-494), set as the ft_api_key cookie with
+# ft_user_email from FT_E2E_EMAIL. No test logs in: a login rotates the key
+# and breaks any other run using it. A missing variable fails the check.
 set -euo pipefail
+missing=0
+for var in FT_E2E_EMAIL FT_E2E_API_KEY; do
+  if [ -z "${!var:-}" ]; then
+    echo "e2e: $var is not set (Horizon provides it, HZ-494; e2e API key missing or expired? re-run BS-31's provisioning)" >&2
+    missing=1
+  fi
+done
+[ "$missing" = 0 ] || exit 1
 npm ls @fintekkers/ledger-models
 bash scripts/checks/build-local.sh
 
@@ -65,10 +78,10 @@ REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
 FILES_REPORT="$(mktemp -t e2e-files-report.XXXXXX.json)"
 REGRESSION_REPORT="$(mktemp -t e2e-regression-report.XXXXXX.json)"
 LOG="$(mktemp -t e2e-server.XXXXXX.log)"
-# The chromium project's storageState (playwright.config.ts).
+# The chromium project's storageState (playwright.config.ts): a temp file
+# under the gitignored /playwright/.auth/, deleted on exit.
 AUTH_STATE=playwright/.auth/user.json
-AUTH_BACKUP="$(mktemp -t e2e-auth-backup.XXXXXX.json)"
-if [ -f "$AUTH_STATE" ]; then cp "$AUTH_STATE" "$AUTH_BACKUP"; fi
+rm -f "$AUTH_STATE"
 
 # Host backends (see the fintekkers-ui unit); overridable for local runs.
 export BROKER_HOST="${BROKER_HOST:-127.0.0.1:8085}"
@@ -94,13 +107,9 @@ cleanup() {
   kill "$SERVER_PID" 2>/dev/null || true
   wait "$SERVER_PID" 2>/dev/null || true
   rm -f "$REPORT" "$FILES_REPORT" "$REGRESSION_REPORT" "$LOG"
-  # The session written below is gitignored but not prettier-clean; don't
-  # leave it for the lint check. Put back any session that was there before.
-  if [ -s "$AUTH_BACKUP" ]; then
-    mv -f "$AUTH_BACKUP" "$AUTH_STATE"
-  else
-    rm -f "$AUTH_STATE" "$AUTH_BACKUP"
-  fi
+  # The session written below is gitignored but not prettier-clean, and it
+  # holds the API key; never leave it behind.
+  rm -f "$AUTH_STATE"
 }
 trap cleanup EXIT
 
@@ -122,7 +131,7 @@ curl -sf -o /dev/null "$BASE_URL/login" || {
 # Stale PNGs from an earlier run must never reach the published set.
 rm -rf e2e/__screenshots__
 
-# --no-deps: the specs log in themselves, so the grpcurl-based setup project
+# --no-deps: the specs build the session themselves, so the setup project
 # isn't needed.
 PLAYWRIGHT_BASE_URL="$BASE_URL" PLAYWRIGHT_JSON_OUTPUT_FILE="$REPORT" \
   npx playwright test "${SPECS[@]}" --project=chromium --no-deps --reporter=list,json
@@ -164,6 +173,12 @@ else
   echo "e2e: screenshots: INCOMPLETE (warn-only, see above)" >&2
 fi
 
+# The session file must never reach the published screenshots.
+if [ -n "$(find e2e/__screenshots__ \( -name user.json -o -path '*/.auth*' \) 2>/dev/null)" ]; then
+  echo "e2e: FAIL session file (.auth/ or user.json) under e2e/__screenshots__" >&2
+  exit 1
+fi
+
 # Its own run, so it only starts once every capture above has finished. It
 # must run and pass: a skip here means the env flag didn't reach it.
 E2E_KEY_SCREENS_FILES=1 PLAYWRIGHT_BASE_URL="$BASE_URL" \
@@ -176,16 +191,26 @@ node -e '
   if (s.expected < 1 || s.skipped > 0 || s.unexpected > 0) process.exit(1);
 ' "$FILES_REPORT"
 
-# Log the test user in through the app and save the session where the
-# chromium project's storageState expects it.
+# Save the e2e user's session (no login) where the chromium project's
+# storageState expects it. The key comes from the environment, never argv.
 node --input-type=module -e '
   import { request } from "@playwright/test";
-  import { STORAGE_STATE_PATH, ensureTestUserSession } from "./tests/e2e/fixtures/auth.ts";
+  import {
+    STORAGE_STATE_PATH,
+    e2eSessionRejection,
+    e2eStorageState,
+    getE2ECredentials,
+  } from "./tests/e2e/fixtures/auth.ts";
   import { mkdirSync, writeFileSync } from "fs";
   import { dirname } from "path";
-  const state = await ensureTestUserSession({ request }, process.argv[1]);
+  const state = e2eStorageState(process.argv[1], getE2ECredentials());
+  const rejection = await e2eSessionRejection({ request }, process.argv[1], state);
+  if (rejection) {
+    console.error(`e2e: ${rejection}`);
+    process.exit(1);
+  }
   mkdirSync(dirname(STORAGE_STATE_PATH), { recursive: true });
-  writeFileSync(STORAGE_STATE_PATH, JSON.stringify(state));
+  writeFileSync(STORAGE_STATE_PATH, JSON.stringify(state), { mode: 0o600 });
 ' "$BASE_URL"
 
 PLAYWRIGHT_BASE_URL="$BASE_URL" PLAYWRIGHT_JSON_OUTPUT_FILE="$REGRESSION_REPORT" \

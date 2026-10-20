@@ -14,7 +14,11 @@
  */
 import { test, devices, type BrowserContextOptions } from "@playwright/test";
 import { SCREENS, VARIANTS } from "../../scripts/checks/verify-screenshots.mjs";
-import { ensureTestUserSession, type StorageState } from "./fixtures/auth";
+import {
+  e2eSessionOrSkip,
+  skipUnlessE2ECredentials,
+  type StorageState,
+} from "./fixtures/auth";
 import { captureKeyScreen } from "./fixtures/screenshot";
 
 const CAPTURE_BUDGET_MS = 75_000;
@@ -22,8 +26,16 @@ const CAPTURE_BUDGET_MS = 75_000;
 // so a slow screen can't time the test out.
 test.setTimeout(CAPTURE_BUDGET_MS + 45_000);
 
+skipUnlessE2ECredentials(test);
+
 // Each screen gets its own context below; never load the setup project's file.
-test.use({ storageState: { cookies: [], origins: [] } });
+// Traces and failure screenshots would record the session cookie.
+test.use({
+  storageState: { cookies: [], origins: [] },
+  trace: "off",
+  screenshot: "off",
+  video: "off",
+});
 
 // Keep the default browser (chromium) and small PNGs.
 const { defaultBrowserType: _browser, ...iPhone } = devices["iPhone 13"];
@@ -53,22 +65,17 @@ let deadline = 0;
 
 test.beforeAll(async ({ playwright }) => {
   deadline = Date.now() + CAPTURE_BUDGET_MS;
-  try {
-    const state = await ensureTestUserSession(
-      playwright,
-      test.info().project.use.baseURL!
-    );
-    const cookie = state.cookies.find((c) => c.name === "ft_api_key");
-    apiKey = cookie && decodeURIComponent(cookie.value);
-    // Only once the key is known, so the full-key guard is never off.
-    session = state;
-  } catch (err) {
-    console.warn(
-      `key screens: no session, only login is captured: ${
-        (err as Error).message
-      }`
-    );
-  }
+  // Skips the file, naming the reason, when the e2e API key is missing or
+  // rejected.
+  const state = await e2eSessionOrSkip(
+    test,
+    playwright,
+    test.info().project.use.baseURL!
+  );
+  const cookie = state.cookies.find((c) => c.name === "ft_api_key");
+  apiKey = cookie && decodeURIComponent(cookie.value);
+  // Only once the key is known, so the full-key guard is never off.
+  session = state;
 });
 
 for (const variant of VARIANTS) {

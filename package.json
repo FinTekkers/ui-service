@@ -24,7 +24,8 @@
 		"db:check": "drizzle-kit check:sqlite",
 		"db:studio": "drizzle-kit studio",
 		"prepare": "husky",
-		"test:smoke:prod": "playwright test -c playwright.smoke.config.ts"
+		"test:smoke:prod": "playwright test -c playwright.smoke.config.ts",
+		"test:smoke:deploy": "playwright test -c playwright.deploy-smoke.config.ts"
 	},
 	"dependencies": {
 		"@auth/core": "^0.27.0",

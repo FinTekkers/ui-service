@@ -51,7 +51,7 @@ const PROTO_PATH = path.resolve(
 const SIGNUP_CODE = "S1GNUP";
 
 const RUN_ID = Date.now();
-const TEST_EMAIL = `e2e-prices-${RUN_ID}@fintekkers-test.local`;
+const TEST_EMAIL = `e2e-prices-${RUN_ID}@example.invalid`;
 const TEST_PASSWORD = "PriceTest123";
 const TEST_NAME = "Prices E2E";
 
@@ -191,18 +191,28 @@ function uuidHexToString(uuidHex: string): string {
 // ---------------------------------------------------------------------------
 // Service availability
 // ---------------------------------------------------------------------------
+// US-233: these tests register users through the broker. Never against a
+// shared broker: they run only with FT_AUTH_REGISTER_TESTS=1, meant for a
+// disposable local broker.
+const REGISTER_TESTS_ENABLED = process.env.FT_AUTH_REGISTER_TESTS === "1";
 let brokerAvailable = false;
 let uiAvailable = false;
 let apiKey: string | null = null;
 
 beforeAll(async () => {
-  try {
-    execSync(`grpcurl -plaintext ${BROKER_HOST} list`, { timeout: 3000 });
-    brokerAvailable = true;
-  } catch {
+  if (!REGISTER_TESTS_ENABLED) {
     console.warn(
-      "BROKER NOT AVAILABLE on port 80 — prices E2E tests will be skipped"
+      "FT_AUTH_REGISTER_TESTS is not 1 — prices E2E tests that need a user skipped (they register users; disposable local broker only)"
     );
+  } else {
+    try {
+      execSync(`grpcurl -plaintext ${BROKER_HOST} list`, { timeout: 3000 });
+      brokerAvailable = true;
+    } catch {
+      console.warn(
+        "BROKER NOT AVAILABLE on port 80 — prices E2E tests will be skipped"
+      );
+    }
   }
 
   if (brokerAvailable) {

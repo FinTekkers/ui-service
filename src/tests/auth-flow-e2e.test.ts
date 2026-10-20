@@ -34,7 +34,7 @@ const AUTH_PROTO = "auth.proto";
 const SIGNUP_CODE = "S1GNUP";
 
 const RUN_ID = Date.now();
-const REG_EMAIL = `e2e-flow-${RUN_ID}@fintekkers-test.local`;
+const REG_EMAIL = `e2e-flow-${RUN_ID}@example.invalid`;
 const REG_PASSWORD = "FlowTest123";
 const REG_NAME = "Flow Test";
 
@@ -206,10 +206,19 @@ function grpcService(
 // ---------------------------------------------------------------------------
 // Connectivity checks
 // ---------------------------------------------------------------------------
+// US-233: these tests register users through the broker. Never against a
+// shared broker: they run only with FT_AUTH_REGISTER_TESTS=1, meant for a
+// disposable local broker.
+const REGISTER_TESTS_ENABLED = process.env.FT_AUTH_REGISTER_TESTS === "1";
 let uiAvailable = false;
 let brokerAvailable = false;
 
 beforeAll(async () => {
+  if (!REGISTER_TESTS_ENABLED) {
+    console.warn(
+      "FT_AUTH_REGISTER_TESTS is not 1 — register and broker E2E tests skipped (they register users; disposable local broker only)"
+    );
+  }
   try {
     const res = await httpGet("/login");
     uiAvailable = res.status === 200;
@@ -219,6 +228,7 @@ beforeAll(async () => {
     );
   }
 
+  if (!REGISTER_TESTS_ENABLED) return;
   try {
     execSync(`grpcurl -plaintext ${BROKER_HOST} list`, { timeout: 3000 });
     brokerAvailable = true;
@@ -347,7 +357,7 @@ describe("AC2: Email/password registration", () => {
     if (!uiAvailable || !brokerAvailable) return;
 
     const res = await httpPost("/register?/register", {
-      email: `bad-code-flow-${RUN_ID}@fintekkers-test.local`,
+      email: `bad-code-flow-${RUN_ID}@example.invalid`,
       password: REG_PASSWORD,
       confirmpassword: REG_PASSWORD,
       firstname: "Bad",
@@ -361,10 +371,10 @@ describe("AC2: Email/password registration", () => {
   });
 
   test("POST /register?/register with password mismatch fails client-side validation", async () => {
-    if (!uiAvailable) return;
+    if (!uiAvailable || !REGISTER_TESTS_ENABLED) return;
 
     const res = await httpPost("/register?/register", {
-      email: `mismatch-${RUN_ID}@fintekkers-test.local`,
+      email: `mismatch-${RUN_ID}@example.invalid`,
       password: REG_PASSWORD,
       confirmpassword: "DifferentPassword123!",
       firstname: "Mis",
@@ -378,10 +388,10 @@ describe("AC2: Email/password registration", () => {
   });
 
   test("POST /register?/register with short password fails validation", async () => {
-    if (!uiAvailable) return;
+    if (!uiAvailable || !REGISTER_TESTS_ENABLED) return;
 
     const res = await httpPost("/register?/register", {
-      email: `short-pw-${RUN_ID}@fintekkers-test.local`,
+      email: `short-pw-${RUN_ID}@example.invalid`,
       password: "abc",
       confirmpassword: "abc",
       firstname: "Short",
@@ -451,7 +461,7 @@ describe("AC3: Email/password login", () => {
     if (!uiAvailable || !brokerAvailable) return;
 
     const res = await httpPost("/login?/login", {
-      email: "nobody-ever-flow@fintekkers-test.local",
+      email: "nobody-ever-flow@example.invalid",
       password: REG_PASSWORD,
     });
 
@@ -583,7 +593,7 @@ describe("AC5: All backend gRPC requests include API key", () => {
     if (!brokerAvailable) return;
 
     // Register a dedicated user via gRPC for this test
-    const grpcEmail = `e2e-grpc-${RUN_ID}@fintekkers-test.local`;
+    const grpcEmail = `e2e-grpc-${RUN_ID}@example.invalid`;
     grpc("fintekkers.services.auth.Auth", "Register", {
       email: grpcEmail,
       password: REG_PASSWORD,
