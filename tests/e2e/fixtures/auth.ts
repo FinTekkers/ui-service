@@ -23,6 +23,7 @@ import type {
   PlaywrightWorkerArgs,
   TestType,
 } from "@playwright/test";
+import { existsSync, readFileSync } from "fs";
 import * as path from "path";
 
 export const STORAGE_STATE_PATH = path.resolve("playwright/.auth/user.json");
@@ -160,4 +161,24 @@ export async function e2eSessionOrSkip(
   const rejection = await e2eSessionRejection(playwright, baseURL, state);
   t.skip(rejection !== null, rejection ?? "");
   return state;
+}
+
+/**
+ * The run's saved session when STORAGE_STATE_PATH holds an `ft_api_key`
+ * cookie, else a fresh ensureTestUserSession login. Every broker Login
+ * issues a new key and revokes the old one, so a spec that logs in again
+ * mid-run breaks every later spec that reads the saved session (the
+ * regression run in scripts/checks/e2e.sh writes it once, up front).
+ */
+export async function savedOrNewTestUserSession(
+  playwright: PlaywrightWorkerArgs["playwright"],
+  baseURL: string
+): Promise<StorageState> {
+  if (existsSync(STORAGE_STATE_PATH)) {
+    const saved: StorageState = JSON.parse(
+      readFileSync(STORAGE_STATE_PATH, "utf-8")
+    );
+    if (saved.cookies?.some((c) => c.name === "ft_api_key")) return saved;
+  }
+  return ensureTestUserSession(playwright, baseURL);
 }

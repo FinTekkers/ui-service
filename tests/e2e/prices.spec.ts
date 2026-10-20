@@ -25,7 +25,9 @@ test.use({ trace: "off", screenshot: "off", video: "off" });
 // Before @fintekkers/ledger-models 0.4.31 it called ledger-service on 8082 and
 // the page showed "UNIMPLEMENTED: Method not found: …Price/Search".
 test.describe("/data/prices?type=ticker&id=AAPL (US-209)", () => {
-  // Logs in itself, so it also runs with --no-deps (no setup project).
+  // Reuses the run's saved session, or logs in itself when there is none,
+  // so it also runs with --no-deps (no setup project). A fresh login here
+  // would revoke the saved session's key for the specs that follow.
   test.use({ storageState: { cookies: [], origins: [] } });
 
   let session: StorageState;
