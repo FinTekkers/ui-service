@@ -14,12 +14,17 @@
   let activeTab = tabMap[data.activeTab] ?? "Bond Pricer";
 
   // The securities list is streamed; the TIPS Pricer needs it for the
-  // CUSIP suggestions and the coupon/maturity note (US-229).
-  let tipsSecurities: Awaited<
-    typeof data.streamed.securities
-  >["tipsSecurities"] = [];
+  // CUSIP suggestions and the coupon/maturity note (US-229). US-237: the
+  // Bond and FRN Pricers' suggestions come from the same stream.
+  type Streamed = Awaited<typeof data.streamed.securities>;
+  let bondSecurities: Streamed["bondSecurities"] = [];
+  let tipsSecurities: Streamed["tipsSecurities"] = [];
+  let frnSecurities: Streamed["frnSecurities"] = [];
   $: Promise.resolve(data.streamed?.securities).then((s) => {
-    if (s) tipsSecurities = s.tipsSecurities;
+    if (!s) return;
+    bondSecurities = s.bondSecurities;
+    tipsSecurities = s.tipsSecurities;
+    frnSecurities = s.frnSecurities;
   });
 
   // US-229: rerun `load` for the Current CPI lookup. Widget state survives
@@ -49,7 +54,7 @@
 </div>
 
 {#if activeTab === "Bond Pricer"}
-  <BondCalculator result={data.result} securities={data.bondSecurities} />
+  <BondCalculator result={data.result} securities={bondSecurities} />
 {:else if activeTab === "TIPS Pricer"}
   <TipsCalculator
     result={data.tipsResult}
@@ -58,7 +63,7 @@
     on:cpilookup={lookupCpi}
   />
 {:else if activeTab === "FRN Pricer"}
-  <FrnCalculator result={data.frnResult} securities={data.frnSecurities} />
+  <FrnCalculator result={data.frnResult} securities={frnSecurities} />
 {/if}
 
 <style lang="scss">
