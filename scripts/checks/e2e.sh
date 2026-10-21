@@ -65,6 +65,8 @@ REGRESSION_SPECS=(
   tests/e2e/cpi-index-page-data.spec.ts
   # US-229: Current CPI from the price service's CPI-U readings.
   tests/e2e/tips-calculator-current-cpi.spec.ts
+  # US-237: the CUSIP dropdowns list securities; a TIPS pick fills Reference CPI.
+  tests/e2e/calculators-cusip-dropdowns.spec.ts
 )
 # Tests that fail on the host for lack of data, logged as "known" without
 # failing the check. Any other failure fails it, and so does a listed test
