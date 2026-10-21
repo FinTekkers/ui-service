@@ -34,13 +34,14 @@ export async function load({ locals, request }) {
 
   // Stream securities in the background — page renders immediately,
   // autocomplete dropdowns populate when the fetch completes.
-  // M5 / #260: scope to asset_class=RATES (GOV_BOND leaves all
-  // carry RATES per hierarchy.json), issuer=US Government. The
-  // tree-aware AssetClassFilter would let FIXED_INCOME widen to
-  // {RATES, CREDIT}, but for the calculator's Treasury-specific
-  // dropdowns the narrower RATES is correct.
+  // US-237: search by issuer=US Government only. The asset_class=RATES
+  // search returns 0, because ledger-service's Java bond model reports
+  // every bond's asset class as "Fixed Income" to the filter
+  // (https://github.com/FinTekkers/ledger-models/issues/361). Restore
+  // "RATES" here once ledger-service runs a ledger-models with that fix.
+  // The split below sorts bonds, TIPS and FRNs by productType.
   const securitiesPromise = FetchSecurity(
-    "RATES",
+    null,
     "US Government",
     undefined,
     undefined,
