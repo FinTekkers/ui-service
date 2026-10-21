@@ -67,6 +67,10 @@ REGRESSION_SPECS=(
   tests/e2e/tips-calculator-current-cpi.spec.ts
   # US-237: the CUSIP dropdowns list securities; a TIPS pick fills Reference CPI.
   tests/e2e/calculators-cusip-dropdowns.spec.ts
+  # US-238: TIPS Pricer golden numbers for 912810RL4, and Reference CPI must
+  # fill from the Security master after a dropdown pick.
+  tests/e2e/tips-calculator-golden.spec.ts
+  tests/e2e/tips-calculator-auto-populate.spec.ts
 )
 # Tests that fail on the host for lack of data, logged as "known" without
 # failing the check. Any other failure fails it, and so does a listed test
