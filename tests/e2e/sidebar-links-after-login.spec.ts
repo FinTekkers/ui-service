@@ -49,6 +49,11 @@ const menuLink = (page: Page, name: string) =>
 
 const pathname = (page: Page) => new URL(page.url()).pathname;
 
+// A client-side click changes the URL only once the target page's load
+// resolves, and /data/securities' per-issuer fan-out takes 6-15 s on a
+// loaded host: the default 5 s expect timeout made the journey flaky.
+const NAV_TIMEOUT = { timeout: 30_000 };
+
 let session: StorageState;
 
 test.beforeAll(async ({ playwright }) => {
@@ -64,26 +69,30 @@ test.beforeAll(async ({ playwright }) => {
 test("logged in at /data/portfolios/, every sidebar link goes to its fixed path", async ({
   page,
 }) => {
+  // 11 page loads, one of them the securities fan-out.
+  test.setTimeout(120_000);
   await page.context().addCookies(session.cookies);
   await page.goto("/data/portfolios/");
   await expect(page).toHaveURL(/\/data\/portfolios\/?$/, { timeout: 15_000 });
 
   for (const [name, path] of MENU) {
     await menuLink(page, name).click();
-    await expect.poll(() => pathname(page), { message: name }).toBe(path);
+    await expect
+      .poll(() => pathname(page), { message: name, ...NAV_TIMEOUT })
+      .toBe(path);
   }
 
   await page.reload();
   await menuLink(page, "Portfolio").click();
-  await expect.poll(() => pathname(page)).toBe("/data/portfolios");
+  await expect.poll(() => pathname(page), NAV_TIMEOUT).toBe("/data/portfolios");
 
   // The top bar's "Look at data now" was relative too: from /data/positions
   // it went to /data/data/portfolios.
   await menuLink(page, "Position").click();
-  await expect.poll(() => pathname(page)).toBe("/data/positions");
+  await expect.poll(() => pathname(page), NAV_TIMEOUT).toBe("/data/positions");
   await page
     .locator(".navigation_bar")
     .getByRole("link", { name: "Look at data now" })
     .click();
-  await expect.poll(() => pathname(page)).toBe("/data/portfolios");
+  await expect.poll(() => pathname(page), NAV_TIMEOUT).toBe("/data/portfolios");
 });
