@@ -23,30 +23,36 @@ export function versionAtLeast(version: string, floor: string): boolean {
 }
 
 /**
- * package.json's range for ledger-models: floats within 0.4 from 0.4.60,
- * the first release without ValuationRequestProto fields 24 and 25 and
- * TipsInput field 3 (US-230).
+ * The lowest ledger-models release this service accepts (US-247). It moved to
+ * 1.1.x (LM-370) so a plain minimum never resolves the stray 1.0.2.
  */
-export const LEDGER_MODELS_RANGE = "^0.4.60";
+export const LEDGER_MODELS_FLOOR = "1.1.0";
 
 /**
- * Asserts package-lock pins ledger-models to a 0.4.x at or above both `floor`
- * and 0.4.45, package.json's range is LEDGER_MODELS_RANGE, and node_modules
- * has the pinned version installed.
+ * package.json's range for ledger-models: a minimum only, no upper bound or
+ * exact version (owner rule, 22 Oct). Raise it only when the code uses
+ * something first released in the new version.
+ */
+export const LEDGER_MODELS_RANGE = ">=1.1.0";
+
+/**
+ * Asserts package-lock pins ledger-models to an x.y.z at or above both `floor`
+ * and LEDGER_MODELS_FLOOR, package.json's range is LEDGER_MODELS_RANGE, and
+ * node_modules has the pinned version installed.
  */
 export function expectLedgerModelsAtLeast(floor: string) {
   const lock = readJson("package-lock.json");
   const pkg = readJson("package.json");
   const locked =
     lock.packages["node_modules/@fintekkers/ledger-models"].version;
-  expect(locked).toMatch(/^0\.4\.\d+$/);
+  expect(locked).toMatch(/^\d+\.\d+\.\d+$/);
   expect(
     versionAtLeast(locked, floor),
     `ledger-models ${locked} is below ${floor}`
   ).toBe(true);
   expect(
-    versionAtLeast(locked, "0.4.45"),
-    `ledger-models ${locked} is below 0.4.45`
+    versionAtLeast(locked, LEDGER_MODELS_FLOOR),
+    `ledger-models ${locked} is below ${LEDGER_MODELS_FLOOR}`
   ).toBe(true);
   expect(lock.packages[""].dependencies["@fintekkers/ledger-models"]).toBe(
     pkg.dependencies["@fintekkers/ledger-models"]

@@ -30,7 +30,7 @@
 	"dependencies": {
 		"@auth/core": "^0.27.0",
 		"@auth/sveltekit": "^0.13.0",
-		"@fintekkers/ledger-models": "^0.4.60",
+		"@fintekkers/ledger-models": ">=1.1.0",
 		"@iconify-json/mdi": "^1.2.3",
 		"@iconify-json/ph": "^1.2.2",
 		"@lucia-auth/adapter-drizzle": "^1.0.7",
