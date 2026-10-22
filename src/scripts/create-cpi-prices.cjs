@@ -36,8 +36,8 @@ const {
   SecurityProto,
 } = require("@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js");
 const {
-  SecurityTypeProto,
-} = require("@fintekkers/ledger-models/node/fintekkers/models/security/security_type_pb.js");
+  ProductTypeProto,
+} = require("@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js");
 const {
   encodeDecimal,
   parseDecimalString,
@@ -70,7 +70,7 @@ async function createCpiPrice(client, entry) {
   const security = new SecurityProto();
   stampOwn(security);
   security.setIsLink(true);
-  security.setSecurityType(SecurityTypeProto.INDEX_SECURITY);
+  security.setProductType(ProductTypeProto.CPI_SERIES);
   security.setUuid(uuidProtoFromString(CPI_U_SECURITY_UUID));
 
   const price = new PriceProto();

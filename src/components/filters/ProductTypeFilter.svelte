@@ -2,8 +2,8 @@
   /**
    * Phase 3 of second-brain#226, updated for M5 / #260 (ledger-models
    * v0.2.1 cutover). Replaces SecurityTypeFilter — the SecurityType
-   * wrapper + SecurityTypeProto enum were retired in 0.2.1 in favour
-   * of ProductTypeProto + the product_hierarchy registry.
+   * wrapper and the old security-type enum were retired in 0.2.1 in
+   * favour of ProductTypeProto + the product_hierarchy registry.
    *
    * Owns: a single proto-name dropdown for ProductType. Default
    * option set = `activeProductTypes()` from hierarchy.json (status=

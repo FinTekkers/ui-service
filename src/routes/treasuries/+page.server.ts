@@ -26,7 +26,7 @@ import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/m
 import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
 import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
-// M5 / #260: SecurityTypeProto retired. Bond narrowing via wrapper
+// M5 / #260: old security-type enum retired. Bond narrowing via wrapper
 // helper; product-type display string via Security.getProductType().
 
 /**

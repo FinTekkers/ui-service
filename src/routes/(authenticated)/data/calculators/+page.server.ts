@@ -66,7 +66,7 @@ export async function load({ locals, request }) {
         };
         // M5 / #260: dispatch by productType *name* (proto enum name
         // string) so we don't have to import ProductTypeProto here.
-        // 'FRN' became 'TREASURY_FRN' in the v0.2.1 product registry.
+        // Floating-rate notes are 'TREASURY_FRN' in the v0.2.1 product registry.
         if (s.productType === "TIPS") tipsSecurities.push(item);
         else if (s.productType === "TREASURY_FRN") frnSecurities.push(item);
         else bondSecurities.push(item);
