@@ -1,0 +1,19 @@
+{
+  // US-243: compiles the homepage hero sample (src/lib/home/first-call.ts)
+  // against the installed @fintekkers/ledger-models.
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "strict": true,
+    // The package ships its .ts sources next to the .d.ts files, so tsc
+    // checks them too; its datetime.ts imports luxon, which has no types
+    // installed. The sample's own calls are still fully typed.
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "files": ["../lib/home/first-call.ts"]
+}
