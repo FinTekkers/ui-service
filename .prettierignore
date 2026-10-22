@@ -11,3 +11,5 @@ playwright/.auth/
 # npm owns the formatting of these files; they must stay byte-identical to main (R9).
 package.json
 package-lock.json
+# Shown verbatim on /free/* through ?raw (US-252); a reformat would change the page.
+src/lib/free/samples/

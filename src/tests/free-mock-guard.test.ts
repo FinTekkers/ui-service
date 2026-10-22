@@ -35,6 +35,12 @@ const ALLOWED_DIRS = [...FREE_ROOTS, "src/lib/styles"];
 
 const LEDGER_MODELS_TYPES = "@fintekkers/ledger-models/node/fintekkers/models/";
 
+// US-252: code samples the pages show as text. A page may import one only
+// through ?raw, so it never runs; the sample itself may import ledger-models
+// (that is what it demonstrates) and nothing else.
+const SAMPLES_DIR = "src/lib/free/samples";
+const LEDGER_MODELS = "@fintekkers/ledger-models/";
+
 function walk(dir: string): string[] {
   let entries;
   try {
@@ -53,12 +59,28 @@ function isInside(file: string, dir: string): boolean {
   return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
 }
 
+function isSampleImport(
+  specifier: string,
+  fromFile: string,
+  repoRoot: string
+): boolean {
+  const target = specifier.startsWith("$lib/")
+    ? path.join(repoRoot, "src/lib", specifier.slice("$lib/".length))
+    : specifier.startsWith(".")
+    ? path.resolve(path.dirname(fromFile), specifier)
+    : null;
+  return target !== null && isInside(target, path.join(repoRoot, SAMPLES_DIR));
+}
+
 function isAllowedImport(
   specifier: string,
   typeOnly: boolean,
   fromFile: string,
   repoRoot: string
 ): boolean {
+  if (isSampleImport(specifier, fromFile, repoRoot)) {
+    return specifier.endsWith("?raw");
+  }
   if (specifier === "svelte" || specifier.startsWith("svelte/")) return true;
   if (specifier.startsWith("$app/")) return true;
   if (specifier.startsWith("$lib/free/")) return true;
@@ -111,8 +133,12 @@ function scanFreeTree(repoRoot: string): string[] {
       if (!SOURCE_FILE.test(file)) continue;
       const source = readFileSync(file, "utf8");
       if (/\bfetch\s*\(/.test(source)) violations.push(`${rel}: fetch(`);
+      const isSample = isInside(file, path.join(repoRoot, SAMPLES_DIR));
       for (const { specifier, typeOnly } of importsOf(source)) {
-        if (!isAllowedImport(specifier, typeOnly, file, repoRoot)) {
+        const allowed = isSample
+          ? specifier.startsWith(LEDGER_MODELS)
+          : isAllowedImport(specifier, typeOnly, file, repoRoot);
+        if (!allowed) {
           violations.push(`${rel}: imports ${specifier}`);
         }
       }
@@ -158,6 +184,8 @@ describe("Free data explorer stays mock-only", () => {
             `</script>`,
           ].join("\n"),
           "src/lib/free/mock/types.ts": `import type { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";`,
+          "src/routes/free/tips/+page.svelte": `<script>import sample from "$lib/free/samples/tips.ts?raw";</script>`,
+          "src/lib/free/samples/tips.ts": `import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";`,
         })
       ).toEqual([]);
     });
@@ -202,6 +230,21 @@ describe("Free data explorer stays mock-only", () => {
         "a computed dynamic import",
         "src/lib/free/load.ts",
         `const mod = await import(name);`,
+      ],
+      [
+        "a sample imported as code, not ?raw",
+        "src/routes/free/soma/+page.svelte",
+        `<script>import "$lib/free/samples/soma.ts";</script>`,
+      ],
+      [
+        "a sample imported by relative path, not ?raw",
+        "src/lib/free/load.ts",
+        `import * as sample from "./samples/soma";`,
+      ],
+      [
+        "a sample importing a package other than ledger-models",
+        "src/lib/free/samples/soma.ts",
+        `import { Chart } from "chart.js";`,
       ],
       ["a +page.server.ts", "src/routes/free/soma/+page.server.ts", ""],
       ["a +layout.server.ts", "src/routes/free/+layout.server.ts", ""],
