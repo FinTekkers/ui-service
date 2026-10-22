@@ -1,11 +1,6 @@
 import * as Yup from "yup";
 
-import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
-const { FieldProto } = pkg;
-import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
-import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import type Security from "@fintekkers/ledger-models/node/wrappers/models/security/security";
-import { identifierString } from "$lib/security";
+import { fetchAaplCloses, type Close } from "$lib/server/homepage-chart";
 
 /** @type {import('./$types').PageServerLoad} */
 
@@ -27,60 +22,18 @@ export const actions = {
   },
 };
 
-export async function load({ locals }: { locals: App.Locals }) {
-  const securityService = new SecurityService(locals.user?.apiKey);
-  let results = [];
-
-  const positionFilter = new PositionFilter();
-  positionFilter.addEqualsFilter(FieldProto.ASSET_CLASS, "Fixed Income");
-  positionFilter.addEqualsFilter(
-    FieldProto.SECURITY_ISSUER_NAME,
-    "US Government"
-  );
-
+// US-250: the "Live from the price service" chart. A server-held key, read
+// at call time (never $env/static/private, which bakes it into the build),
+// so logged-out visitors see the chart too. No `locals`: it never falls back
+// to the visitor's key. Unset key, a failed call or no closes: empty state.
+export async function load(): Promise<{ closes: Close[] }> {
+  const apiKey = process.env.FT_HOMEPAGE_API_KEY?.trim();
+  if (!apiKey) return { closes: [] };
   try {
-    var securities = await securityService.searchSecurityAsOfNow(
-      positionFilter
-    );
-
-    //Map results into list of maps -> Date, Amount
-    for (let index in securities) {
-      const security: Security = securities[index];
-      if (!security.isBond()) continue;
-
-      const issuances = security.getIssuances();
-      const issuance = issuances.length > 0 ? issuances[0] : null;
-
-      if (issuance) {
-        const qty = issuance.getPostAuctionOutstandingQuantity();
-        // #302: v0.4.x getMaturityDate / getIssueDate return Date | null
-        // directly. Bond rows always have both populated; if a row
-        // somehow lacks them, sentinel-default to epoch so the
-        // year-comparison falls through to the skip path rather than
-        // crashing the whole iteration.
-        const maturity = security.getMaturityDate() ?? new Date(0);
-        const issue = security.getIssueDate() ?? new Date(0);
-        if (!qty && maturity.getFullYear() > 2009) {
-          // skip rows without outstanding quantity
-        } else if (!qty && maturity.getFullYear() <= 2009) {
-          // Swallow this data gap. It's old and we don't mind
-        } else {
-          let postAuctionQuantity = qty ? Number(qty.toString()) : 0;
-          let id = identifierString(security);
-
-          let result = {
-            cusip: id,
-            issueDate: issue,
-            outstandingAmount: postAuctionQuantity,
-            maturityDate: maturity,
-          };
-          results.push(result);
-        }
-      }
-    }
+    return { closes: await fetchAaplCloses(apiKey) };
   } catch (error) {
-    console.log("Could not fetch security data", error);
+    // The message only: the error object can carry request metadata.
+    console.log("Could not fetch AAPL closes", (error as Error)?.message);
+    return { closes: [] };
   }
-
-  return { results };
 }

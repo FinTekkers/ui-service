@@ -570,6 +570,109 @@ export async function ledgerHasTransactions(
   }
 }
 
+/**
+ * Does the price service hold any close for the security with this
+ * exchange ticker? Same two calls as the homepage chart
+ * (src/lib/server/homepage-chart.ts, US-250): one security search by
+ * EXCH_TICKER, then one price search by SECURITY_ID. False when the ticker
+ * is unknown or has no prices.
+ */
+export async function priceServiceHasCloses(
+  ticker: string,
+  brokerUrl: string = BROKER_URL,
+  apiKey?: string
+): Promise<boolean> {
+  const mods = await ledgerModules();
+  const securityGrpc: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js"
+  );
+  const securityQuery: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js"
+  );
+  const identifierProtoMod: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb.js"
+  );
+  const identifierTypeMod: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb.js"
+  );
+  const identifierMod: AnyModule = await import(
+    "@fintekkers/ledger-models/node/wrappers/models/security/identifier.js"
+  );
+  const priceGrpc: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/services/price-service/price_service_grpc_pb.js"
+  );
+  const priceQuery: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_request_pb.js"
+  );
+  const IdentifierTypeProto =
+    identifierTypeMod.IdentifierTypeProto ??
+    identifierTypeMod.default?.IdentifierTypeProto;
+
+  const securityFilter = new mods.PositionFilter();
+  securityFilter.addObjectFilter(
+    mods.FieldProto.IDENTIFIER,
+    new (pick(identifierMod, "Identifier"))(
+      new (pick(identifierProtoMod, "IdentifierProto"))()
+        .setIdentifierType(IdentifierTypeProto.EXCH_TICKER)
+        .setIdentifierValue(ticker)
+    )
+  );
+  const securityReq = new (pick(securityQuery, "QuerySecurityRequestProto"))();
+  mods.stampOwn(securityReq);
+  securityReq.setAsOf(mods.ZonedDateTime.now().toProto());
+  securityReq.setSearchSecurityInput(securityFilter.toProto());
+
+  const securityClient = new (pick(securityGrpc, "SecurityClient"))(
+    brokerUrl,
+    grpc.credentials.createInsecure()
+  );
+  let rawUuid: Uint8Array | null = null;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const stream = securityClient.search(
+        securityReq,
+        brokerMetadata(apiKey),
+        { deadline: Date.now() + PRECONDITION_DEADLINE_MS }
+      );
+      stream.on("data", (resp: any) => {
+        for (const security of resp.getSecurityResponseList?.() ?? []) {
+          const raw = security.getUuid?.()?.getRawUuid_asU8?.();
+          if (!rawUuid && raw?.length) rawUuid = raw;
+        }
+      });
+      stream.on("end", () => resolve());
+      stream.on("error", (err: any) => reject(grpcError(err)));
+    });
+  } finally {
+    securityClient.close();
+  }
+  if (!rawUuid) return false;
+
+  const priceFilter = new mods.PositionFilter();
+  priceFilter.addObjectFilter(
+    mods.FieldProto.SECURITY_ID,
+    mods.UUID.fromU8Array(rawUuid)
+  );
+  const priceReq = new (pick(priceQuery, "QueryPriceRequestProto"))();
+  mods.stampOwn(priceReq);
+  priceReq.setAsOf(mods.ZonedDateTime.now().toProto());
+  priceReq.setSearchPriceInput(priceFilter.toProto());
+  const priceClient = new (pick(priceGrpc, "PriceClient"))(
+    brokerUrl,
+    grpc.credentials.createInsecure()
+  );
+  try {
+    return await streamHasRows(
+      priceClient.search(priceReq, brokerMetadata(apiKey), {
+        deadline: Date.now() + PRECONDITION_DEADLINE_MS,
+      }),
+      (resp: any) => resp.getPriceResponseList?.()?.length ?? 0
+    );
+  } finally {
+    priceClient.close();
+  }
+}
+
 async function grpcDeletePortfolio(
   brokerUrl: string,
   apiKey: string | undefined,

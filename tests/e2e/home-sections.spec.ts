@@ -1,17 +1,18 @@
 /**
  * US-243: the redesigned homepage (/). Sections in design order with their
- * landmarks and headings, the live chart inside "Live from the backend",
- * the hero card showing src/lib/home/first-call.ts, and the phone and
- * desktop layouts.
+ * landmarks and headings, the live chart, the hero card showing
+ * src/lib/home/first-call.ts, and the phone and desktop layouts.
  *
- * The broker refuses calls without an API key, so the chart only has data
- * for a signed-in visitor: the chart test uses the e2e session that
- * scripts/checks/e2e.sh writes for the chromium project. Everything else
- * runs logged out.
+ * US-250: the live chart draws AAPL's daily closes for every visitor, with
+ * the server-held FT_HOMEPAGE_API_KEY that scripts/checks/e2e.sh exports to
+ * the server and to this spec. The chart tests run logged out and skip only
+ * when that key isn't set for the run or the price service (asked over the
+ * broker, never the page) holds no AAPL close.
  */
 import { test, expect, type Page } from "@playwright/test";
 import { readFileSync } from "fs";
 import path from "path";
+import { priceServiceHasAaplCloses } from "./fixtures/data-preconditions";
 
 const SECTIONS = [
   "nav",
@@ -29,13 +30,49 @@ const SECTION_H2S: [string, string][] = [
     "pillars",
     "Infrastructure you'd build yourself, if you had a year to spare.",
   ],
-  ["live", "Thousands of data points, rendered as they stream in."],
+  ["live", "A year of Apple (AAPL) closes, straight from the API."],
   ["get-started", "From install to first query in minutes."],
   ["support", "Talk to the engineers who built it."],
 ];
 
 const section = (page: Page, name: string) =>
   page.locator(`[data-section="${name}"]`);
+
+const HOMEPAGE_KEY = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+
+// Skips unless the server under test can draw the AAPL chart. Never judged
+// from the page: an empty state with data available fails the test.
+async function skipUnlessAaplCloses() {
+  test.skip(
+    !HOMEPAGE_KEY,
+    "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+  );
+  test.skip(
+    !(await priceServiceHasAaplCloses(HOMEPAGE_KEY)),
+    "the price service holds no AAPL close: chart check not applicable"
+  );
+}
+
+async function expectAaplChart(page: Page) {
+  const live = section(page, "live");
+  await expect(
+    live.getByRole("heading", { level: 2, name: /AAPL/ })
+  ).toBeVisible();
+  await expect(live.locator("#plot svg.main-svg").first()).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(live.locator(".empty")).toBeHidden();
+  const x = await live
+    .locator("#plot")
+    .evaluate(
+      (el) =>
+        (el as HTMLElement & { data?: { x: string[] }[] }).data?.[0]?.x ?? []
+    );
+  expect(x.length).toBeGreaterThanOrEqual(1);
+  for (let i = 1; i < x.length; i++) {
+    expect(x[i] > x[i - 1], `${x[i - 1]} before ${x[i]}`).toBe(true);
+  }
+}
 
 async function expectSingleSiteNav(page: Page) {
   await expect(page.locator(".navigation_bar")).toBeHidden();
@@ -110,8 +147,8 @@ test.describe("logged out", () => {
   });
 });
 
-// Measured logged out (the public page) and with the e2e session (the
-// chart drawn, since Plotly's width is the likeliest thing to overflow).
+// Measured logged out (the public page) and with the e2e session. The chart
+// draws for both since US-250, when FT_HOMEPAGE_API_KEY is set.
 for (const session of ["logged out", "signed in"] as const) {
   test.describe(`responsive layout, ${session}`, () => {
     if (session === "logged out") {
@@ -123,7 +160,7 @@ for (const session of ["logged out", "signed in"] as const) {
     }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto("/");
-      if (session === "signed in") {
+      if (HOMEPAGE_KEY) {
         await expect(
           section(page, "live").locator("#plot svg.main-svg").first()
         ).toBeVisible({ timeout: 30_000 });
@@ -181,22 +218,37 @@ for (const session of ["logged out", "signed in"] as const) {
   });
 }
 
-// Signed in (the chromium project's storageState): the broker answers the
-// unchanged +page.server.ts load only with an API key.
-test.describe("signed in", () => {
-  test("SOMA chart renders in live section", async ({ page }) => {
+// US-250: logged out, the server-held key draws the chart.
+test.describe("AAPL chart, logged out", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("AAPL chart renders in live section, oldest to newest", async ({
+    page,
+  }) => {
+    await skipUnlessAaplCloses();
     await page.goto("/");
-    const live = section(page, "live");
-    await expect(live.locator("#plot svg.main-svg").first()).toBeVisible({
-      timeout: 30_000,
-    });
-    const points = await live
-      .locator("#plot")
-      .evaluate(
-        (el) =>
-          (el as HTMLElement & { data?: { x: unknown[] }[] }).data?.[0]?.x
-            ?.length ?? 0
+    await expectAaplChart(page);
+    await page.reload();
+    await expectAaplChart(page);
+  });
+
+  test("FT_HOMEPAGE_API_KEY never reaches the browser", async ({
+    page,
+    request,
+  }) => {
+    test.skip(
+      !HOMEPAGE_KEY,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
+    for (const url of ["/", "/__data.json"]) {
+      const response = await request.get(url);
+      expect(response.status(), `GET ${url}`).toBe(200);
+      expect(await response.text(), `GET ${url} body`).not.toContain(
+        HOMEPAGE_KEY
       );
-    expect(points).toBeGreaterThanOrEqual(1);
+    }
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    expect(await page.content()).not.toContain(HOMEPAGE_KEY);
   });
 });
