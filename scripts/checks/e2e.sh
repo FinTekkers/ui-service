@@ -71,6 +71,8 @@ REGRESSION_SPECS=(
   # logged out; the live chart with this session.
   tests/e2e/home-sections.spec.ts
   tests/e2e/home-links.spec.ts
+  # US-251: the Free data explorer's hide rule leaves other routes' Navbar.
+  tests/e2e/free-shell-scope.spec.ts
 )
 # Tests that fail on the host for lack of data, logged as "known" without
 # failing the check. Any other failure fails it, and so does a listed test

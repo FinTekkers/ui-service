@@ -1,0 +1,15 @@
+/* Design tokens for the public site: the homepage (.ft-home, src/routes/
+   +page.svelte) and the Free data explorer (.ft-free, src/routes/free/
+   +layout.svelte). Scoped to those roots so the app's own pages keep their
+   theme. */
+.ft-home,
+.ft-free {
+  --ink: #0d1b2a;
+  --bg: #f5f6f8;
+  --accent: #1d4ed8;
+  --accent-hover: #1e3a8a;
+  --muted: #4a5565;
+  --line: #dde1e7;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", monospace;
+}
