@@ -7,6 +7,7 @@
   import LiveData from "../components/home/LiveData.svelte";
   import Pillars from "../components/home/Pillars.svelte";
   import SupportCta from "../components/home/SupportCta.svelte";
+  import "$lib/styles/ft-theme.css";
 
   export let data: import("./$types").PageData;
 </script>
@@ -33,14 +34,6 @@
 
 <style>
   .ft-home {
-    --ink: #0d1b2a;
-    --bg: #f5f6f8;
-    --accent: #1d4ed8;
-    --accent-hover: #1e3a8a;
-    --muted: #4a5565;
-    --line: #dde1e7;
-    --sans: "IBM Plex Sans", system-ui, sans-serif;
-    --mono: "IBM Plex Mono", monospace;
     min-height: 100%;
     font-family: var(--sans);
     color: var(--ink);
