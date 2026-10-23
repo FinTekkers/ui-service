@@ -7,7 +7,13 @@
   import FreeFooter from "../../components/free/FreeFooter.svelte";
   import FreeHeader from "../../components/free/FreeHeader.svelte";
   import FreeNav from "../../components/free/FreeNav.svelte";
+  import type { FreeDataset } from "$lib/free/datasets";
   import "$lib/styles/ft-theme.css";
+
+  // A page that isn't at its dataset's own URL names the dataset it shows
+  // in its load data (/free returns dataset: "soma").
+  $: selectedId = ($page.data as { dataset?: FreeDataset["id"] } | undefined)
+    ?.dataset;
 </script>
 
 <svelte:head>
@@ -22,11 +28,11 @@
 <div class="ft-free">
   <FreeNav />
   <FreeHeader>
-    <DatasetPicker currentPath={$page.url.pathname} />
+    <DatasetPicker currentPath={$page.url.pathname} {selectedId} />
   </FreeHeader>
-  <div class="container content">
+  <main class="container content">
     <slot />
-  </div>
+  </main>
   <FreeFooter />
 </div>
 

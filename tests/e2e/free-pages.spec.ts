@@ -37,6 +37,34 @@ const H2S = [
   "Pull SOMA data from the API",
 ];
 
+// US-254: /free, /free/soma and /free/tips each answer 200 inside the shell.
+for (const route of ["/free", "/free/soma", "/free/tips"]) {
+  test(`${route} returns 200 with the Free data explorer heading`, async ({
+    page,
+  }) => {
+    const response = await page.goto(route);
+    expect(response?.status()).toBe(200);
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Free data explorer" })
+    ).toBeVisible();
+  });
+}
+
+test("/free shows the same 7 SOMA sections as /free/soma, in order", async ({
+  page,
+}) => {
+  const sectionTitles = async (route: string): Promise<string[]> => {
+    await page.goto(route);
+    const h2s = page.getByRole("main").locator("h2");
+    await expect(h2s).toHaveCount(7);
+    await expect(h2s).toHaveText(H2S);
+    return h2s.allTextContents();
+  };
+  expect(await sectionTitles("/free")).toEqual(
+    await sectionTitles("/free/soma")
+  );
+});
+
 test("/free/soma returns 200 with the 7 artboard sections", async ({
   page,
 }) => {

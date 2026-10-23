@@ -77,6 +77,21 @@ describe("DatasetPicker", () => {
       expect(link).not.toHaveAttribute("aria-current");
     }
   });
+
+  test("selectedId marks its dataset on a path outside the datasets", async () => {
+    render(DatasetPicker, {
+      props: { currentPath: "/free", selectedId: "soma" },
+    });
+    expect(screen.getByRole("button")).toHaveTextContent(SOMA);
+    await fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByRole("link", { name: SOMA })).toHaveAttribute(
+      "aria-current",
+      "true"
+    );
+    expect(screen.getByRole("link", { name: TIPS })).not.toHaveAttribute(
+      "aria-current"
+    );
+  });
 });
 
 describe("isCurrentDataset", () => {
