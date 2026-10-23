@@ -26,7 +26,7 @@
   <Hero />
   <LanguageStrip />
   <Pillars />
-  <LiveData data={data.results} />
+  <LiveData data={data.closes} />
   <GetStarted />
   <SupportCta />
   <HomeFooter />

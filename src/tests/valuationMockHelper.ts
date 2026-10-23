@@ -21,8 +21,8 @@ const MP = {
 };
 
 // M5 / #260: ProductTypeProto enum values. TIPS = 4 in both the old
-// SecurityTypeProto and the new ProductTypeProto (numeric stability
-// across rename); TREASURY_FRN = 5 (was FRN).
+// security-type enum and ProductTypeProto (numeric stability across
+// the rename); TREASURY_FRN = 5 (same number as the old FRN value).
 const TIPS_PRODUCT_TYPE = 4;
 const TREASURY_FRN_PRODUCT_TYPE = 5;
 

@@ -14,6 +14,7 @@ import {
   BROKER_URL,
   apiKeyFromStorageState,
   ledgerHasTransactions as grpcLedgerHasTransactions,
+  priceServiceHasCloses,
 } from "../../../src/tests/probe-cleanup";
 import type { TransactionPrecondition } from "../../../src/tests/probe-cleanup";
 
@@ -26,4 +27,16 @@ export function ledgerHasTransactions(
     apiKeyFromStorageState(STORAGE_STATE_PATH),
     options
   );
+}
+
+/**
+ * Does the price service hold any AAPL close (US-250)? Ask with the key the
+ * server under test draws the homepage chart with (FT_HOMEPAGE_API_KEY,
+ * which scripts/checks/e2e.sh exports to both), never the session's.
+ */
+export function priceServiceHasAaplCloses(
+  apiKey: string,
+  brokerUrl: string = BROKER_URL
+): Promise<boolean> {
+  return priceServiceHasCloses("AAPL", brokerUrl, apiKey);
 }
