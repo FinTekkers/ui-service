@@ -251,9 +251,9 @@ describe("/data/portfolios load with ?portfolioId=", () => {
   test("returns the stored elections and their as_of", async () => {
     const result: any = await load({
       locals: { user },
-      request: {
-        url: `http://localhost/data/portfolios?portfolioId=${PORTFOLIO_ID}`,
-      },
+      url: new URL(
+        `http://localhost/data/portfolios?portfolioId=${PORTFOLIO_ID}`
+      ),
     } as any);
     expect(result.elections).toEqual({
       asOf: asOfIso(stored),

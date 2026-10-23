@@ -19,7 +19,7 @@ import {
 } from "$lib/electionValues";
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
-export async function load({ locals, request }) {
+export async function load({ locals, url }) {
   const now = dt.ZonedDateTime.now();
   const portfolioService = new PortfolioService(locals.user?.apiKey);
 
@@ -115,8 +115,9 @@ export async function load({ locals, request }) {
     // Priming is best-effort; the page result below is authoritative.
   }
 
-  const searchParams = new URLSearchParams(request.url.split("?")[1]);
-  const selectedPortfolioId = searchParams.get("portfolioId");
+  // `url`, not `request.url`: SvelteKit tracks `url.searchParams`, so the
+  // grid's Elections link (same route, new ?portfolioId=) re-runs this load.
+  const selectedPortfolioId = url.searchParams.get("portfolioId");
 
   let transactions: import("$lib/transactions").TransactionData[] = [];
   if (selectedPortfolioId) {
