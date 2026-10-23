@@ -73,6 +73,9 @@ REGRESSION_SPECS=(
   tests/e2e/home-links.spec.ts
   # US-251: the Free data explorer's hide rule leaves other routes' Navbar.
   tests/e2e/free-shell-scope.spec.ts
+  # US-252: /free/soma logged out: its 7 sections, the MBS toggle and the
+  # code cards.
+  tests/e2e/free-pages.spec.ts
   # US-242: ADJUSTED_COST_BASIS shows "not supported yet" on the positions
   # page. (The elections journey, portfolio-elections.spec.ts, is picked up
   # by the portfolio* glob above.)
