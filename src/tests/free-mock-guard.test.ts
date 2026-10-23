@@ -23,9 +23,9 @@ import { afterEach, describe, expect, test } from "vitest";
 const FREE_ROOTS = ["src/routes/free", "src/lib/free", "src/components/free"];
 
 // Exact paths, relative to the repo root, of server files allowed under the
-// free roots. The /free redirect to /treasuries stays until US-254 removes
-// it; delete this entry with that file.
-const ALLOWED_SERVER_FILES = new Set(["src/routes/free/+page.server.ts"]);
+// free roots. US-254 deleted the /free redirect, the last one, so /free
+// itself is mock-only too.
+const ALLOWED_SERVER_FILES = new Set<string>();
 
 const SERVER_FILE = /^\+(page\.server|layout\.server|server)\.(ts|js)$/;
 const SOURCE_FILE = /\.(ts|js|svelte)$/;
@@ -173,7 +173,7 @@ describe("Free data explorer stays mock-only", () => {
     test("a clean fixture passes", () => {
       expect(
         fixture({
-          "src/routes/free/+page.server.ts": `import { redirect } from "@sveltejs/kit";`,
+          "src/routes/free/+page.ts": `import { load as loadSoma } from "./soma/+page";`,
           "src/routes/free/soma/+page.svelte": [
             `<script lang="ts">`,
             `  import { page } from "$app/stores";`,
@@ -247,6 +247,7 @@ describe("Free data explorer stays mock-only", () => {
         `import { Chart } from "chart.js";`,
       ],
       ["a +page.server.ts", "src/routes/free/soma/+page.server.ts", ""],
+      ["a +page.server.ts on /free", "src/routes/free/+page.server.ts", ""],
       ["a +layout.server.ts", "src/routes/free/+layout.server.ts", ""],
       ["a +server.ts", "src/routes/free/data/+server.ts", ""],
     ])("fails on %s", (_name, rel, content) => {

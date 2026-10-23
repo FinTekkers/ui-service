@@ -1,18 +1,23 @@
 <!-- Dataset menu for the Free data explorer, from the DataExplorer.dc.html
      artboard. Lists FREE_DATASETS only (not the artboard's [Dataset 3..10]
-     placeholders) and marks the one at currentPath with aria-current. -->
+     placeholders) and marks the current one with aria-current: the dataset
+     whose id is selectedId when the page names one (/free shows SOMA),
+     else the one at currentPath. -->
 <script lang="ts">
   import { FREE_DATASETS, isCurrentDataset } from "$lib/free/datasets";
   import type { FreeDataset } from "$lib/free/datasets";
 
   export let currentPath: string;
+  export let selectedId: FreeDataset["id"] | undefined = undefined;
   export let datasets: readonly FreeDataset[] = FREE_DATASETS;
 
   let open = false;
   let root: HTMLDivElement;
   let toggle: HTMLButtonElement;
 
-  $: current = datasets.find((d) => isCurrentDataset(d, currentPath));
+  $: current = datasets.find((d) =>
+    selectedId ? d.id === selectedId : isCurrentDataset(d, currentPath)
+  );
 
   function close(): void {
     open = false;
