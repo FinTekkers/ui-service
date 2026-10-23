@@ -15,6 +15,17 @@ import { soma } from "../../src/lib/free/mock/soma";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
+// The layout's gtag and Google Fonts requests are third-party: a stalled one
+// held off "networkidle" past the test timeout under host load. Abort them,
+// so "networkidle" waits only on this server's page and bundle.
+test.beforeEach(async ({ page, baseURL }) => {
+  const origin = new URL(baseURL ?? "http://127.0.0.1").origin;
+  await page.route(
+    (url) => url.origin !== origin,
+    (route) => route.abort()
+  );
+});
+
 const H2S = [
   "What is the Federal Reserve SOMA?",
   "Federal Reserve SOMA Holdings",
