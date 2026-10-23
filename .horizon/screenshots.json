@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "serve": "PORT=4203 HOST=127.0.0.1 ORIGIN=http://127.0.0.1:4203 BROKER_HOST=\"${BROKER_HOST:-127.0.0.1:8085}\" BROKER_PROTO_PATH=\"${BROKER_PROTO_PATH:-/opt/fintekkers/broker-service/proto/auth.proto}\" exec node build/index.js",
+  "ready": "http://127.0.0.1:4203/login",
+  "outputDir": ".horizon/screenshots",
+  "themes": ["dark"],
+  "viewports": [{ "name": "phone", "width": 390, "height": 664 }],
+  "defaults": { "login": false },
+  "screens": [
+    { "name": "login", "path": "/login" },
+    {
+      "name": "portfolios",
+      "path": "/data/portfolios",
+      "login": true,
+      "waitFor": ".portfolio_container h2"
+    },
+    {
+      "name": "positions",
+      "path": "/data/positions",
+      "login": true,
+      "waitFor": ".position-select-container .position-button"
+    },
+    {
+      "name": "securities",
+      "path": "/data/securities",
+      "login": true,
+      "waitFor": ".portfolio_container table",
+      "maxHeightPx": 10000
+    },
+    {
+      "name": "transactions",
+      "path": "/data/transactions",
+      "login": true,
+      "waitFor": ".portfolio_container table"
+    },
+    {
+      "name": "profile",
+      "path": "/data/profile",
+      "login": true,
+      "waitFor": ".api-key-display",
+      "mask": [".api-key-display"]
+    }
+  ],
+  "diff": { "threshold": 0.1, "ratioTolerance": 0.01 },
+  "loginCookies": {
+    "ft_api_key": "FT_E2E_API_KEY",
+    "ft_user_email": "FT_E2E_EMAIL"
+  }
+}
