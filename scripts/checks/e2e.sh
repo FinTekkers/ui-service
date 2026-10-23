@@ -68,7 +68,7 @@ REGRESSION_SPECS=(
   # US-237: the CUSIP dropdowns list securities; a TIPS pick fills Reference CPI.
   tests/e2e/calculators-cusip-dropdowns.spec.ts
   # US-243: the redesigned homepage: sections, layout and same-site links
-  # logged out; the live chart with this session.
+  # logged out. US-250: the AAPL chart logged out, with FT_HOMEPAGE_API_KEY.
   tests/e2e/home-sections.spec.ts
   tests/e2e/home-links.spec.ts
   # US-251: the Free data explorer's hide rule leaves other routes' Navbar.
@@ -101,6 +101,9 @@ export GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID:-e2e}"
 export GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET:-e2e}"
 export CONTACT_GMAIL_USER="${CONTACT_GMAIL_USER:-}"
 export CONTACT_GMAIL_APP_PASSWORD="${CONTACT_GMAIL_APP_PASSWORD:-}"
+# US-250: the homepage chart's server-held key. The run reuses the e2e user's
+# key; home-sections.spec.ts reads it too, for its price-service probe.
+export FT_HOMEPAGE_API_KEY="${FT_HOMEPAGE_API_KEY:-$FT_E2E_API_KEY}"
 
 npx svelte-kit sync
 npx playwright install chromium >/dev/null

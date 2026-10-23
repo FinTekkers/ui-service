@@ -1,14 +1,8 @@
 <script lang="ts">
   import { onMount, afterUpdate } from "svelte";
   import { createEventDispatcher } from "svelte";
-  interface Bond {
-    cusip: string;
-    issueDate: Date;
-    maturityDate: Date;
-    outstandingAmount: number;
-  }
-
-  export let data: Bond[];
+  // US-250: AAPL daily closes, oldest first (src/lib/server/homepage-chart.ts).
+  export let data: { date: string; close: number }[];
   let graphVisible = false;
   const dispatch = createEventDispatcher<{
     visibilityToggled: { visible: boolean };
@@ -26,55 +20,11 @@
 
   async function plotGraph() {
     const Plotly = await import("plotly.js-dist");
-    const cumulativeSumByYear: { [year: number]: number } = {};
-    const cumulativeSumByMaturityYear: { [year: number]: number } = {};
-
-    data.forEach((bond) => {
-      const issueDate = new Date(bond.issueDate);
-      const maturityDate = new Date(bond.maturityDate);
-      const issueYear = issueDate.getFullYear();
-      const maturityYear = maturityDate.getFullYear();
-      const currentDate = new Date();
-
-      if (currentDate <= maturityDate) {
-        cumulativeSumByYear[issueYear] =
-          (cumulativeSumByYear[issueYear] || 0) + bond.outstandingAmount;
-      } else {
-        if (
-          cumulativeSumByYear[issueYear] &&
-          cumulativeSumByYear[issueYear] >= bond.outstandingAmount
-        ) {
-          cumulativeSumByYear[issueYear] -= bond.outstandingAmount;
-        }
-      }
-      if (
-        cumulativeSumByMaturityYear[maturityYear] &&
-        cumulativeSumByMaturityYear[maturityYear] >= bond.outstandingAmount
-      ) {
-        cumulativeSumByMaturityYear[maturityYear] -= bond.outstandingAmount;
-      }
-    });
-
-    const years = Array.from(
-      new Set([
-        ...Object.keys(cumulativeSumByYear),
-        ...Object.keys(cumulativeSumByMaturityYear),
-      ])
-    )
-      .map(Number)
-      .sort();
-    let cumulativeSum = 0;
-    const cumulativeSums = years.map((year) => {
-      cumulativeSum =
-        (cumulativeSumByYear[year] || 0) +
-        (cumulativeSumByMaturityYear[year] || 0);
-      return cumulativeSum;
-    });
-
     const trace = {
-      x: years,
-      y: cumulativeSums,
+      x: data.map((d) => d.date),
+      y: data.map((d) => d.close),
       type: "scatter",
+      mode: "lines",
       line: {
         color: "rgba(255,255,255,0.9)",
       },
@@ -82,14 +32,15 @@
 
     const layout = {
       title: {
-        text: "Cumulative Sum of Outstanding Amounts by Year",
+        text: "AAPL daily close",
         font: {
           color: "#fff",
         },
       },
       xaxis: {
+        type: "date",
         title: {
-          text: "Year",
+          text: "Date",
           font: {
             color: "#fff",
           },
@@ -100,7 +51,7 @@
       },
       yaxis: {
         title: {
-          text: "Cumulative Sum of Outstanding Amount",
+          text: "Close (USD)",
           font: {
             color: "#fff",
           },

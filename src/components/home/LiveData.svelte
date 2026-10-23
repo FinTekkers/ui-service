@@ -1,22 +1,17 @@
 <script lang="ts">
   import GraphSection from "../GraphSection.svelte";
 
-  export let data: {
-    cusip: string;
-    issueDate: Date;
-    maturityDate: Date;
-    outstandingAmount: number;
-  }[];
+  export let data: { date: string; close: number }[];
 </script>
 
 <section data-section="live" class="live">
   <div class="container section live-grid">
     <div class="copy">
-      <p class="eyebrow">Live from the backend</p>
-      <h2>Thousands of data points, rendered as they stream in.</h2>
+      <p class="eyebrow">AAPL, live from the price service</p>
+      <h2>A year of Apple (AAPL) closes, straight from the API.</h2>
       <p class="lead">
-        This chart isn't a screenshot. It's live US Treasury issuance data,
-        pulled from the same API you'll call.
+        This chart isn't a screenshot. It's every AAPL daily close our price
+        service holds, pulled with the same API you'll call.
       </p>
       <a href="/free" class="btn btn-light">
         Open the data explorer
@@ -34,7 +29,7 @@
     </div>
     <div class="card">
       <div class="card-head">
-        <span class="title">US Treasury outstanding, by year</span>
+        <span class="title">AAPL daily close</span>
         {#if data.length > 0}
           <span class="badge">
             <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true">
@@ -49,12 +44,11 @@
           <GraphSection {data} />
         </div>
       {:else}
-        <!-- The loader returns no rows when the broker refuses a call
-             without an API key (logged out) or is unreachable. -->
+        <!-- The loader returns no closes when FT_HOMEPAGE_API_KEY is unset,
+             the price search fails, or the price service holds none. -->
         <p class="empty">
           <span>
-            The live chart loads for signed-in users.
-            <a href="/login">Sign in</a> to see it, or browse the data in the
+            Price data is unavailable right now. Browse the
             <a href="/free">free data explorer</a>.
           </span>
         </p>
