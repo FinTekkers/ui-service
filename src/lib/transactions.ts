@@ -3,7 +3,7 @@ import * as datetime from "@fintekkers/ledger-models/node/wrappers/models/utils/
 import * as positionFilter from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Transaction from "@fintekkers/ledger-models/node/wrappers/models/transaction/transaction";
 // M5 / #260: bond detection via Security.isBond() wrapper helper.
-// The SecurityType wrapper + SecurityTypeProto were retired in 0.2.1;
+// The SecurityType wrapper and the old security-type enum were retired in 0.2.1;
 // the wrapper now narrows on the ProductTypeProto leaves
 // TREASURY_NOTE / TIPS / TREASURY_FRN.
 import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
