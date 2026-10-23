@@ -108,10 +108,10 @@ describe("PortfolioGrid", () => {
     await fireEvent.click(idHeader);
 
     // After clicking ID header ascending, rows should be in ID order
-    // Each row now has 4 links: [Txns, Portfolio name, ID, AsOf] — ID is at index 2 (i % 4 === 2)
+    // Each row now has 5 links: [Txns, Elections, Portfolio name, ID, AsOf] — ID is at index 3 (i % 5 === 3)
     const allCells = screen.getAllByRole("link");
     const idTexts = allCells
-      .filter((_, i) => i % 4 === 2)
+      .filter((_, i) => i % 5 === 3)
       .map((el) => el.textContent);
 
     expect(idTexts).toEqual([
@@ -124,7 +124,7 @@ describe("PortfolioGrid", () => {
     await fireEvent.click(idHeader);
     const allCellsAfter = screen.getAllByRole("link");
     const idTextsDesc = allCellsAfter
-      .filter((_, i) => i % 4 === 2)
+      .filter((_, i) => i % 5 === 3)
       .map((el) => el.textContent);
 
     expect(idTextsDesc).toEqual([

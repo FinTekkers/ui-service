@@ -73,6 +73,10 @@ REGRESSION_SPECS=(
   tests/e2e/home-links.spec.ts
   # US-251: the Free data explorer's hide rule leaves other routes' Navbar.
   tests/e2e/free-shell-scope.spec.ts
+  # US-242: ADJUSTED_COST_BASIS shows "not supported yet" on the positions
+  # page. (The elections journey, portfolio-elections.spec.ts, is picked up
+  # by the portfolio* glob above.)
+  tests/e2e/positions-adjusted-cost-basis.spec.ts
 )
 # Tests that fail on the host for lack of data, logged as "known" without
 # failing the check. Any other failure fails it, and so does a listed test

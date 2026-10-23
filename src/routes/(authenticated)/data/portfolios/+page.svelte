@@ -2,6 +2,7 @@
   import Portfolio from "../../../../components/widgets/PortfolioGrid.svelte";
   import DeleteConfirmModal from "../../../../components/widgets/DeleteConfirmModal.svelte";
   import TransactionHistoryGrid from "../../../../components/widgets/TransactionHistoryGrid.svelte";
+  import ElectionsPanel from "../../../../components/widgets/ElectionsPanel.svelte";
   import { enhance } from "$app/forms";
   export let data: import("./$types").PageData;
   export let form: import("./$types").ActionData;
@@ -12,6 +13,13 @@
   let deleteError = "";
   let deleteSuccess = "";
   let dryRunSubmitBtn: HTMLButtonElement;
+
+  $: rows = Array.isArray(data.portfolioData)
+    ? data.portfolioData
+    : [data.portfolioData];
+  $: selectedName =
+    rows.find((r) => r.portfolioId === data.selectedPortfolioId)
+      ?.portfolioName ?? "";
 
   $: dryRunResult = form?.deleteResult;
   $: dryRunUuid = form?.uuidHex;
@@ -59,12 +67,19 @@
   <div class="error-banner">{deleteError}</div>
 {/if}
 
-<Portfolio
-  rows={Array.isArray(data.portfolioData)
-    ? data.portfolioData
-    : [data.portfolioData]}
-  on:requestDelete={handleRequestDelete}
-/>
+<div class="portfolios-layout" class:with-panel={!!data.selectedPortfolioId}>
+  <Portfolio {rows} on:requestDelete={handleRequestDelete} />
+
+  {#if data.selectedPortfolioId}
+    <ElectionsPanel
+      portfolioId={data.selectedPortfolioId}
+      portfolioName={selectedName}
+      elections={data.elections}
+      error={data.electionsError}
+      result={form && "elections" in form ? form.elections : null}
+    />
+  {/if}
+</div>
 
 <TransactionHistoryGrid
   transactions={data.transactions ?? []}
@@ -100,6 +115,14 @@
 
 <style lang="scss">
   @import "../../../../style";
+  // US-242: the elections panel sits beside the list, and wraps below it
+  // on narrow screens. Without a selection the list keeps its old layout.
+  .portfolios-layout.with-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1rem;
+  }
   .hidden-submit {
     display: none;
   }

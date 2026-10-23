@@ -104,6 +104,12 @@
     return `/data/transactions?portfolioId=${encodeURIComponent(portfolioId)}`;
   }
 
+  function getElectionsUrl(portfolioId: string): string {
+    // US-242: the same ?portfolioId= the transaction history reads also
+    // opens the amortisation elections panel beside this list.
+    return `/data/portfolios?portfolioId=${encodeURIComponent(portfolioId)}`;
+  }
+
   function handleDeleteClick(row: PortfolioData) {
     dispatch("requestDelete", {
       name: row.portfolioName,
@@ -142,6 +148,12 @@
                 href={getTransactionsUrl(row.portfolioId)}
                 class="txn-btn"
                 title="View transactions for {row.portfolioName}">Txns</a
+              >
+              <a
+                href={getElectionsUrl(row.portfolioId)}
+                class="txn-btn"
+                title="View amortisation elections for {row.portfolioName}"
+                >Elections</a
               >
               <button
                 class="delete-btn"
@@ -218,8 +230,8 @@
   }
 
   .action-col {
-    min-width: 110px !important;
-    width: 110px;
+    min-width: 190px !important;
+    width: 190px;
     position: sticky;
     left: 0;
     z-index: 1;

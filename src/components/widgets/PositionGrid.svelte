@@ -10,6 +10,9 @@
   export let positions: any[] = [];
   export let requestData: any;
   export let metadata;
+  // US-242: measures the catalog marks not implemented; their cells say so
+  // rather than stay blank.
+  export let unsupportedMeasures: string[] = [];
   export let onSortChange:
     | ((sortBy: string, sortDirection: "asc" | "desc") => void)
     | undefined = undefined;
@@ -240,7 +243,9 @@
                   position[measure]
                 )}"
               >
-                {#if measures[i] === "PROFIT_LOSS" || measures[i] === "PROFIT_LOSS_PERCENT"}
+                {#if unsupportedMeasures.includes(measures[i])}
+                  <span class="not-supported">Not supported yet</span>
+                {:else if measures[i] === "PROFIT_LOSS" || measures[i] === "PROFIT_LOSS_PERCENT"}
                   {#if position[measure] == null || position[measure] === undefined || position[measure] === ""}
                     &mdash;
                   {:else if measures[i] === "PROFIT_LOSS_PERCENT"}
@@ -341,5 +346,10 @@
       outline: 2px solid #3b82f6;
       outline-offset: -2px;
     }
+  }
+
+  .not-supported {
+    color: #94a3b8;
+    font-style: italic;
   }
 </style>
