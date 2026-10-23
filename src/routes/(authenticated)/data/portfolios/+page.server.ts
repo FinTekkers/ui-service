@@ -6,9 +6,20 @@ import type Portfolio from "@fintekkers/ledger-models/node/wrappers/models/portf
 import { deleteEntity } from "$lib/entity-delete";
 import { FetchTransactionByPortfolio } from "$lib/transactions";
 import { primePortfolioUniverseCache } from "$lib/portfolios";
+import { fail } from "@sveltejs/kit";
+import {
+  fetchElections,
+  saveElections,
+  type PortfolioElections,
+} from "$lib/portfolioElections";
+import {
+  ELECTION_KEYS,
+  isValidElection,
+  type ElectionValues,
+} from "$lib/electionValues";
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
-export async function load({ locals, request }) {
+export async function load({ locals, url }) {
   const now = dt.ZonedDateTime.now();
   const portfolioService = new PortfolioService(locals.user?.apiKey);
 
@@ -104,8 +115,9 @@ export async function load({ locals, request }) {
     // Priming is best-effort; the page result below is authoritative.
   }
 
-  const searchParams = new URLSearchParams(request.url.split("?")[1]);
-  const selectedPortfolioId = searchParams.get("portfolioId");
+  // `url`, not `request.url`: SvelteKit tracks `url.searchParams`, so the
+  // grid's Elections link (same route, new ?portfolioId=) re-runs this load.
+  const selectedPortfolioId = url.searchParams.get("portfolioId");
 
   let transactions: import("$lib/transactions").TransactionData[] = [];
   if (selectedPortfolioId) {
@@ -119,15 +131,88 @@ export async function load({ locals, request }) {
     }
   }
 
+  // US-242: the same ?portfolioId= also opens the elections panel. A failed
+  // elections read leaves the transactions above untouched.
+  let elections: PortfolioElections | null = null;
+  let electionsError: string | null = null;
+  if (selectedPortfolioId) {
+    try {
+      elections = await fetchElections(
+        selectedPortfolioId,
+        locals.user?.apiKey
+      );
+      if (!elections) electionsError = "Portfolio not found.";
+    } catch (err: any) {
+      console.error("Elections fetch error:", err?.message ?? err);
+      electionsError = `Could not load elections: ${
+        err?.details || err?.message || err
+      }`;
+    }
+  }
+
   return {
     portfolioData,
     transactions,
     selectedPortfolioId,
+    elections,
+    electionsError,
     user: locals.user,
   };
 }
 
 export const actions = {
+  // US-242: posts only after the user confirms. The form carries the as_of
+  // the panel loaded and only the changed elections.
+  saveElections: async ({ request, locals }) => {
+    if (!locals.user) {
+      return fail(401, { elections: { ok: false, error: "Sign in to save." } });
+    }
+    const formData = await request.formData();
+    const portfolioId = String(formData.get("portfolioId") ?? "").trim();
+    const baseAsOf = String(formData.get("baseAsOf") ?? "");
+    const wanted: Partial<ElectionValues> = {};
+    for (const key of ELECTION_KEYS) {
+      const raw = formData.get(key);
+      if (raw === null) continue;
+      const value = Number(raw);
+      if (
+        raw === "" ||
+        !Number.isInteger(value) ||
+        !isValidElection(key, value)
+      ) {
+        return fail(400, {
+          elections: { ok: false, error: `Unknown value for ${key}: ${raw}` },
+        });
+      }
+      wanted[key] = value;
+    }
+    if (!portfolioId) {
+      return fail(400, {
+        elections: { ok: false, error: "Missing portfolio." },
+      });
+    }
+    if (Object.keys(wanted).length === 0) {
+      return fail(400, {
+        elections: { ok: false, error: "No changes to save." },
+      });
+    }
+
+    const result = await saveElections(
+      portfolioId,
+      wanted,
+      baseAsOf,
+      locals.user.apiKey
+    );
+    if (result.ok) {
+      return {
+        elections: { ok: true, asOf: result.asOf, changes: result.changes },
+      };
+    }
+    const status = { invalid: 400, not_found: 404, stale: 409, broker: 502 }[
+      result.reason
+    ];
+    return fail(status, { elections: { ok: false, error: result.error } });
+  },
   dryRun: async ({ request, locals }) => {
     const formData = await request.formData();
     const uuidHex = formData.get("uuidHex") as string;

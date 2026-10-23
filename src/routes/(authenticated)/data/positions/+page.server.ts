@@ -14,6 +14,23 @@ import {
 
 import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
 const { PositionViewProto, PositionTypeProto } = position_pkg;
+import measuresCatalog from "$lib/data/measures.json";
+
+// gRPC status UNIMPLEMENTED.
+const GRPC_UNIMPLEMENTED = 12;
+
+// US-242: measures the ledger-models catalog marks `implemented: false`
+// (e.g. ADJUSTED_COST_BASIS until VS-110). The catalog is the source, so no
+// measure is named here.
+const unimplementedMeasures = new Set(
+  measuresCatalog.measures
+    .filter((m) => m.implemented === false)
+    .map((m) => m.name)
+);
+
+function notSupportedText(measure: string): string {
+  return `${measure} is not supported yet`;
+}
 
 const fieldLookup = {
   ID: FieldProto.ID,
@@ -149,6 +166,9 @@ export async function load({ locals, request }) {
 
   const userFields = stripQuotes(fields).split(",");
   const userMeasures = stripQuotes(measures).split(",");
+  const unsupportedMeasures = userMeasures.filter((m) =>
+    unimplementedMeasures.has(m)
+  );
 
   // Map user fields and measures to their respective Protos
   const mappedFields = userFields.map((field) => {
@@ -218,9 +238,22 @@ export async function load({ locals, request }) {
   } catch (e: any) {
     const detail = e?.details || e?.message || String(e);
     console.error("Error fetching positions:", detail);
-    fetchError = detail
-      ? `Could not load positions: ${detail}`
-      : "Could not load positions (backend returned an empty error).";
+    if (e?.code === GRPC_UNIMPLEMENTED) {
+      // US-242: valuation-service names the measure, e.g.
+      // "ADJUSTED_COST_BASIS is not supported yet"; show it as sent.
+      fetchError =
+        e?.details ||
+        notSupportedText(unsupportedMeasures[0] ?? "This measure");
+    } else {
+      fetchError = detail
+        ? `Could not load positions: ${detail}`
+        : "Could not load positions (backend returned an empty error).";
+    }
+  }
+  // US-242: an unimplemented measure can also come back as no value at all
+  // (or no rows), which would read as a blank cell; say why instead.
+  if (!fetchError && unsupportedMeasures.length > 0) {
+    fetchError = unsupportedMeasures.map(notSupportedText).join("; ");
   }
 
   const metadata = { fields: userFields, measures: userMeasures };
@@ -233,6 +266,7 @@ export async function load({ locals, request }) {
     portfolioName,
     portfolioUniverse,
     error: fetchError,
+    unsupportedMeasures,
     user: locals.user,
   };
 }

@@ -45,7 +45,7 @@ async function resolveFirstPortfolio(
   // text contains the portfolio name. Pull both off the row.
   const link = firstRow
     .getByRole("link")
-    .filter({ hasNotText: /^(Txns|Delete)$/ })
+    .filter({ hasNotText: /^(Txns|Elections|Delete)$/ })
     .first();
   const href = await link.getAttribute("href");
   expect(href).toMatch(/portfolioId=[0-9a-f-]{36}/);

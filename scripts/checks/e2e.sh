@@ -76,6 +76,10 @@ REGRESSION_SPECS=(
   # US-252: /free/soma logged out: its 7 sections, the MBS toggle and the
   # code cards.
   tests/e2e/free-pages.spec.ts
+  # US-242: ADJUSTED_COST_BASIS shows "not supported yet" on the positions
+  # page. (The elections journey, portfolio-elections.spec.ts, is picked up
+  # by the portfolio* glob above.)
+  tests/e2e/positions-adjusted-cost-basis.spec.ts
 )
 # Tests that fail on the host for lack of data, logged as "known" without
 # failing the check. Any other failure fails it, and so does a listed test

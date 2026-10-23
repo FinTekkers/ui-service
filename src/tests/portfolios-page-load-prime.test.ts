@@ -34,7 +34,7 @@ function fakePortfolio(id: string, name: string) {
 
 const event = {
   locals: { user: { apiKey: "key-load" } },
-  request: { url: "https://www.fintekkers.org/data/portfolios" },
+  url: new URL("https://www.fintekkers.org/data/portfolios"),
 };
 
 describe("/data/portfolios load primes the portfolio universe (US-211)", () => {

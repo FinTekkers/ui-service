@@ -2,6 +2,8 @@
  * US-247 — package.json declares @fintekkers/ledger-models as a minimum
  * version only (owner rule, 22 Oct): no upper bound and no exact version.
  * package-lock.json agrees and resolves a release at or above that minimum.
+ * US-242 raised the minimum to 1.1.1, the first release that ships
+ * amortisation_elections_pb (AmortisationElectionsProto).
  *
  * @vitest-environment node
  */
@@ -23,9 +25,9 @@ function isMinimumOnly(range: string): boolean {
 }
 
 describe("ledger-models is declared as a minimum version only", () => {
-  test("package.json declares exactly >=1.1.0", () => {
+  test("package.json declares exactly >=1.1.1", () => {
     const range = readJson("package.json").dependencies[PKG];
-    expect(range).toBe(">=1.1.0");
+    expect(range).toBe(">=1.1.1");
     expect(range).toBe(LEDGER_MODELS_RANGE);
     expect(isMinimumOnly(range)).toBe(true);
   });
@@ -41,14 +43,14 @@ describe("ledger-models is declared as a minimum version only", () => {
     expect(isMinimumOnly(range)).toBe(expected);
   });
 
-  test("package-lock.json declares >=1.1.0 and resolves 1.1.0 or later", () => {
+  test("package-lock.json declares >=1.1.1 and resolves 1.1.1 or later", () => {
     const lock = readJson("package-lock.json");
-    expect(lock.packages[""].dependencies[PKG]).toBe(">=1.1.0");
+    expect(lock.packages[""].dependencies[PKG]).toBe(">=1.1.1");
     const locked = lock.packages[`node_modules/${PKG}`].version;
     expect(locked).toMatch(/^\d+\.\d+\.\d+$/);
     expect(
-      versionAtLeast(locked, "1.1.0"),
-      `ledger-models ${locked} is below 1.1.0`
+      versionAtLeast(locked, "1.1.1"),
+      `ledger-models ${locked} is below 1.1.1`
     ).toBe(true);
   });
 });

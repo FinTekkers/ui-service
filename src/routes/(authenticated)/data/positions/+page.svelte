@@ -98,6 +98,7 @@
     positions={filteredPositions}
     requestData={data.requestData}
     metadata={data.metadata}
+    unsupportedMeasures={data.unsupportedMeasures ?? []}
     onSortChange={handleSortChange}
   />
 {/if}

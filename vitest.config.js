@@ -9,6 +9,7 @@ export default defineConfig({
       $lib: path.resolve("src/lib"),
       "$app/paths": path.resolve("src/tests/stubs/app-paths.ts"),
       "$app/stores": path.resolve("src/tests/stubs/app-stores.ts"),
+      "$app/forms": path.resolve("src/tests/stubs/app-forms.ts"),
     },
   },
   test: {

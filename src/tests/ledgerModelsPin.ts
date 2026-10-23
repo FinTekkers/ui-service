@@ -31,9 +31,10 @@ export const LEDGER_MODELS_FLOOR = "1.1.0";
 /**
  * package.json's range for ledger-models: a minimum only, no upper bound or
  * exact version (owner rule, 22 Oct). Raise it only when the code uses
- * something first released in the new version.
+ * something first released in the new version. US-242 raised it to 1.1.1,
+ * the first release with AmortisationElectionsProto.
  */
-export const LEDGER_MODELS_RANGE = ">=1.1.0";
+export const LEDGER_MODELS_RANGE = ">=1.1.1";
 
 /**
  * Asserts package-lock pins ledger-models to an x.y.z at or above both `floor`
