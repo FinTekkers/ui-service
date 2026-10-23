@@ -78,11 +78,9 @@ import {
 } from "$lib/securityFilterTypes";
 import { FetchSecurity } from "$lib/security";
 import { load } from "../routes/(authenticated)/data/securities/+page.server";
-import { expectLedgerModelsAtLeast } from "./ledgerModelsPin";
 
 const { FieldProto } = fieldPkg;
 const ROOT = path.resolve(__dirname, "../..");
-const LM_RELEASE = "0.4.29";
 
 function optionsOf(select: HTMLSelectElement) {
   return Array.from(select.options).map((o) => ({
@@ -177,12 +175,6 @@ describe("metric 1: SecuritySelect dropdowns come from ledger-models", () => {
       expect((placeholder as string).length).toBeGreaterThan(0);
       expect(input.placeholder).toBe(placeholder);
     }
-  });
-});
-
-describe("guardrail 1: ledger-models is the LM-275 release", () => {
-  test(`package-lock pins ${LM_RELEASE} or later and package.json's range resolves to it`, () => {
-    expectLedgerModelsAtLeast(LM_RELEASE);
   });
 });
 

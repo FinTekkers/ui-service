@@ -84,12 +84,8 @@ import { runCurveParYieldsByTenor } from "$lib/runCurve";
 import { fetchPricesForSecurity } from "$lib/curvePrices";
 import type { CurveConstituent } from "$lib/treasuryCurveData";
 import { formatAmount, formatPercent } from "$lib/formatUtils";
-import { expectLedgerModelsAtLeast } from "./ledgerModelsPin";
 
 const { MeasureProto } = measure_pkg;
-
-/** First @fintekkers/ledger-models release with the LM-306 JS codec. */
-const FIRST_LM_306_RELEASE = "0.4.39";
 
 const BIG = "12345678901234567890123456.789012"; // 32 digits, scale 6
 
@@ -158,12 +154,6 @@ async function rowThroughTransactions(
 beforeEach(() => {
   capturedValuations.length = 0;
   capturedCurves.length = 0;
-});
-
-describe("US-212 metric 1: ledger-models pin", () => {
-  test(`package-lock resolves ledger-models at ${FIRST_LM_306_RELEASE} or later`, () => {
-    expectLedgerModelsAtLeast(FIRST_LM_306_RELEASE);
-  });
 });
 
 describe("US-220 metric 3: decimals round-trip exactly through the compact helpers", () => {

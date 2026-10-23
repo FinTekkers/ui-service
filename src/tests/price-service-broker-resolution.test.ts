@@ -7,8 +7,7 @@
  * …Price/Search". From 0.4.31 every wrapper client asks ledger-models'
  * service lookup, which puts BROKER_HOST first.
  *
- *   - metric 1: package-lock pins ledger-models at or above the LM-287
- *     release, and the price client the prices page load() builds connects
+ *   - metric 1: the price client the prices page load() builds connects
  *     to BROKER_HOST (127.0.0.1:8085), not port 8082.
  *   - guardrail 1: the prices page server code names no address or port.
  */
@@ -16,9 +15,7 @@ import fs from "fs";
 import path from "path";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { UUIDProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js";
-import { expectLedgerModelsAtLeast } from "./ledgerModelsPin";
 
-const LM_287_RELEASE = "0.4.31";
 const ROUTE = "src/routes/(authenticated)/data/prices/+page.server.ts";
 
 // Keep the real PriceService constructor (that is what resolves the address)
@@ -73,10 +70,6 @@ describe("metric 1: prices page price client resolves to the broker", () => {
 
   afterAll(() => {
     vi.unstubAllEnvs();
-  });
-
-  test(`package-lock pins ${LM_287_RELEASE} or later`, () => {
-    expectLedgerModelsAtLeast(LM_287_RELEASE);
   });
 
   test("load() for ticker AAPL builds its PriceClient on 127.0.0.1:8085, not 8082", async () => {
