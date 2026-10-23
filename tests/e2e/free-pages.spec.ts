@@ -12,6 +12,7 @@ import { test, expect } from "@playwright/test";
 import { readFileSync } from "fs";
 import path from "path";
 import { soma } from "../../src/lib/free/mock/soma";
+import { tips, tipsMeasure } from "../../src/lib/free/mock/tips";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -94,4 +95,103 @@ test("the code cards show the sample files verbatim after hydration", async ({
     );
     expect(await page.getByLabel(name).textContent()).toBe(source.trimEnd());
   }
+});
+
+// US-253: /free/tips, logged out. The 5 DataExplorerTIPS.dc.html sections,
+// the figures from src/lib/free/mock/tips.ts, and the display-only
+// calculator.
+const TIPS_H2S = [
+  "What are Treasury Inflation-Protected Securities?",
+  "TII 1⅞ 01/15/36 · 10-Year TIPS, Series A-2036",
+  "How this bond tracks inflation",
+  "Value a TIPS position",
+  "Pull TIPS data from the API",
+];
+
+test("/free/tips returns 200 with the 5 artboard sections in the shell", async ({
+  page,
+}) => {
+  const response = await page.goto("/free/tips");
+  expect(response?.status()).toBe(200);
+  await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
+  await expect(page.locator(".ft-free .content h2")).toHaveText(TIPS_H2S);
+});
+
+test("/free/tips shows the stored security and worked-example figures", async ({
+  page,
+}) => {
+  await page.goto("/free/tips");
+  const widget = page.getByRole("region", { name: TIPS_H2S[1] });
+  const example = page.getByRole("article", { name: TIPS_H2S[2] });
+
+  /** The dd next to the widget's `label`. */
+  const field = (label: string) =>
+    widget.locator("dl > div").filter({ hasText: label }).locator("dd");
+
+  const cusip = tips.security.identifiersList[0].identifierValue;
+  expect(cusip).toBe("91282CPU9");
+  await expect(field("CUSIP")).toHaveText(cusip);
+
+  expect(tips.security.tipsExtension.baseCpi).toBe("324.93471");
+  await expect(field("Base ref CPI")).toHaveText(
+    tips.security.tipsExtension.baseCpi
+  );
+  expect(tipsMeasure(tips, "REFERENCE_CPI").display).toBe("332.92643");
+  await expect(field("Ref CPI (Jun 30)")).toHaveText(
+    tipsMeasure(tips, "REFERENCE_CPI").display
+  );
+  expect(tipsMeasure(tips, "INDEX_RATIO").display).toBe("1.02459");
+  await expect(field("Index ratio")).toHaveText(
+    tipsMeasure(tips, "INDEX_RATIO").display
+  );
+
+  const figures = example.locator("ol > li > :last-child");
+  const stored = tips.workedExample;
+  expect([
+    stored.baseCpi,
+    stored.refCpi,
+    stored.indexRatio,
+    stored.adjustedPrincipal,
+    stored.coupon,
+  ]).toEqual(["324.93471", "332.92643", "1.02459", "$10,245.90", "$96.06"]);
+  await expect(figures).toHaveText([
+    stored.baseCpi,
+    stored.refCpi,
+    stored.indexRatio,
+    stored.adjustedPrincipal,
+    stored.coupon,
+    "max(adj., par)",
+  ]);
+});
+
+test("/free/tips calculator is disabled and shows its defaults", async ({
+  page,
+}) => {
+  await page.goto("/free/tips");
+  await page.waitForLoadState("networkidle");
+  const calc = page.getByRole("region", { name: TIPS_H2S[3] });
+
+  for (const [label, value] of [
+    ["Face value ($)", "10000"],
+    ["Real coupon (%)", "1.875"],
+    ["Base ref CPI", "324.93471"],
+    ["Current ref CPI", "332.92643"],
+    ["Years to maturity", "9.5"],
+    ["Real yield (%)", "2.25"],
+    ["Assumed annual inflation (%)", "2.30"],
+  ]) {
+    const input = calc.getByLabel(label, { exact: true });
+    await expect(input).toBeDisabled();
+    await expect(input).toHaveValue(value);
+  }
+  await expect(calc.getByRole("textbox")).toHaveCount(7);
+  await expect(calc.locator("tbody tr")).toHaveCount(19);
+  await expect(calc.locator("button:enabled")).toHaveCount(0);
+
+  await expect(calc).toContainText(
+    "Pre-filled with the January 2036 bond. This preview shows the default result; sign in to change the real yield and inflation."
+  );
+  await expect(
+    page.getByText("Change the real yield and your inflation assumption")
+  ).toHaveCount(0);
 });
