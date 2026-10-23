@@ -41,8 +41,7 @@
         <div class="track">
           <div
             class="fill"
-            data-bar-pct={bucket.barPct}
-            style="width: {bucket.barPct}%; background: {current.color}"
+            style="width: {bucket.sharePct}%; background: {current.color}"
           />
         </div>
         <span class="value"

@@ -3,10 +3,10 @@
  * Treasuries / MBS toggle on the maturity profile, and the code cards'
  * text after hydration.
  *
- * Bar widths: each bar renders the stored `barPct` of its bucket in
- * src/lib/free/mock/soma.ts, the artboard's width rule (% of the largest
- * bucket, 0.6% floor for any holding). The label beside it shows the
- * stored `sharePct` (% of the total), as the artboard does.
+ * Bar widths: metric 3 reads "each bar's rendered width then equals its MBS
+ * share stored in soma.ts". No owner ruling on #252 redefines "share", so
+ * each bar's width is the stored `sharePct` (% of the asset type's total)
+ * in src/lib/free/mock/soma.ts, the same figure its label shows.
  */
 import { test, expect } from "@playwright/test";
 import { readFileSync } from "fs";
@@ -63,7 +63,7 @@ test("MBS shows the stored MBS bar widths and note", async ({ page }) => {
     // A zero-width bar has no box.
     const fillWidth = fill?.width ?? 0;
     expect(
-      Math.abs(fillWidth - ((track?.width ?? 0) * bucket.barPct) / 100)
+      Math.abs(fillWidth - ((track?.width ?? 0) * bucket.sharePct) / 100)
     ).toBeLessThanOrEqual(1);
   }
 });

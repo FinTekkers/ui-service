@@ -63,11 +63,9 @@ export interface Finding {
 export interface MaturityBucket {
   /** Holdings in $ millions (H.4.1, Table 2). */
   valueM: number;
-  /** Share of the asset type's total, %, to 1 decimal place. */
+  /** Share of the asset type's total, %, to 1 decimal place. Also the
+   * bar width (metric 3: each bar's width equals its stored share). */
   sharePct: number;
-  /** Bar width, % of the largest bucket, with a 0.6% floor for any
-   * holding (the artboard's rule). */
-  barPct: number;
 }
 
 export interface MaturityView {

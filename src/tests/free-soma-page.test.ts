@@ -84,18 +84,14 @@ describe("/free/soma page", () => {
   });
 
   test.each(["tsy", "mbs"] as const)(
-    "stored %s shares and bar widths follow the artboard's rule",
+    "stored %s shares are each bucket's share of the total",
     (view) => {
       const buckets = soma.maturity[view].buckets;
       const values = buckets.map((b) => b.valueM);
       const total = values.reduce((a, b) => a + b, 0);
-      const max = Math.max(...values);
       for (const b of buckets) {
         expect(b.sharePct.toFixed(1)).toBe(
           ((b.valueM / total) * 100).toFixed(1)
-        );
-        expect(b.barPct.toFixed(2)).toBe(
-          Math.max((b.valueM / max) * 100, b.valueM > 0 ? 0.6 : 0).toFixed(2)
         );
       }
     }
@@ -105,7 +101,7 @@ describe("/free/soma page", () => {
     const { container } = renderPage();
     const fills = [...container.querySelectorAll<HTMLElement>(".fill")];
     expect(fills.map((fill) => fill.style.width)).toEqual(
-      soma.maturity.tsy.buckets.map((b) => `${b.barPct}%`)
+      soma.maturity.tsy.buckets.map((b) => `${b.sharePct}%`)
     );
     const maturity = screen.getByRole("region", {
       name: "When the holdings come due",
