@@ -4,10 +4,9 @@
 # host. (vite dev can't load @grpc/grpc-js in SSR here, so build like prod.)
 # Fails if the journey is skipped or not run, not only if it fails.
 #
-# Also captures the key screens into e2e/__screenshots__/ (US-205), which
-# Horizon publishes on the PR. Every run logs each test's result and a
-# screenshots PASS/INCOMPLETE verdict, then runs key-screens-files.spec.ts,
-# whose assertions fail the check unless all 18 named PNGs are valid.
+# Every run logs each test's result. Screen capture, diff and approval are
+# not done here (US-262): Horizon's shared runner captures the screens
+# listed in .horizon/screenshots.json into the gitignored .horizon/screenshots/.
 #
 # Last it runs the prices page and the sibling data pages' suites (US-209),
 # and the US-209 AAPL journey must pass.
@@ -37,8 +36,6 @@ BASE_URL="http://127.0.0.1:${PORT}"
 JOURNEY="sidebar-links-after-login.spec.ts"
 SPECS=(
   "tests/e2e/$JOURNEY"
-  tests/e2e/key-screens.spec.ts
-  tests/e2e/capture-screenshot.spec.ts
   tests/e2e/securities-filters-ledger-models.spec.ts
 )
 # US-209: the prices page and the sibling data pages' suites. They use the
@@ -90,7 +87,6 @@ REGRESSION_SPECS=(
 # such a data-precondition skip to a new entry here.
 KNOWN_FAILING=()
 REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
-FILES_REPORT="$(mktemp -t e2e-files-report.XXXXXX.json)"
 REGRESSION_REPORT="$(mktemp -t e2e-regression-report.XXXXXX.json)"
 LOG="$(mktemp -t e2e-server.XXXXXX.log)"
 # The chromium project's storageState (playwright.config.ts): a temp file
@@ -124,7 +120,7 @@ SERVER_PID=$!
 cleanup() {
   kill "$SERVER_PID" 2>/dev/null || true
   wait "$SERVER_PID" 2>/dev/null || true
-  rm -f "$REPORT" "$FILES_REPORT" "$REGRESSION_REPORT" "$LOG"
+  rm -f "$REPORT" "$REGRESSION_REPORT" "$LOG"
   # The session written below is gitignored but not prettier-clean, and it
   # holds the API key; never leave it behind.
   rm -f "$AUTH_STATE"
@@ -145,9 +141,6 @@ curl -sf -o /dev/null "$BASE_URL/login" || {
   echo "server not ready at $BASE_URL" >&2
   exit 1
 }
-
-# Stale PNGs from an earlier run must never reach the published set.
-rm -rf e2e/__screenshots__
 
 # --no-deps: the specs build the session themselves, so the setup project
 # isn't needed.
@@ -179,35 +172,12 @@ node -e '
   if (s.skipped > 0 || s.unexpected > 0) process.exit(1);
 ' "$REPORT" "$JOURNEY"
 
-# Always verify strictly so every run's log records a pass/fail verdict for
-# the 18 key screens; only E2E_SCREENSHOTS_STRICT=1 lets it fail the check.
-if node scripts/checks/verify-screenshots.mjs --strict; then
-  echo "e2e: screenshots: PASS (all key screens captured)"
-elif [ "${E2E_SCREENSHOTS_STRICT:-}" = 1 ]; then
-  echo "e2e: screenshots: FAIL (E2E_SCREENSHOTS_STRICT=1)" >&2
-  echo "e2e: took ${SECONDS}s"
-  exit 1
-else
-  echo "e2e: screenshots: INCOMPLETE (warn-only, see above)" >&2
-fi
-
-# The session file must never reach the published screenshots.
-if [ -n "$(find e2e/__screenshots__ \( -name user.json -o -path '*/.auth*' \) 2>/dev/null)" ]; then
-  echo "e2e: FAIL session file (.auth/ or user.json) under e2e/__screenshots__" >&2
+# The session file must never reach the published screenshots, which the
+# shared runner writes to .horizon/screenshots/ (.horizon/screenshots.json).
+if [ -n "$(find .horizon/screenshots \( -name user.json -o -path '*/.auth*' \) 2>/dev/null)" ]; then
+  echo "e2e: FAIL session file (.auth/ or user.json) under .horizon/screenshots" >&2
   exit 1
 fi
-
-# Its own run, so it only starts once every capture above has finished. It
-# must run and pass: a skip here means the env flag didn't reach it.
-E2E_KEY_SCREENS_FILES=1 PLAYWRIGHT_BASE_URL="$BASE_URL" \
-  PLAYWRIGHT_JSON_OUTPUT_FILE="$FILES_REPORT" \
-  npx playwright test tests/e2e/key-screens-files.spec.ts --project=chromium \
-  --no-deps --reporter=list,json
-node -e '
-  const s = require(process.argv[1]).stats;
-  console.log(`e2e: key-screens-files: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed`);
-  if (s.expected < 1 || s.skipped > 0 || s.unexpected > 0) process.exit(1);
-' "$FILES_REPORT"
 
 # Save the e2e user's session (no login) where the chromium project's
 # storageState expects it. The key comes from the environment, never argv.
