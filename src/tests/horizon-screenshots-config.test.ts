@@ -110,8 +110,8 @@ describe(".horizon/screenshots.json shape", () => {
   });
 
   test("has one phone viewport at the bespoke iPhone 13 size", () => {
-    // devices["iPhone 13"] in Playwright, as tests/e2e/key-screens.spec.ts
-    // uses it; the runner renders every shot at deviceScaleFactor 1.
+    // devices["iPhone 13"] in Playwright, as the removed bespoke capture
+    // used it; the runner renders every shot at deviceScaleFactor 1.
     expect(cfg.viewports).toEqual([{ name: "phone", width: 390, height: 664 }]);
     for (const s of cfg.screens as Screen[]) {
       expect(s.viewports, s.name).toBeUndefined();
