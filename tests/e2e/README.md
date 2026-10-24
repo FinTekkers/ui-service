@@ -108,6 +108,11 @@ and publishes them on the PR with a diff against the baseline.
 - Baselines live on git refs, never as PNGs on `main`.
 - Don't capture screenshots from a spec. `scripts/checks/e2e.sh` only checks
   that no session file (`.auth/`, `user.json`) is under `.horizon/screenshots/`.
+- The legacy `key-screens*.spec.ts`, `capture-screenshot.spec.ts`,
+  `fixtures/screenshot.ts` and `scripts/checks/verify-screenshots.mjs` are no
+  longer run by this branch's `e2e.sh`. They stay only until it reaches
+  `main` (Horizon runs `main`'s copy of the check), then a follow-up deletes
+  them.
 
 ## Debugging
 
