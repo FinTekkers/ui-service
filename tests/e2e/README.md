@@ -94,23 +94,20 @@ test("something", async ({ page }) => {
 Name files `*.spec.ts` (Playwright's default) — vitest tests use `*.test.ts`,
 so the two suites stay disjoint.
 
-## Key-screen screenshots
+## Screenshots
 
-`key-screens.spec.ts` captures 6 screens (`login`, `portfolios`,
-`positions`, `securities`, `transactions`, `profile`) in 3 variants
-(`light--desktop`, `dark--desktop`, `dark--phone`) as
-`e2e/__screenshots__/<screen>--<variant>.png` at the repo root, e.g.
-`portfolios--dark--phone.png`. The folder is gitignored; Horizon publishes
-it on the PR with a diff against the `e2e-baseline` branch.
+Screens are captured, diffed and approved by Horizon's shared screenshot
+runner, not by these specs. `.horizon/screenshots.json` at the repo root is
+the list: each screen's path, whether it needs the e2e login, what to wait
+for and what to mask (the profile page's API key display). The runner serves
+the production build, writes the PNGs to the gitignored `.horizon/screenshots/`
+and publishes them on the PR with a diff against the baseline.
 
-- The list lives in `scripts/checks/verify-screenshots.mjs`, which also
-  checks the 18 files after `scripts/checks/e2e.sh` runs. It only warns,
-  unless `E2E_SCREENSHOTS_STRICT=1`.
-- Use `captureScreenshot(page, name)` from `fixtures/screenshot.ts` for a
-  named full-page PNG. It never throws: a failed capture logs a warning.
-- The app is dark-only, so the light variant removes `<html class="dark">`.
-- The API key display is always masked, and a page that shows the full key
-  is not captured.
+- To add or change a screen, edit `.horizon/screenshots.json`;
+  `src/tests/horizon-screenshots-config.test.ts` checks its shape.
+- Baselines live on git refs, never as PNGs on `main`.
+- Don't capture screenshots from a spec. `scripts/checks/e2e.sh` only checks
+  that no session file (`.auth/`, `user.json`) is under `.horizon/screenshots/`.
 
 ## Debugging
 
