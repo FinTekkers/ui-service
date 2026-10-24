@@ -7,6 +7,8 @@
 # Every run logs each test's result. Screen capture, diff and approval are
 # not done here (US-262): Horizon's shared runner captures the screens
 # listed in .horizon/screenshots.json into the gitignored .horizon/screenshots/.
+# Horizon's run_checks() runs it as the `screenshots` slot, so its capture is
+# in that slot's log, not this script's.
 #
 # Last it runs the prices page and the sibling data pages' suites (US-209),
 # and the US-209 AAPL journey must pass.
@@ -174,6 +176,9 @@ node -e '
 
 # The session file must never reach the published screenshots, which the
 # shared runner writes to .horizon/screenshots/ (.horizon/screenshots.json).
+# No stale-clear here: the runner deletes old PNGs and the old manifest there
+# before each capture, and clearing it from this script could delete a fresh
+# capture before Horizon publishes it.
 if [ -n "$(find .horizon/screenshots \( -name user.json -o -path '*/.auth*' \) 2>/dev/null)" ]; then
   echo "e2e: FAIL session file (.auth/ or user.json) under .horizon/screenshots" >&2
   exit 1
