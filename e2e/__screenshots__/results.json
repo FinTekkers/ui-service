@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "baseline": "9868adc52418107f17110bedeaa2fb8ed8d305ec",
+  "threshold": 0.1,
+  "ratioTolerance": 0.01,
+  "shots": [
+    {
+      "name": "login--dark--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "login--dark--phone",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "login--light--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "login--phone--dark",
+      "status": "new",
+      "diffRatio": null,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "portfolios--dark--desktop",
+      "status": "same",
+      "diffRatio": 0.005558908045977012,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "portfolios--dark--phone",
+      "status": "changed",
+      "diffRatio": 1,
+      "diff": "e2e/__screenshots__/diff/portfolios--dark--phone.png",
+      "error": null
+    },
+    {
+      "name": "portfolios--light--desktop",
+      "status": "same",
+      "diffRatio": 0.005118175287356322,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "portfolios--phone--dark",
+      "status": "new",
+      "diffRatio": null,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "positions--dark--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "positions--dark--phone",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "positions--light--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "positions--phone--dark",
+      "status": "new",
+      "diffRatio": null,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "profile--dark--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "profile--dark--phone",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "profile--light--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "profile--phone--dark",
+      "status": "new",
+      "diffRatio": null,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "securities--dark--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "securities--dark--phone",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "securities--light--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "securities--phone--dark",
+      "status": "new",
+      "diffRatio": null,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "tips-current-cpi-manual-entry",
+      "status": "removed",
+      "diffRatio": null,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "tips-current-cpi-price-service",
+      "status": "removed",
+      "diffRatio": null,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "transactions--dark--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "transactions--dark--phone",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "transactions--light--desktop",
+      "status": "same",
+      "diffRatio": 0,
+      "diff": null,
+      "error": null
+    },
+    {
+      "name": "transactions--phone--dark",
+      "status": "new",
+      "diffRatio": null,
+      "diff": null,
+      "error": null
+    }
+  ]
+}
