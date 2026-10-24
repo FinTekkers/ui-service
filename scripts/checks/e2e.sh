@@ -264,6 +264,15 @@ KNOWN_FAILING="$(printf '%s\n' "${KNOWN_FAILING[@]}")" node -e '
     console.log("e2e: regression: FAIL prices.spec.ts AAPL journey did not pass");
     ok = false;
   }
+  // US-262: the TIPS Current CPI Journeys A, B and C must run and pass, never
+  // skip (they skip when the price service holds no CPI-U readings).
+  const tips = specs.filter((spec) => spec.file === "tips-calculator-current-cpi.spec.ts").flatMap((spec) => spec.tests);
+  const tipsPassed = tips.filter((t) => t.status === "expected").length;
+  console.log(`e2e: regression: tips-calculator-current-cpi.spec.ts: ${tipsPassed}/${tips.length} passed`);
+  if (tips.length !== 3 || tipsPassed !== 3) {
+    console.log("e2e: regression: FAIL tips-calculator-current-cpi.spec.ts Journeys A, B and C did not all pass");
+    ok = false;
+  }
   if (!ok) process.exit(1);
 ' "$REGRESSION_REPORT" "${REGRESSION_SPECS[@]}"
 
