@@ -34,7 +34,7 @@ vi.mock(
   "@fintekkers/ledger-models/node/wrappers/services/transaction-service/TransactionService",
   () => ({
     TransactionService: vi.fn().mockImplementation(() => ({
-      searchTransaction: async () => searchResults,
+      searchWithSecurityAndPortfolio: async () => searchResults,
     })),
   })
 );

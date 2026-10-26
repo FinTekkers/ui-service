@@ -75,7 +75,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(
   try {
     const now = datetime.ZonedDateTime.now();
     const service = new ts.TransactionService(apiKey);
-    const results: Transaction[] = await service.searchTransaction(
+    const results: Transaction[] = await service.searchWithSecurityAndPortfolio(
       now.toProto(),
       filter,
       1000
