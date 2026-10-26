@@ -177,9 +177,10 @@ describe("Transaction/Search — limit behavior (ledger-service:8082)", () => {
     // The FetchTransactionWithFilter function passes limit=1000
     expect(source).toContain("1000");
 
-    // Verify it's in the searchTransaction call context
+    // Verify it's in the searchWithSecurityAndPortfolio call context
     const haslimitCall =
-      source.includes("searchTransaction(") && source.includes("1000");
+      source.includes("searchWithSecurityAndPortfolio(") &&
+      source.includes("1000");
     expect(haslimitCall).toBe(true);
 
     console.log("transactions.ts hardcodes limit=1000: confirmed");

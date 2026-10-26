@@ -12,6 +12,7 @@ import type { QueryPositionResponseProto } from "@fintekkers/ledger-models/node/
 
 //Auth
 import { getServiceConnection } from "$lib/grpc-auth";
+import { fromDecimalProto } from "$lib/decimal";
 import type { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
 import type {
   PositionTypeProto,
@@ -234,8 +235,8 @@ function elementsToReturn(results: Position[]) {
     }
 
     for (let measure of element.getMeasures()) {
-      processedElement[measure.getMeasure()] = element.getMeasureValue(
-        measure.getMeasure()
+      processedElement[measure.getMeasure()] = fromDecimalProto(
+        measure.getMeasureDecimalValue()
       );
     }
 
