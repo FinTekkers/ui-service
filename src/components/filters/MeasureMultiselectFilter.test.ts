@@ -53,10 +53,10 @@ describe("MeasureMultiselectFilter", () => {
     }
   });
 
-  test("DEFAULT_MEASURE_LABELS title-cases proto names", () => {
+  test("DEFAULT_MEASURE_LABELS uses the measure catalog's display names", () => {
     expect(DEFAULT_MEASURE_LABELS.DIRECTED_QUANTITY).toBe("Directed Quantity");
     expect(DEFAULT_MEASURE_LABELS.MARKET_VALUE).toBe("Market Value");
-    expect(DEFAULT_MEASURE_LABELS.YIELD_TO_MATURITY).toBe("Yield To Maturity");
+    expect(DEFAULT_MEASURE_LABELS.YIELD_TO_MATURITY).toBe("Yield to Maturity");
   });
 
   test("containerClass / id pass through to the rendered nodes", () => {
