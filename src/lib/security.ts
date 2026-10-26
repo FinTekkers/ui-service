@@ -15,6 +15,7 @@ import {
   assetClassMatches,
   instrumentTypeOf,
   allAssetClasses,
+  parentOf,
 } from "@fintekkers/ledger-models/node/wrappers/models/security/product_hierarchy";
 import { Tenor } from "@fintekkers/ledger-models/node/wrappers/models/security/term";
 import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
@@ -171,45 +172,31 @@ const COMMODITY_OR_CRYPTO_ORDER: readonly IdentifierTypeProto[] = [
   IdentifierTypeProto.FIGI,
 ];
 
+// US-280: keyed on the top-level node of the ledger-models product_type
+// tree, so a new leaf picks up its family's order without a code change.
+const ORDER_BY_PRODUCT_FAMILY: Record<string, readonly IdentifierTypeProto[]> =
+  {
+    BOND: BOND_ORDER,
+    STOCK: EQUITY_ORDER,
+    INDEX: INDEX_ORDER,
+    CASH_INSTRUMENT: CURRENCY_ORDER,
+    CRYPTO: COMMODITY_OR_CRYPTO_ORDER,
+    COMMODITY_SPOT: COMMODITY_OR_CRYPTO_ORDER,
+  };
+
 function preferenceOrderFor(
   productType: number
 ): readonly IdentifierTypeProto[] {
-  switch (productType) {
-    case ProductTypeProto.TBILL:
-    case ProductTypeProto.TREASURY_NOTE:
-    case ProductTypeProto.TREASURY_BOND:
-    case ProductTypeProto.TIPS:
-    case ProductTypeProto.TREASURY_FRN:
-    case ProductTypeProto.STRIPS:
-    case ProductTypeProto.SOVEREIGN_BOND:
-    case ProductTypeProto.CORP_BOND:
-    case ProductTypeProto.MUNI_BOND:
-    case ProductTypeProto.MORTGAGE_BACKED:
-      return BOND_ORDER;
-    case ProductTypeProto.COMMON_STOCK:
-    case ProductTypeProto.PREFERRED_STOCK:
-    case ProductTypeProto.ADR:
-    case ProductTypeProto.ETF:
-      return EQUITY_ORDER;
-    case ProductTypeProto.EQUITY_INDEX:
-    case ProductTypeProto.BOND_INDEX:
-    case ProductTypeProto.COMMODITY_INDEX:
-    case ProductTypeProto.VIX_SPOT:
-    case ProductTypeProto.CPI_SERIES:
-    case ProductTypeProto.SOFR_SERIES:
-      return INDEX_ORDER;
-    case ProductTypeProto.CURRENCY:
-    case ProductTypeProto.FX_SPOT:
-    case ProductTypeProto.MONEY_MARKET_FUND:
-      return CURRENCY_ORDER;
-    case ProductTypeProto.CRYPTOCURRENCY:
-    case ProductTypeProto.STABLECOIN:
-    case ProductTypeProto.GOLD:
-    case ProductTypeProto.SILVER:
-      return COMMODITY_OR_CRYPTO_ORDER;
-    default:
-      return BOND_ORDER;
-  }
+  const entries = Object.entries(ProductTypeProto) as Array<[string, number]>;
+  let node = entries.find(([, v]) => v === productType)?.[0];
+  // Walk up to the root; parentOf returns null for roots and unknown names.
+  for (let p = node && parentOf(node); p; p = parentOf(p)) node = p;
+  // Unknown types and families without an order (futures, swaps, …) keep
+  // the bond order.
+  return node !== undefined &&
+    Object.prototype.hasOwnProperty.call(ORDER_BY_PRODUCT_FAMILY, node)
+    ? ORDER_BY_PRODUCT_FAMILY[node]
+    : BOND_ORDER;
 }
 
 function isTypedIdentifier(id: Identifier): boolean {
