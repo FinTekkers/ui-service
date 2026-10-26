@@ -10,8 +10,11 @@
 # Horizon's run_checks() runs it as the `screenshots` slot, so its capture is
 # in that slot's log, not this script's.
 #
-# Last it runs the prices page and the sibling data pages' suites (US-209),
-# and the US-209 AAPL journey must pass.
+# It also runs the prices page and the sibling data pages' suites (US-209),
+# and the US-209 AAPL journey must pass. e2e-report.mjs judges each run.
+#
+# US-283: the specs for the area this branch changed run first, and the
+# check stops if they fail; the rest run only after they pass.
 #
 # First (US-224) it logs the ledger-models version under test (install.sh
 # refreshes it within package.json's range) and runs build-local.sh, the
@@ -88,8 +91,8 @@ REGRESSION_SPECS=(
 # the cpi_index test passes since the 14 Oct reload loaded CPI data. Prefer
 # such a data-precondition skip to a new entry here.
 KNOWN_FAILING=()
-REPORT="$(mktemp -t e2e-report.XXXXXX.json)"
-REGRESSION_REPORT="$(mktemp -t e2e-regression-report.XXXXXX.json)"
+PHASE1_REPORT="$(mktemp -t e2e-phase1-report.XXXXXX.json)"
+PHASE2_REPORT="$(mktemp -t e2e-phase2-report.XXXXXX.json)"
 LOG="$(mktemp -t e2e-server.XXXXXX.log)"
 # The chromium project's storageState (playwright.config.ts): a temp file
 # under the gitignored /playwright/.auth/, deleted on exit.
@@ -122,7 +125,7 @@ SERVER_PID=$!
 cleanup() {
   kill "$SERVER_PID" 2>/dev/null || true
   wait "$SERVER_PID" 2>/dev/null || true
-  rm -f "$REPORT" "$REGRESSION_REPORT" "$LOG"
+  rm -f "$PHASE1_REPORT" "$PHASE2_REPORT" "$LOG"
   # The session written below is gitignored but not prettier-clean, and it
   # holds the API key; never leave it behind.
   rm -f "$AUTH_STATE"
@@ -144,36 +147,6 @@ curl -sf -o /dev/null "$BASE_URL/login" || {
   exit 1
 }
 
-# --no-deps: the specs build the session themselves, so the setup project
-# isn't needed.
-PLAYWRIGHT_BASE_URL="$BASE_URL" PLAYWRIGHT_JSON_OUTPUT_FILE="$REPORT" \
-  npx playwright test "${SPECS[@]}" --project=chromium --no-deps --reporter=list,json
-
-# The journey's test must have run and passed, whatever the other specs did.
-node -e '
-  const report = require(process.argv[1]);
-  const s = report.stats;
-  console.log(`e2e: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed, ${s.flaky} flaky`);
-  const specs = [];
-  const walk = (suite) => {
-    specs.push(...(suite.specs ?? []));
-    (suite.suites ?? []).forEach(walk);
-  };
-  report.suites.forEach(walk);
-  // One line per test, so the stored check log shows every result.
-  const ms = (t) => t.results.reduce((sum, r) => sum + r.duration, 0);
-  for (const spec of specs) {
-    for (const t of spec.tests) console.log(`e2e:   ${t.status} ${ms(t)}ms ${spec.file} > ${spec.title}`);
-  }
-  const journey = specs
-    .filter((spec) => spec.file.endsWith(process.argv[2]))
-    .flatMap((spec) => spec.tests);
-  const passed = journey.filter((t) => t.status === "expected").length;
-  console.log(`e2e: ${process.argv[2]}: ${passed}/${journey.length} passed`);
-  if (journey.length < 1 || passed < journey.length) process.exit(1);
-  if (s.skipped > 0 || s.unexpected > 0) process.exit(1);
-' "$REPORT" "$JOURNEY"
-
 # The session file must never reach the published screenshots, which the
 # shared runner writes to .horizon/screenshots/ (.horizon/screenshots.json).
 # No stale-clear here: the runner deletes old PNGs and the old manifest there
@@ -186,6 +159,8 @@ fi
 
 # Save the e2e user's session (no login) where the chromium project's
 # storageState expects it. The key comes from the environment, never argv.
+# It is written before any spec runs: the SPECS reset storageState to empty,
+# so they still build their own session.
 node --input-type=module -e '
   import { request } from "@playwright/test";
   import {
@@ -206,74 +181,66 @@ node --input-type=module -e '
   writeFileSync(STORAGE_STATE_PATH, JSON.stringify(state), { mode: 0o600 });
 ' "$BASE_URL"
 
-PLAYWRIGHT_BASE_URL="$BASE_URL" PLAYWRIGHT_JSON_OUTPUT_FILE="$REGRESSION_REPORT" \
-  npx playwright test "${REGRESSION_SPECS[@]}" --project=chromium --no-deps \
-  --reporter=list,json || true
-KNOWN_FAILING="$(printf '%s\n' "${KNOWN_FAILING[@]}")" node -e '
-  const report = require(process.argv[1]);
-  const s = report.stats;
-  console.log(`e2e: regression: ${s.expected} passed, ${s.skipped} skipped, ${s.unexpected} failed, ${s.flaky} flaky`);
-  const known = new Set(process.env.KNOWN_FAILING.split("\n").filter(Boolean));
-  const specs = [];
-  const walk = (suite) => {
-    specs.push(...(suite.specs ?? []));
-    (suite.suites ?? []).forEach(walk);
-  };
-  report.suites.forEach(walk);
-  // Duration and, for a skip, its reason, so the log shows a data skip
-  // took under a second and why it skipped.
-  const ms = (t) => t.results.reduce((sum, r) => sum + r.duration, 0);
-  const skipReason = (t) => {
-    const skip = (t.annotations ?? []).find((a) => a.type === "skip");
-    return skip?.description ? ` (skip: ${skip.description})` : " (skip: no reason given)";
-  };
-  let ok = true;
-  for (const e of report.errors ?? []) {
-    console.log(`e2e: regression: FAIL error: ${e.message}`);
-    ok = false;
-  }
-  const files = new Set();
-  for (const spec of specs) {
-    files.add(spec.file);
-    for (const t of spec.tests) {
-      const id = `${spec.file} > ${spec.title}`;
-      if (t.status === "expected" && known.has(id)) {
-        console.log(`e2e:   FAIL passed but listed in KNOWN_FAILING ${ms(t)}ms ${id}`);
-        ok = false;
-      } else if (t.status === "expected") {
-        console.log(`e2e:   ${t.status} ${ms(t)}ms ${id}`);
-      } else if (t.status === "skipped") {
-        console.log(`e2e:   ${t.status} ${ms(t)}ms ${id}${skipReason(t)}`);
-      } else if (known.has(id)) {
-        console.log(`e2e:   known (host data) ${t.status} ${ms(t)}ms ${id}`);
-      } else {
-        console.log(`e2e:   FAIL ${t.status} ${ms(t)}ms ${id}`);
-        ok = false;
-      }
-    }
-  }
-  for (const file of process.argv.slice(2).map((p) => p.replace(/^tests\/e2e\//, ""))) {
-    if (!files.has(file)) {
-      console.log(`e2e: regression: FAIL ${file} not run`);
-      ok = false;
-    }
-  }
-  // The US-209 AAPL journey must run and pass, never skip.
-  const aapl = specs.filter((spec) => spec.file === "prices.spec.ts" && spec.title.includes("AAPL price rows"));
-  if (aapl.length !== 1 || aapl[0].tests.some((t) => t.status !== "expected")) {
-    console.log("e2e: regression: FAIL prices.spec.ts AAPL journey did not pass");
-    ok = false;
-  }
-  // US-262: the TIPS Current CPI Journeys A, B and C must run and pass, never
-  // skip (they skip when the price service holds no CPI-U readings).
-  const tips = specs.filter((spec) => spec.file === "tips-calculator-current-cpi.spec.ts").flatMap((spec) => spec.tests);
-  const tipsPassed = tips.filter((t) => t.status === "expected").length;
-  console.log(`e2e: regression: tips-calculator-current-cpi.spec.ts: ${tipsPassed}/${tips.length} passed`);
-  if (tips.length !== 3 || tipsPassed !== 3) {
-    console.log("e2e: regression: FAIL tips-calculator-current-cpi.spec.ts Journeys A, B and C did not all pass");
-    ok = false;
-  }
-  if (!ok) process.exit(1);
-' "$REGRESSION_REPORT" "${REGRESSION_SPECS[@]}"
+# US-283: the changed area's specs run first (phase 1), and a failure there
+# stops the check; the rest run after (phase 2). select-tests.mjs picks them
+# from the diff against origin/main and logs why. With no diff, shared code
+# changed or no spec matched, every spec runs in one phase.
+UNIVERSE=("${SPECS[@]}" "${REGRESSION_SPECS[@]}")
+FIRST=()
+REST=()
+# Captured first, not read through <(...): a selector crash must not pass
+# silently under set -e.
+if selection="$(node scripts/checks/select-tests.mjs e2e "${UNIVERSE[@]}")"; then
+  while IFS=$'\t' read -r kind value; do
+    case "$kind" in
+      reason) echo "$value" ;;
+      first) FIRST+=("$value") ;;
+      rest) REST+=("$value") ;;
+    esac
+  done <<<"$selection"
+else
+  echo "e2e: all specs, one phase: select-tests.mjs failed"
+  selection=""
+fi
+# Phase 1 plus phase 2 must be exactly the check's specs, each once. Never
+# call Playwright with no files: it would run every spec in tests/e2e/.
+ALL="$(printf '%s\n' "${UNIVERSE[@]}" | sort -u)"
+if [ "${#FIRST[@]}" = 0 ] ||
+  [ "$(printf '%s\n' "${FIRST[@]}" "${REST[@]}" | sort)" != "$ALL" ]; then
+  [ -z "${selection:-}" ] ||
+    echo "e2e: all specs, one phase: the selection doesn't match the check's specs"
+  mapfile -t FIRST <<<"$ALL"
+  REST=()
+fi
+
+# Runs one phase's specs and judges its report (e2e-report.mjs); Playwright's
+# own exit code isn't used, so KNOWN_FAILING can apply.
+# --no-deps: the session is written above, so the setup project isn't needed.
+run_phase() {
+  local label="$1" report="$2"
+  shift 2
+  PLAYWRIGHT_BASE_URL="$BASE_URL" PLAYWRIGHT_JSON_OUTPUT_FILE="$report" \
+    npx playwright test "$@" --project=chromium --no-deps \
+    --reporter=list,json || true
+  KNOWN_FAILING="$(printf '%s\n' "${KNOWN_FAILING[@]}")" \
+    node scripts/checks/e2e-report.mjs "$report" --phase "$label" \
+    --expect "$@" --strict "${SPECS[@]}"
+}
+
+if [ "${#REST[@]}" = 0 ]; then
+  if ! run_phase "one phase" "$PHASE1_REPORT" "${FIRST[@]}"; then
+    echo "e2e: one phase failed"
+    exit 1
+  fi
+else
+  if ! run_phase "phase 1" "$PHASE1_REPORT" "${FIRST[@]}"; then
+    echo "e2e: phase 1 failed: ${#REST[@]} specs not run"
+    exit 1
+  fi
+  if ! run_phase "phase 2" "$PHASE2_REPORT" "${REST[@]}"; then
+    echo "e2e: phase 2 failed"
+    exit 1
+  fi
+fi
 
 echo "e2e: took ${SECONDS}s"
