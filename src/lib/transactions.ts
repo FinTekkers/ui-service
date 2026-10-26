@@ -1,4 +1,5 @@
 import * as ts from "@fintekkers/ledger-models/node/wrappers/services/transaction-service/TransactionService";
+import LinkResolver from "@fintekkers/ledger-models/node/wrappers/util/link-resolver";
 import * as datetime from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import * as positionFilter from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import type Transaction from "@fintekkers/ledger-models/node/wrappers/models/transaction/transaction";
@@ -78,7 +79,10 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(
     const results: Transaction[] = await service.searchWithSecurityAndPortfolio(
       now.toProto(),
       filter,
-      1000
+      1000,
+      // The default resolver is built without the API key, and the broker
+      // rejects keyless GetByIds calls, which would empty the grid.
+      new LinkResolver({ apiKey })
     );
 
     // ledger-models v0.4.x: Transaction.getTradeDate() returns Date | null
