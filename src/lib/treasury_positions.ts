@@ -27,33 +27,35 @@ import { Tenor } from "@fintekkers/ledger-models/node/wrappers/models/security/t
 // Constants
 const PORTFOLIO_NAME = "Federal Reserve SOMA Holdings";
 
+// Reverse lookups (enum value -> name), built once at module load
+const FIELD_NAME_BY_VALUE: Record<number, string> = {};
+Object.keys(FieldProto).forEach((key: string) => {
+  const value = (FieldProto as any)[key];
+  if (typeof value === "number") {
+    FIELD_NAME_BY_VALUE[value] = key;
+  }
+});
+
+const MEASURE_NAME_BY_VALUE: Record<number, string> = {};
+Object.keys(MeasureProto).forEach((key: string) => {
+  const value = (MeasureProto as any)[key];
+  if (typeof value === "number") {
+    MEASURE_NAME_BY_VALUE[value] = key;
+  }
+});
+
 /**
  * Maps FieldProto enum value to field name string
  */
 function getFieldName(fieldEnum: number): string {
-  // Create reverse lookup: enum value -> name
-  const fieldNameMap: Record<number, string> = {};
-  Object.keys(FieldProto).forEach((key: string) => {
-    const value = (FieldProto as any)[key];
-    if (typeof value === "number") {
-      fieldNameMap[value] = key;
-    }
-  });
-  return fieldNameMap[fieldEnum] || fieldEnum.toString();
+  return FIELD_NAME_BY_VALUE[fieldEnum] || fieldEnum.toString();
 }
 
 /**
  * Maps MeasureProto enum value to measure name string
  */
 function getMeasureName(measureEnum: number): string {
-  const measureNameMap: Record<number, string> = {};
-  Object.keys(MeasureProto).forEach((key: string) => {
-    const value = (MeasureProto as any)[key];
-    if (typeof value === "number") {
-      measureNameMap[value] = key;
-    }
-  });
-  return measureNameMap[measureEnum] || measureEnum.toString();
+  return MEASURE_NAME_BY_VALUE[measureEnum] || measureEnum.toString();
 }
 
 /**
