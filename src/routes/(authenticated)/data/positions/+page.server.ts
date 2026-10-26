@@ -1,3 +1,4 @@
+import { error } from "@sveltejs/kit";
 import pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 const { FieldProto } = pkg;
 import type { FieldProto as FieldProtoType } from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb";
@@ -32,56 +33,24 @@ function notSupportedText(measure: string): string {
   return `${measure} is not supported yet`;
 }
 
-const fieldLookup = {
-  ID: FieldProto.ID,
-  AS_OF: FieldProto.AS_OF,
-  EFFECTIVE_DATE: FieldProto.EFFECTIVE_DATE,
-  STRATEGY: FieldProto.STRATEGY,
-  SECURITY: FieldProto.SECURITY,
-  SECURITY_DESCRIPTION: FieldProto.SECURITY_DESCRIPTION,
-  SECURITY_ISSUER_NAME: FieldProto.SECURITY_ISSUER_NAME,
-  CASH_IMPACT_SECURITY: FieldProto.CASH_IMPACT_SECURITY,
-  ASSET_CLASS: FieldProto.ASSET_CLASS,
-  PRODUCT_CLASS: FieldProto.PRODUCT_CLASS,
-  PRODUCT_TYPE: FieldProto.PRODUCT_TYPE,
-  SECURITY_ID: FieldProto.SECURITY_ID,
-  IDENTIFIER: FieldProto.IDENTIFIER,
-  TENOR: FieldProto.TENOR,
-  ISSUE_DATE: FieldProto.ISSUE_DATE,
-  MATURITY_DATE: FieldProto.MATURITY_DATE,
-  ADJUSTED_TENOR: FieldProto.ADJUSTED_TENOR,
-  PORTFOLIO: FieldProto.PORTFOLIO,
-  PORTFOLIO_ID: FieldProto.PORTFOLIO_ID,
-  PORTFOLIO_NAME: FieldProto.PORTFOLIO_NAME,
-  PRICE: FieldProto.PRICE,
-  PRICE_ID: FieldProto.PRICE_ID,
-  IS_CANCELLED: FieldProto.IS_CANCELLED,
-  POSITION_STATUS: FieldProto.POSITION_STATUS,
-  TRADE_DATE: FieldProto.TRADE_DATE,
-  SETTLEMENT_DATE: FieldProto.SETTLEMENT_DATE,
-  TRANSACTION_TYPE: FieldProto.TRANSACTION_TYPE,
-  TAX_LOT_OPEN_DATE: FieldProto.TAX_LOT_OPEN_DATE,
-  TAX_LOT_CLOSE_DATE: FieldProto.TAX_LOT_CLOSE_DATE,
-};
-
-const measureLookup = {
-  UNKNOWN_MEASURE: MeasureProto.UNKNOWN_MEASURE,
-  DIRECTED_QUANTITY: MeasureProto.DIRECTED_QUANTITY,
-  MARKET_VALUE: MeasureProto.MARKET_VALUE,
-  UNADJUSTED_COST_BASIS: MeasureProto.UNADJUSTED_COST_BASIS,
-  ADJUSTED_COST_BASIS: MeasureProto.ADJUSTED_COST_BASIS,
-  CURRENT_YIELD: MeasureProto.CURRENT_YIELD,
-  YIELD_TO_MATURITY: MeasureProto.YIELD_TO_MATURITY,
-  PROFIT_LOSS: MeasureProto.PROFIT_LOSS,
-  PROFIT_LOSS_PERCENT: MeasureProto.PROFIT_LOSS_PERCENT,
-  ACCRUED_INTEREST: MeasureProto.ACCRUED_INTEREST,
-  DIRTY_PRICE: MeasureProto.DIRTY_PRICE,
-  CLEAN_PRICE: MeasureProto.CLEAN_PRICE,
-  CONVEXITY: MeasureProto.CONVEXITY,
-  MODIFIED_DURATION: MeasureProto.MODIFIED_DURATION,
-  DV01: MeasureProto.DV01,
-  PRESENT_VALUE_CASHFLOWS: MeasureProto.PRESENT_VALUE_CASHFLOWS,
-};
+// US-276: map a URL name straight onto the generated FieldProto /
+// MeasureProto enum, so newer values (e.g. INDEX_RATIO) work without a
+// hand-kept copy. Own keys only, so `toString` / `__proto__` don't match;
+// UNKNOWN_* is not a requestable value. Anything else is a 400, not a 500.
+function toEnum<E extends { [key: string]: string | number }>(
+  enumObj: E,
+  name: string,
+  kind: string
+): E[keyof E] {
+  if (
+    Object.hasOwn(enumObj, name) &&
+    typeof enumObj[name] === "number" &&
+    !name.startsWith("UNKNOWN_")
+  ) {
+    return enumObj[name] as E[keyof E];
+  }
+  throw error(400, `Invalid ${kind}: ${name}`);
+}
 
 /** @type {import('../../../../../.svelte-kit/types/src/routes').PageServerLoad} */
 export async function load({ locals, request }) {
@@ -171,23 +140,13 @@ export async function load({ locals, request }) {
   );
 
   // Map user fields and measures to their respective Protos
-  const mappedFields = userFields.map((field) => {
-    const fieldName = field as keyof typeof fieldLookup;
-    if (fieldLookup[fieldName]) {
-      return fieldLookup[fieldName];
-    } else {
-      throw new Error(`Invalid field: ${field}`);
-    }
-  });
+  const mappedFields = userFields.map((field) =>
+    toEnum(FieldProto, field, "field")
+  );
 
-  const mappedMeasures = userMeasures.map((measure) => {
-    const measureName = measure as keyof typeof measureLookup;
-    if (measureLookup[measureName]) {
-      return measureLookup[measureName];
-    } else {
-      throw new Error(`Invalid measure: ${measure}`);
-    }
-  });
+  const mappedMeasures = userMeasures.map((measure) =>
+    toEnum(MeasureProto, measure, "measure")
+  );
 
   const requestData = { fields: mappedFields, measures: mappedMeasures };
   console.log({ requestData });
@@ -199,12 +158,7 @@ export async function load({ locals, request }) {
   if (sortBy) {
     // Map sortBy field (take first field if comma-separated, since only one field is allowed)
     const sortByField = stripQuotes(sortBy).split(",")[0].trim();
-    const sortByFieldName = sortByField as keyof typeof fieldLookup;
-    mappedSortBy = fieldLookup[sortByFieldName];
-
-    if (!mappedSortBy) {
-      throw new Error(`Invalid sort field: ${sortByField}`);
-    }
+    mappedSortBy = toEnum(FieldProto, sortByField, "sort field");
 
     // Validate sort direction
     validSortDirection = sortDirection === "desc" ? "desc" : "asc";
