@@ -257,26 +257,17 @@ export function hasMissingIdentifier(security: Security): boolean {
   return primaryIdentifier(security) === undefined;
 }
 
+// US-277: resolve through the generated enum (own keys only). An unknown
+// name or UNKNOWN_IDENTIFIER_TYPE throws — never a fallback to CUSIP.
 function identifierTypeNameToProto(name: string): IdentifierTypeProto {
-  switch (name) {
-    case "ISIN":
-      return IdentifierTypeProto.ISIN;
-    case "EXCH_TICKER":
-      return IdentifierTypeProto.EXCH_TICKER;
-    case "SERIES_ID":
-      return IdentifierTypeProto.SERIES_ID;
-    case "OSI":
-      return IdentifierTypeProto.OSI;
-    case "FIGI":
-      return IdentifierTypeProto.FIGI;
-    case "INDEX_NAME":
-      return IdentifierTypeProto.INDEX_NAME;
-    case "CASH":
-      return IdentifierTypeProto.CASH;
-    case "CUSIP":
-    default:
-      return IdentifierTypeProto.CUSIP;
+  if (
+    !Object.prototype.hasOwnProperty.call(IdentifierTypeProto, name) ||
+    IdentifierTypeProto[name as keyof typeof IdentifierTypeProto] ===
+      IdentifierTypeProto.UNKNOWN_IDENTIFIER_TYPE
+  ) {
+    throw new Error(`Unknown identifier type: ${name}`);
   }
+  return IdentifierTypeProto[name as keyof typeof IdentifierTypeProto];
 }
 
 export async function FetchSecurity(
