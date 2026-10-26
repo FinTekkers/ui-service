@@ -95,6 +95,66 @@ describe("positions load", () => {
   });
 });
 
+// US-276: names map straight onto the generated enums; bad names are a 400.
+describe("positions load name mapping", () => {
+  function loadWith(extra: Record<string, string>): Promise<any> {
+    const params = new URLSearchParams({
+      fields: "SECURITY_DESCRIPTION",
+      measures: "MARKET_VALUE",
+      positionView: "DEFAULT_VIEW",
+      positionType: "TRANSACTION",
+      ...extra,
+    });
+    return load({
+      locals: { user: { apiKey: "key" } },
+      request: { url: `http://localhost/data/positions?${params}` },
+    } as any);
+  }
+
+  test("INDEX_RATIO and REFERENCE_CPI reach FetchPosition", async () => {
+    const row = {
+      [DESC]: "TIPS 2030",
+      [MeasureProto.INDEX_RATIO]: 1.02,
+      [MeasureProto.REFERENCE_CPI]: 310.5,
+    };
+    FetchPosition.mockResolvedValue([row]);
+    // Loads (200), not "Invalid measure" (500); the catalog still marks both
+    // implemented: false, so US-242's message shows.
+    const result = await loadFor("INDEX_RATIO,REFERENCE_CPI");
+    expect(result.positions).toEqual([row]);
+    expect(result.unsupportedMeasures).toEqual([
+      "INDEX_RATIO",
+      "REFERENCE_CPI",
+    ]);
+    expect(FetchPosition.mock.calls[0][0].measures).toEqual([
+      MeasureProto.INDEX_RATIO,
+      MeasureProto.REFERENCE_CPI,
+    ]);
+    expect(FetchPosition.mock.calls[0][0].measures).toEqual([29, 28]);
+  });
+
+  test.each([
+    [{ measures: "NOT_A_MEASURE" }, "Invalid measure: NOT_A_MEASURE"],
+    [{ measures: "UNKNOWN_MEASURE" }, "Invalid measure: UNKNOWN_MEASURE"],
+    [{ measures: "toString" }, "Invalid measure: toString"],
+    [{ fields: "NOT_A_FIELD" }, "Invalid field: NOT_A_FIELD"],
+    [{ fields: "__proto__" }, "Invalid field: __proto__"],
+    [{ sortBy: "NOT_A_FIELD" }, "Invalid sort field: NOT_A_FIELD"],
+  ])("%o is a 400 with a message", async (extra, message) => {
+    await expect(loadWith(extra)).rejects.toMatchObject({
+      status: 400,
+      body: { message },
+    });
+    expect(FetchPosition).not.toHaveBeenCalled();
+  });
+
+  test("a valid sortBy maps to its FieldProto value", async () => {
+    FetchPosition.mockResolvedValue([]);
+    await loadWith({ sortBy: "MATURITY_DATE" });
+    expect(FetchPosition.mock.calls[0][3]).toBe(FieldProto.MATURITY_DATE);
+  });
+});
+
 describe("positions page", () => {
   test("shows the error and no blank ADJUSTED_COST_BASIS cell", async () => {
     FetchPosition.mockResolvedValue([
