@@ -16,6 +16,8 @@
 # First (US-224) it logs the ledger-models version under test (install.sh
 # refreshes it within package.json's range) and runs build-local.sh, the
 # box's `python build.py --local` build, end to end in a fresh clone.
+# Since US-281 build-local.sh runs only when build inputs or the ledger-models
+# version change against origin/main, and always when the base is unknown.
 #
 # The e2e user's session (US-233) is FT_E2E_API_KEY, provisioned by BS-31
 # and passed in by Horizon (HZ-494), set as the ft_api_key cookie with
@@ -31,7 +33,38 @@ for var in FT_E2E_EMAIL FT_E2E_API_KEY; do
 done
 [ "$missing" = 0 ] || exit 1
 npm ls @fintekkers/ledger-models
-bash scripts/checks/build-local.sh
+# US-281: build-local.sh only when a build input changed against origin/main
+# or install.sh resolved a ledger-models version other than main's lock. Any
+# read that fails (no origin/main, no lock, no install) runs it, as before.
+run_build_local=1
+base="$(git merge-base origin/main HEAD 2>/dev/null || true)"
+if [ -z "$base" ]; then
+  echo "e2e: build-local runs (base branch unknown)"
+elif ! changed="$(git diff --name-only "$base" HEAD 2>/dev/null)"; then
+  echo "e2e: build-local runs (git diff against origin/main failed)"
+elif grep -Eq '^(build\.py|scripts/checks/(build-local\.sh|test_build_py\.py)|package(-lock)?\.json|(vite|svelte)\.config\..*)$' <<<"$changed"; then
+  echo "e2e: build-local runs (build inputs changed)"
+else
+  installed="$(node -p 'JSON.parse(require("fs").readFileSync("node_modules/@fintekkers/ledger-models/package.json", "utf8")).version' 2>/dev/null || true)"
+  locked="$(git show origin/main:package-lock.json 2>/dev/null | node -e '
+    let s = "";
+    process.stdin.on("data", (d) => (s += d)).on("end", () => {
+      console.log(JSON.parse(s).packages["node_modules/@fintekkers/ledger-models"].version);
+    });
+  ' 2>/dev/null || true)"
+  if [ -z "$installed" ] || [ -z "$locked" ]; then
+    echo "e2e: build-local runs (ledger-models version unknown: installed '${installed}', main's lock '${locked}')"
+  elif [ "$installed" != "$locked" ]; then
+    echo "e2e: build-local runs (ledger-models $installed differs from main's lock $locked)"
+  else
+    run_build_local=0
+  fi
+fi
+if [ "$run_build_local" = 1 ]; then
+  bash scripts/checks/build-local.sh
+else
+  echo "e2e: build-local skipped (no build inputs changed)"
+fi
 
 PORT="${E2E_PORT:-4203}"
 BASE_URL="http://127.0.0.1:${PORT}"
