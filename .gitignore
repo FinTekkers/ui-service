@@ -35,7 +35,8 @@ AWSCLIV2.pkg
 /playwright-report/
 /playwright/.cache/
 /playwright/.auth/
-# Key-screen PNGs; Horizon publishes them on the PR (US-205).
+# Legacy key-screen PNGs (US-205). Only main's e2e.sh still writes them; they
+# go once US-262's follow-up deletes the bespoke specs.
 /e2e/__screenshots__/
 # The shared Horizon runner's shots (US-259, .horizon/screenshots.json).
 /.horizon/screenshots/

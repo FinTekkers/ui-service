@@ -14,15 +14,9 @@
  * The settlement date is derived from the latest CPI-U month L the price
  * service holds (asked over the broker, not the page): the 1st of L+2 has
  * readings (m-2 = L, m-3 = L-1); the 1st of L+3 does not (m-2 = L+1).
- *
- * Journeys A and B also capture the TIPS tab with each pill into
- * e2e/__screenshots__/, which Horizon publishes on the PR. e2e.sh runs this
- * spec after its key-screens file check, so these extra PNGs never count
- * as unexpected files there.
  */
 import { test, expect, type Page } from "@playwright/test";
 import { latestCpiUMonth, type YearMonth } from "./fixtures/cpi-preconditions";
-import { captureScreenshot } from "./fixtures/screenshot";
 
 const CUSIP = "912810RL4";
 const MONTHS = [
@@ -111,7 +105,6 @@ test.describe("/data/calculators TIPS Pricer — Current CPI from the price serv
     await expect(
       page.getByText(`CPI-U ${label(addMonths(latest!, -1))}`, { exact: false })
     ).toBeVisible();
-    await captureScreenshot(page, "tips-current-cpi-price-service");
 
     await calculate(page);
     const last = lastResultRow(page);
@@ -147,7 +140,6 @@ test.describe("/data/calculators TIPS Pricer — Current CPI from the price serv
     const currentCpi = page.getByLabel(/Current CPI/);
     await expect(currentCpi).toHaveValue("");
     await expect(page.getByText("manual entry", { exact: true })).toBeVisible();
-    await captureScreenshot(page, "tips-current-cpi-manual-entry");
 
     await currentCpi.fill("310.326");
     await page.getByLabel("Price (% of par)").fill("98");

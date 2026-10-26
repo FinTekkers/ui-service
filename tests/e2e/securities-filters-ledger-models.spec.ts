@@ -60,8 +60,8 @@ const SELECTS: Array<[string, () => number, boolean]> = [
 test("securities filters list ledger-models values and round-trip EQUITY", async ({
   playwright,
 }) => {
-  // Own browser: key-screens can leave the worker's shared browser closed
-  // (its securities capture times out), which would fail this test unrun.
+  // Own browser, so a spec that closes the worker's shared browser can't
+  // fail this test unrun.
   const browser = await playwright.chromium.launch();
   try {
     const context = await browser.newContext({
