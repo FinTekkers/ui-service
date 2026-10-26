@@ -1,3 +1,4 @@
+import { error } from "@sveltejs/kit";
 import {
   FetchSecurity,
   FetchSecurityByUuid,
@@ -26,14 +27,19 @@ export async function load({ locals, request }) {
   const identifier =
     searchParams.get("identifier") ?? searchParams.get("cusip");
   const rawIdType = searchParams.get("identifierType");
-  // Phase 1 of second-brain#226: accept the full IdentifierTypeProto set
-  // (was 'ISIN'|'CUSIP' only). Anything not in the allowlist falls back to
-  // undefined → FetchSecurity defaults to CUSIP, preserving prior behavior
-  // for malformed / legacy URLs.
-  const identifierType: string | undefined =
-    rawIdType && IDENTIFIER_TYPE_NAMES.includes(rawIdType)
-      ? rawIdType
-      : undefined;
+  // Phase 1 of second-brain#226: accept the full IdentifierTypeProto set.
+  // US-277: a type outside the allowlist (including UNKNOWN_*) is a 400,
+  // never a silent CUSIP search. An absent type stays undefined, so legacy
+  // `?cusip=` URLs still search by CUSIP in FetchSecurity.
+  if (rawIdType && !IDENTIFIER_TYPE_NAMES.includes(rawIdType)) {
+    throw error(
+      400,
+      `Unknown identifier type: ${rawIdType}. Valid types: ${IDENTIFIER_TYPE_NAMES.join(
+        ", "
+      )}`
+    );
+  }
+  const identifierType: string | undefined = rawIdType || undefined;
   const issueDate = searchParams.get("issueDate");
   // FetchSecurity accepts the full PositionFilterOperator set; the
   // wrapper's fromName (in $lib/security) is the only validator
