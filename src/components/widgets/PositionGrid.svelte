@@ -1,6 +1,7 @@
 <script lang="ts">
   import { formatAmount, formatPercent } from "$lib/formatUtils";
   import { onMount } from "svelte";
+  import measuresCatalog from "$lib/data/measures.json";
   import {
     sortPositions as sortPositionsUtil,
     getSortIndicator,
@@ -102,6 +103,12 @@
     return "";
   }
 
+  // US-278: labels come from the ledger-models measure catalog.
+  const catalogDisplayNames = new Map<string, string>(
+    measuresCatalog.measures.map((m) => [m.name, m.display_name])
+  );
+
+  // Headers for measures the catalog doesn't list yet; catalog labels win.
   const measureDisplayNames: Record<string, string> = {
     PROFIT_LOSS: "Unrealized P&L",
     PROFIT_LOSS_PERCENT: "P&L %",
@@ -111,7 +118,6 @@
     CONVEXITY: "Convexity",
     MODIFIED_DURATION: "Mod. Duration",
     DV01: "DV01",
-    YIELD_TO_MATURITY: "YTM",
   };
 
   const bondOnlyMeasures = new Set([
@@ -125,7 +131,12 @@
   ]);
 
   function getMeasureDisplayName(measureName: string): string {
-    return measureDisplayNames[measureName] ?? formatName(measureName);
+    return (
+      catalogDisplayNames.get(measureName) ??
+      (Object.prototype.hasOwnProperty.call(measureDisplayNames, measureName)
+        ? measureDisplayNames[measureName]
+        : formatName(measureName))
+    );
   }
 
   // Summary row computations

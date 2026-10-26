@@ -3,9 +3,10 @@
    * Phase 3 of second-brain#226 — sixth composable filter primitive.
    * Multi-select dropdown for picking position-measure names. The
    * external API speaks in proto enum names ('DIRECTED_QUANTITY',
-   * 'MARKET_VALUE', ...); the dropdown renders friendly title-case
-   * labels via DEFAULT_MEASURE_LABELS so the user never sees raw
-   * upper-snake-case names.
+   * 'MARKET_VALUE', ...); the dropdown renders friendly labels via
+   * DEFAULT_MEASURE_LABELS — the measure catalog's display_name, or
+   * title-case for measures the catalog doesn't list — so the user
+   * never sees raw upper-snake-case names.
    *
    * Single in-tree consumer today: PositionSelect.svelte. Factored
    * out for consistency with the other Phase 3 primitives — same API
@@ -33,6 +34,7 @@
   // positions.ts and elsewhere.
   import type { MeasureProto as MeasureProtoType } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   const { MeasureProto } = measure_pkg;
+  import measuresCatalog from "$lib/data/measures.json";
 
   // Valuation-only measures are excluded by default — they require a
   // RunValuation call rather than the Position search the basic
@@ -74,9 +76,19 @@
       .join(" ");
   }
 
+  // US-278: display names from the ledger-models measure catalog.
+  const CATALOG_DISPLAY_NAMES = new Map<string, string>(
+    measuresCatalog.measures.map((m) => [m.name, m.display_name])
+  );
+
   /** Friendly per-measure labels. Override individual entries via the `labels` prop. */
   export const DEFAULT_MEASURE_LABELS: Record<string, string> =
-    Object.fromEntries(DEFAULT_MEASURE_NAMES.map((n) => [n, titleCase(n)]));
+    Object.fromEntries(
+      DEFAULT_MEASURE_NAMES.map((n) => [
+        n,
+        CATALOG_DISPLAY_NAMES.get(n) ?? titleCase(n),
+      ])
+    );
 </script>
 
 <script lang="ts">
