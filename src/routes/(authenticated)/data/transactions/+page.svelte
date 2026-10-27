@@ -3,6 +3,7 @@
   import TransactionSelect from "../../../../components/widgets/TransactionSelect.svelte";
   import DeleteConfirmModal from "../../../../components/widgets/DeleteConfirmModal.svelte";
   import { enhance } from "$app/forms";
+  import { businessDateHeading } from "$lib/filters/businessDate";
   export let data: import("./$types").PageData;
   export let form: import("./$types").ActionData;
 
@@ -52,10 +53,17 @@
   }
 </script>
 
+<h1 id="transactions-heading" class="page-heading">
+  Transactions <span class="page-heading-scope"
+    >— {businessDateHeading("transactions", data.businessDate)}</span
+  >
+</h1>
+
 <TransactionSelect
   portfolioUniverse={data.portfolioUniverse ?? []}
   initialPortfolioId={data.portfolioId ?? ""}
   initialPortfolioName={data.portfolioName ?? ""}
+  businessDate={data.businessDate}
 />
 
 {#if deleteSuccess}
@@ -101,6 +109,16 @@
 
 <style lang="scss">
   @import "../../../../style";
+  .page-heading {
+    margin: 1.5rem 2.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+  }
+  .page-heading-scope {
+    font-weight: 400;
+    opacity: 0.85;
+  }
   .hidden-submit {
     display: none;
   }

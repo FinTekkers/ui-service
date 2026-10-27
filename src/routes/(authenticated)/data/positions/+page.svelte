@@ -2,6 +2,7 @@
   import { navigating } from "$app/stores";
   import Position from "../../../../components/widgets/PositionGrid.svelte";
   import PositionSelect from "../../../../components/widgets/PositionSelect.svelte";
+  import { businessDateHeading } from "$lib/filters/businessDate";
   export let data: import("./$types").PageData;
 
   // Split fields and measures into arrays
@@ -72,10 +73,17 @@
   </div>
 {/if}
 
+<h1 id="positions-heading" class="page-heading">
+  Positions <span class="page-heading-scope"
+    >— {businessDateHeading("positions", data.businessDate)}</span
+  >
+</h1>
+
 <PositionSelect
   portfolioUniverse={data.portfolioUniverse ?? []}
   initialPortfolioId={data.portfolioId ?? ""}
   initialPortfolioName={data.portfolioName ?? ""}
+  businessDate={data.businessDate}
 />
 
 {#if data.error}
@@ -105,6 +113,18 @@
 
 <style lang="scss">
   @import "../../../../style";
+
+  .page-heading {
+    margin: 1.5rem 2.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+  }
+
+  .page-heading-scope {
+    font-weight: 400;
+    opacity: 0.85;
+  }
 
   .back-link {
     color: #3b82f6;

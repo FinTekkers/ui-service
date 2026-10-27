@@ -4,6 +4,11 @@ import {
 } from "$lib/transactions";
 import { deleteEntity } from "$lib/entity-delete";
 import {
+  businessDateFilter,
+  resolveBusinessDate,
+  todayUtc,
+} from "$lib/filters/businessDate";
+import {
   FetchPortfolioUniverse,
   type PortfolioUniverseEntry,
 } from "$lib/portfolios";
@@ -33,16 +38,13 @@ export async function load({ locals, url }) {
         ?.portfolioName) ||
     "";
 
-  // Phase 3 PR-B of #226: optional tradeDate filter. URL convention
-  // mirrors /data/positions exactly (?tradeDate=YYYY-MM-DD&
-  // tradeDateOperator=<proto enum name from PositionFilterOperator>).
-  // Both URL params required for the filter to apply — half-formed
-  // shapes drop both, matching the form's emit guard. The wrapper's
-  // fromName (in $lib/transactions) is the only validator (#229
-  // review: no UI-side normalization).
-  const tradeDate = url.searchParams.get("tradeDate") ?? undefined;
-  const tradeDateOperator =
-    url.searchParams.get("tradeDateOperator") ?? undefined;
+  // US-291: the Business date control, resolved once per request with
+  // "today" fixed here, so the query and the rendered control show one
+  // date. Old ?tradeDate=…&tradeDateOperator=… links (Phase 3 PR-B of
+  // #226) still apply as before; the wrapper's fromName (in
+  // $lib/transactions) is the only operator validator (#229 review).
+  const businessDate = resolveBusinessDate(url.searchParams, todayUtc());
+  const { tradeDate, tradeDateOperator } = businessDateFilter(businessDate);
 
   const transactions = portfolioId
     ? await FetchTransactionByPortfolio(
@@ -57,6 +59,7 @@ export async function load({ locals, url }) {
     portfolioId: portfolioId || null,
     portfolioName,
     portfolioUniverse,
+    businessDate,
     user: locals.user,
   };
 }

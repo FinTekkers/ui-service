@@ -6,13 +6,19 @@
   import { onMount } from "svelte";
   import { buildFilterUrl } from "$lib/filters/urlState";
   import IdentifierFilter from "../filters/IdentifierFilter.svelte";
-  import DateFilter from "../filters/DateFilter.svelte";
+  import BusinessDateFilter from "../filters/BusinessDateFilter.svelte";
   import PortfolioFilter from "../filters/PortfolioFilter.svelte";
   import type { PortfolioOption } from "../filters/PortfolioFilter.svelte";
   import MeasureMultiselectFilter from "../filters/MeasureMultiselectFilter.svelte";
   import HideZerosToggle from "../filters/HideZerosToggle.svelte";
   // Browser-safe import (security.ts pulls in @grpc/grpc-js).
   import { IDENTIFIER_TYPE_NAMES } from "$lib/securityFilterTypes";
+  import {
+    businessDateUrlOverrides,
+    isTaxLot,
+    type BusinessDateMode,
+    type BusinessDateState,
+  } from "$lib/filters/businessDate";
 
   const { FieldProto } = pkg;
 
@@ -36,18 +42,24 @@
   export let portfolioUniverse: readonly PortfolioOption[] = [];
   export let initialPortfolioId: string = "";
   export let initialPortfolioName: string = "";
+  // US-291: the page-server's resolved Business date (today fixed on the
+  // server). A tax-lot page starts with Tax Lot selected, so the SSR
+  // render already shows the control's tax-lot state.
+  export let businessDate: BusinessDateState;
+  if (businessDate.taxLot) selectedPositionType = ["Tax Lot"];
 
   // Phase 3 of second-brain#226 (issue #227): identifier UX uses the shared
   // IdentifierFilter primitive. Was CUSIP-only (cusipInput + ?cusip=...);
   // now matches /data/securities and /data/prices.
   let identifierInput: string = "";
   let identifierType: string = "CUSIP";
-  // Phase 3 of #226 (PR-A): tradeDate UX uses the shared DateFilter
-  // primitive. State + URL conventions unchanged — the bound
-  // `tradeDateInput` and `tradeDateOperator` flow through the same
-  // fetchPositions/loadSelectedValues paths as before.
-  let tradeDateInput: string = "";
-  let tradeDateOperator: string = "";
+  // US-291: Business date replaces the trade-date filter. The control
+  // reports its choice through `change`; fetchPositions writes it as
+  // ?businessDate=YYYY-MM-DD|all and drops tradeDate/tradeDateOperator.
+  let businessDateMode: BusinessDateMode;
+  let businessDateValue: string | null;
+  $: businessDateMode = businessDate.mode;
+  $: businessDateValue = businessDate.date;
   let assetClassInput: string = "";
   let hideZeros: boolean = false;
   // Phase 3 of #226 PR-A: portfolio scope is now form-driven (no
@@ -68,19 +80,22 @@
     return name.toUpperCase().replace(/\s+/g, "_");
   }
 
+  // Same URL name and check as the page-server, so the two can't drift.
+  $: taxLot = isTaxLot(selectedPositionType.map(unformatName).join(","));
+
+  function onBusinessDateChange(
+    event: CustomEvent<{ mode: BusinessDateMode; date: string | null }>
+  ) {
+    businessDateMode = event.detail.mode;
+    businessDateValue = event.detail.date;
+    fetchPositions();
+  }
+
   function fetchPositions() {
     if (typeof window === "undefined") return;
 
-    const trimmedTradeDate = tradeDateInput.trim();
-    // tradeDate and its operator are a coupled pair: only emit one if the
-    // other is also set, otherwise the page-server filter is half-applied.
-    const tradeDateOverride =
-      trimmedTradeDate && tradeDateOperator ? trimmedTradeDate : undefined;
-    const tradeDateOperatorOverride =
-      trimmedTradeDate && tradeDateOperator ? tradeDateOperator : undefined;
-
-    // identifier + identifierType form the same coupled pair as tradeDate +
-    // tradeDateOperator: a type without a value is meaningless on the URL.
+    // identifier + identifierType are a coupled pair: a type without a
+    // value is meaningless on the URL.
     const trimmedIdentifier = identifierInput.trim();
 
     // Phase 3 of #226 PR-A: portfolio scope now flows through the
@@ -107,8 +122,11 @@
         measures: selectedMeasures.join(","),
         identifier: trimmedIdentifier || undefined,
         identifierType: trimmedIdentifier ? identifierType : undefined,
-        tradeDate: tradeDateOverride,
-        tradeDateOperator: tradeDateOperatorOverride,
+        // Tax lots have no TRADE_DATE: always All dates.
+        ...businessDateUrlOverrides(
+          taxLot ? "all" : businessDateMode,
+          businessDateValue
+        ),
         assetClass: assetClassInput.trim() || undefined,
         hideZeros: hideZeros ? "true" : undefined,
         portfolioId: portfolioIdOverride,
@@ -132,8 +150,6 @@
       const selectedPositionViewFromUrl = urlParams.get("positionView");
       const identifierFromUrl = urlParams.get("identifier");
       const identifierTypeFromUrl = urlParams.get("identifierType");
-      const tradeDateFromUrl = urlParams.get("tradeDate");
-      const tradeDateOperatorFromUrl = urlParams.get("tradeDateOperator");
       const assetClassFromUrl = urlParams.get("assetClass");
 
       if (selectedFieldsFromUrl) {
@@ -171,17 +187,6 @@
         }
       }
 
-      if (tradeDateFromUrl) {
-        tradeDateInput = tradeDateFromUrl;
-      }
-
-      // Operator passes through untransformed — the wrapper validates
-      // at filter-application time. Empty / null URL value leaves the
-      // dropdown unselected (#229 review: no UI-side normalization).
-      if (tradeDateOperatorFromUrl) {
-        tradeDateOperator = tradeDateOperatorFromUrl;
-      }
-
       if (assetClassInput) {
         assetClassInput = assetClassFromUrl;
       }
@@ -197,6 +202,17 @@
 </script>
 
 <div class="mt-14 mx-10 w-full gap-2">
+  <div class="position-select-container flex flex-col sm:flex-row gap-2 mb-2">
+    <div class="text-white business-date-cell">
+      <BusinessDateFilter
+        state={businessDate}
+        forceAll={taxLot}
+        inputClass="position-select-input text-black"
+        inputId="business-date-input"
+        on:change={onBusinessDateChange}
+      />
+    </div>
+  </div>
   <div class="position-select-container flex flex-col sm:flex-row gap-2">
     <div class="text-white">
       <h4>Fields:</h4>
@@ -266,16 +282,6 @@
         selectClass="position-select-input text-black"
         inputClass="position-select-input text-black"
         inputId="position-identifier-input"
-      />
-    </div>
-    <div class="text-white date-filter-cell">
-      <h4>Trade Date Filter:</h4>
-      <DateFilter
-        bind:date={tradeDateInput}
-        bind:operator={tradeDateOperator}
-        inputClass="position-select-input text-black"
-        selectClass="position-select-input text-black"
-        inputId="trade-date-input"
       />
     </div>
     <div class="text-white">
@@ -352,7 +358,7 @@
   }
 
   // .position-select-input is passed via selectClass / inputClass into
-  // IdentifierFilter and DateFilter (Phase 2/3 of #226). The components
+  // IdentifierFilter and BusinessDateFilter (#226, US-291). The components
   // render those classes onto their <select>/<input>, but those nodes
   // live in a child component scope, so Svelte's scoped CSS would drop
   // the rule as unused. :global keeps it applying; the

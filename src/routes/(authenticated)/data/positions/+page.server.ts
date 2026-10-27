@@ -9,6 +9,11 @@ const { MeasureProto } = measure_pkg;
 import { FetchPosition } from "$lib/positions";
 import { IDENTIFIER_TYPE_NAMES } from "$lib/securityFilterTypes";
 import {
+  businessDateFilter,
+  resolveBusinessDate,
+  todayUtc,
+} from "$lib/filters/businessDate";
+import {
   FetchPortfolioUniverse,
   type PortfolioUniverseEntry,
 } from "$lib/portfolios";
@@ -73,10 +78,17 @@ export async function load({ locals, request }) {
     rawIdentifierType && IDENTIFIER_TYPE_NAMES.includes(rawIdentifierType)
       ? rawIdentifierType
       : undefined;
-  const tradeDate = searchParams.get("tradeDate");
-  // Operator passes through untransformed — PositionFilterOperator's
-  // fromName (in $lib/positions) is the only validator (#229 review).
-  const tradeDateOperator = searchParams.get("tradeDateOperator");
+  // US-291: the Business date control. "Today" is fixed here, once per
+  // request, so the query and the rendered control show one date. Tax lots
+  // never get a trade-date filter. Old ?tradeDate=…&tradeDateOperator=…
+  // links still apply as before (the operator is validated by
+  // PositionFilterOperator.fromName in $lib/positions, #229).
+  const businessDate = resolveBusinessDate(
+    searchParams,
+    todayUtc(),
+    positionType
+  );
+  const { tradeDate, tradeDateOperator } = businessDateFilter(businessDate);
   const assetClass = searchParams.get("assetClass");
   const portfolioId = searchParams.get("portfolioId");
   // Sort is now handled client-side, but we keep these for backward compatibility
@@ -110,6 +122,7 @@ export async function load({ locals, request }) {
       portfolioId: portfolioId || null,
       portfolioName,
       portfolioUniverse,
+      businessDate,
       user: locals.user,
     };
   }
@@ -122,6 +135,7 @@ export async function load({ locals, request }) {
       portfolioId: portfolioId || null,
       portfolioName,
       portfolioUniverse,
+      businessDate,
       user: locals.user,
     };
   }
@@ -182,8 +196,8 @@ export async function load({ locals, request }) {
       mappedSortBy,
       validSortDirection,
       identifier || undefined,
-      tradeDate || undefined,
-      tradeDateOperator ?? undefined,
+      tradeDate,
+      tradeDateOperator,
       assetClass || undefined,
       portfolioId || undefined,
       locals.user?.apiKey,
@@ -221,6 +235,7 @@ export async function load({ locals, request }) {
     portfolioUniverse,
     error: fetchError,
     unsupportedMeasures,
+    businessDate,
     user: locals.user,
   };
 }
