@@ -10,8 +10,7 @@
  *      name (so the user sees 'Federal Reserve SOMA Holdings', not just
  *      the UUID).
  *
- * Assumes the SOMA seed is loaded — same dependency as the existing
- * portfolio-soma-positions / portfolio-soma-transactions specs.
+ * Assumes the SOMA seed is loaded.
  */
 import { expect, type Page } from "@playwright/test";
 // US-211: the ledger has no seed portfolios; this `test` owns one probe
