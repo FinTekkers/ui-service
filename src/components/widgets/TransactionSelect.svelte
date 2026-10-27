@@ -2,27 +2,27 @@
   /**
    * Filter bar for /data/transactions.
    *
-   * Phase 3 PR-B of second-brain#226: introduces tradeDate filtering on
-   * the transactions page (no equivalent UX existed previously). Mirrors
-   * the URL conventions on /data/positions exactly:
-   *   ?tradeDate=YYYY-MM-DD
-   *   &tradeDateOperator=<proto enum name>
-   * (PositionFilterOperator names, post-#229) so users moving between
-   * the two pages don't have to relearn the filter shape.
+   * US-291: the Business date control comes first, as on
+   * /data/positions, with the same URL shape:
+   *   ?businessDate=YYYY-MM-DD  (trades on or before that date)
+   *   ?businessDate=all         (no trade-date filter)
+   * No businessDate means today (fixed by the page-server). Writing it
+   * drops the old ?tradeDate=…&tradeDateOperator=… params, which the
+   * page-server still reads for old links.
    *
    * portfolio scope flows through PortfolioFilter (Phase 3 PR-B of
    * #226). The form is authoritative — portfolioId is no longer in
    * buildFilterUrl's inheritKeys; the page-server hydrates the form's
    * initial state from the inbound URL so re-submits preserve scope,
    * matching PositionSelect's PR #146 wiring.
-   *
-   * The filter is a coupled (date, operator) pair — emit both or neither
-   * so the page-server doesn't apply a half-formed filter (matches the
-   * pattern in PositionSelect.fetchPositions).
    */
-  import { onMount } from "svelte";
   import { buildFilterUrl } from "$lib/filters/urlState";
-  import DateFilter from "../filters/DateFilter.svelte";
+  import {
+    businessDateUrlOverrides,
+    type BusinessDateMode,
+    type BusinessDateState,
+  } from "$lib/filters/businessDate";
+  import BusinessDateFilter from "../filters/BusinessDateFilter.svelte";
   import PortfolioFilter from "../filters/PortfolioFilter.svelte";
   import type { PortfolioOption } from "../filters/PortfolioFilter.svelte";
 
@@ -34,20 +34,18 @@
   export let portfolioUniverse: readonly PortfolioOption[] = [];
   export let initialPortfolioId: string = "";
   export let initialPortfolioName: string = "";
+  // US-291: the page-server's resolved Business date (today fixed there).
+  export let businessDate: BusinessDateState;
 
-  let tradeDateInput: string = "";
-  let tradeDateOperator: string = "";
+  let businessDateMode: BusinessDateMode;
+  let businessDateValue: string | null;
+  $: businessDateMode = businessDate.mode;
+  $: businessDateValue = businessDate.date;
   let portfolioIdInput: string = initialPortfolioId;
   let portfolioNameInput: string = initialPortfolioName;
 
   function fetchTransactions() {
     if (typeof window === "undefined") return;
-
-    const trimmedTradeDate = tradeDateInput.trim();
-    const tradeDateOverride =
-      trimmedTradeDate && tradeDateOperator ? trimmedTradeDate : undefined;
-    const tradeDateOperatorOverride =
-      trimmedTradeDate && tradeDateOperator ? tradeDateOperator : undefined;
 
     // Portfolio scope is now form-driven via PortfolioFilter (#226 PR-B).
     // Trimmed-empty input emits null (explicit removal — the user
@@ -63,8 +61,7 @@
       "/data/transactions",
       new URLSearchParams(window.location.search),
       {
-        tradeDate: tradeDateOverride,
-        tradeDateOperator: tradeDateOperatorOverride,
+        ...businessDateUrlOverrides(businessDateMode, businessDateValue),
         portfolioId: portfolioIdOverride,
       },
       // No more inheritKeys — every form field is form-driven now,
@@ -77,23 +74,27 @@
     window.location.href = url;
   }
 
-  onMount(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tradeDateFromUrl = params.get("tradeDate");
-    if (tradeDateFromUrl) tradeDateInput = tradeDateFromUrl;
-
-    // Operator passes through untransformed — the wrapper validates at
-    // filter-application time (#229 review: no UI-side normalization).
-    const opFromUrl = params.get("tradeDateOperator");
-    if (opFromUrl) {
-      tradeDateOperator = opFromUrl;
-    }
-  });
+  // The control's choice applies straight away.
+  function onBusinessDateChange(
+    event: CustomEvent<{ mode: BusinessDateMode; date: string | null }>
+  ) {
+    businessDateMode = event.detail.mode;
+    businessDateValue = event.detail.date;
+    fetchTransactions();
+  }
 </script>
 
 <div
   class="transaction-select-container mt-6 mx-10 flex flex-col sm:flex-row gap-2"
 >
+  <div class="text-white business-date-cell">
+    <BusinessDateFilter
+      state={businessDate}
+      inputClass="transaction-select-input text-black"
+      inputId="business-date-input"
+      on:change={onBusinessDateChange}
+    />
+  </div>
   <div class="text-white portfolio-filter-cell">
     <h4>Portfolio:</h4>
     <PortfolioFilter
@@ -102,16 +103,6 @@
       universe={portfolioUniverse}
       inputClass="transaction-select-input text-black"
       inputId="transaction-portfolio-input"
-    />
-  </div>
-  <div class="text-white date-filter-cell">
-    <h4>Trade Date Filter:</h4>
-    <DateFilter
-      bind:date={tradeDateInput}
-      bind:operator={tradeDateOperator}
-      inputClass="transaction-select-input text-black"
-      selectClass="transaction-select-input text-black"
-      inputId="trade-date-input"
     />
   </div>
   <div class="text-white flex items-end">
@@ -152,8 +143,8 @@
     }
   }
 
-  // .transaction-select-input is passed via inputClass / selectClass
-  // into DateFilter (Phase 3 PR-B of #226). The component renders those
+  // .transaction-select-input is passed via inputClass into
+  // BusinessDateFilter (US-291). The component renders those
   // classes onto its <select>/<input>, which live in a child component
   // scope, so Svelte's scoped CSS would drop the rule as unused. :global
   // keeps it applying; the .transaction-select-container ancestor

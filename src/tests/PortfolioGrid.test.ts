@@ -64,8 +64,7 @@ describe("PortfolioGrid", () => {
           "DIRECTED_QUANTITY,MARKET_VALUE,PROFIT_LOSS,CURRENT_YIELD,YIELD_TO_MATURITY",
         positionView: "DEFAULT_VIEW",
         positionType: "TRANSACTION",
-        tradeDate: today,
-        tradeDateOperator: "LESS_THAN_OR_EQUALS",
+        businessDate: today,
         hideZeros: "true",
       });
       const expectedUrl = `/data/positions?${expectedParams.toString()}`;
@@ -98,8 +97,10 @@ describe("PortfolioGrid", () => {
     );
     expect(params.get("positionView")).toBe("DEFAULT_VIEW");
     expect(params.get("positionType")).toBe("TRANSACTION");
-    expect(params.get("tradeDate")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(params.get("tradeDateOperator")).toBe("LESS_THAN_OR_EQUALS");
+    // US-291: the Business date, not the old tradeDate pair.
+    expect(params.get("businessDate")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(params.get("tradeDate")).toBeNull();
+    expect(params.get("tradeDateOperator")).toBeNull();
     expect(params.get("hideZeros")).toBe("true");
   });
 
