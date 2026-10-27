@@ -45,11 +45,13 @@ async function open(page: Page, url: string) {
   });
 }
 
-/** The DIRECTED_QUANTITY cell of each position row (not the total row). */
+/** The DIRECTED_QUANTITY cell of each security position row: not the
+ * total row, and not the CASH:USD row the buys' cash legs build. */
 async function quantities(page: Page): Promise<number[]> {
-  const cells = page.locator(
-    ".portfolio_container table tbody tr:not(.summary-row) td:last-child"
-  );
+  const cells = page
+    .locator(".portfolio_container table tbody tr:not(.summary-row)")
+    .filter({ hasNotText: /^\s*CASH:/ })
+    .locator("td:last-child");
   const texts = await cells.allTextContents();
   return texts
     .map((t) => Number(t.replace(/[^0-9.-]/g, "")))

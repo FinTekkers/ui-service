@@ -12,7 +12,8 @@
  *      (guardrail 3).
  *
  * Maturity rows are the rows whose Side cell is a MATURATION type.
- * ValuationTest holds 4 buys traded before today and 4 maturities dated 2028–2045.
+ * ValuationTest holds 4 buys traded before today, their USD cash legs, and
+ * 4 maturities dated 2028–2045.
  */
 import { test, expect, type Page } from "@playwright/test";
 import {
@@ -27,6 +28,11 @@ const maturityRows = (page: Page) =>
   page
     .locator("table tbody tr")
     .filter({ has: page.locator("td", { hasText: /^\s*MATURATION/ }) });
+
+const buyRows = (page: Page) =>
+  page
+    .locator("table tbody tr")
+    .filter({ has: page.locator("td", { hasText: /^\s*BUY\s*$/ }) });
 
 async function open(page: Page, url: string) {
   return withToday(async () => {
@@ -70,8 +76,10 @@ test.describe("/data/transactions Business date (US-291)", () => {
     await open(page, `/data/transactions?portfolioId=${portfolioId}`);
     const c = businessDateControl(page);
 
-    const rows = page.locator("table tbody tr");
-    await expect(rows, "ValuationTest's 4 buys up to today").toHaveCount(4, {
+    await expect(
+      buyRows(page),
+      "ValuationTest's 4 buys up to today"
+    ).toHaveCount(4, {
       timeout: 15_000,
     });
     await expect(maturityRows(page), "no maturity rows today").toHaveCount(0);
