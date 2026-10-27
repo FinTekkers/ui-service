@@ -45,12 +45,13 @@ async function open(page: Page, url: string) {
   });
 }
 
-/** The DIRECTED_QUANTITY cell of each security position row: not the
- * total row, and not the CASH:USD row the buys' cash legs build. */
+/** The DIRECTED_QUANTITY cell of each bond position row (labelled
+ * "CUSIP:…"): not the total row, and not the cash row the buys' cash legs
+ * build, whose label is "CASH:USD" or "USD" depending on the response. */
 async function quantities(page: Page): Promise<number[]> {
   const cells = page
     .locator(".portfolio_container table tbody tr:not(.summary-row)")
-    .filter({ hasNotText: /^\s*CASH:/ })
+    .filter({ has: page.locator("td:first-child", { hasText: /^\s*CUSIP:/ }) })
     .locator("td:last-child");
   const texts = await cells.allTextContents();
   return texts
