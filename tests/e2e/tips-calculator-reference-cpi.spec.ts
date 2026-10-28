@@ -15,6 +15,8 @@ test.describe("/data/calculators TIPS pricer — referenceCpi flows in CUSIP mod
     page,
   }) => {
     await page.goto("/data/calculators?tab=tips");
+    // The field handlers only exist once the page has hydrated.
+    await page.waitForLoadState("networkidle");
     await expect(
       page.getByRole("button", { name: "CUSIP Lookup" })
     ).toBeVisible({ timeout: 15_000 });

@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-3JH19VE91K"
-    ></script>
+    <!-- Google tag (gtag.js): production host only, so test, preview and
+         local builds send no hits (US-300). -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
+      if (
+        location.hostname === "www.fintekkers.org" ||
+        location.hostname === "fintekkers.org"
+      ) {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () {
+          dataLayer.push(arguments);
+        };
+        var gtagScript = document.createElement("script");
+        gtagScript.async = true;
+        gtagScript.src =
+          "https://www.googletagmanager.com/gtag/js?id=G-3JH19VE91K";
+        document.head.appendChild(gtagScript);
+        gtag("js", new Date());
 
-      gtag("config", "G-3JH19VE91K");
+        gtag("config", "G-3JH19VE91K");
+      }
     </script>
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
