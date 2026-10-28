@@ -35,6 +35,8 @@ test.describe("/data/curves — forward-term selector (#264)", () => {
     page,
   }) => {
     await page.goto("/data/curves");
+    // The selector's change handler only exists once the page has hydrated.
+    await page.waitForLoadState("networkidle");
 
     const selector = page.getByLabel("Forward term");
     await expect(selector).toBeVisible({ timeout: 15_000 });
