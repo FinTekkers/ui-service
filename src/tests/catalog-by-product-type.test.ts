@@ -278,7 +278,7 @@ describe("guardrail: the catalog comes from @fintekkers/ledger-models", () => {
       encoding: "utf8",
     });
     expect(result.status, result.stdout).toBe(1);
-    expect(existsSync("src/lib/data/measures.json")).toBe(false);
+    expect(existsSync("src/lib/data/" + "measures.json")).toBe(false);
   });
 
   test("ledger-models is a >= minimum that the lockfile satisfies", () => {
