@@ -212,10 +212,7 @@ test("/free/tips shows live figures or says they are unavailable, never the mock
   });
   // Drop the build's hashed asset paths: their hash changes every build, so
   // one like "nodes/9.5c…js" would read as the mock's "9.5" years.
-  const html = (await page.content()).replace(
-    /_app\/immutable\/[^"'\s]+/g,
-    ""
-  );
+  const html = (await page.content()).replace(/_app\/immutable\/[^"'\s]+/g, "");
   expect(mockFiguresIn(html).filter((f) => !allowed.has(f))).toEqual([]);
   expect(html).not.toContain("2026-06-30");
 });
