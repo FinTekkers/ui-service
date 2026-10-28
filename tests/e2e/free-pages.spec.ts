@@ -12,7 +12,7 @@ import { test, expect } from "@playwright/test";
 import { readFileSync } from "fs";
 import path from "path";
 import { soma } from "../../src/lib/free/mock/soma";
-import { tips, tipsMeasure } from "../../src/lib/free/mock/tips";
+import { mockFiguresIn } from "../../src/tests/fixtures/free-tips-live";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -125,16 +125,20 @@ test("the code cards show the sample files verbatim after hydration", async ({
   }
 });
 
-// US-253: /free/tips, logged out. The 5 DataExplorerTIPS.dc.html sections,
-// the figures from src/lib/free/mock/tips.ts, and the display-only
-// calculator.
+// US-253 / US-298: /free/tips, logged out. The 5 DataExplorerTIPS.dc.html
+// sections and the display-only calculator, with live figures from the
+// server load. The host may hold no FedInvest price within 7 days, so a
+// live check accepts either a dated as-of or the unavailable text, and
+// records which branch ran; neither shows a mock figure.
 const TIPS_H2S = [
   "What are Treasury Inflation-Protected Securities?",
-  "TII 1⅞ 01/15/36 · 10-Year TIPS, Series A-2036",
+  // The security's description, from the ledger security master.
+  /\S/,
   "How this bond tracks inflation",
   "Value a TIPS position",
   "Pull TIPS data from the API",
 ];
+const TIPS_UNAVAILABLE = /unavailable/i;
 
 test("/free/tips returns 200 with the 5 artboard sections in the shell", async ({
   page,
@@ -145,51 +149,49 @@ test("/free/tips returns 200 with the 5 artboard sections in the shell", async (
   await expect(page.locator(".ft-free .content h2")).toHaveText(TIPS_H2S);
 });
 
-test("/free/tips shows the stored security and worked-example figures", async ({
+test("/free/tips shows live figures or says they are unavailable, never the mock", async ({
   page,
 }) => {
   await page.goto("/free/tips");
-  const widget = page.getByRole("region", { name: TIPS_H2S[1] });
-  const example = page.getByRole("article", { name: TIPS_H2S[2] });
+  const widget = page.locator('section[aria-labelledby="sec-title"]');
+  const asOf = widget.locator(".as-of");
+  const asOfText = (await asOf.textContent()) ?? "";
+  const calc = page.getByRole("region", { name: TIPS_H2S[3] as string });
 
-  /** The dd next to the widget's `label`. */
-  const field = (label: string) =>
-    widget.locator("dl > div").filter({ hasText: label }).locator("dd");
+  const dated = /As of (\d{4}-\d{2}-\d{2})/.exec(asOfText);
+  test.info().annotations.push({
+    type: "live-data",
+    description: dated
+      ? `FedInvest price dated ${dated[1]}`
+      : "no FedInvest price within 7 days: unavailable branch",
+  });
+  if (dated) {
+    const priceDate = dated[1];
+    const ageDays = (Date.now() - Date.parse(priceDate)) / 86_400_000;
+    expect(ageDays).toBeGreaterThanOrEqual(0);
+    expect(ageDays).toBeLessThan(8);
+    await expect(
+      calc.getByText(`Real clean price (FedInvest, ${priceDate})`)
+    ).toBeVisible();
+    await expect(
+      widget.locator("dl > div").filter({ hasText: "CUSIP" }).locator("dd")
+    ).toHaveText("91282CPU9");
+    await expect(
+      widget
+        .locator("dl > div")
+        .filter({ hasText: "Index ratio" })
+        .locator("dd")
+    ).toHaveText(/^\d+\.\d{5}$|^Unavailable$/);
+  } else {
+    await expect(asOf).toHaveText(/Live price unavailable/);
+    await expect(
+      page.getByRole("article", { name: TIPS_H2S[2] as string })
+    ).toContainText(TIPS_UNAVAILABLE);
+  }
 
-  const cusip = tips.security.identifiersList[0].identifierValue;
-  expect(cusip).toBe("91282CPU9");
-  await expect(field("CUSIP")).toHaveText(cusip);
-
-  expect(tips.security.tipsExtension.baseCpi).toBe("324.93471");
-  await expect(field("Base ref CPI")).toHaveText(
-    tips.security.tipsExtension.baseCpi
-  );
-  expect(tipsMeasure(tips, "REFERENCE_CPI").display).toBe("332.92643");
-  await expect(field("Ref CPI (Jun 30)")).toHaveText(
-    tipsMeasure(tips, "REFERENCE_CPI").display
-  );
-  expect(tipsMeasure(tips, "INDEX_RATIO").display).toBe("1.02459");
-  await expect(field("Index ratio")).toHaveText(
-    tipsMeasure(tips, "INDEX_RATIO").display
-  );
-
-  const figures = example.locator("ol > li > :last-child");
-  const stored = tips.workedExample;
-  expect([
-    stored.baseCpi,
-    stored.refCpi,
-    stored.indexRatio,
-    stored.adjustedPrincipal,
-    stored.coupon,
-  ]).toEqual(["324.93471", "332.92643", "1.02459", "$10,245.90", "$96.06"]);
-  await expect(figures).toHaveText([
-    stored.baseCpi,
-    stored.refCpi,
-    stored.indexRatio,
-    stored.adjustedPrincipal,
-    stored.coupon,
-    "max(adj., par)",
-  ]);
+  const html = await page.content();
+  expect(mockFiguresIn(html)).toEqual([]);
+  expect(html).not.toContain("2026-06-30");
 });
 
 test("/free/tips calculator is disabled and shows its defaults", async ({
@@ -197,23 +199,27 @@ test("/free/tips calculator is disabled and shows its defaults", async ({
 }) => {
   await page.goto("/free/tips");
   await page.waitForLoadState("networkidle");
-  const calc = page.getByRole("region", { name: TIPS_H2S[3] });
+  const calc = page.getByRole("region", { name: TIPS_H2S[3] as string });
 
-  for (const [label, value] of [
-    ["Face value ($)", "10000"],
-    ["Real coupon (%)", "1.875"],
-    ["Base ref CPI", "324.93471"],
-    ["Current ref CPI", "332.92643"],
-    ["Years to maturity", "9.5"],
-    ["Real yield (%)", "2.25"],
-    ["Assumed annual inflation (%)", "2.30"],
+  for (const label of [
+    "Face value ($)",
+    "Real coupon (%)",
+    "Base ref CPI",
+    "Current ref CPI",
+    "Years to maturity",
+    "Real yield (%)",
   ]) {
-    const input = calc.getByLabel(label, { exact: true });
-    await expect(input).toBeDisabled();
-    await expect(input).toHaveValue(value);
+    await expect(calc.getByLabel(label, { exact: true })).toBeDisabled();
   }
+  const inflation = calc.getByLabel("Assumed annual inflation (%)", {
+    exact: true,
+  });
+  await expect(inflation).toBeDisabled();
+  await expect(inflation).toHaveValue("2.30");
   await expect(calc.getByRole("textbox")).toHaveCount(7);
-  await expect(calc.locator("tbody tr")).toHaveCount(19);
+  // US-298b: the projected cashflows need an inflation forecast.
+  await expect(calc.locator("tbody tr")).toHaveCount(1);
+  await expect(calc.locator("tbody tr")).toContainText(TIPS_UNAVAILABLE);
   await expect(calc.locator("button:enabled")).toHaveCount(0);
 
   await expect(calc).toContainText(
@@ -222,4 +228,26 @@ test("/free/tips calculator is disabled and shows its defaults", async ({
   await expect(
     page.getByText("Change the real yield and your inflation assumption")
   ).toHaveCount(0);
+});
+
+test("/free/tips: FT_HOMEPAGE_API_KEY never reaches the browser", async ({
+  page,
+  request,
+}) => {
+  const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+  test.skip(
+    !key,
+    "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+  );
+  for (const url of ["/free/tips", "/free/tips/__data.json"]) {
+    const response = await request.get(url);
+    expect(response.status(), `GET ${url}`).toBe(200);
+    expect(await response.text(), `GET ${url} body`).not.toContain(key);
+  }
+  const headers: string[] = [];
+  page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
+  await page.goto("/free/tips");
+  await page.waitForLoadState("networkidle");
+  expect(await page.content()).not.toContain(key);
+  expect(headers.filter((h) => h.includes(key))).toEqual([]);
 });

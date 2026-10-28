@@ -1,38 +1,46 @@
 <!-- The calculator of DataExplorerTIPS.dc.html, display only: its 7 inputs
-     show the artboard's defaults and are disabled, and the outputs are the
-     literals stored in src/lib/free/mock/tips.ts. Nothing recalculates. -->
+     show the default inputs and are disabled, and the outputs are the live
+     figures /free/tips's server load returns (US-298). Nothing recalculates.
+     A figure whose source failed reads "Unavailable". The nominal yield and
+     the projected cashflows need an inflation forecast the valuation
+     request can't carry yet (US-298b), so they say so. -->
 <script lang="ts">
-  import { tipsMeasure } from "$lib/free/mock/tips";
-  import type { MockMeasureResult, TipsResponse } from "$lib/free/mock/types";
+  import { UNAVAILABLE, type TipsPageData } from "$lib/free/tips";
 
-  export let data: TipsResponse;
+  export let data: TipsPageData;
+
+  $: security = data.security.ok ? data.security.data : null;
+  $: price = data.price.ok ? data.price.data : null;
+  $: valuation = data.valuation.ok ? data.valuation.data : null;
 
   $: fields = [
-    { label: "Face value ($)", value: data.inputs.face },
-    { label: "Real coupon (%)", value: data.inputs.coupon },
-    { label: "Base ref CPI", value: data.inputs.baseCpi },
-    { label: "Current ref CPI", value: data.inputs.refCpi },
-    { label: "Years to maturity", value: data.inputs.years },
-    { label: "Real yield (%)", value: data.inputs.realYield },
-    { label: "Assumed annual inflation (%)", value: data.inputs.inflation },
+    { label: "Face value ($)", value: security?.faceValue },
+    { label: "Real coupon (%)", value: security?.couponRate },
+    { label: "Base ref CPI", value: security?.baseCpi },
+    { label: "Current ref CPI", value: valuation?.referenceCpi },
+    { label: "Years to maturity", value: data.calculator.years },
+    // YIELD_TO_MATURITY: for a TIPS it is the real yield.
+    { label: "Real yield (%)", value: valuation?.realYield },
+    {
+      label: "Assumed annual inflation (%)",
+      value: data.calculator.inflation,
+    },
   ];
 
-  // One measure per tile; Next coupon has no MeasureProto.
-  const TILES: [string, MockMeasureResult["measure"] | null][] = [
-    ["Index ratio", "INDEX_RATIO"],
-    ["Adjusted principal", "INFLATION_ADJUSTED_PRINCIPAL"],
-    ["Next coupon", null],
-    ["Real price (per 100)", "CLEAN_PRICE"],
-    ["Position value", "MARKET_VALUE"],
-    ["Nominal YTM", "YIELD_TO_MATURITY"],
+  $: tiles = [
+    { label: "Index ratio", value: valuation?.indexRatio },
+    { label: "Adjusted principal", value: valuation?.adjustedPrincipal },
+    { label: "Next coupon", value: valuation?.nextCoupon },
+    {
+      label: price
+        ? `Real clean price (FedInvest, ${price.date})`
+        : "Real clean price (FedInvest)",
+      value: price?.value,
+    },
+    { label: "Position value", value: valuation?.marketValue },
+    // US-298b: needs an inflation forecast in the request.
+    { label: "Nominal YTM", value: UNAVAILABLE.value },
   ];
-
-  $: tiles = TILES.map(([label, measure]) => ({
-    label,
-    value: measure
-      ? tipsMeasure(data, measure).display
-      : data.valuation.nextCoupon,
-  }));
 </script>
 
 <div class="calculator">
@@ -40,7 +48,12 @@
     {#each fields as field, i}
       <label class:wide={i === fields.length - 1}
         >{field.label}
-        <input type="text" value={field.value} disabled />
+        <input
+          type="text"
+          value={field.value ?? ""}
+          placeholder={UNAVAILABLE.value}
+          disabled
+        />
       </label>
     {/each}
     <p class="wide">
@@ -50,11 +63,14 @@
   </div>
 
   <div class="outputs">
+    {#if !data.valuation.ok}
+      <p class="unavailable" role="status">{data.valuation.message}</p>
+    {/if}
     <dl class="tiles">
       {#each tiles as tile, i}
         <div class="tile" class:dark={i === tiles.length - 1}>
           <dt>{tile.label}</dt>
-          <dd>{tile.value}</dd>
+          <dd>{tile.value ?? UNAVAILABLE.value}</dd>
         </div>
       {/each}
     </dl>
@@ -63,9 +79,7 @@
       <div class="flows-top">
         <span class="flows-title" id="flows-title">Projected cashflows</span>
         <span class="muted"
-          >Total received: <span class="total"
-            >{data.valuation.totalReceived}</span
-          ></span
+          >Total received: <span class="total">{UNAVAILABLE.value}</span></span
         >
       </div>
       <!-- Focusable so keyboard users can scroll the table. -->
@@ -87,15 +101,11 @@
             </tr>
           </thead>
           <tbody>
-            {#each data.valuation.cashflows as row}
-              <tr>
-                <td>{row.time}</td>
-                <td>{row.indexRatio}</td>
-                <td>{row.coupon}</td>
-                <td>{row.principal}</td>
-                <td class="row-total">{row.total}</td>
-              </tr>
-            {/each}
+            <tr>
+              <td class="unavailable-row" colspan="5"
+                >{UNAVAILABLE.projection}</td
+              >
+            </tr>
           </tbody>
         </table>
       </div>
@@ -257,7 +267,13 @@
   tbody tr {
     border-top: 1px solid #eef0f3;
   }
-  .row-total {
-    font-weight: 500;
+  .unavailable-row {
+    text-align: left;
+    white-space: normal;
+  }
+  .unavailable {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
   }
 </style>

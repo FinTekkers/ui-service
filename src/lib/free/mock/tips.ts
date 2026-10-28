@@ -3,6 +3,9 @@
 // arithmetic here or on the page: every figure is a literal, captured once
 // from the artboard's own compute(). src/tests/free-tips-mock.test.ts runs a
 // test-only copy of that compute() and checks each literal against it.
+// US-298: test-only. /free/tips loads live figures; tests use these
+// literals to prove no mock figure reaches the page. No page or server code
+// imports this file (src/tests/free-tips-guard.test.ts).
 import type { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
 import type { MockMeasureResult, TipsResponse } from "./types";
 

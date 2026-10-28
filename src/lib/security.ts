@@ -27,6 +27,7 @@ import { PositionFilterOperator } from "@fintekkers/ledger-models/node/wrappers/
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
+import type { SecurityProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js";
 
 const { FieldProto } = pkg;
 
@@ -929,4 +930,49 @@ export async function FetchSecurityByUuid(
     console.error("Error fetching security by UUID:", error.message);
     return [];
   }
+}
+
+/**
+ * The raw SecurityProto for one CUSIP, as the calculators send it to
+ * valuation-service. Throws when no security matches.
+ */
+export async function FetchSecurityProtoByCusip(
+  cusip: string,
+  apiKey?: string
+): Promise<SecurityProto> {
+  const filter = new PositionFilter();
+  const identifierProto = new IdentifierProto()
+    .setIdentifierType(IdentifierTypeProto.CUSIP)
+    .setIdentifierValue(cusip.trim());
+  filter.addObjectFilter(
+    FieldProto.IDENTIFIER,
+    new Identifier(identifierProto)
+  );
+
+  const conn = getServiceConnection(apiKey);
+  const client = new SecurityClient(conn.url, conn.credentials, {
+    interceptors: conn.interceptors,
+    ...conn.clientOptions,
+  });
+  const searchRequest = new QuerySecurityRequestProto();
+  stampOwn(searchRequest);
+  searchRequest.setAsOf(ZonedDateTime.now().toProto());
+  searchRequest.setSearchSecurityInput(filter.toProto());
+
+  const results = await new Promise<SecurityProto[]>((resolve, reject) => {
+    const list: SecurityProto[] = [];
+    const stream = client.search(searchRequest);
+    stream.on("data", (response: any) => {
+      response
+        .getSecurityResponseList()
+        .forEach((proto: any) => list.push(proto));
+    });
+    stream.on("end", () => resolve(list));
+    stream.on("error", (err: any) => reject(err));
+  });
+
+  if (results.length === 0) {
+    throw new Error(`No security found for CUSIP: ${cusip}`);
+  }
+  return results[0];
 }

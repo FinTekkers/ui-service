@@ -1,9 +1,10 @@
 /**
- * US-251: the Free data explorer (/free/*) is mock-only. Its routes,
- * components and lib code may read src/lib/free/mock/ but never call the
- * backend: no server load or endpoint files, no fetch(), and imports only
- * from an allow-list. Anything else ($lib/valuation, $lib/positions, a
- * ledger-models service client, ...) fails this test.
+ * US-251: the Free data explorer (/free/*) never calls the backend from its
+ * pages, components or lib code: no server load or endpoint files, no
+ * fetch(), and imports only from an allow-list. Anything else
+ * ($lib/valuation, $lib/positions, a ledger-models service client, ...)
+ * fails this test. US-298: /free/tips's live figures come from one allowed
+ * server load, src/routes/free/tips/+page.server.ts.
  *
  * Files are read with node:fs, not `?raw`: Vite rewrites process.env inside
  * ?raw imports, and fixtures here live outside the source tree.
@@ -23,9 +24,11 @@ import { afterEach, describe, expect, test } from "vitest";
 const FREE_ROOTS = ["src/routes/free", "src/lib/free", "src/components/free"];
 
 // Exact paths, relative to the repo root, of server files allowed under the
-// free roots. US-254 deleted the /free redirect, the last one, so /free
-// itself is mock-only too.
-const ALLOWED_SERVER_FILES = new Set<string>();
+// free roots. US-254 deleted the /free redirect; US-298 added /free/tips's
+// live load.
+const ALLOWED_SERVER_FILES = new Set<string>([
+  "src/routes/free/tips/+page.server.ts",
+]);
 
 const SERVER_FILE = /^\+(page\.server|layout\.server|server)\.(ts|js)$/;
 const SOURCE_FILE = /\.(ts|js|svelte)$/;
@@ -164,6 +167,14 @@ describe("Free data explorer stays mock-only", () => {
       }
       return scanFreeTree(repoRoot);
     }
+
+    test("only /free/tips's +page.server.ts is an allowed server file", () => {
+      expect(
+        fixture({
+          "src/routes/free/tips/+page.server.ts": `import { fetchFreeTips } from "$lib/server/free-tips";`,
+        })
+      ).toEqual([]);
+    });
 
     afterEach(() => {
       if (repoRoot) rmSync(repoRoot, { recursive: true, force: true });
