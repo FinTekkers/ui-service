@@ -111,6 +111,9 @@ REGRESSION_SPECS=(
   # US-252: /free/soma logged out: its 7 sections, the MBS toggle and the
   # code cards.
   tests/e2e/free-pages.spec.ts
+  # US-300: a page served on localhost loads no GA tag and calls no
+  # googletagmanager.com.
+  tests/e2e/no-analytics-on-localhost.spec.ts
 )
 # Tests that fail on the host for lack of data, logged as "known" without
 # failing the check. Any other failure fails it, and so does a listed test
