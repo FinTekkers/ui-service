@@ -20,7 +20,7 @@ import {
 
 import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
 const { PositionViewProto, PositionTypeProto } = position_pkg;
-import measuresCatalog from "$lib/data/measures.json";
+import { MEASURES } from "$lib/measureCatalog";
 
 // gRPC status UNIMPLEMENTED.
 const GRPC_UNIMPLEMENTED = 12;
@@ -29,9 +29,7 @@ const GRPC_UNIMPLEMENTED = 12;
 // (e.g. ADJUSTED_COST_BASIS until VS-110). The catalog is the source, so no
 // measure is named here.
 const unimplementedMeasures = new Set(
-  measuresCatalog.measures
-    .filter((m) => m.implemented === false)
-    .map((m) => m.name)
+  MEASURES.filter((m) => m.implemented === false).map((m) => m.name)
 );
 
 function notSupportedText(measure: string): string {

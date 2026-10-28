@@ -5,16 +5,16 @@
  * Tests both data integrity (JSON schema) and rendered output.
  */
 import { describe, expect, test } from "vitest";
-import measuresData from "$lib/data/measures.json";
+import { MEASURES } from "$lib/measureCatalog";
 import fieldsData from "$lib/data/fields.json";
 
 // =============================================================================
-// 1. JSON Data Integrity — measures.json
+// 1. Data Integrity — the ledger-models measure catalog (US-297)
 // =============================================================================
-describe("measures.json – data integrity", () => {
-  const measures = measuresData.measures;
+describe("measure catalog – data integrity", () => {
+  const measures = MEASURES;
 
-  test("measures.json exists and has entries", () => {
+  test("the measure catalog has entries", () => {
     expect(measures).toBeDefined();
     expect(Array.isArray(measures)).toBe(true);
     expect(measures.length).toBeGreaterThan(0);
@@ -257,13 +257,13 @@ describe("CSS contrast safety — catalog color contracts", () => {
 //    If display_name is just the enum name or a duplicate, it's a content bug.
 // =============================================================================
 describe("Display name quality", () => {
-  test("measure display_names differ from raw enum names", () => {
-    const measures = measuresData.measures.filter(
-      (m) => m.category !== "sentinel"
-    );
-    for (const m of measures) {
-      // display_name should NOT be identical to the SCREAMING_SNAKE name
-      expect(m.display_name).not.toBe(m.name);
+  test("measure display_names differ from raw enum names (except one-word names like DV01)", () => {
+    for (const m of MEASURES) {
+      // display_name should NOT be identical to the SCREAMING_SNAKE name;
+      // a one-word name such as DV01 is naturally its own display_name.
+      if (m.name.includes("_")) {
+        expect(m.display_name).not.toBe(m.name);
+      }
     }
   });
 
@@ -278,7 +278,7 @@ describe("Display name quality", () => {
   });
 
   test("measure display_names are unique", () => {
-    const names = measuresData.measures.map((m) => m.display_name);
+    const names = MEASURES.map((m) => m.display_name);
     expect(new Set(names).size).toBe(names.length);
   });
 
@@ -296,9 +296,7 @@ describe("Display name quality", () => {
 // =============================================================================
 describe("Catalog page content visibility", () => {
   test("non-sentinel measures exist (table would have rows)", () => {
-    const visible = measuresData.measures.filter(
-      (m) => m.category !== "sentinel"
-    );
+    const visible = MEASURES.filter((m) => m.category !== "sentinel");
     expect(visible.length).toBeGreaterThan(0);
     // Should be at least the core measures: DIRECTED_QUANTITY, MARKET_VALUE, PRESENT_VALUE, etc.
     expect(visible.length).toBeGreaterThanOrEqual(5);
@@ -311,14 +309,12 @@ describe("Catalog page content visibility", () => {
   });
 
   test("implemented measures exist (at least some are marked implemented)", () => {
-    const implemented = measuresData.measures.filter(
-      (m) => m.implemented === true
-    );
+    const implemented = MEASURES.filter((m) => m.implemented === true);
     expect(implemented.length).toBeGreaterThan(0);
   });
 
   test("expected core measures are present", () => {
-    const names = measuresData.measures.map((m) => m.name);
+    const names = MEASURES.map((m) => m.name);
     expect(names).toContain("DIRECTED_QUANTITY");
     expect(names).toContain("MARKET_VALUE");
     expect(names).toContain("PRESENT_VALUE");

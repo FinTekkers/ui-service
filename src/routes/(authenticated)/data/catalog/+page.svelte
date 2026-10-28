@@ -1,18 +1,28 @@
 <script lang="ts">
-  import measuresData from "$lib/data/measures.json";
   import fieldsData from "$lib/data/fields.json";
+  import {
+    DEFAULT_EXPANDED_NODE,
+    MEASURES,
+    measureByName,
+  } from "$lib/measureCatalog";
+  import MeasureProductMatrix from "../../../../components/catalog/MeasureProductMatrix.svelte";
+  import MeasureDetailPanel from "../../../../components/catalog/MeasureDetailPanel.svelte";
 
   export let data: import("./$types").PageData;
 
   let activeTab: "measures" | "fields" = "measures";
+  // US-297: Measures tab view, and the measure shown in the detail panel.
+  let measureView: "list" | "product" = "list";
+  let selectedMeasure: string | null = null;
+  $: selectedDetail = selectedMeasure
+    ? measureByName(selectedMeasure) ?? null
+    : null;
   let searchQuery = "";
   let selectedCategory = "";
 
   $: measureCategories = [
     ...new Set(
-      measuresData.measures
-        .filter((m) => m.category !== "sentinel")
-        .map((m) => m.category)
+      MEASURES.filter((m) => m.category !== "sentinel").map((m) => m.category)
     ),
   ].sort();
   $: fieldCategories = [
@@ -31,8 +41,7 @@
     searchQuery = "";
   }
 
-  $: filteredMeasures = measuresData.measures
-    .filter((m) => m.category !== "sentinel")
+  $: filteredMeasures = MEASURES.filter((m) => m.category !== "sentinel")
     .filter((m) => !selectedCategory || m.category === selectedCategory)
     .filter((m) => {
       if (!searchQuery) return true;
@@ -104,7 +113,7 @@
       class:active={activeTab === "measures"}
       on:click={() => switchTab("measures")}
     >
-      Measures ({measuresData.measures.length - 1})
+      Measures ({MEASURES.length})
     </button>
     <button
       class="tab-btn"
@@ -131,8 +140,47 @@
     </select>
   </div>
 
-  <!-- Measures view -->
   {#if activeTab === "measures"}
+    <div class="view-toggle" role="group" aria-label="Measures view">
+      <button
+        type="button"
+        class="view-btn"
+        aria-pressed={measureView === "list"}
+        on:click={() => (measureView = "list")}>List</button
+      >
+      <button
+        type="button"
+        class="view-btn"
+        aria-pressed={measureView === "product"}
+        on:click={() => (measureView = "product")}>By product type</button
+      >
+    </div>
+  {/if}
+
+  <!-- US-297: By product type view -->
+  {#if activeTab === "measures" && measureView === "product"}
+    <div class="product-view">
+      <div class="matrix-pane">
+        {#if filteredMeasures.length > 0}
+          <MeasureProductMatrix
+            measures={filteredMeasures}
+            selected={selectedMeasure}
+            initiallyExpanded={[DEFAULT_EXPANDED_NODE]}
+            on:select={(e) => (selectedMeasure = e.detail.name)}
+          />
+        {:else}
+          <p class="empty-msg">No measures match your search.</p>
+        {/if}
+      </div>
+      <MeasureDetailPanel
+        measure={selectedDetail}
+        on:select={(e) => (selectedMeasure = e.detail.name)}
+      />
+    </div>
+  {/if}
+
+  <!-- Measures view -->
+  {#if activeTab === "measures" && measureView === "list"}
     {#each Object.entries(groupedMeasures) as [category, measures]}
       <h3 class="group-label">{formatCategory(category)}</h3>
       <div class="table-wrapper">
@@ -397,6 +445,52 @@
     li {
       font-size: 0.8rem;
       margin-bottom: 2px;
+    }
+  }
+
+  /* US-297: List / By product type toggle */
+  .view-toggle {
+    display: inline-flex;
+    border: 1px solid #164e63;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .view-btn {
+    padding: 6px 14px;
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    color: #edfbfd;
+    cursor: pointer;
+
+    &[aria-pressed="true"] {
+      background-color: #0c3a46;
+      color: #7cd2ba;
+      font-weight: 700;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #7cd2ba;
+      outline-offset: -2px;
+    }
+  }
+
+  .product-view {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .matrix-pane {
+    min-width: 0;
+  }
+
+  @media (max-width: 768px) {
+    .product-view {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 

@@ -34,7 +34,7 @@
   // positions.ts and elsewhere.
   import type { MeasureProto as MeasureProtoType } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";
   const { MeasureProto } = measure_pkg;
-  import measuresCatalog from "$lib/data/measures.json";
+  import { MEASURES } from "$lib/measureCatalog";
 
   // Valuation-only measures are excluded by default — they require a
   // RunValuation call rather than the Position search the basic
@@ -78,7 +78,7 @@
 
   // US-278: display names from the ledger-models measure catalog.
   const CATALOG_DISPLAY_NAMES = new Map<string, string>(
-    measuresCatalog.measures.map((m) => [m.name, m.display_name])
+    MEASURES.map((m) => [m.name, m.display_name])
   );
 
   /** Friendly per-measure labels. Override individual entries via the `labels` prop. */
