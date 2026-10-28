@@ -1,7 +1,7 @@
 <script lang="ts">
   import { formatAmount, formatPercent } from "$lib/formatUtils";
   import { onMount } from "svelte";
-  import measuresCatalog from "$lib/data/measures.json";
+  import { MEASURES } from "$lib/measureCatalog";
   import {
     sortPositions as sortPositionsUtil,
     getSortIndicator,
@@ -105,7 +105,7 @@
 
   // US-278: labels come from the ledger-models measure catalog.
   const catalogDisplayNames = new Map<string, string>(
-    measuresCatalog.measures.map((m) => [m.name, m.display_name])
+    MEASURES.map((m) => [m.name, m.display_name])
   );
 
   // Headers for measures the catalog doesn't list yet; catalog labels win.
