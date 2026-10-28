@@ -46,6 +46,13 @@ export default defineConfig({
     // Trace on first retry so flake reproduction is one click away.
     trace: "on-first-retry",
     screenshot: "only-on-failure",
+    // Test browsers never reach Google Analytics, even if the production-host
+    // guard in src/app.html changes (US-300).
+    launchOptions: {
+      args: [
+        "--host-resolver-rules=MAP googletagmanager.com ~NOTFOUND, MAP *.googletagmanager.com ~NOTFOUND, MAP google-analytics.com ~NOTFOUND, MAP *.google-analytics.com ~NOTFOUND",
+      ],
+    },
   },
 
   projects: [
