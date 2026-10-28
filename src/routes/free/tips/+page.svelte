@@ -1,69 +1,103 @@
 <!-- /free/tips: the 5 sections of the owner's DataExplorerTIPS.dc.html
      artboard (version 1792630643-19db), inside the Free data explorer shell
-     (../+layout.svelte). Every figure comes from the mock in
-     src/lib/free/mock/tips.ts; the calculator is display only. -->
+     (../+layout.svelte). US-298: the figures are live, loaded and formatted
+     by ./+page.server.ts; a section whose source failed says so. The
+     calculator is display only. -->
 <script lang="ts">
   import FreeCodeCard from "../../../components/free/FreeCodeCard.svelte";
   import TipsCalculatorDisplay from "../../../components/free/TipsCalculatorDisplay.svelte";
-  import { tips, tipsMeasure } from "$lib/free/mock/tips";
+  import {
+    UNAVAILABLE,
+    firstUnavailable,
+    type TipsPageData,
+  } from "$lib/free/tips";
   import pySample from "$lib/free/samples/tips.py?raw";
   import tsSample from "$lib/free/samples/tips.ts?raw";
 
-  const security = tips.security;
-  const example = tips.workedExample;
+  export let data: TipsPageData;
 
-  const securityRows = [
-    ["CUSIP", security.identifiersList[0].identifierValue],
-    ["Issuer", security.issuerName],
-    ["Product", security.productType],
-    ["Coupon (real)", `${security.bondDetails.couponRate}%`],
-    ["Frequency", tips.securityLabels.frequency],
-    ["Pay dates", tips.securityLabels.payDates],
-    ["Dated date", security.bondDetails.datedDate],
-    ["Maturity", security.bondDetails.maturityDate],
-    ["Index", tips.securityLabels.index],
-    ["Base ref CPI", security.tipsExtension.baseCpi],
-    ["Ref CPI (Jun 30)", tipsMeasure(tips, "REFERENCE_CPI").display],
-  ];
+  $: security = data.security.ok ? data.security.data : null;
+  $: price = data.price.ok ? data.price.data : null;
+  $: cpi = data.cpi.ok ? data.cpi.data : null;
+  $: valuation = data.valuation.ok ? data.valuation.data : null;
+  // The worked example needs every source: the valuation needs the others.
+  $: example =
+    security && price && cpi && valuation
+      ? { security, price, cpi, valuation }
+      : null;
+  $: exampleMessage = firstUnavailable(
+    data.security,
+    data.price,
+    data.cpi,
+    data.valuation
+  );
 
-  const steps = [
-    {
-      number: "01",
-      title: "A starting point is locked in",
-      body: "On the dated date, January 15, 2026, the bond's base reference CPI was fixed. Every future adjustment is measured against it.",
-      figure: example.baseCpi,
-    },
-    {
-      number: "02",
-      title: "The reference CPI moves every day",
-      body: "CPI is published monthly with a lag, so Treasury uses the index from three months earlier. June 1 takes March's CPI-U (330.213). July 1 takes April's (333.020). Days in between are interpolated, so June 30 sits just below July's value.",
-      figure: example.refCpi,
-    },
-    {
-      number: "03",
-      title: "The index ratio measures inflation so far",
-      body: "332.92643 ÷ 324.93471. Prices rose about 2.46% between the dated date and June 30, and the bond's principal rose with them.",
-      figure: example.indexRatio,
-    },
-    {
-      number: "04",
-      title: "Principal grows with the ratio",
-      body: "A $10,000 position is now worth $10,000 × 1.02459 in principal terms.",
-      figure: example.adjustedPrincipal,
-    },
-    {
-      number: "05",
-      title: "Coupons are paid on the larger principal",
-      body: "Half the 1.875% annual rate, applied to $10,245.90. At par the same coupon would be $93.75, so inflation has already added about $2.31 per payment.",
-      figure: example.coupon,
-    },
-    {
-      number: "06",
-      title: "Par is the floor at maturity",
-      body: "On January 15, 2036 the holder receives the adjusted principal, or $10,000 if deflation has pushed the index ratio below 1.",
-      figure: "max(adj., par)",
-    },
-  ];
+  // The price date and the CPI-U months the figures use.
+  $: asOf = data.asOf.priceDate
+    ? `As of ${data.asOf.priceDate}${
+        data.asOf.cpiMonths ? ` · ${data.asOf.cpiMonths}` : ""
+      }`
+    : "Live price unavailable";
+
+  $: securityRows = security
+    ? [
+        ["CUSIP", security.cusip],
+        ["Issuer", security.issuer],
+        ["Product", security.product],
+        ["Coupon (real)", `${security.couponRate}%`],
+        ["Frequency", security.frequency],
+        ["Pay dates", security.payDates],
+        ["Dated date", security.datedDate],
+        ["Maturity", security.maturityDate],
+        ["Index", security.index],
+        ["Base ref CPI", security.baseCpi],
+        [
+          price ? `Ref CPI (${price.date})` : "Ref CPI",
+          valuation?.referenceCpi ?? UNAVAILABLE.value,
+        ],
+      ]
+    : [];
+
+  $: steps = example
+    ? [
+        {
+          number: "01",
+          title: "A starting point is locked in",
+          body: `On the dated date, ${example.security.datedDateLong}, the bond's base reference CPI was fixed. Every future adjustment is measured against it.`,
+          figure: example.security.baseCpi,
+        },
+        {
+          number: "02",
+          title: "The reference CPI moves every day",
+          body: `CPI is published monthly with a lag, so Treasury uses the index from three months earlier. ${example.price.monthName} 1 takes ${example.cpi.readings[0].monthName}'s CPI-U (${example.cpi.readings[0].value}). ${example.price.nextMonthName} 1 takes ${example.cpi.readings[1].monthName}'s (${example.cpi.readings[1].value}). Days in between are interpolated, so ${example.price.dateLong} sits between the two.`,
+          figure: example.valuation.referenceCpi,
+        },
+        {
+          number: "03",
+          title: "The index ratio measures inflation so far",
+          body: `${example.valuation.referenceCpi} ÷ ${example.security.baseCpi}. Prices ${example.valuation.inflationVerb} about ${example.valuation.inflationPct} between the dated date and ${example.price.dateLong}, and the bond's principal ${example.valuation.inflationVerb} with them.`,
+          figure: example.valuation.indexRatio,
+        },
+        {
+          number: "04",
+          title: "Principal grows with the ratio",
+          body: `A ${example.security.faceDisplay} position is now worth ${example.security.faceDisplay} × ${example.valuation.indexRatio} in principal terms.`,
+          figure: example.valuation.adjustedPrincipal,
+        },
+        {
+          number: "05",
+          title: "Coupons are paid on the larger principal",
+          body: `Half the ${example.security.couponRate}% annual rate, applied to ${example.valuation.adjustedPrincipal}.`,
+          figure: example.valuation.nextCoupon ?? UNAVAILABLE.value,
+        },
+        {
+          number: "06",
+          title: "Par is the floor at maturity",
+          body: `On ${example.security.maturityDateLong} the holder receives the adjusted principal, or ${example.security.faceDisplay} if deflation has pushed the index ratio below 1.`,
+          figure: "max(adj., par)",
+        },
+      ]
+    : [];
 </script>
 
 <svelte:head>
@@ -126,22 +160,26 @@
   <div class="security-top">
     <div class="titles">
       <span class="eyebrow">Security in Fintekkers</span>
-      <h2 id="sec-title">{security.description}</h2>
+      <h2 id="sec-title">{security?.description ?? data.cusip}</h2>
     </div>
-    <span class="as-of">As of {tips.asOf}</span>
+    <span class="as-of">{asOf}</span>
   </div>
-  <dl class="security-fields">
-    {#each securityRows as [label, value]}
+  {#if security}
+    <dl class="security-fields">
+      {#each securityRows as [label, value]}
+        <div>
+          <dt>{label}</dt>
+          <dd>{value}</dd>
+        </div>
+      {/each}
       <div>
-        <dt>{label}</dt>
-        <dd>{value}</dd>
+        <dt>Index ratio</dt>
+        <dd class="ratio">{valuation?.indexRatio ?? UNAVAILABLE.value}</dd>
       </div>
-    {/each}
-    <div>
-      <dt>Index ratio</dt>
-      <dd class="ratio">{tipsMeasure(tips, "INDEX_RATIO").display}</dd>
-    </div>
-  </dl>
+    </dl>
+  {:else if !data.security.ok}
+    <p class="unavailable" role="status">{data.security.message}</p>
+  {/if}
 </section>
 
 <!-- 3. Worked example -->
@@ -152,27 +190,33 @@
     </h2>
     <p>
       Here's the mechanism above, applied to the January 2036 TIPS and the
-      Treasury's own published CPI figures for June 2026.
+      Treasury's own published CPI figures{price
+        ? ` for ${price.monthYear}`
+        : ""}.
     </p>
   </div>
-  <ol>
-    {#each steps as step}
-      <li>
-        <span class="step-number">{step.number}</span>
-        <div class="step-text">
-          <h3>{step.title}</h3>
-          <p>{step.body}</p>
-        </div>
-        <span class="step-figure">{step.figure}</span>
-      </li>
-    {/each}
-  </ol>
-  <p class="source">
-    Reference CPI and index ratio: <a
-      href="https://www.treasurydirect.gov/instit/annceresult/tipscpi/2026/CPI_20260512.pdf"
-      >TreasuryDirect CPI table, June 2026</a
-    >
-  </p>
+  {#if example}
+    <ol>
+      {#each steps as step}
+        <li>
+          <span class="step-number">{step.number}</span>
+          <div class="step-text">
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </div>
+          <span class="step-figure">{step.figure}</span>
+        </li>
+      {/each}
+    </ol>
+    <p class="source">
+      Reference CPI and index ratio: <a
+        href="https://www.treasurydirect.gov/auctions/announcements-data-results/tips-cpi-data/"
+        >TreasuryDirect CPI table, {example.price.monthYear}</a
+      >
+    </p>
+  {:else}
+    <p class="unavailable" role="status">{exampleMessage}</p>
+  {/if}
 </article>
 
 <!-- 4. Calculator (display only) -->
@@ -187,7 +231,7 @@
       result; sign in to change the real yield and inflation.
     </p>
   </div>
-  <TipsCalculatorDisplay data={tips} />
+  <TipsCalculatorDisplay {data} />
 </section>
 
 <!-- 5. Code -->
@@ -410,6 +454,15 @@
     font-size: 18px;
     font-weight: 500;
     text-align: right;
+  }
+  .unavailable {
+    margin: 0;
+    padding: 0 24px 24px;
+    font-size: 15px;
+  }
+  .example .unavailable {
+    padding: 0;
+    color: var(--muted);
   }
   .source {
     margin: 0;

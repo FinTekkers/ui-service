@@ -1,5 +1,4 @@
 import { ValuationClient } from "@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js";
-import { SecurityClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js";
 import { ValuationRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js";
 import {
   ProductInput,
@@ -10,7 +9,6 @@ import {
   MonthlyIndexReadings,
   MonthlyIndexReading,
 } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js";
-import { QuerySecurityRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js";
 import {
   SecurityProto,
   TipsExtensionProto,
@@ -18,14 +16,11 @@ import {
 import { CouponTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/coupon_type_pb.js";
 import { CouponFrequencyProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/coupon_frequency_pb.js";
 import index_type_pkg from "@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb.js";
-import { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb.js";
-import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb.js";
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
-import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
+import { PositionProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
+import { MeasureMapEntry } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js";
 import operation_pkg from "@fintekkers/ledger-models/node/fintekkers/requests/util/operation_pb.js";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
-import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import BondSecurity from "@fintekkers/ledger-models/node/wrappers/models/security/BondSecurity";
 import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TIPSBond";
 import FloatingRateNote from "@fintekkers/ledger-models/node/wrappers/models/security/FloatingRateNote";
@@ -35,9 +30,9 @@ import { Decimal } from "decimal.js";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
 import { parseSettlementDate, type CpiReading } from "$lib/cpi";
+import { FetchSecurityProtoByCusip } from "$lib/security";
 
 const { MeasureProto } = measure_pkg;
-const { FieldProto } = field_pkg;
 const { RequestOperationTypeProto } = operation_pkg;
 const { IndexTypeProto } = index_type_pkg;
 
@@ -196,47 +191,6 @@ function parseCashflows(response: any): CashflowEntry[] {
   return cashflows;
 }
 
-async function buildSecurityProtoFromCusip(
-  cusip: string,
-  apiKey?: string
-): Promise<SecurityProto> {
-  const filter = new PositionFilter();
-  const identifierProto = new IdentifierProto()
-    .setIdentifierType(IdentifierTypeProto.CUSIP)
-    .setIdentifierValue(cusip.trim());
-  filter.addObjectFilter(
-    FieldProto.IDENTIFIER,
-    new Identifier(identifierProto)
-  );
-
-  const conn = getServiceConnection(apiKey);
-  const client = new SecurityClient(conn.url, conn.credentials, {
-    interceptors: conn.interceptors,
-    ...conn.clientOptions,
-  });
-  const searchRequest = new QuerySecurityRequestProto();
-  stampOwn(searchRequest);
-  searchRequest.setAsOf(ZonedDateTime.now().toProto());
-  searchRequest.setSearchSecurityInput(filter.toProto());
-
-  const results = await new Promise<SecurityProto[]>((resolve, reject) => {
-    const list: SecurityProto[] = [];
-    const stream = client.search(searchRequest);
-    stream.on("data", (response: any) => {
-      response
-        .getSecurityResponseList()
-        .forEach((proto: any) => list.push(proto));
-    });
-    stream.on("end", () => resolve(list));
-    stream.on("error", (err: any) => reject(err));
-  });
-
-  if (results.length === 0) {
-    throw new Error(`No security found for CUSIP: ${cusip}`);
-  }
-  return results[0];
-}
-
 function frequency(
   name: string | undefined,
   fallback: CouponFrequencyProto
@@ -287,7 +241,8 @@ async function runValuationCore(
   productInput: ProductInput,
   measures: number[],
   apiKey?: string,
-  asOf: ZonedDateTime = ZonedDateTime.now()
+  asOf: ZonedDateTime = ZonedDateTime.now(),
+  positionInput?: PositionProto
 ): Promise<
   import("@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js").ValuationResponseProto
 > {
@@ -297,6 +252,7 @@ async function runValuationCore(
   request.setAsofDatetime(asOf.toProto());
   request.setProductInput(productInput);
   measures.forEach((m) => request.addMeasures(m));
+  if (positionInput) request.setPositionInput(positionInput);
 
   const conn = getServiceConnection(apiKey);
   const client = new ValuationClient(conn.url, conn.credentials, {
@@ -353,7 +309,7 @@ export async function RunBondValuation(
   try {
     const securityProto =
       inputs.mode === "cusip"
-        ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
+        ? await FetchSecurityProtoByCusip(inputs.cusip!, apiKey)
         : buildManualSecurityProto(inputs);
 
     const productInput = new ProductInput().setBond(
@@ -522,11 +478,12 @@ function settlementAsOf(settlementDate?: string): ZonedDateTime | undefined {
 
 async function buildTipsProductInput(
   inputs: TipsCalculatorInputs,
-  apiKey?: string
+  apiKey?: string,
+  security?: SecurityProto
 ): Promise<ProductInput> {
   const securityProto =
     inputs.mode === "cusip"
-      ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
+      ? security ?? (await FetchSecurityProtoByCusip(inputs.cusip!, apiKey))
       : buildManualTipsSecurityProto(inputs);
 
   // Reference CPI (base_cpi) override. The form's Reference CPI input is
@@ -609,59 +566,103 @@ export async function LookupCurrentCpi(
   }
 }
 
-export async function RunTipsValuation(
+/** position_input with one DIRECTED_QUANTITY: the face amount MARKET_VALUE
+ * values. */
+function directedQuantityInput(quantity: string): PositionProto {
+  const position = new PositionProto();
+  stampOwn(position);
+  position.addMeasures(
+    new MeasureMapEntry()
+      .setMeasure(MeasureProto.DIRECTED_QUANTITY)
+      .setMeasureDecimalValue(toDecimalProto(quantity))
+  );
+  return position;
+}
+
+/** Each requested measure valuation-service returned, and the cashflows. */
+export interface TipsMeasuresResult {
+  values: Map<number, string | undefined>;
+  cashflows: CashflowEntry[];
+}
+
+/**
+ * One TIPS valuation for exactly `measures`. In CUSIP mode, pass `security`
+ * when the caller already holds the SecurityProto, to skip a second lookup.
+ * MARKET_VALUE needs `directedQuantity`, the position's face amount.
+ */
+export async function RunTipsMeasures(
   inputs: TipsCalculatorInputs,
-  apiKey?: string
-): Promise<TipsValuationResult> {
+  measures: number[],
+  apiKey?: string,
+  options: { security?: SecurityProto; directedQuantity?: string } = {}
+): Promise<TipsMeasuresResult | { error: string }> {
   const invalid = validateTipsInputs(inputs);
   if (invalid) return { error: invalid };
 
   try {
     const response = await runValuationCore(
-      await buildTipsProductInput(inputs, apiKey),
-      TIPS_VALUATION_MEASURES,
+      await buildTipsProductInput(inputs, apiKey, options.security),
+      measures,
       apiKey,
-      settlementAsOf(inputs.settlementDate)
+      settlementAsOf(inputs.settlementDate),
+      options.directedQuantity
+        ? directedQuantityInput(options.directedQuantity)
+        : undefined
     );
-
-    const result: TipsValuationResult = {
-      cpiSource: hasCpiReadings(inputs) ? "Price service" : "Manual entry",
-    };
-
+    const values = new Map<number, string | undefined>();
     response.getMeasureResultsList().forEach((entry) => {
-      const value = fromDecimalProto(entry.getMeasureDecimalValue());
-      switch (entry.getMeasure()) {
-        case MEASURE_PRESENT_VALUE:
-          result.presentValue = value;
-          break;
-        case MeasureProto.CURRENT_YIELD:
-          result.currentYield = value;
-          break;
-        case MeasureProto.YIELD_TO_MATURITY:
-          result.yieldToMaturity = value;
-          break;
-        case MEASURE_MACAULAY_DURATION:
-          result.macaulayDuration = value;
-          break;
-        case MEASURE_REAL_YIELD:
-          result.realYield = value;
-          break;
-        case MEASURE_INFLATION_ADJUSTED_PRINCIPAL:
-          result.inflationAdjustedPrincipal = value;
-          break;
-        case MeasureProto.REFERENCE_CPI:
-          result.referenceCpi = value;
-          break;
-        case MeasureProto.INDEX_RATIO:
-          result.indexRatio = value;
-          break;
-      }
+      values.set(
+        entry.getMeasure(),
+        fromDecimalProto(entry.getMeasureDecimalValue())
+      );
     });
-    result.cashflows = parseCashflows(response);
-    return result;
+    return { values, cashflows: parseCashflows(response) };
   } catch (error: any) {
     return { error: mapTipsValuationError(error) };
   }
+}
+
+export async function RunTipsValuation(
+  inputs: TipsCalculatorInputs,
+  apiKey?: string
+): Promise<TipsValuationResult> {
+  const run = await RunTipsMeasures(inputs, TIPS_VALUATION_MEASURES, apiKey);
+  if ("error" in run) return { error: run.error };
+
+  const result: TipsValuationResult = {
+    cpiSource: hasCpiReadings(inputs) ? "Price service" : "Manual entry",
+  };
+
+  run.values.forEach((value, measure) => {
+    switch (measure) {
+      case MEASURE_PRESENT_VALUE:
+        result.presentValue = value;
+        break;
+      case MeasureProto.CURRENT_YIELD:
+        result.currentYield = value;
+        break;
+      case MeasureProto.YIELD_TO_MATURITY:
+        result.yieldToMaturity = value;
+        break;
+      case MEASURE_MACAULAY_DURATION:
+        result.macaulayDuration = value;
+        break;
+      case MEASURE_REAL_YIELD:
+        result.realYield = value;
+        break;
+      case MEASURE_INFLATION_ADJUSTED_PRINCIPAL:
+        result.inflationAdjustedPrincipal = value;
+        break;
+      case MeasureProto.REFERENCE_CPI:
+        result.referenceCpi = value;
+        break;
+      case MeasureProto.INDEX_RATIO:
+        result.indexRatio = value;
+        break;
+    }
+  });
+  result.cashflows = run.cashflows;
+  return result;
 }
 
 function buildManualFrnSecurityProto(
@@ -725,7 +726,7 @@ export async function RunFrnValuation(
   try {
     const securityProto =
       inputs.mode === "cusip"
-        ? await buildSecurityProtoFromCusip(inputs.cusip!, apiKey)
+        ? await FetchSecurityProtoByCusip(inputs.cusip!, apiKey)
         : buildManualFrnSecurityProto(inputs);
 
     const priceValue =

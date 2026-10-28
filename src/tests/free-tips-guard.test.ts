@@ -1,11 +1,14 @@
 /**
- * US-253 guardrails for /free/tips, on the files that ship:
- * - no pricing or CPI arithmetic: every figure is a literal in mock/tips.ts
- *   (the test-only oracle in src/tests/fixtures/ is not scanned);
+ * US-253 guardrails for /free/tips, on the files that ship to the browser:
+ * - no pricing or CPI arithmetic: every figure arrives formatted from the
+ *   server load;
  * - nothing from the signed-in TIPS calculator ($lib/valuation,
  *   RunTipsValuation, TipsCalculator.svelte);
- * - mock only: the route holds +page.svelte alone, and nothing fetches,
- *   tracks, or imports ledger-models at runtime.
+ * - nothing fetches, tracks, or imports ledger-models at runtime.
+ * US-298: the route's figures are live, so it holds +page.server.ts too;
+ * its service calls live in src/lib/server/free-tips.ts, which SvelteKit
+ * keeps out of the client. src/lib/free/mock/tips.ts is test-only: no file
+ * under src/routes, src/lib or src/components imports it.
  * src/tests/free-mock-guard.test.ts covers the whole free tree's imports.
  */
 import { readFileSync, readdirSync } from "node:fs";
@@ -14,10 +17,14 @@ import { describe, expect, test } from "vitest";
 
 const ROUTE = "src/routes/free/tips";
 const SHIPPED = [
-  "src/lib/free/mock/tips.ts",
+  "src/lib/free/tips.ts",
   "src/components/free/TipsCalculatorDisplay.svelte",
   `${ROUTE}/+page.svelte`,
 ];
+
+const SOURCE_ROOTS = ["src/routes", "src/lib", "src/components"];
+const MOCK_TIPS = "src/lib/free/mock/tips.ts";
+const MOCK_TIPS_IMPORT = /["'][^"']*free\/mock\/tips(\.ts)?["']/;
 
 const FORBIDDEN_IMPORTS = [
   /["'][^"']*lib\/valuation[^"']*["']/,
@@ -33,6 +40,13 @@ const ARITHMETIC = [
   /\.toLocaleString\(/,
 ];
 const TRACKING = [/\bfetch\s*\(/, /\bgtag\b/, /analytics/i, /posthog/i];
+
+function walk(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    return entry.isDirectory() ? walk(full) : [full];
+  });
+}
 
 /** The patterns `text` matches, as strings. */
 function hits(text: string, patterns: RegExp[]): string[] {
@@ -66,8 +80,24 @@ describe("/free/tips guardrails", () => {
     }
   );
 
-  test("the route holds +page.svelte only: no load or server file", () => {
-    expect(readdirSync(path.resolve(ROUTE))).toEqual(["+page.svelte"]);
+  test("the route holds +page.svelte and its server load only", () => {
+    expect(readdirSync(path.resolve(ROUTE)).sort()).toEqual([
+      "+page.server.ts",
+      "+page.svelte",
+    ]);
+  });
+
+  test("no page, component or lib file imports the mock", () => {
+    const importers = SOURCE_ROOTS.flatMap((root) =>
+      walk(path.resolve(root))
+    ).filter(
+      (file) =>
+        path.relative(process.cwd(), file).split(path.sep).join("/") !==
+          MOCK_TIPS &&
+        /\.(ts|js|svelte)$/.test(file) &&
+        MOCK_TIPS_IMPORT.test(readFileSync(file, "utf8"))
+    );
+    expect(importers).toEqual([]);
   });
 
   test("the patterns catch what they forbid (negative controls)", () => {
@@ -94,6 +124,13 @@ describe("/free/tips guardrails", () => {
       expect(hits(snippet, ARITHMETIC), snippet).not.toEqual([]);
     }
     expect(hits(`fetch("/api")`, TRACKING)).not.toEqual([]);
+    for (const snippet of [
+      `import { tips } from "$lib/free/mock/tips";`,
+      `import { tips } from '../../lib/free/mock/tips.ts';`,
+    ]) {
+      expect(MOCK_TIPS_IMPORT.test(snippet), snippet).toBe(true);
+    }
+    expect(MOCK_TIPS_IMPORT.test(`from "$lib/free/tips";`)).toBe(false);
     expect(
       runtimeLedgerModelsImports(
         `import { A } from "@fintekkers/ledger-models/node/x";`

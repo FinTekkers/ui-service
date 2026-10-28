@@ -1,34 +1,37 @@
 /**
- * US-253: the /free/tips calculator is display only. Its 7 inputs show the
- * artboard's defaults and are disabled, its 19 cashflow rows come from
- * src/lib/free/mock/tips.ts, and an input event recalculates nothing.
+ * US-253 / US-298: the /free/tips calculator is display only. Its 7 inputs
+ * are disabled and default to the live figures (the inflation assumption
+ * stays a labelled 2.30), its tiles show the live measures and the FedInvest
+ * price, the nominal yield and cashflows say they are unavailable, and an
+ * input event recalculates nothing.
  */
-import { fireEvent, render, screen, within } from "@testing-library/svelte";
+import { fireEvent, render, screen } from "@testing-library/svelte";
 import { describe, expect, test } from "vitest";
-import { tips } from "$lib/free/mock/tips";
+import { UNAVAILABLE, type TipsPageData } from "$lib/free/tips";
 import TipsCalculatorDisplay from "../components/free/TipsCalculatorDisplay.svelte";
+import { LIVE, liveWithout, mockFiguresIn } from "./fixtures/free-tips-live";
 
 const DEFAULTS: [string, string][] = [
-  ["Face value ($)", "10000"],
-  ["Real coupon (%)", "1.875"],
-  ["Base ref CPI", "324.93471"],
-  ["Current ref CPI", "332.92643"],
-  ["Years to maturity", "9.5"],
-  ["Real yield (%)", "2.25"],
+  ["Face value ($)", "1000"],
+  ["Real coupon (%)", "2.125"],
+  ["Base ref CPI", "319.12345"],
+  ["Current ref CPI", "327.92281"],
+  ["Years to maturity", "8.48"],
+  ["Real yield (%)", "1.987"],
   ["Assumed annual inflation (%)", "2.30"],
 ];
 
 const TILES: [string, string][] = [
-  ["Index ratio", "1.02459"],
-  ["Adjusted principal", "$10,245.90"],
-  ["Next coupon", "$96.06"],
-  ["Real price (per 100)", "96.8086"],
-  ["Position value", "$9,918.91"],
-  ["Nominal YTM", "4.563%"],
+  ["Index ratio", "1.02759"],
+  ["Adjusted principal", "$1,027.59"],
+  ["Next coupon", "$10.92"],
+  ["Real clean price (FedInvest, 2026-10-23)", "98.4375"],
+  ["Position value", "$1,011.53"],
+  ["Nominal YTM", UNAVAILABLE.value],
 ];
 
-function renderCalculator() {
-  return render(TipsCalculatorDisplay, { props: { data: tips } });
+function renderCalculator(data: TipsPageData = LIVE) {
+  return render(TipsCalculatorDisplay, { props: { data } });
 }
 
 /** Each tile's [label, value]. */
@@ -44,7 +47,7 @@ function bodyRows(container: HTMLElement): HTMLTableRowElement[] {
 }
 
 describe("TipsCalculatorDisplay", () => {
-  test("shows exactly 7 disabled textboxes with the artboard defaults", () => {
+  test("shows exactly 7 disabled textboxes with the live defaults", () => {
     renderCalculator();
     const boxes = screen.getAllByRole("textbox");
     expect(boxes).toHaveLength(7);
@@ -56,26 +59,43 @@ describe("TipsCalculatorDisplay", () => {
     }
   });
 
-  test("shows the 6 output tiles and the total from the mock", () => {
+  test("shows the 6 output tiles from the live load", () => {
     const { container } = renderCalculator();
     expect(tileTexts(container)).toEqual(TILES);
-    expect(container).toHaveTextContent("Total received: $14,765.31");
+    expect(mockFiguresIn(container.innerHTML)).toEqual([]);
   });
 
-  test("lists 19 cashflow rows, the last one repaying principal", () => {
+  test("the cashflow table and total say they are unavailable", () => {
     const { container } = renderCalculator();
     const rows = bodyRows(container);
-    expect(rows).toHaveLength(19);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].textContent).toBe(UNAVAILABLE.projection);
+    expect(container).toHaveTextContent(`Total received: ${UNAVAILABLE.value}`);
+  });
+
+  test("with no valuation, its tiles and inputs read unavailable", () => {
+    const { container } = renderCalculator(liveWithout("valuation"));
+    expect(container).toHaveTextContent(UNAVAILABLE.valuation);
+    expect(tileTexts(container)).toEqual([
+      ["Index ratio", UNAVAILABLE.value],
+      ["Adjusted principal", UNAVAILABLE.value],
+      ["Next coupon", UNAVAILABLE.value],
+      ["Real clean price (FedInvest, 2026-10-23)", "98.4375"],
+      ["Position value", UNAVAILABLE.value],
+      ["Nominal YTM", UNAVAILABLE.value],
+    ]);
+    const realYield = screen.getByLabelText(
+      "Real yield (%)"
+    ) as HTMLInputElement;
+    expect(realYield.value).toBe("");
+    expect(realYield.placeholder).toBe(UNAVAILABLE.value);
     expect(
-      within(rows[0])
-        .getAllByRole("cell")
-        .map((cell) => cell.textContent)
-    ).toEqual(["0.5 yr", "1.03631", "$97.15", "—", "$97.15"]);
-    expect(
-      within(rows[18])
-        .getAllByRole("cell")
-        .map((cell) => cell.textContent)
-    ).toEqual(["9.5 yr", "1.27165", "$119.22", "$12,716.53", "$12,835.75"]);
+      (
+        screen.getByLabelText(
+          "Assumed annual inflation (%)"
+        ) as HTMLInputElement
+      ).value
+    ).toBe("2.30");
   });
 
   test("an input event on the real yield recalculates nothing", async () => {
