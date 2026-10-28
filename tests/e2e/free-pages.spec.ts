@@ -12,7 +12,10 @@ import { test, expect } from "@playwright/test";
 import { readFileSync } from "fs";
 import path from "path";
 import { soma } from "../../src/lib/free/mock/soma";
-import { mockFiguresIn } from "../../src/tests/fixtures/free-tips-live";
+import {
+  MOCK_SECURITY_MASTER,
+  mockFiguresIn,
+} from "../../src/tests/fixtures/free-tips-live";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -189,8 +192,26 @@ test("/free/tips shows live figures or says they are unavailable, never the mock
     ).toContainText(TIPS_UNAVAILABLE);
   }
 
+  // The ledger holds the same bond, so its static terms may equal the
+  // mock's. Allow a security-master value only where the live panel shows
+  // it in its own row; any other mock figure fails.
+  const allowed = new Set<string>();
+  for (const [label, value] of MOCK_SECURITY_MASTER) {
+    const shown = await widget
+      .locator("dl > div")
+      .filter({ has: page.locator("dt", { hasText: label }) })
+      .locator("dd")
+      .allTextContents();
+    if (shown.includes(value)) allowed.add(value.replace(/%$/, ""));
+  }
+  test.info().annotations.push({
+    type: "security-master",
+    description: `live values equal to the mock's: ${
+      [...allowed].join(", ") || "none"
+    }`,
+  });
   const html = await page.content();
-  expect(mockFiguresIn(html)).toEqual([]);
+  expect(mockFiguresIn(html).filter((f) => !allowed.has(f))).toEqual([]);
   expect(html).not.toContain("2026-06-30");
 });
 

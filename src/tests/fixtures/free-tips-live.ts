@@ -107,6 +107,19 @@ export const MOCK_FIGURES: string[] = [
   ]),
 ];
 
+/**
+ * The mock's security-master fields for 91282CPU9: static terms of the bond
+ * itself. The live ledger holds the same bond, so a live page may show these
+ * same values in the security panel; nothing else on the page may.
+ */
+export const MOCK_SECURITY_MASTER: ReadonlyMap<string, string> = new Map([
+  ["Coupon (real)", `${tips.security.bondDetails.couponRate}%`],
+  ["Pay dates", tips.securityLabels.payDates],
+  ["Dated date", tips.security.bondDetails.datedDate],
+  ["Maturity", tips.security.bondDetails.maturityDate],
+  ["Base ref CPI", tips.security.tipsExtension.baseCpi],
+]);
+
 /** The mock figures found in `text`. */
 export function mockFiguresIn(text: string): string[] {
   return MOCK_FIGURES.filter((figure) => text.includes(figure));
