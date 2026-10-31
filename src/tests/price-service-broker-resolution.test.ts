@@ -99,3 +99,38 @@ describe("guardrail 1: no service address in the prices page server code", () =>
     expect(src).not.toContain("BROKER_HOST");
   });
 });
+
+// US-303: the FRN fixings and CPI-U readings reach price-service only
+// through the broker connection, like every other client.
+describe("guardrail: fixings and CPI-U read prices through the broker only", () => {
+  const FIXINGS = "src/lib/fixings.ts";
+  const CPI = "src/lib/cpi.ts";
+
+  test(`${FIXINGS} builds its PriceClient only from getServiceConnection`, () => {
+    const src = fs.readFileSync(path.resolve(FIXINGS), "utf-8");
+    expect(src).toContain('from "$lib/grpc-auth"');
+    expect(src.match(/new PriceClient\(/g)).toHaveLength(1);
+    expect(src).toMatch(
+      /const conn = getServiceConnection\(apiKey\);\s+const client = new PriceClient\(conn\.url, conn\.credentials,/
+    );
+  });
+
+  test(`${CPI} reads prices only through ${FIXINGS}`, () => {
+    const src = fs.readFileSync(path.resolve(CPI), "utf-8");
+    expect(src).not.toContain("new PriceClient(");
+    expect(src).not.toContain("ValuationClient");
+    expect(src).toContain('import { searchSeriesPrices } from "$lib/fixings";');
+  });
+
+  test.each([FIXINGS, CPI])(
+    "%s names no price-service or valuation-service address",
+    (file) => {
+      const src = fs.readFileSync(path.resolve(file), "utf-8");
+      for (const port of ["8080", "8083", "8090", "8085", "8082"]) {
+        expect(src).not.toContain(port);
+      }
+      expect(src).not.toContain("BROKER_HOST");
+      expect(src).not.toContain("ValuationClient");
+    }
+  );
+});
