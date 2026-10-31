@@ -31,7 +31,7 @@ import {
   forSecurity,
   requiredMarketData,
   type MarketData,
-} from "@fintekkers/ledger-models/node/wrappers/models/security/product_inputs";
+} from "$lib/productInputs";
 import { Decimal } from "decimal.js";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";

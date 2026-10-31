@@ -39,9 +39,7 @@ vi.mock("$lib/fixings", async (importOriginal) => ({
 vi.mock(
   "@fintekkers/ledger-models/node/wrappers/models/security/product_inputs",
   async (importOriginal) => {
-    const actual = await importOriginal<
-      typeof import("@fintekkers/ledger-models/node/wrappers/models/security/product_inputs")
-    >();
+    const actual = await importOriginal<typeof import("$lib/productInputs")>();
     mocks.checkProductInput.mockImplementation(actual.checkProductInput);
     return { ...actual, checkProductInput: mocks.checkProductInput };
   }
