@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "runner": "farm/screenshot_runner.py@schema-1",
+  "shots": [
+    {
+      "screen": "login",
+      "viewport": "phone",
+      "theme": "dark",
+      "status": "ok",
+      "durationMs": 1027,
+      "png": "login--phone--dark.png",
+      "clipped": false
+    },
+    {
+      "screen": "portfolios",
+      "viewport": "phone",
+      "theme": "dark",
+      "status": "ok",
+      "durationMs": 1005,
+      "png": "portfolios--phone--dark.png",
+      "clipped": false
+    },
+    {
+      "screen": "positions",
+      "viewport": "phone",
+      "theme": "dark",
+      "status": "ok",
+      "durationMs": 904,
+      "png": "positions--phone--dark.png",
+      "clipped": false
+    },
+    {
+      "screen": "securities",
+      "viewport": "phone",
+      "theme": "dark",
+      "status": "ok",
+      "durationMs": 10349,
+      "png": "securities--phone--dark.png",
+      "clipped": true
+    },
+    {
+      "screen": "transactions",
+      "viewport": "phone",
+      "theme": "dark",
+      "status": "ok",
+      "durationMs": 914,
+      "png": "transactions--phone--dark.png",
+      "clipped": false
+    },
+    {
+      "screen": "profile",
+      "viewport": "phone",
+      "theme": "dark",
+      "status": "ok",
+      "durationMs": 885,
+      "png": "profile--phone--dark.png",
+      "clipped": false
+    }
+  ]
+}
