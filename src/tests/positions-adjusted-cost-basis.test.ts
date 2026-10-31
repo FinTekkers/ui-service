@@ -12,6 +12,19 @@ vi.mock("$lib/positions", () => ({ FetchPosition }));
 vi.mock("$lib/portfolios", () => ({
   FetchPortfolioUniverse: vi.fn().mockResolvedValue([]),
 }));
+// The page reads `implemented` from the published catalog, and the checks
+// install the newest ledger-models, where these measures have since shipped
+// (1.1.27, 1.1.28). Pin them unimplemented so US-242's path stays covered.
+vi.mock("$lib/measureCatalog", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("$lib/measureCatalog")>();
+  const UNIMPLEMENTED = ["ADJUSTED_COST_BASIS", "INDEX_RATIO", "REFERENCE_CPI"];
+  return {
+    ...actual,
+    MEASURES: actual.MEASURES.map((m) =>
+      UNIMPLEMENTED.includes(m.name) ? { ...m, implemented: false } : m
+    ),
+  };
+});
 
 import fieldPkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import measurePkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
@@ -118,7 +131,7 @@ describe("positions load name mapping", () => {
       [MeasureProto.REFERENCE_CPI]: 310.5,
     };
     FetchPosition.mockResolvedValue([row]);
-    // Loads (200), not "Invalid measure" (500); the catalog still marks both
+    // Loads (200), not "Invalid measure" (500); the pinned catalog marks both
     // implemented: false, so US-242's message shows.
     const result = await loadFor("INDEX_RATIO,REFERENCE_CPI");
     expect(result.positions).toEqual([row]);
