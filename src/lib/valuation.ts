@@ -27,8 +27,10 @@ import FloatingRateNote from "@fintekkers/ledger-models/node/wrappers/models/sec
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
 import {
+  armFor,
   checkProductInput,
   forSecurity,
+  measuresForArm,
   requiredMarketData,
   type MarketData,
 } from "$lib/productInputs";
@@ -178,46 +180,6 @@ const FRN_VALUATION_MEASURES = [
   MEASURE_DISCOUNT_MARGIN,
   MEASURE_PRESENT_VALUE_CASHFLOWS,
 ];
-
-const BOND_ARM_MEASURES = [
-  MEASURE_PRESENT_VALUE,
-  MeasureProto.DIRTY_PRICE,
-  MeasureProto.ACCRUED_INTEREST,
-  MeasureProto.CURRENT_YIELD,
-  MeasureProto.YIELD_TO_MATURITY,
-  MEASURE_MACAULAY_DURATION,
-  MeasureProto.MODIFIED_DURATION,
-  MeasureProto.CONVEXITY,
-  MEASURE_PRESENT_VALUE_CASHFLOWS,
-  MEASURE_REAL_YIELD,
-  MEASURE_INFLATION_ADJUSTED_PRINCIPAL,
-  MeasureProto.MARKET_VALUE,
-];
-
-/**
- * The measures valuation-service computes on each ProductInput arm (US-303).
- * It rejects a whole request that asks an arm for any other measure, so a
- * page sends only its own measures that the built arm computes; the rest
- * stay blank. The arm is read off the builder's output, never chosen here.
- */
-const ARM_MEASURES: Partial<Record<ProductInput.InputCase, number[]>> = {
-  [ProductInput.InputCase.BOND]: BOND_ARM_MEASURES,
-  [ProductInput.InputCase.MBS]: BOND_ARM_MEASURES,
-  [ProductInput.InputCase.TIPS]: [
-    ...BOND_ARM_MEASURES,
-    MeasureProto.REFERENCE_CPI,
-    MeasureProto.INDEX_RATIO,
-  ],
-  [ProductInput.InputCase.FRN]: [
-    MEASURE_DISCOUNT_MARGIN,
-    MeasureProto.DIRTY_PRICE,
-    MeasureProto.ACCRUED_INTEREST,
-    MEASURE_SPREAD_DURATION,
-    MEASURE_PRESENT_VALUE_CASHFLOWS,
-    MeasureProto.CURRENT_YIELD,
-    MeasureProto.MARKET_VALUE,
-  ],
-};
 
 function parseCashflows(response: any): CashflowEntry[] {
   const cashflows: CashflowEntry[] = [];
@@ -393,7 +355,10 @@ async function priceSecurity(
   );
   checkProductInput(productInput);
 
-  const supported = ARM_MEASURES[productInput.getInputCase()] ?? [];
+  // valuation-service rejects a whole request that asks an arm for a measure
+  // it doesn't compute, so a page sends only its own measures that are in
+  // ledger-models' list for the built arm (LM-427); the rest stay blank.
+  const supported: number[] = measuresForArm(armFor(security));
   const sent = measures.filter((m) => supported.includes(m));
   if (sent.length === 0) {
     throw new Error(

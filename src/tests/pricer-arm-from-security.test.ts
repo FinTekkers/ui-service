@@ -7,13 +7,16 @@
  *     referenceRate and frnSpread left empty, sends `bond` for a TBILL or
  *     STRIPS, `mbs` for an MBS, `frn` for an FRN and `tips` for a TIPS, on
  *     the bond, TIPS and FRN tabs, with no pre-lookup field error.
- *   - cross-type measures (R3): a page sends only its own measures the
- *     built arm computes; the others stay blank.
+ *   - cross-type measures (R3): a page sends only its own measures that
+ *     are in ledger-models' measuresForArm list for the built arm (LM-427);
+ *     the others stay blank. There is no hand-kept list in ui-service.
  *   - guardrail 4 (R12): an unmapped type fails loudly, with no request.
  *
  * The CUSIP lookup, CPI-U lookup, fixings fetch and valuation client are
  * stubbed.
  */
+import fs from "fs";
+import path from "path";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -68,6 +71,7 @@ import { LocalDateProto } from "@fintekkers/ledger-models/node/fintekkers/models
 import index_type_pkg from "@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb.js";
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import { toDecimalProto } from "$lib/decimal";
+import { measuresForArm } from "$lib/productInputs";
 import { load } from "../routes/(authenticated)/data/calculators/+page.server";
 import {
   CPI_READINGS,
@@ -140,6 +144,10 @@ describe("metric 1: the arm comes from the looked-up security, on every tab", ()
     );
     expect(mocks.requests).toHaveLength(1);
     expect(armOf(mocks.requests[0])).toBe(EXPECTED_ARM[type]);
+    const armMeasures: number[] = measuresForArm(EXPECTED_ARM[type]);
+    for (const m of mocks.requests[0].getMeasuresList()) {
+      expect(armMeasures).toContain(m);
+    }
     expect(mocks.requests[0].hasSecurityInput()).toBe(false);
     expect(mocks.requests[0].hasPriceInput()).toBe(false);
   });
@@ -158,19 +166,24 @@ describe("metric 1: the arm comes from the looked-up security, on every tab", ()
 });
 
 describe("cross-type measures: a page sends only what the built arm computes", () => {
-  test("an MBS on the TIPS tab drops REFERENCE_CPI and INDEX_RATIO and leaves them blank", async () => {
+  test("an MBS on the TIPS tab sends only the mbs arm's measures and leaves the TIPS-only ones blank", async () => {
     mocks.FetchSecurityProtoByCusip.mockResolvedValue(lookedUp("MBS"));
 
     const result = await loadTab("tips");
 
-    const sent = mocks.requests[0].getMeasuresList();
-    expect(sent).not.toContain(MeasureProto.REFERENCE_CPI);
-    expect(sent).not.toContain(MeasureProto.INDEX_RATIO);
-    expect(sent).toContain(MeasureProto.REAL_YIELD);
+    expect(mocks.requests[0].getMeasuresList()).toEqual([
+      MeasureProto.PRESENT_VALUE,
+      MeasureProto.CURRENT_YIELD,
+      MeasureProto.YIELD_TO_MATURITY,
+      MeasureProto.MACAULAY_DURATION,
+      MeasureProto.PRESENT_VALUE_CASHFLOWS,
+    ]);
     expect(result.error).toBeUndefined();
     expect(result.referenceCpi).toBeUndefined();
     expect(result.indexRatio).toBeUndefined();
-    expect(result.realYield).toBe("1");
+    expect(result.realYield).toBeUndefined();
+    expect(result.inflationAdjustedPrincipal).toBeUndefined();
+    expect(result.presentValue).toBe("1");
   });
 
   test("a TBILL on the FRN tab drops DISCOUNT_MARGIN and leaves it blank", async () => {
@@ -194,6 +207,20 @@ describe("cross-type measures: a page sends only what the built arm computes", (
 
     expect(mocks.requests[0].getMeasuresList()).toHaveLength(9);
     expect(mocks.requests[1].getMeasuresList()).toHaveLength(9);
+  });
+});
+
+describe("per-arm measures come from ledger-models, not a hand-kept list", () => {
+  test("valuation.ts reads measuresForArm and keeps no arm measure list", () => {
+    const src = fs.readFileSync(path.resolve("src/lib/valuation.ts"), "utf-8");
+    expect(src).toContain("measuresForArm(armFor(security))");
+    expect(src).not.toContain("ARM_MEASURES");
+  });
+
+  test("DV01 is listed for the bond and TIPS arms, which the old list omitted", () => {
+    expect(measuresForArm("bond")).toContain(MeasureProto.DV01);
+    expect(measuresForArm("tips")).toContain(MeasureProto.DV01);
+    expect(measuresForArm("frn")).not.toContain(MeasureProto.DV01);
   });
 });
 
