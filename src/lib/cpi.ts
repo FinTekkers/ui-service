@@ -4,23 +4,16 @@
  * levels: the reference CPI and index ratio are derived by valuation-service
  * (MeasureProto.REFERENCE_CPI / INDEX_RATIO), never here.
  */
-import { PriceClient } from "@fintekkers/ledger-models/node/fintekkers/services/price-service/price_service_grpc_pb.js";
-import {
-  QueryPriceRequestProto,
-  PriceHorizonProto,
-} from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_request_pb.js";
+import { PriceHorizonProto } from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_request_pb.js";
 import { DateRangeProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/date_range_pb.js";
 import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js";
 import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb.js";
 import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
-import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
-import type { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
-import { getServiceConnection } from "$lib/grpc-auth";
-import { fromDecimalProto } from "$lib/decimal";
+import { searchSeriesPrices } from "$lib/fixings";
 
 const { FieldProto } = field_pkg;
 
@@ -162,63 +155,13 @@ export async function findCpiUSeriesId(
   return null;
 }
 
-type PricePoint = { at: number; value: string };
-
-/** One price `Search` for the series; rejects on a service error. */
-function searchPrices(
-  seriesId: string,
-  setTimeRange: (request: QueryPriceRequestProto) => void,
-  apiKey?: string
-): Promise<PricePoint[]> {
-  const request = new QueryPriceRequestProto();
-  stampOwn(request);
-  request.setAsOf(ZonedDateTime.now().toProto());
-  setTimeRange(request);
-
-  const filter = new PositionFilter();
-  // Wrapper signature too narrow (Identifier-only); runtime accepts UUID
-  // for SECURITY_ID, as on the CPI page.
-  filter.addObjectFilter(
-    FieldProto.SECURITY_ID,
-    new UUID(UUID.fromString(seriesId)) as unknown as Identifier
-  );
-  request.setSearchPriceInput(filter.toProto());
-
-  const conn = getServiceConnection(apiKey);
-  const client = new PriceClient(conn.url, conn.credentials, {
-    interceptors: conn.interceptors,
-    ...conn.clientOptions,
-  });
-
-  return new Promise((resolve, reject) => {
-    const points: PricePoint[] = [];
-    const stream = client.search(request);
-    stream.on("data", (response: any) => {
-      for (const price of response.getPriceResponseList?.() ?? []) {
-        const seconds = price.getAsOf?.()?.getTimestamp?.()?.getSeconds?.();
-        let value: string | undefined;
-        try {
-          value = fromDecimalProto(price.getPrice?.());
-        } catch (e) {
-          console.warn("Skipping CPI price, invalid decimal:", e);
-          continue;
-        }
-        if (seconds != null && value)
-          points.push({ at: seconds * 1000, value });
-      }
-    });
-    stream.on("end", () => resolve(points));
-    stream.on("error", (err: any) => reject(err));
-  });
-}
-
 async function fetchMonth(
   seriesId: string,
   m: YearMonth,
   apiKey?: string
 ): Promise<CpiReading | null> {
   const { start, end } = monthWindow(m);
-  const points = await searchPrices(
+  const points = await searchSeriesPrices(
     seriesId,
     (request) => {
       // date_range's end is inclusive: the half-open filter below drops a
@@ -245,7 +188,7 @@ async function fetchLatestMonth(
   seriesId: string,
   apiKey?: string
 ): Promise<string | null> {
-  const points = await searchPrices(
+  const points = await searchSeriesPrices(
     seriesId,
     (request) => request.setHorizon(PriceHorizonProto.PRICE_HORIZON_MAX),
     apiKey

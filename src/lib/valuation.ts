@@ -2,13 +2,13 @@ import { ValuationClient } from "@fintekkers/ledger-models/node/fintekkers/servi
 import { ValuationRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js";
 import {
   ProductInput,
-  BondInput,
-  TipsInput,
-  FrnInput,
   InflationIndexInput,
   MonthlyIndexReadings,
   MonthlyIndexReading,
+  ReferenceRateFixingProto,
 } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js";
+import { PriceProto } from "@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js";
+import { LocalDateProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_date_pb.js";
 import {
   SecurityProto,
   TipsExtensionProto,
@@ -26,10 +26,21 @@ import TIPSBond from "@fintekkers/ledger-models/node/wrappers/models/security/TI
 import FloatingRateNote from "@fintekkers/ledger-models/node/wrappers/models/security/FloatingRateNote";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
+import {
+  checkProductInput,
+  forSecurity,
+  requiredMarketData,
+  type MarketData,
+} from "$lib/productInputs";
 import { Decimal } from "decimal.js";
 import { getServiceConnection } from "$lib/grpc-auth";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
-import { parseSettlementDate, type CpiReading } from "$lib/cpi";
+import {
+  fetchCpiReadings,
+  parseSettlementDate,
+  type CpiReading,
+} from "$lib/cpi";
+import { fetchFixings } from "$lib/fixings";
 import { FetchSecurityProtoByCusip } from "$lib/security";
 
 const { MeasureProto } = measure_pkg;
@@ -168,6 +179,46 @@ const FRN_VALUATION_MEASURES = [
   MEASURE_PRESENT_VALUE_CASHFLOWS,
 ];
 
+const BOND_ARM_MEASURES = [
+  MEASURE_PRESENT_VALUE,
+  MeasureProto.DIRTY_PRICE,
+  MeasureProto.ACCRUED_INTEREST,
+  MeasureProto.CURRENT_YIELD,
+  MeasureProto.YIELD_TO_MATURITY,
+  MEASURE_MACAULAY_DURATION,
+  MeasureProto.MODIFIED_DURATION,
+  MeasureProto.CONVEXITY,
+  MEASURE_PRESENT_VALUE_CASHFLOWS,
+  MEASURE_REAL_YIELD,
+  MEASURE_INFLATION_ADJUSTED_PRINCIPAL,
+  MeasureProto.MARKET_VALUE,
+];
+
+/**
+ * The measures valuation-service computes on each ProductInput arm (US-303).
+ * It rejects a whole request that asks an arm for any other measure, so a
+ * page sends only its own measures that the built arm computes; the rest
+ * stay blank. The arm is read off the builder's output, never chosen here.
+ */
+const ARM_MEASURES: Partial<Record<ProductInput.InputCase, number[]>> = {
+  [ProductInput.InputCase.BOND]: BOND_ARM_MEASURES,
+  [ProductInput.InputCase.MBS]: BOND_ARM_MEASURES,
+  [ProductInput.InputCase.TIPS]: [
+    ...BOND_ARM_MEASURES,
+    MeasureProto.REFERENCE_CPI,
+    MeasureProto.INDEX_RATIO,
+  ],
+  [ProductInput.InputCase.FRN]: [
+    MEASURE_DISCOUNT_MARGIN,
+    MeasureProto.DIRTY_PRICE,
+    MeasureProto.ACCRUED_INTEREST,
+    MEASURE_SPREAD_DURATION,
+    MEASURE_PRESENT_VALUE_CASHFLOWS,
+    MeasureProto.CURRENT_YIELD,
+    MeasureProto.MARKET_VALUE,
+  ],
+};
+
 function parseCashflows(response: any): CashflowEntry[] {
   const cashflows: CashflowEntry[] = [];
   const cfList = response.getCashflowsList?.() ?? [];
@@ -291,6 +342,67 @@ function mapValuationError(
   return rawMessage; // fall through — surface the underlying error to the user
 }
 
+/** Where a page's market data comes from when the security's arm needs it. */
+type MarketDataSources = {
+  cpi?: () => Promise<InflationIndexInput | undefined>;
+  fixings?: () => Promise<ReferenceRateFixingProto[]>;
+};
+
+/** CPI-U readings for the as-of date, through the broker. */
+async function brokerCpi(
+  asOf: ZonedDateTime,
+  apiKey?: string
+): Promise<InflationIndexInput | undefined> {
+  const date = asOf.toDateTime().toUTC().toISODate() ?? "";
+  const { readings } = await fetchCpiReadings(date, apiKey);
+  return readings ? cpiFromReadings(readings) : undefined;
+}
+
+/**
+ * Value `security` (US-303). ledger-models' forSecurity picks the arm from
+ * the security itself, whichever page asked; requiredMarketData says which
+ * market data to gather first. Throws the builder's UnmappedProductTypeError
+ * or MissingMarketDataError, or checkProductInput's error, before any
+ * request is sent; there is no other path to the valuation client.
+ */
+async function priceSecurity(
+  security: SecurityProto,
+  price: string,
+  measures: number[],
+  apiKey?: string,
+  opts: {
+    asOf?: ZonedDateTime;
+    position?: PositionProto;
+    sources?: MarketDataSources;
+  } = {}
+) {
+  const asOf = opts.asOf ?? ZonedDateTime.now();
+  const marketData: MarketData = {};
+  for (const kind of requiredMarketData(security)) {
+    if (kind === "CPI_U") {
+      marketData.cpi = await (opts.sources?.cpi?.() ?? brokerCpi(asOf, apiKey));
+    } else if (kind === "FRN_FIXINGS") {
+      marketData.fixings = await (opts.sources?.fixings?.() ??
+        fetchFixings(security, new Date(asOf.toDateTime().toMillis()), apiKey));
+    }
+  }
+  const productInput = forSecurity(
+    security,
+    new PriceProto().setPrice(toDecimalProto(price)),
+    marketData
+  );
+  checkProductInput(productInput);
+
+  const supported = ARM_MEASURES[productInput.getInputCase()] ?? [];
+  const sent = measures.filter((m) => supported.includes(m));
+  if (sent.length === 0) {
+    throw new Error(
+      "None of this calculator's measures apply to this security."
+    );
+  }
+  return runValuationCore(productInput, sent, apiKey, asOf, opts.position);
+}
+
 // ---------------------------------------------------------------------------
 // Bond
 // ---------------------------------------------------------------------------
@@ -312,14 +424,9 @@ export async function RunBondValuation(
         ? await FetchSecurityProtoByCusip(inputs.cusip!, apiKey)
         : buildManualSecurityProto(inputs);
 
-    const productInput = new ProductInput().setBond(
-      new BondInput()
-        .setSecurity(securityProto)
-        .setCleanPrice(toDecimalProto(inputs.price))
-    );
-
-    const response = await runValuationCore(
-      productInput,
+    const response = await priceSecurity(
+      securityProto,
+      inputs.price,
       VALUATION_MEASURES,
       apiKey
     );
@@ -433,7 +540,10 @@ function validateTipsInputs(inputs: TipsCalculatorInputs): string | null {
   if (!inputs.price || !inputs.price.trim()) {
     return "Please enter a price (% of par).";
   }
+  // US-303: in CUSIP mode the looked-up security decides what it needs;
+  // a missing CPI is the builder's MissingMarketDataError.
   if (
+    inputs.mode === "manual" &&
     !hasCpiReadings(inputs) &&
     (!inputs.currentCpi || !inputs.currentCpi.trim())
   ) {
@@ -442,31 +552,34 @@ function validateTipsInputs(inputs: TipsCalculatorInputs): string | null {
   return null;
 }
 
+function cpiFromReadings(readings: CpiReading[]): InflationIndexInput {
+  return new InflationIndexInput().setReadings(
+    new MonthlyIndexReadings().setReadingsList(
+      readings.map((r) =>
+        new MonthlyIndexReading()
+          .setYear(r.year)
+          .setMonth(r.month)
+          .setValue(toDecimalProto(r.value))
+      )
+    )
+  );
+}
+
 /**
- * TipsInput.cpi (US-229): the price service's monthly readings when there
- * are any, else the user's typed value as the reference CPI. Built from the
- * generated classes only; valuation-service derives REFERENCE_CPI and
- * INDEX_RATIO from it.
+ * The `cpi` market data (US-229): the price service's monthly readings when
+ * there are any, else the user's typed value as the reference CPI, else
+ * none. Built from the generated classes only; valuation-service derives
+ * REFERENCE_CPI and INDEX_RATIO from it.
  */
 function buildInflationIndexInput(
   inputs: TipsCalculatorInputs
-): InflationIndexInput {
-  const cpi = new InflationIndexInput();
+): InflationIndexInput | undefined {
   if (inputs.cpiReadings && inputs.cpiReadings.length > 0) {
-    cpi.setReadings(
-      new MonthlyIndexReadings().setReadingsList(
-        inputs.cpiReadings.map((r) =>
-          new MonthlyIndexReading()
-            .setYear(r.year)
-            .setMonth(r.month)
-            .setValue(toDecimalProto(r.value))
-        )
-      )
-    );
-  } else {
-    cpi.setReferenceCpi(toDecimalProto((inputs.currentCpi ?? "").trim()));
+    return cpiFromReadings(inputs.cpiReadings);
   }
-  return cpi;
+  const typed = (inputs.currentCpi ?? "").trim();
+  if (!typed) return undefined;
+  return new InflationIndexInput().setReferenceCpi(toDecimalProto(typed));
 }
 
 /** Settlement date at 00:00 UTC (valuation-service reads its UTC date). */
@@ -476,11 +589,11 @@ function settlementAsOf(settlementDate?: string): ZonedDateTime | undefined {
   return ZonedDateTime.from(new Date(Date.UTC(d.year, d.month - 1, d.day)));
 }
 
-async function buildTipsProductInput(
+async function buildTipsSecurity(
   inputs: TipsCalculatorInputs,
   apiKey?: string,
   security?: SecurityProto
-): Promise<ProductInput> {
+): Promise<SecurityProto> {
   const securityProto =
     inputs.mode === "cusip"
       ? security ?? (await FetchSecurityProtoByCusip(inputs.cusip!, apiKey))
@@ -503,12 +616,29 @@ async function buildTipsProductInput(
     }
     securityProto.setTipsExtension(tipsExt);
   }
+  return securityProto;
+}
 
-  return new ProductInput().setTips(
-    new TipsInput()
-      .setSecurity(securityProto)
-      .setCleanPrice(toDecimalProto(inputs.price))
-      .setCpi(buildInflationIndexInput(inputs))
+/**
+ * Value the TIPS page's security. The page owns its CPI: the readings its
+ * load looked up, or the typed value; it never looks CPI up again here.
+ */
+async function priceTipsInputs(
+  inputs: TipsCalculatorInputs,
+  measures: number[],
+  apiKey?: string,
+  options: { security?: SecurityProto; position?: PositionProto } = {}
+) {
+  return priceSecurity(
+    await buildTipsSecurity(inputs, apiKey, options.security),
+    inputs.price,
+    measures,
+    apiKey,
+    {
+      asOf: settlementAsOf(inputs.settlementDate),
+      position: options.position,
+      sources: { cpi: async () => buildInflationIndexInput(inputs) },
+    }
   );
 }
 
@@ -550,11 +680,10 @@ export async function LookupCurrentCpi(
   const invalid = validateTipsInputs(inputs);
   if (invalid) return { error: invalid };
   try {
-    const response = await runValuationCore(
-      await buildTipsProductInput(inputs, apiKey),
+    const response = await priceTipsInputs(
+      inputs,
       [MeasureProto.REFERENCE_CPI],
-      apiKey,
-      settlementAsOf(inputs.settlementDate)
+      apiKey
     );
     const entry = response
       .getMeasureResultsList()
@@ -600,15 +729,12 @@ export async function RunTipsMeasures(
   if (invalid) return { error: invalid };
 
   try {
-    const response = await runValuationCore(
-      await buildTipsProductInput(inputs, apiKey, options.security),
-      measures,
-      apiKey,
-      settlementAsOf(inputs.settlementDate),
-      options.directedQuantity
+    const response = await priceTipsInputs(inputs, measures, apiKey, {
+      security: options.security,
+      position: options.directedQuantity
         ? directedQuantityInput(options.directedQuantity)
-        : undefined
-    );
+        : undefined,
+    });
     const values = new Map<number, string | undefined>();
     response.getMeasureResultsList().forEach((entry) => {
       values.set(
@@ -702,6 +828,25 @@ function buildManualFrnSecurityProto(
   return security;
 }
 
+/** The typed reference rate as today's fixing of the security's index. */
+function typedFixing(
+  security: SecurityProto,
+  inputs: FrnCalculatorInputs
+): ReferenceRateFixingProto {
+  const today = new Date();
+  return new ReferenceRateFixingProto()
+    .setIndex(
+      security.getFrnExtension()?.getReferenceRateIndex() ?? IndexTypeProto.SOFR
+    )
+    .setFixingDate(
+      new LocalDateProto()
+        .setYear(today.getUTCFullYear())
+        .setMonth(today.getUTCMonth() + 1)
+        .setDay(today.getUTCDate())
+    )
+    .setRate(toDecimalProto(inputs.referenceRate.trim()));
+}
+
 // ---------------------------------------------------------------------------
 // FRN
 // ---------------------------------------------------------------------------
@@ -716,10 +861,15 @@ export async function RunFrnValuation(
   if (!inputs.price && !inputs.discountMargin) {
     return { error: "Please enter either a price or a discount margin." };
   }
-  if (!inputs.referenceRate || !inputs.referenceRate.trim()) {
+  // US-303: a looked-up FRN carries its own spread, and its fixings come
+  // from the price service, so CUSIP mode needs neither field.
+  if (
+    inputs.mode === "manual" &&
+    (!inputs.referenceRate || !inputs.referenceRate.trim())
+  ) {
     return { error: "Please enter the current reference rate (%)." };
   }
-  if (!inputs.spread || !inputs.spread.trim()) {
+  if (inputs.mode === "manual" && (!inputs.spread || !inputs.spread.trim())) {
     return { error: "Please enter the spread (basis points)." };
   }
 
@@ -731,16 +881,20 @@ export async function RunFrnValuation(
 
     const priceValue =
       inputs.price && inputs.price.trim() ? inputs.price : "100";
-    const productInput = new ProductInput().setFrn(
-      new FrnInput()
-        .setSecurity(securityProto)
-        .setCleanPrice(toDecimalProto(priceValue))
-    );
-
-    const response = await runValuationCore(
-      productInput,
+    // Manual mode's fixing is the typed reference rate; CUSIP mode reads
+    // the security's fixings from the price service.
+    const response = await priceSecurity(
+      securityProto,
+      priceValue,
       FRN_VALUATION_MEASURES,
-      apiKey
+      apiKey,
+      inputs.mode === "manual"
+        ? {
+            sources: {
+              fixings: async () => [typedFixing(securityProto, inputs)],
+            },
+          }
+        : {}
     );
 
     const result: FrnValuationResult = {};
