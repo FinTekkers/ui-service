@@ -31,6 +31,7 @@
       <span class="total">{data.headline.total}</span>
       <span class="caption">{data.headline.caption}</span>
       <span class="headline-change">{data.headline.change}</span>
+      <span class="headline-note">{data.headline.note}</span>
     </div>
     <div class="composition">
       <div role="img" aria-label={compositionLabel} class="bar">
@@ -150,6 +151,10 @@
     font-family: var(--mono);
     font-size: 14px;
     color: #6fd6a0;
+  }
+  .headline-note {
+    font-size: 13px;
+    color: #9aa6b8;
   }
   .composition {
     display: flex;

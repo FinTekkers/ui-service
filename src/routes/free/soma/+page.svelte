@@ -44,10 +44,7 @@
     </div>
     <div>
       <dt>Holds</dt>
-      <dd>
-        US Treasury bills, notes, bonds, TIPS and FRNs; agency debt; agency
-        mortgage-backed securities
-      </dd>
+      <dd>US Treasury bills, notes, bonds, TIPS and FRNs; agency debt</dd>
     </div>
     <div>
       <dt>Source</dt>

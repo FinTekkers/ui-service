@@ -1,20 +1,11 @@
-<!-- Section 4 of /free/soma: remaining maturity by bucket, with a
-     Treasuries / MBS toggle, from DataExplorer.dc.html. Bar widths and
-     shares are the stored figures in src/lib/free/mock/soma.ts. -->
+<!-- Section 4 of /free/soma: remaining maturity by bucket, Treasuries only,
+     from DataExplorer.dc.html. Bar widths and shares are the stored figures
+     in src/lib/free/mock/soma.ts. -->
 <script lang="ts">
   import { formatMillionsAsBillions } from "$lib/free/format";
   import type { SomaResponse } from "$lib/free/mock/types";
 
   export let maturity: SomaResponse["maturity"];
-
-  const VIEWS = [
-    { id: "tsy", label: "Treasuries" },
-    { id: "mbs", label: "MBS" },
-  ] as const;
-
-  let view: "tsy" | "mbs" = "tsy";
-
-  $: current = maturity[view];
 </script>
 
 <section aria-labelledby="mat-title" class="maturity">
@@ -22,26 +13,17 @@
     <div class="intro">
       <p class="eyebrow">Maturity profile</p>
       <h2 id="mat-title">When the holdings come due</h2>
-      <p class="note" data-view={view}>{current.note}</p>
-    </div>
-    <div role="group" aria-label="Asset type" class="toggle">
-      {#each VIEWS as option}
-        <button
-          type="button"
-          aria-pressed={view === option.id}
-          on:click={() => (view = option.id)}>{option.label}</button
-        >
-      {/each}
+      <p class="note">{maturity.tsy.note}</p>
     </div>
   </div>
   <div class="buckets">
-    {#each current.buckets as bucket, i}
+    {#each maturity.tsy.buckets as bucket, i}
       <div class="bucket">
         <span class="label">{maturity.labels[i]}</span>
         <div class="track">
           <div
             class="fill"
-            style="width: {bucket.sharePct}%; background: {current.color}"
+            style="width: {bucket.sharePct}%; background: {maturity.tsy.color}"
           />
         </div>
         <span class="value"
@@ -103,32 +85,6 @@
     font-size: 16px;
     line-height: 1.6;
     color: var(--muted);
-  }
-  .toggle {
-    display: flex;
-    gap: 4px;
-    background: #f0f2f5;
-    padding: 4px;
-    border-radius: 8px;
-  }
-  .toggle button {
-    min-height: 40px;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink);
-    cursor: pointer;
-  }
-  .toggle button[aria-pressed="true"] {
-    background: #ffffff;
-  }
-  .toggle button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
   }
   .buckets {
     display: flex;
