@@ -62,8 +62,9 @@ describe("FRN engine-path request shape (#208)", () => {
     expect(fromDecimalProto(frnInput.getCleanPrice())).toBe("100");
 
     // Legacy flat fields are NOT set on FRN requests.
-    expect(req.hasSecurityInput()).toBe(false);
-    expect(req.hasPriceInput()).toBe(false);
+    // ledger-models 1.1.30 drops these fields; toObject() covers both.
+    expect(req.toObject().securityInput).toBeUndefined();
+    expect(req.toObject().priceInput).toBeUndefined();
 
     // BOND / TIPS oneof cases are NOT chosen.
     expect(req.getProductInput()?.getBond()).toBeUndefined();

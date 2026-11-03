@@ -70,8 +70,9 @@ describe("Bond engine-path request shape (#182)", () => {
     expect(fromDecimalProto(bondInput.getCleanPrice())).toBe("98.5");
 
     // Legacy flat fields are NOT set on bond requests.
-    expect(req.hasSecurityInput()).toBe(false);
-    expect(req.hasPriceInput()).toBe(false);
+    // ledger-models 1.1.30 drops these fields; toObject() covers both.
+    expect(req.toObject().securityInput).toBeUndefined();
+    expect(req.toObject().priceInput).toBeUndefined();
   });
 
   test("RunValuation still sets the standard request envelope (asof, measures, operation)", async () => {

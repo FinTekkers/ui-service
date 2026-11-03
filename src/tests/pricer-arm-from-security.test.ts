@@ -72,6 +72,7 @@ import index_type_pkg from "@fintekkers/ledger-models/node/fintekkers/models/sec
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import { toDecimalProto } from "$lib/decimal";
 import { measuresForArm } from "$lib/productInputs";
+import { UnmappedProductTypeError } from "@fintekkers/ledger-models/node/wrappers/models/errors";
 import { load } from "../routes/(authenticated)/data/calculators/+page.server";
 import {
   CPI_READINGS,
@@ -148,8 +149,9 @@ describe("metric 1: the arm comes from the looked-up security, on every tab", ()
     for (const m of mocks.requests[0].getMeasuresList()) {
       expect(armMeasures).toContain(m);
     }
-    expect(mocks.requests[0].hasSecurityInput()).toBe(false);
-    expect(mocks.requests[0].hasPriceInput()).toBe(false);
+    // ledger-models 1.1.30 drops these fields; toObject() covers both.
+    expect(mocks.requests[0].toObject().securityInput).toBeUndefined();
+    expect(mocks.requests[0].toObject().priceInput).toBeUndefined();
   });
 
   test("the FRN arm carries the fetched fixings; no other arm asks for them", async () => {
@@ -232,8 +234,10 @@ describe("guardrail 4: an unmapped type fails loudly, with no fallback", () => {
 
       const result = await loadTab(tab);
 
+      // The message is ledger-models' own, so it follows the version in use.
       expect(result.error).toBe(
-        "No valuation arm for product_type CPI_SERIES, coupon_type UNKNOWN_COUPON_TYPE"
+        new UnmappedProductTypeError("CPI_SERIES", "UNKNOWN_COUPON_TYPE")
+          .message
       );
       expect(mocks.requests).toHaveLength(0);
     }
