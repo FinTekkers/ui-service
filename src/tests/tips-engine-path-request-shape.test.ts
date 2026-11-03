@@ -75,8 +75,9 @@ describe("TIPS engine-path request shape (#207)", () => {
     expect(cpi.hasReadings()).toBe(false);
 
     // Legacy flat fields are NOT set on TIPS requests.
-    expect(req.hasSecurityInput()).toBe(false);
-    expect(req.hasPriceInput()).toBe(false);
+    // ledger-models 1.1.30 drops these fields; toObject() covers both.
+    expect(req.toObject().securityInput).toBeUndefined();
+    expect(req.toObject().priceInput).toBeUndefined();
 
     // BOND oneof case is NOT chosen.
     expect(req.getProductInput()?.getBond()).toBeUndefined();

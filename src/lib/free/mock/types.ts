@@ -82,7 +82,13 @@ export interface MaturityView {
 export interface SomaResponse {
   /** ISO date of the H.4.1 release the figures come from. */
   asOf: string;
-  headline: { total: string; caption: string; change: string };
+  headline: {
+    total: string;
+    caption: string;
+    change: string;
+    /** Scope note, shown once next to the headline. */
+    note: string;
+  };
   composition: CompositionSlice[];
   table: {
     columns: [string, string];
@@ -93,7 +99,6 @@ export interface SomaResponse {
   maturity: {
     labels: string[];
     tsy: MaturityView;
-    mbs: MaturityView;
   };
 }
 

@@ -1,12 +1,10 @@
 /**
  * US-252: /free/soma, logged out. The 7 DataExplorer.dc.html sections, the
- * Treasuries / MBS toggle on the maturity profile, and the code cards'
- * text after hydration.
+ * maturity profile, and the code cards' text after hydration.
  *
- * Bar widths: metric 3 reads "each bar's rendered width then equals its MBS
- * share stored in soma.ts". No owner ruling on #252 redefines "share", so
- * each bar's width is the stored `sharePct` (% of the asset type's total)
- * in src/lib/free/mock/soma.ts, the same figure its label shows.
+ * Bar widths: each bar's rendered width equals the stored `sharePct` (% of
+ * the Treasury total) in src/lib/free/mock/soma.ts, the same figure its
+ * label shows. US-305: the maturity profile shows Treasuries only.
  */
 import { test, expect } from "@playwright/test";
 import { readFileSync } from "fs";
@@ -76,27 +74,24 @@ test("/free/soma returns 200 with the 7 artboard sections", async ({
   await expect(page.locator(".ft-free .content h2")).toHaveText(H2S);
 });
 
-test("MBS shows the stored MBS bar widths and note", async ({ page }) => {
+test("the maturity profile shows Treasuries only, with no Asset type toggle", async ({
+  page,
+}) => {
   await page.goto("/free/soma");
-  // A click before hydration does nothing.
   await page.waitForLoadState("networkidle");
 
   const maturity = page.getByRole("region", {
     name: "When the holdings come due",
   });
-  const tsy = maturity.getByRole("button", { name: "Treasuries" });
-  const mbs = maturity.getByRole("button", { name: "MBS" });
-  await expect(tsy).toHaveAttribute("aria-pressed", "true");
-
-  await mbs.click();
-  await expect(mbs).toHaveAttribute("aria-pressed", "true");
-  await expect(tsy).toHaveAttribute("aria-pressed", "false");
-  await expect(maturity.getByText(soma.maturity.mbs.note)).toBeVisible();
-  await expect(maturity.getByText(soma.maturity.tsy.note)).toHaveCount(0);
+  await expect(maturity.getByText(soma.maturity.tsy.note)).toBeVisible();
+  await expect(maturity.getByRole("group", { name: "Asset type" })).toHaveCount(
+    0
+  );
+  await expect(maturity.getByRole("button")).toHaveCount(0);
 
   const buckets = maturity.locator(".bucket");
-  await expect(buckets).toHaveCount(soma.maturity.mbs.buckets.length);
-  for (const [i, bucket] of soma.maturity.mbs.buckets.entries()) {
+  await expect(buckets).toHaveCount(soma.maturity.tsy.buckets.length);
+  for (const [i, bucket] of soma.maturity.tsy.buckets.entries()) {
     const row = buckets.nth(i);
     await expect(row).toContainText(soma.maturity.labels[i]);
     await expect(row).toContainText(`${bucket.sharePct.toFixed(1)}%`);
