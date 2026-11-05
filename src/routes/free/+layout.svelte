@@ -1,6 +1,8 @@
 <!-- Shell for every Free data explorer page (/free/*), from the owner's
-     DataExplorer.dc.html artboard. These pages read mock data only
-     (src/lib/free/mock/); src/tests/free-mock-guard.test.ts enforces it. -->
+     DataExplorer.dc.html artboard. These pages never call the backend
+     themselves: live figures come only from the allowed server loads (/free,
+     /free/soma and /free/tips); src/tests/free-mock-guard.test.ts enforces
+     it. -->
 <script lang="ts">
   import { page } from "$app/stores";
   import DatasetPicker from "../../components/free/DatasetPicker.svelte";

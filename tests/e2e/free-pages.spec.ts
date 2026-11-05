@@ -2,14 +2,17 @@
  * US-252: /free/soma, logged out. The 7 DataExplorer.dc.html sections, the
  * maturity profile, and the code cards' text after hydration.
  *
- * Bar widths: each bar's rendered width equals the stored `sharePct` (% of
- * the Treasury total) in src/lib/free/mock/soma.ts, the same figure its
- * label shows. US-305: the maturity profile shows Treasuries only.
+ * US-305: the maturity profile shows Treasuries only. US-307: the snapshot,
+ * findings and maturity profile are the ledger's live SOMA Treasury
+ * holdings for the Business date's H.4.1 week. The host ledger may hold no
+ * SOMA portfolio, or not that week, so each check accepts live figures or
+ * the unavailable text, both naming the week, and records which branch ran;
+ * neither shows a figure of the deleted SOMA mock. Each bar's rendered
+ * width equals the share its label shows.
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { readFileSync } from "fs";
 import path from "path";
-import { soma } from "../../src/lib/free/mock/soma";
 import {
   MOCK_SECURITY_MASTER,
   mockFiguresIn,
@@ -37,6 +40,83 @@ const H2S = [
   "Positions by CUSIP",
   "Pull SOMA data from the API",
 ];
+
+const BUCKET_LABELS = [
+  "Within 15 days",
+  "16–90 days",
+  "91 days–1 yr",
+  "1–5 yrs",
+  "5–10 yrs",
+  "Over 10 yrs",
+];
+const SCOPE_NOTE = "Excludes SOMA's mortgage-backed securities (MBS).";
+const TOTAL_LABEL = "Total held outright, excluding MBS";
+// Bracketed so the pattern does not match its own source line.
+const EXCLUDED_WORDS = /m[b]s|mor[t]gage|a[g]ency/i;
+// The deleted SOMA mock's figures (src/lib/free/mock/soma.ts before
+// US-307), as literals: live ledger figures equal to these would be a
+// coincidence, so any hit fails.
+const SOMA_MOCK_FIGURES = [
+  "$4.57T",
+  "+$373.1B",
+  "4,572.9",
+  "4,199.8",
+  "$386.5B",
+  "79.1%",
+  "$106.9B",
+  "$390.8B",
+  "$529.1B",
+  "$1,436.2B",
+  "$482.2B",
+  "$1,625.3B",
+];
+const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
+
+/** "2026-10-14" → "Oct 14, 2026", as the page names a week. */
+function weekLabel(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
+}
+
+/** The H.4.1 Wednesday `weeksBack` weeks before the latest one (UTC). */
+function pastWednesday(weeksBack: number): string {
+  const now = new Date();
+  const back = (now.getUTCDay() - 3 + 7) % 7;
+  const ms =
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
+    (back + 7 * weeksBack) * 86_400_000;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+/** The text of the three live SOMA sections. */
+async function somaSections(page: Page): Promise<string[]> {
+  return Promise.all(
+    [
+      page.locator('section[aria-labelledby="snap-title"]'),
+      page.locator("article.findings"),
+      page.getByRole("region", { name: "When the holdings come due" }),
+    ].map(async (s) => (await s.textContent()) ?? "")
+  );
+}
+
+/** Each section names `week`: "As of <week>" when live, "Unavailable for
+ * <week>" when not. Returns which branch each took. */
+async function expectSectionsName(page: Page, week: string) {
+  const label = weekLabel(week);
+  await expect(
+    page.locator('section[aria-labelledby="snap-title"] .as-of')
+  ).toHaveText(`As of ${label}`);
+  const branches: string[] = [];
+  for (const text of await somaSections(page)) {
+    const unavailable = text.includes(`Unavailable for ${label}`);
+    expect(
+      unavailable || new RegExp(`as of ${label}`, "i").test(text),
+      text
+    ).toBe(true);
+    branches.push(unavailable ? "unavailable" : "live");
+  }
+  return branches;
+}
 
 // US-254: /free, /free/soma and /free/tips each answer 200 inside the shell.
 for (const route of ["/free", "/free/soma", "/free/tips"]) {
@@ -83,28 +163,91 @@ test("the maturity profile shows Treasuries only, with no Asset type toggle", as
   const maturity = page.getByRole("region", {
     name: "When the holdings come due",
   });
-  await expect(maturity.getByText(soma.maturity.tsy.note)).toBeVisible();
   await expect(maturity.getByRole("group", { name: "Asset type" })).toHaveCount(
     0
   );
   await expect(maturity.getByRole("button")).toHaveCount(0);
 
   const buckets = maturity.locator(".bucket");
-  await expect(buckets).toHaveCount(soma.maturity.tsy.buckets.length);
-  for (const [i, bucket] of soma.maturity.tsy.buckets.entries()) {
+  const live = (await buckets.count()) > 0;
+  test.info().annotations.push({
+    type: "live-data",
+    description: live ? "SOMA buckets from the ledger" : "unavailable branch",
+  });
+  if (!live) {
+    await expect(maturity).toContainText(/Unavailable for /);
+    return;
+  }
+  await expect(buckets).toHaveCount(BUCKET_LABELS.length);
+  for (const [i, label] of BUCKET_LABELS.entries()) {
     const row = buckets.nth(i);
-    await expect(row).toContainText(soma.maturity.labels[i]);
-    await expect(row).toContainText(`${bucket.sharePct.toFixed(1)}%`);
+    await expect(row).toContainText(label);
+    const share = /· (\d+\.\d)%/.exec(
+      (await row.locator(".share").textContent()) ?? ""
+    );
+    expect(share).not.toBeNull();
     const track = await row.locator(".track").boundingBox();
     const fill = await row.locator(".fill").boundingBox();
     expect(track).not.toBeNull();
     // A zero-width bar has no box.
     const fillWidth = fill?.width ?? 0;
     expect(
-      Math.abs(fillWidth - ((track?.width ?? 0) * bucket.sharePct) / 100)
-    ).toBeLessThanOrEqual(1);
+      Math.abs(fillWidth - ((track?.width ?? 0) * Number(share?.[1])) / 100)
+    ).toBeLessThanOrEqual(1.5);
   }
 });
+
+for (const route of ["/free/soma", "/free"]) {
+  test(`${route} shows live SOMA figures or says they are unavailable, never the mock or excluded securities`, async ({
+    page,
+  }) => {
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    const branches = await expectSectionsName(page, pastWednesday(0));
+    test.info().annotations.push({
+      type: "live-data",
+      description: branches.join(", "),
+    });
+    await expect(page.getByText(SCOPE_NOTE)).toBeVisible();
+    await expect(page.getByRole("group", { name: "Asset type" })).toHaveCount(
+      0
+    );
+    // Drop the build's hashed asset paths: their hash changes every build.
+    const html = (await page.content()).replace(
+      /_app\/immutable\/[^"'\s]+/g,
+      ""
+    );
+    expect(SOMA_MOCK_FIGURES.filter((f) => html.includes(f))).toEqual([]);
+    const stripped = html
+      .split(SCOPE_NOTE)
+      .join("")
+      .split(TOTAL_LABEL)
+      .join("");
+    expect(stripped.match(EXCLUDED_WORDS)?.[0]).toBeUndefined();
+  });
+
+  test(`${route}: the Business date picker shows a past week, and it persists on reload`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    const week = pastWednesday(3);
+    const picker = page.getByLabel("Business date");
+    await expect(picker).toHaveValue(pastWednesday(0));
+    await picker.fill(week);
+    await expect(page).toHaveURL(new RegExp(`\\?asOf=${week}$`), {
+      timeout: 30_000,
+    });
+    await expectSectionsName(page, week);
+
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(new RegExp(`\\?asOf=${week}$`));
+    await expect(page.getByLabel("Business date")).toHaveValue(week);
+    await expectSectionsName(page, week);
+  });
+}
 
 test("the code cards show the sample files verbatim after hydration", async ({
   page,
@@ -248,24 +391,45 @@ test("/free/tips calculator is disabled and shows its defaults", async ({
   ).toHaveCount(0);
 });
 
-test("/free/tips: FT_HOMEPAGE_API_KEY never reaches the browser", async ({
-  page,
-  request,
-}) => {
-  const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
-  test.skip(
-    !key,
-    "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
-  );
-  for (const url of ["/free/tips", "/free/tips/__data.json"]) {
-    const response = await request.get(url);
-    expect(response.status(), `GET ${url}`).toBe(200);
-    expect(await response.text(), `GET ${url} body`).not.toContain(key);
-  }
-  const headers: string[] = [];
-  page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
-  await page.goto("/free/tips");
-  await page.waitForLoadState("networkidle");
-  expect(await page.content()).not.toContain(key);
-  expect(headers.filter((h) => h.includes(key))).toEqual([]);
-});
+// US-307: the same for /free/soma and /free, including the __data.json a
+// Business date pick fetches on the client.
+for (const [route, extra] of [
+  ["/free/tips", []],
+  [
+    "/free/soma",
+    [
+      `/free/soma/__data.json?asOf=${pastWednesday(3)}`,
+      "/free/soma/__data.json",
+    ],
+  ],
+  [
+    "/free",
+    [`/free/__data.json?asOf=${pastWednesday(3)}`, "/free/__data.json"],
+  ],
+] as const) {
+  test(`${route}: FT_HOMEPAGE_API_KEY never reaches the browser`, async ({
+    page,
+    request,
+  }) => {
+    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+    test.skip(
+      !key,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
+    const urls =
+      route === "/free/tips"
+        ? [route, "/free/tips/__data.json"]
+        : [route, ...extra];
+    for (const url of urls) {
+      const response = await request.get(url);
+      expect(response.status(), `GET ${url}`).toBe(200);
+      expect(await response.text(), `GET ${url} body`).not.toContain(key);
+    }
+    const headers: string[] = [];
+    page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    expect(await page.content()).not.toContain(key);
+    expect(headers.filter((h) => h.includes(key))).toEqual([]);
+  });
+}

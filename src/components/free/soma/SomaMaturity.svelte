@@ -1,11 +1,19 @@
 <!-- Section 4 of /free/soma: remaining maturity by bucket, Treasuries only,
-     from DataExplorer.dc.html. Bar widths and shares are the stored figures
-     in src/lib/free/mock/soma.ts. -->
+     from DataExplorer.dc.html. US-307: the server load buckets the ledger's
+     holdings, inflation compensation included, as H.4.1 Table 2 does; bar
+     widths are its shares. -->
 <script lang="ts">
   import { formatMillionsAsBillions } from "$lib/free/format";
-  import type { SomaResponse } from "$lib/free/mock/types";
+  import {
+    SOMA_BUCKET_LABELS,
+    type Section,
+    type SomaMaturityView,
+  } from "$lib/free/soma";
 
-  export let maturity: SomaResponse["maturity"];
+  export let maturity: Section<SomaMaturityView>;
+  export let asOfLabel: string;
+
+  const COLOR = "#2F5BB7";
 </script>
 
 <section aria-labelledby="mat-title" class="maturity">
@@ -13,29 +21,34 @@
     <div class="intro">
       <p class="eyebrow">Maturity profile</p>
       <h2 id="mat-title">When the holdings come due</h2>
-      <p class="note">{maturity.tsy.note}</p>
+      <p class="note">
+        {maturity.ok ? maturity.data.note : maturity.message}
+      </p>
     </div>
   </div>
-  <div class="buckets">
-    {#each maturity.tsy.buckets as bucket, i}
-      <div class="bucket">
-        <span class="label">{maturity.labels[i]}</span>
-        <div class="track">
-          <div
-            class="fill"
-            style="width: {bucket.sharePct}%; background: {maturity.tsy.color}"
-          />
+  {#if maturity.ok}
+    <div class="buckets">
+      {#each maturity.data.buckets as bucket, i}
+        <div class="bucket">
+          <span class="label">{SOMA_BUCKET_LABELS[i]}</span>
+          <div class="track">
+            <div
+              class="fill"
+              style="width: {bucket.sharePct}%; background: {COLOR}"
+            />
+          </div>
+          <span class="value"
+            >{formatMillionsAsBillions(bucket.valueM)}
+            <span class="share">· {bucket.sharePct.toFixed(1)}%</span></span
+          >
         </div>
-        <span class="value"
-          >{formatMillionsAsBillions(bucket.valueM)}
-          <span class="share">· {bucket.sharePct.toFixed(1)}%</span></span
-        >
-      </div>
-    {/each}
-  </div>
+      {/each}
+    </div>
+  {/if}
   <p class="source">
-    Remaining maturity, $ billions, as of October 14, 2026. Source: <a
-      href="https://www.federalreserve.gov/releases/h41/current/"
+    Remaining maturity, $ billions, as of {asOfLabel}, inflation compensation
+    included. Source: the Fintekkers ledger, bucketed as in
+    <a href="https://www.federalreserve.gov/releases/h41/current/"
       >Federal Reserve H.4.1, Table 2</a
     >
   </p>

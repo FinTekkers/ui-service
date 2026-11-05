@@ -1,11 +1,14 @@
 <!-- /free/soma: the 7 sections of the owner's DataExplorer.dc.html artboard,
      inside the Free data explorer shell (../+layout.svelte). Holdings over
      time and Positions by CUSIP show the artboard's placeholders until
-     US-252b fills them. -->
+     US-252b fills them. US-307: the snapshot, findings and maturity profile
+     are the ledger's SOMA Treasury holdings for the Business date's week,
+     from the server load (./+page.server.ts). -->
 <script lang="ts">
   import FreeCodeCard from "../../../components/free/FreeCodeCard.svelte";
   import SomaMaturity from "../../../components/free/soma/SomaMaturity.svelte";
   import SomaSnapshot from "../../../components/free/soma/SomaSnapshot.svelte";
+  import SomaWeekPicker from "../../../components/free/soma/SomaWeekPicker.svelte";
   import pySample from "$lib/free/samples/soma.py?raw";
   import tsSample from "$lib/free/samples/soma.ts?raw";
   import type { PageData } from "./$types";
@@ -44,7 +47,7 @@
     </div>
     <div>
       <dt>Holds</dt>
-      <dd>US Treasury bills, notes, bonds, TIPS and FRNs; agency debt</dd>
+      <dd>US Treasury bills, notes, bonds, TIPS and FRNs</dd>
     </div>
     <div>
       <dt>Source</dt>
@@ -57,8 +60,10 @@
   </dl>
 </article>
 
+<SomaWeekPicker asOf={data.asOf} today={data.today} />
+
 <!-- 2. Snapshot -->
-<SomaSnapshot {data} />
+<SomaSnapshot snapshot={data.snapshot} asOfLabel={data.asOfLabel} />
 
 <!-- 3. What the data says -->
 <article class="card findings">
@@ -70,23 +75,28 @@
       the Fed owns.
     </p>
   </div>
-  <div class="finding-grid">
-    {#each data.findings as finding}
-      <div class="finding">
-        <span class="figure">{finding.figure}</span>
-        <h3>{finding.title}</h3>
-        <p>
-          {finding.body}{#if finding.link}{" "}<a href={finding.link.href}
-              >{finding.link.label}</a
-            >{/if}
-        </p>
-      </div>
-    {/each}
-  </div>
+  {#if data.findings.ok}
+    <p class="as-of">As of {data.asOfLabel}</p>
+    <div class="finding-grid">
+      {#each data.findings.data.cards as finding}
+        <div class="finding">
+          <span class="figure">{finding.figure}</span>
+          <h3>{finding.title}</h3>
+          <p>
+            {finding.body}{#if finding.link}{" "}<a href={finding.link.href}
+                >{finding.link.label}</a
+              >{/if}
+          </p>
+        </div>
+      {/each}
+    </div>
+  {:else}
+    <p class="as-of">{data.findings.message}</p>
+  {/if}
 </article>
 
 <!-- 4. Maturity profile -->
-<SomaMaturity maturity={data.maturity} />
+<SomaMaturity maturity={data.maturity} asOfLabel={data.asOfLabel} />
 
 <!-- 5. Holdings over time (artboard placeholder until US-252b) -->
 <div class="card history">
@@ -255,6 +265,12 @@
     flex-direction: column;
     gap: 12px;
     max-width: 46em;
+  }
+  .findings .as-of {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
   }
   .finding-grid {
     display: grid;
