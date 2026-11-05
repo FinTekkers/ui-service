@@ -1,5 +1,5 @@
-// Display formatting for the Free data explorer's mock figures. Formatting
-// only: every number shown is stored in src/lib/free/mock/.
+// Display formatting for the Free data explorer's figures. Formatting only:
+// every number shown comes from a server load or src/lib/free/mock/.
 
 const ONE_DECIMAL = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
 

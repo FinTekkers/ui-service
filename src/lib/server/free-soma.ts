@@ -1,0 +1,443 @@
+/**
+ * US-307: /free/soma's and /free's live figures: the Fed's SOMA Treasury
+ * holdings from the FinTekkers ledger, for one H.4.1 week.
+ *
+ * The caller passes the server-held homepage key (FT_HOMEPAGE_API_KEY),
+ * never a visitor's. Lives under src/lib/server/ so SvelteKit refuses any
+ * client import of it. One position search per week, through the broker:
+ * DIRECTED_QUANTITY and the ledger's INFLATION_COMPENSATION (LS-206), by
+ * PRODUCT_TYPE and MATURITY_DATE, for trades on or before the week. A
+ * second search for the year-ago week feeds the table's prior column only.
+ *
+ * Totals, shares and the six H.4.1 Table 2 buckets are summed here, from
+ * MATURITY_DATE relative to the week. Inflation compensation is the
+ * ledger's figure as returned; nothing here recomputes it. Rows of any
+ * product type outside the Treasury scope are dropped. A failed or empty
+ * search makes every section unavailable. Nothing here throws, and nothing
+ * falls back to a mock.
+ */
+import Decimal from "decimal.js";
+import type { FieldMapEntry } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb";
+import type { LocalDateProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_date_pb";
+import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
+import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
+import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
+import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js";
+import { PositionFilterOperator } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js";
+import { Position } from "@fintekkers/ledger-models/node/wrappers/models/position/position";
+import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
+import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
+import { QueryPositionRequest } from "@fintekkers/ledger-models/node/wrappers/requests/position/QueryPositionRequest";
+import { fromDecimalProto } from "$lib/decimal";
+import { formatOneDecimal } from "$lib/free/format";
+import { searchPositions } from "$lib/positions";
+import {
+  SOMA_BUCKET_LABELS,
+  SOMA_TOTAL_LABEL,
+  somaUnavailable,
+  somaWeek,
+  weekLabel,
+  type SomaFinding,
+  type SomaMaturityView,
+  type SomaPageData,
+  type SomaSnapshotView,
+  type SomaTableRow,
+} from "$lib/free/soma";
+
+const { FieldProto } = field_pkg;
+const { MeasureProto } = measure_pkg;
+const { PositionTypeProto, PositionViewProto } = position_pkg;
+
+/** The ledger portfolio, as src/lib/treasury_positions.ts names it. */
+export const SOMA_PORTFOLIO_NAME = "Federal Reserve SOMA Holdings";
+
+export const SOMA_FIELDS = [FieldProto.PRODUCT_TYPE, FieldProto.MATURITY_DATE];
+export const SOMA_MEASURES = [
+  MeasureProto.DIRECTED_QUANTITY,
+  MeasureProto.INFLATION_COMPENSATION,
+];
+
+/** The year-ago week: 52 weeks back, so also a Wednesday. */
+export const PRIOR_WEEK_DAYS = 364;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+type TypeClass = "bills" | "nominal" | "tips";
+
+/** The Treasury product types SOMA's figures cover, by table row. */
+const TREASURY_TYPES = new Map<string, TypeClass>([
+  ["TBILL", "bills"],
+  ["TREASURY_NOTE", "nominal"],
+  ["TREASURY_BOND", "nominal"],
+  ["TREASURY_FRN", "nominal"],
+  ["STRIPS", "nominal"],
+  ["TIPS", "tips"],
+]);
+
+const COLORS = { nominal: "#5B8DEF", bills: "#B9D0FA", tips: "#2F5BB7" };
+
+/** One grouped position row, as the ledger returns it. Decimals are
+ * strings; an absent measure or field is null. */
+export interface SomaRow {
+  productType: string;
+  /** ISO date. */
+  maturityDate: string | null;
+  /** Dollars of face. */
+  directedQuantity: string | null;
+  /** Dollars; the ledger sends it for TIPS only. */
+  inflationCompensation: string | null;
+}
+
+function isoDate(proto: LocalDateProto): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${proto.getYear()}-${pad(proto.getMonth())}-${pad(proto.getDay())}`;
+}
+
+/** ISO date `years` calendar years after `iso`. */
+function addYears(iso: string, years: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y + years, m - 1, d)).toISOString().slice(0, 10);
+}
+
+function minusDays(iso: string, days: number): string {
+  return new Date(Date.parse(iso) - days * DAY_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * The H.4.1 Table 2 bucket (index into SOMA_BUCKET_LABELS) of a security
+ * maturing on `maturity`, as of `asOf`: within 15 days, 16 to 90 days, 91
+ * days to 1 year, over 1 to 5 years, over 5 to 10 years, over 10 years.
+ * A maturity before the week counts as within 15 days.
+ */
+export function bucketOf(
+  maturity: string,
+  asOf: string
+): 0 | 1 | 2 | 3 | 4 | 5 {
+  const days = (Date.parse(maturity) - Date.parse(asOf)) / DAY_MS;
+  if (days <= 15) return 0;
+  if (days <= 90) return 1;
+  if (maturity <= addYears(asOf, 1)) return 2;
+  if (maturity <= addYears(asOf, 5)) return 3;
+  if (maturity <= addYears(asOf, 10)) return 4;
+  return 5;
+}
+
+interface Totals {
+  bills: Decimal;
+  nominal: Decimal;
+  tipsPrincipal: Decimal;
+  inflationCompensation: Decimal;
+  total: Decimal;
+  buckets: Decimal[];
+}
+
+/**
+ * The week's Treasury totals and buckets, or null when the rows can't give
+ * them: no Treasury row, a row with no quantity or maturity, or a TIPS row
+ * with no INFLATION_COMPENSATION (absent is not zero).
+ */
+export function somaTotals(rows: SomaRow[], asOf: string): Totals | null {
+  const zero = new Decimal(0);
+  const t: Totals = {
+    bills: zero,
+    nominal: zero,
+    tipsPrincipal: zero,
+    inflationCompensation: zero,
+    total: zero,
+    buckets: SOMA_BUCKET_LABELS.map(() => zero),
+  };
+  const dropped = new Map<string, number>();
+  let treasuryRows = 0;
+  for (const row of rows) {
+    const kind = TREASURY_TYPES.get(row.productType);
+    if (!kind) {
+      dropped.set(row.productType, (dropped.get(row.productType) ?? 0) + 1);
+      continue;
+    }
+    if (!row.directedQuantity || !row.maturityDate) return null;
+    const face = new Decimal(row.directedQuantity);
+    let value = face;
+    if (kind === "tips") {
+      if (!row.inflationCompensation) return null;
+      const ic = new Decimal(row.inflationCompensation);
+      t.tipsPrincipal = t.tipsPrincipal.plus(face);
+      t.inflationCompensation = t.inflationCompensation.plus(ic);
+      value = face.plus(ic);
+    } else {
+      t[kind] = t[kind].plus(face);
+    }
+    treasuryRows++;
+    t.total = t.total.plus(value);
+    const bucket = bucketOf(row.maturityDate, asOf);
+    t.buckets[bucket] = t.buckets[bucket].plus(value);
+  }
+  if (dropped.size > 0) {
+    console.log(
+      "SOMA rows outside the Treasury scope dropped",
+      Object.fromEntries(dropped)
+    );
+  }
+  return treasuryRows > 0 && !t.total.isZero() ? t : null;
+}
+
+const billions = (d: Decimal) => Number(d.dividedBy(1e9).toFixed(1));
+const millions = (d: Decimal) => Number(d.dividedBy(1e6).toFixed(3));
+const pct = (part: Decimal, whole: Decimal) =>
+  Number(part.dividedBy(whole).times(100).toFixed(1));
+
+/** 4570552e6 → "$4.57T"; 386566e6 → "$386.6B". */
+function amount(d: Decimal): string {
+  return d.abs().greaterThanOrEqualTo(1e12)
+    ? `$${d.dividedBy(1e12).toFixed(2)}T`
+    : `$${formatOneDecimal(billions(d))}B`;
+}
+
+/** 373.1e9 → "+$373.1B", −30.2e9 → "−$30.2B" (U+2212). */
+function signedBillions(d: Decimal): string {
+  return `${d.isNegative() ? "−" : "+"}$${formatOneDecimal(
+    billions(d.abs())
+  )}B`;
+}
+
+function row(
+  label: string,
+  current: Decimal,
+  prior: Decimal | null
+): SomaTableRow {
+  return {
+    label,
+    current: billions(current),
+    prior: prior && billions(prior),
+    change: prior && billions(current.minus(prior)),
+  };
+}
+
+function snapshotView(
+  t: Totals,
+  p: Totals | null,
+  asOf: string,
+  priorAsOf: string
+): SomaSnapshotView {
+  const tips = t.tipsPrincipal.plus(t.inflationCompensation);
+  return {
+    total: amount(t.total),
+    change: p && `${signedBillions(t.total.minus(p.total))} vs a year ago`,
+    composition: [
+      {
+        label: "Notes & bonds",
+        spoken: "notes and bonds",
+        pct: pct(t.nominal, t.total),
+        color: COLORS.nominal,
+      },
+      {
+        label: "Bills",
+        spoken: "bills",
+        pct: pct(t.bills, t.total),
+        color: COLORS.bills,
+      },
+      {
+        label: "TIPS incl. inflation comp.",
+        spoken: "TIPS including inflation compensation",
+        pct: pct(tips, t.total),
+        color: COLORS.tips,
+      },
+    ],
+    columns: [weekLabel(asOf), p && weekLabel(priorAsOf)],
+    rows: [
+      row("Treasury bills", t.bills, p && p.bills),
+      row("Notes & bonds, nominal", t.nominal, p && p.nominal),
+      row("TIPS principal", t.tipsPrincipal, p && p.tipsPrincipal),
+      row(
+        "Inflation compensation",
+        t.inflationCompensation,
+        p && p.inflationCompensation
+      ),
+    ],
+    totalRow: row(SOMA_TOTAL_LABEL, t.total, p && p.total),
+  };
+}
+
+function findingCards(t: Totals, p: Totals | null): SomaFinding[] {
+  const cards: SomaFinding[] = [];
+  if (p) {
+    const change = t.total.minus(p.total);
+    cards.push({
+      figure: signedBillions(change),
+      title: change.isNegative()
+        ? "The portfolio is shrinking"
+        : "The portfolio is growing again",
+      body: `Total Treasury holdings ${
+        change.isNegative() ? "fell" : "rose"
+      } from ${amount(p.total)} to ${amount(t.total)} year over year.`,
+    });
+    if (p.bills.greaterThan(0)) {
+      cards.push({
+        figure: `${t.bills.dividedBy(p.bills).toFixed(1)}×`,
+        title: "Bills compared with a year ago",
+        body: `From ${amount(p.bills)} to ${amount(t.bills)}.`,
+      });
+    }
+  }
+  if (t.tipsPrincipal.greaterThan(0)) {
+    cards.push({
+      figure: amount(t.tipsPrincipal.plus(t.inflationCompensation)),
+      title: "A large TIPS holder",
+      body: `${amount(t.tipsPrincipal)} of TIPS principal plus ${amount(
+        t.inflationCompensation
+      )} of accrued inflation compensation.`,
+      link: { href: "/free/tips", label: "See how TIPS work" },
+    });
+  }
+  return cards;
+}
+
+function maturityView(t: Totals): SomaMaturityView {
+  const withinYear = t.buckets[0].plus(t.buckets[1]).plus(t.buckets[2]);
+  return {
+    note: `Treasuries are spread across the curve. About ${amount(
+      withinYear
+    )}, or ${withinYear
+      .dividedBy(t.total)
+      .times(100)
+      .toFixed(0)}%, matures within a year.`,
+    totalM: millions(t.total),
+    buckets: t.buckets.map((b) => ({
+      valueM: millions(b),
+      sharePct: pct(b, t.total),
+    })),
+  };
+}
+
+/**
+ * Every section for the week `asOf`, from its rows and, when they loaded,
+ * the year-ago week's. Rows that can't give totals make every section
+ * unavailable; unusable year-ago rows only blank the prior column.
+ */
+export function somaRowsToView(
+  rows: SomaRow[] | null,
+  asOf: string,
+  prior: SomaRow[] | null
+): Pick<SomaPageData, "snapshot" | "findings" | "maturity"> {
+  const priorAsOf = minusDays(asOf, PRIOR_WEEK_DAYS);
+  const t = rows && somaTotals(rows, asOf);
+  if (!t) {
+    const message = somaUnavailable(weekLabel(asOf));
+    return {
+      snapshot: { ok: false, message },
+      findings: { ok: false, message },
+      maturity: { ok: false, message },
+    };
+  }
+  const p = prior && somaTotals(prior, priorAsOf);
+  return {
+    snapshot: { ok: true, data: snapshotView(t, p, asOf, priorAsOf) },
+    findings: { ok: true, data: { cards: findingCards(t, p) } },
+    maturity: { ok: true, data: maturityView(t) },
+  };
+}
+
+function productTypeOf(entry: FieldMapEntry): string {
+  if (entry.getStringValue()) return entry.getStringValue();
+  if (entry.getEnumValue() > 0) {
+    // The generated JS enum has no reverse mapping.
+    const value = entry.getEnumValue();
+    const name = Object.entries(ProductTypeProto).find(([, v]) => v === value);
+    return name ? name[0] : String(value);
+  }
+  return entry.getFieldValuePacked()
+    ? Position.unpackField(entry).getValue()
+    : "";
+}
+
+/** A ledger position as a SomaRow. */
+export function somaRowOf(position: Position): SomaRow {
+  const out: SomaRow = {
+    productType: "",
+    maturityDate: null,
+    directedQuantity: null,
+    inflationCompensation: null,
+  };
+  for (const entry of position.getFields()) {
+    if (entry.getField() === FieldProto.PRODUCT_TYPE) {
+      out.productType = productTypeOf(entry);
+    } else if (
+      entry.getField() === FieldProto.MATURITY_DATE &&
+      entry.getFieldValuePacked()
+    ) {
+      out.maturityDate = isoDate(Position.unpackField(entry));
+    }
+  }
+  for (const entry of position.getMeasures()) {
+    const value = fromDecimalProto(entry.getMeasureDecimalValue()) || null;
+    if (entry.getMeasure() === MeasureProto.DIRECTED_QUANTITY) {
+      out.directedQuantity = value;
+    } else if (entry.getMeasure() === MeasureProto.INFLATION_COMPENSATION) {
+      out.inflationCompensation = value;
+    }
+  }
+  return out;
+}
+
+/** The position search for one week: SOMA trades on or before it, valued
+ * as of the end of its UTC day. */
+export function somaRequest(asOf: string): QueryPositionRequest {
+  const [y, m, d] = asOf.split("-").map(Number);
+  const filter = new PositionFilter();
+  filter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, SOMA_PORTFOLIO_NAME);
+  // Local midnight: the filter serialises a Date with local-time getters.
+  filter.addFilter(
+    FieldProto.TRADE_DATE,
+    PositionFilterOperator.LESS_THAN_OR_EQUALS,
+    new Date(y, m - 1, d)
+  );
+  return new QueryPositionRequest(
+    filter,
+    PositionTypeProto.TRANSACTION,
+    PositionViewProto.DEFAULT_VIEW,
+    SOMA_FIELDS,
+    SOMA_MEASURES,
+    ZonedDateTime.from(new Date(`${asOf}T23:59:59Z`))
+  );
+}
+
+async function fetchRows(
+  asOf: string,
+  apiKey: string
+): Promise<SomaRow[] | null> {
+  try {
+    const positions = await searchPositions(
+      somaRequest(asOf).toProto(),
+      apiKey
+    );
+    return positions.map(somaRowOf);
+  } catch (error) {
+    // The message only: the error object can carry request metadata.
+    console.log(
+      `Could not fetch SOMA holdings for ${asOf}`,
+      (error as Error)?.message
+    );
+    return null;
+  }
+}
+
+/**
+ * Every section of /free/soma for the H.4.1 week of `requestedAsOf`
+ * (?asOf=, snapped to its Wednesday; the latest week when missing, invalid
+ * or after `now`). `apiKey` undefined: all unavailable, and no call is made
+ * (the broker rejects keyless calls).
+ */
+export async function fetchFreeSoma(
+  apiKey: string | undefined,
+  requestedAsOf: string | null,
+  now: Date
+): Promise<SomaPageData> {
+  const today = now.toISOString().slice(0, 10);
+  const asOf = somaWeek(requestedAsOf, today);
+  const base = { asOf, asOfLabel: weekLabel(asOf), today };
+  if (!apiKey) return { ...base, ...somaRowsToView(null, asOf, null) };
+  const [rows, prior] = await Promise.all([
+    fetchRows(asOf, apiKey),
+    fetchRows(minusDays(asOf, PRIOR_WEEK_DAYS), apiKey),
+  ]);
+  return { ...base, ...somaRowsToView(rows, asOf, prior) };
+}

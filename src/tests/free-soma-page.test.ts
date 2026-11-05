@@ -1,69 +1,37 @@
 /**
- * US-252: /free/soma renders the 7 DataExplorer.dc.html sections from the
- * mock in src/lib/free/mock/soma.ts, and its load reads that mock only.
- * US-305: SOMA is Treasury holdings only; the mock, type, route and these
- * tests carry no data on the excluded securities beyond the total label and
- * the exclusion note.
+ * US-252: /free/soma renders the 7 DataExplorer.dc.html sections.
+ * US-305: SOMA is Treasury holdings only.
+ * US-307: the snapshot, findings and maturity profile are the ledger's SOMA
+ * Treasury holdings, summed and bucketed by the server load
+ * (src/lib/server/free-soma.ts) from the 2026-10-14 fixture rows. The only
+ * wording on the excluded securities is the total label and the scope note.
  */
 import { render, screen, within } from "@testing-library/svelte";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
-import { soma } from "$lib/free/mock/soma";
+import Decimal from "decimal.js";
+import {
+  SOMA_BUCKET_LABELS,
+  SOMA_SCOPE_NOTE,
+  SOMA_TOTAL_LABEL,
+  type SomaPageData,
+} from "$lib/free/soma";
+import { bucketOf, somaRowsToView, type SomaRow } from "$lib/server/free-soma";
 import SomaPage from "../routes/free/soma/+page.svelte";
-import { load } from "../routes/free/soma/+page";
+import FreePage from "../routes/free/+page.svelte";
+import {
+  AS_OF,
+  OUT_OF_SCOPE_ROWS,
+  PRIOR_ROWS,
+  PUBLISHED_BUCKETS_M,
+  PUBLISHED_TOTAL_M,
+  ROWS,
+} from "./fixtures/soma-2026-10-14";
 
-const ROUTE = "src/routes/free/soma";
-
-// The item's H.4.1 Table 2 buckets, $ millions, as of 2026-10-14.
-const TSY_BUCKETS = [106926, 390845, 529071, 1436242, 482152, 1625316];
-
-// The only wording on the excluded securities allowed (US-305 metric 1),
-// each one whole literal.
-const TOTAL_LABEL = "Total held outright, excluding MBS";
-const NOTE = "Excludes SOMA's mortgage-backed securities (MBS).";
+const WEEK = "Oct 14, 2026";
 // Bracketed so the pattern does not match its own source line.
-const EXCLUDED_WORDS = /m[b]s|mor[t]gage/i;
-
-// The Treasury and agency rows as on main before US-305.
-const ROWS = [
-  { label: "Treasury bills", current: 566.0, prior: 196.0, change: 370.0 },
-  {
-    label: "Notes & bonds, nominal",
-    current: 3618.0,
-    prior: 3579.0,
-    change: 39.0,
-  },
-  { label: "TIPS principal", current: 280.0, prior: 310.2, change: -30.2 },
-  {
-    label: "Inflation compensation",
-    current: 106.6,
-    prior: 112.2,
-    change: -5.6,
-  },
-  { label: "Agency debt", current: 2.3, prior: 2.3, change: 0.0 },
-];
-const MATURITY_LABELS = [
-  "Within 15 days",
-  "16–90 days",
-  "91 days–1 yr",
-  "1–5 yrs",
-  "5–10 yrs",
-  "Over 10 yrs",
-];
-
-// Each composition slice and the table rows it sums (the artboard's rule:
-// a slice is its rows' share of Total held outright; agency debt is not
-// sliced).
-const SLICE_ROWS: Record<string, string[]> = {
-  "Notes & bonds": ["Notes & bonds, nominal"],
-  Bills: ["Treasury bills"],
-  "TIPS incl. inflation comp.": ["TIPS principal", "Inflation compensation"],
-};
-
-function withoutAllowed(text: string): string {
-  return text.split(TOTAL_LABEL).join("").split(NOTE).join("");
-}
+const EXCLUDED_WORDS = /m[b]s|mor[t]gage|a[g]ency/i;
 
 const H2S = [
   "What is the Federal Reserve SOMA?",
@@ -75,16 +43,40 @@ const H2S = [
   "Pull SOMA data from the API",
 ];
 
-function renderPage() {
-  return render(SomaPage, { props: { data: soma } });
+function pageData(
+  rows: SomaRow[] | null = ROWS,
+  prior: SomaRow[] | null = PRIOR_ROWS
+): SomaPageData {
+  return {
+    asOf: AS_OF,
+    asOfLabel: WEEK,
+    today: "2026-11-05",
+    ...somaRowsToView(rows, AS_OF, prior),
+  };
 }
 
-describe("/free/soma page", () => {
-  test("load returns the soma mock", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(load({} as any)).toBe(soma);
+/** Renders /free/soma's or /free's page; /free's data adds the dataset id. */
+function renderRoute(
+  Page: typeof SomaPage | typeof FreePage,
+  data: SomaPageData
+) {
+  return render(Page as unknown as typeof FreePage, {
+    props: { data: { ...data, dataset: "soma" } },
   });
+}
 
+function renderPage(data: SomaPageData = pageData()) {
+  return render(SomaPage, { props: { data } });
+}
+
+function withoutAllowed(text: string): string {
+  return text.split(SOMA_TOTAL_LABEL).join("").split(SOMA_SCOPE_NOTE).join("");
+}
+
+const millions = (dollars: string) =>
+  new Decimal(dollars).dividedBy(1e6).toNumber();
+
+describe("/free/soma page", () => {
   test("renders the 7 artboard h2 headings in order", () => {
     renderPage();
     expect(
@@ -92,32 +84,112 @@ describe("/free/soma page", () => {
     ).toEqual(H2S);
   });
 
-  test("the snapshot shows the headline and the total row", () => {
+  test("metric 3: the bills share renders 12.4% on the 2026-10-14 fixture", () => {
+    renderPage();
+    const snapshot = screen.getByRole("region", {
+      name: "Federal Reserve SOMA Holdings",
+    });
+    expect(
+      within(snapshot).getByRole("img", { name: /^Composition: / })
+    ).toHaveAccessibleName(
+      "Composition: notes and bonds 79.2%, bills 12.4%, TIPS including inflation compensation 8.5%"
+    );
+    expect(snapshot).toHaveTextContent("Bills 12.4%");
+  });
+
+  test("metric 3: the six buckets sum to the Treasury total, which matches the published H.4.1, within $1M", () => {
+    const view = pageData().maturity;
+    if (!view.ok) throw new Error(view.message);
+    const buckets = view.data.buckets.map((b) => b.valueM);
+    expect(buckets).toHaveLength(6);
+    const sum = buckets.reduce((a, b) => a + b, 0);
+    expect(Math.abs(sum - view.data.totalM)).toBeLessThanOrEqual(1);
+    expect(Math.abs(view.data.totalM - PUBLISHED_TOTAL_M)).toBeLessThanOrEqual(
+      1
+    );
+    buckets.forEach((b, i) =>
+      expect(Math.abs(b - PUBLISHED_BUCKETS_M[i])).toBeLessThanOrEqual(1)
+    );
+  });
+
+  test("metric 3: a TIPS bucket is DIRECTED_QUANTITY plus INFLATION_COMPENSATION of its rows", () => {
+    const tips = ROWS.filter((r) => r.productType === "TIPS");
+    const view = somaRowsToView(tips, AS_OF, null).maturity;
+    if (!view.ok) throw new Error(view.message);
+    // Oracle: the raw fixture rows maturing over 1 to 5 years after the
+    // week, summed here, not by the module.
+    const oneToFive = tips.filter(
+      (r) =>
+        (r.maturityDate as string) > "2027-10-14" &&
+        (r.maturityDate as string) <= "2031-10-14"
+    );
+    expect(oneToFive.length).toBeGreaterThan(0);
+    const expected = oneToFive.reduce(
+      (sum, r) =>
+        sum +
+        millions(r.directedQuantity as string) +
+        millions(r.inflationCompensation as string),
+      0
+    );
+    expect(view.data.buckets[3].valueM).toBe(expected);
+    const faceOnly = oneToFive.reduce(
+      (sum, r) => sum + millions(r.directedQuantity as string),
+      0
+    );
+    expect(view.data.buckets[3].valueM).not.toBe(faceOnly);
+  });
+
+  test("the snapshot shows the live headline and table, naming the week", () => {
     renderPage();
     const snapshot = screen.getByRole("region", {
       name: "Federal Reserve SOMA Holdings",
     });
     expect(snapshot).toHaveTextContent("$4.57T");
-    expect(snapshot).toHaveTextContent("+$373.1B vs a year ago");
-    expect(snapshot).toHaveTextContent("As of 2026-10-14");
+    expect(snapshot).toHaveTextContent("+$373.2B vs a year ago");
+    expect(snapshot).toHaveTextContent(`As of ${WEEK}`);
+    expect(
+      within(snapshot)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent)
+    ).toEqual(["$ billions", WEEK, "Oct 15, 2025", "Change"]);
 
     const total = within(snapshot)
-      .getByRole("cell", { name: TOTAL_LABEL })
+      .getByRole("cell", { name: SOMA_TOTAL_LABEL })
       .closest("tr") as HTMLElement;
     expect(
       within(total)
         .getAllByRole("cell")
         .map((cell) => cell.textContent)
-    ).toEqual([TOTAL_LABEL, "4,572.9", "4,199.8", "+373.1"]);
+    ).toEqual([SOMA_TOTAL_LABEL, "4,570.6", "4,197.4", "+373.2"]);
 
-    // The stored change, with a U+2212 minus.
+    // A U+2212 minus on a fall.
     const tips = within(snapshot)
       .getByRole("cell", { name: "TIPS principal" })
       .closest("tr") as HTMLElement;
     expect(within(tips).getAllByRole("cell")[3]).toHaveTextContent("−30.2");
   });
 
-  test("the growth finding uses the new totals; no runoff card", () => {
+  test("without the year-ago week, the prior column shows — and the year-ago cards are left out", () => {
+    renderPage(pageData(ROWS, null));
+    const snapshot = screen.getByRole("region", {
+      name: "Federal Reserve SOMA Holdings",
+    });
+    expect(snapshot).toHaveTextContent("$4.57T");
+    expect(snapshot).not.toHaveTextContent("vs a year ago");
+    const total = within(snapshot)
+      .getByRole("cell", { name: SOMA_TOTAL_LABEL })
+      .closest("tr") as HTMLElement;
+    expect(
+      within(total)
+        .getAllByRole("cell")
+        .map((cell) => cell.textContent)
+    ).toEqual([SOMA_TOTAL_LABEL, "4,570.6", "—", "—"]);
+    expect(
+      screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)
+    ).toEqual(["A large TIPS holder"]);
+  });
+
+  test("the findings come from the ledger rows and name the week", () => {
     renderPage();
     const findings = screen
       .getByRole("heading", {
@@ -125,159 +197,118 @@ describe("/free/soma page", () => {
         name: "What the portfolio is telling us",
       })
       .closest("article") as HTMLElement;
-    const card = within(findings).getByRole("heading", {
-      level: 3,
-      name: "The portfolio is growing again",
-    }).parentElement as HTMLElement;
-    expect(card).toHaveTextContent("+$373.1B");
-    expect(card).toHaveTextContent("from $4.20T to $4.57T");
-    expect(
-      within(findings).queryByRole("heading", {
-        name: "Mor" + "tgages keep running off",
-      })
-    ).toBeNull();
-    expect(within(findings).getAllByRole("heading", { level: 3 })).toHaveLength(
-      3
-    );
-  });
-
-  test("the scope note shows once, inside the headline", () => {
-    const { container } = renderPage();
-    const count = (text: string) => text.split(NOTE).length - 1;
-    const labels = [...container.querySelectorAll("[aria-label]")].map(
-      (el) => el.getAttribute("aria-label") ?? ""
-    );
-    expect(
-      count(document.body.textContent ?? "") +
-        labels.reduce((n, label) => n + count(label), 0)
-    ).toBe(1);
-    const note = screen.getByText(NOTE);
-    expect(note.closest(".headline")).not.toBeNull();
-    expect(note.closest("section")?.getAttribute("aria-labelledby")).toBe(
-      "snap-title"
-    );
-  });
-
-  test("the composition has the 3 Treasury slices, each its rows' share of the total", () => {
-    expect(soma.composition.map((slice) => slice.label)).toEqual(
-      Object.keys(SLICE_ROWS)
-    );
-    const current = new Map(
-      soma.table.rows.map((row) => [row.label, row.current])
-    );
-    for (const slice of soma.composition) {
-      const rows = SLICE_ROWS[slice.label];
-      const sum = rows.reduce((total, label) => {
-        expect(current.has(label)).toBe(true);
-        return total + (current.get(label) as number);
-      }, 0);
-      expect(slice.pct.toFixed(1)).toBe(
-        ((sum / soma.table.total.current) * 100).toFixed(1)
-      );
-    }
-    renderPage();
-    expect(
-      screen.getByRole("img", { name: /^Composition: / })
-    ).toHaveAccessibleName(
-      "Composition: notes and bonds 79.1%, bills 12.4%, TIPS including inflation compensation 8.5%"
-    );
-  });
-
-  test("the Treasury and agency rows and maturity labels are unchanged", () => {
-    expect(soma.table.rows).toEqual(ROWS);
-    expect(soma.maturity.labels).toEqual(MATURITY_LABELS);
-  });
-
-  test("the TIPS finding links to /free/tips after its sentence", () => {
-    renderPage();
-    const link = screen.getByRole("link", { name: "See how TIPS work" });
+    expect(findings).toHaveTextContent(`As of ${WEEK}`);
+    const cards = within(findings)
+      .getAllByRole("heading", { level: 3 })
+      .map((h) => h.parentElement as HTMLElement);
+    expect(cards.map((c) => c.querySelector(".figure")?.textContent)).toEqual([
+      "+$373.2B",
+      "2.9×",
+      "$386.6B",
+    ]);
+    expect(cards[0]).toHaveTextContent("from $4.20T to $4.57T");
+    expect(cards[1]).toHaveTextContent("From $196.0B to $566.0B.");
+    const link = within(findings).getByRole("link", {
+      name: "See how TIPS work",
+    });
     expect(link).toHaveAttribute("href", "/free/tips");
     expect(link.parentElement?.textContent).toBe(
       "$280.0B of TIPS principal plus $106.6B of accrued inflation compensation. See how TIPS work"
     );
   });
 
-  test("soma.ts holds the item's maturity buckets exactly", () => {
-    expect(soma.asOf).toBe("2026-10-14");
-    expect(soma.maturity.tsy.buckets.map((b) => b.valueM)).toEqual(TSY_BUCKETS);
-  });
-
-  test("stored tsy shares are each bucket's share of the total", () => {
-    const buckets = soma.maturity.tsy.buckets;
-    const values = buckets.map((b) => b.valueM);
-    const total = values.reduce((a, b) => a + b, 0);
-    for (const b of buckets) {
-      expect(b.sharePct.toFixed(1)).toBe(((b.valueM / total) * 100).toFixed(1));
-    }
-  });
-
-  test("the maturity bars render the stored widths and labels", () => {
+  test("the maturity bars render the live shares and name the week", () => {
     const { container } = renderPage();
+    const maturity = screen.getByRole("region", {
+      name: "When the holdings come due",
+    });
+    const view = pageData().maturity;
+    if (!view.ok) throw new Error(view.message);
     const fills = [...container.querySelectorAll<HTMLElement>(".fill")];
     expect(fills.map((fill) => fill.style.width)).toEqual(
-      soma.maturity.tsy.buckets.map((b) => `${b.sharePct}%`)
+      view.data.buckets.map((b) => `${b.sharePct}%`)
     );
-    const maturity = screen.getByRole("region", {
-      name: "When the holdings come due",
-    });
+    expect(
+      [...maturity.querySelectorAll(".label")].map((l) => l.textContent)
+    ).toEqual([...SOMA_BUCKET_LABELS]);
     expect(maturity).toHaveTextContent("$1,625.3B · 35.6%");
-    expect(maturity).toHaveTextContent(soma.maturity.tsy.note);
-  });
-
-  test("the maturity section shows Treasuries only, with no toggle", () => {
-    renderPage();
-    const maturity = screen.getByRole("region", {
-      name: "When the holdings come due",
-    });
+    expect(maturity).toHaveTextContent(
+      "About $1.03T, or 22%, matures within a year."
+    );
+    expect(maturity).toHaveTextContent(`as of ${WEEK}`);
     expect(
       within(maturity).queryByRole("group", { name: "Asset type" })
     ).toBeNull();
     expect(within(maturity).queryAllByRole("button")).toHaveLength(0);
-    expect(Object.keys(soma.maturity)).toEqual(["labels", "tsy"]);
-    expect(maturity.querySelectorAll(".bucket")).toHaveLength(
-      TSY_BUCKETS.length
-    );
   });
 
-  test("no excluded-securities data in the mock, its type, the route or its tests", () => {
+  test("guardrail 2: a TIPS row with no INFLATION_COMPENSATION makes the sections unavailable, never face alone", () => {
+    const rows = ROWS.map((r) =>
+      r.maturityDate === "2029-01-15"
+        ? { ...r, inflationCompensation: null }
+        : r
+    );
+    const data = pageData(rows);
+    expect(data.snapshot.ok).toBe(false);
+    expect(data.findings.ok).toBe(false);
+    expect(data.maturity.ok).toBe(false);
+    const { container } = renderPage(data);
+    expect(container.querySelectorAll(".fill")).toHaveLength(0);
+    expect(container.textContent).not.toMatch(/\$[\d,.]+[BT]/);
+    expect(container.textContent).toContain(`Unavailable for ${WEEK}`);
+  });
+
+  test("guardrail 3: out-of-scope rows are left out of totals, shares, buckets and text", () => {
+    const withExtra = pageData(
+      [...ROWS, ...OUT_OF_SCOPE_ROWS],
+      [...PRIOR_ROWS, ...OUT_OF_SCOPE_ROWS]
+    );
+    expect(withExtra).toEqual(pageData());
+    const { container } = renderPage(withExtra);
+    expect(withoutAllowed(container.innerHTML)).not.toMatch(EXCLUDED_WORDS);
+  });
+
+  test("metric 5: /free/soma and /free show no excluded-securities text or toggle; the headline states the exclusion", () => {
+    for (const Page of [SomaPage, FreePage]) {
+      const { container, unmount } = renderRoute(Page, pageData());
+      const html = container.innerHTML;
+      expect(html).toContain(SOMA_SCOPE_NOTE);
+      // Negative control: the scan sees the allowed note before stripping.
+      expect(html).toMatch(EXCLUDED_WORDS);
+      expect(withoutAllowed(html)).not.toMatch(EXCLUDED_WORDS);
+      expect(
+        within(container).queryByRole("group", { name: "Asset type" })
+      ).toBeNull();
+      const note = within(container).getByText(SOMA_SCOPE_NOTE);
+      expect(note.closest(".headline")).not.toBeNull();
+      expect(note.closest("section")?.getAttribute("aria-labelledby")).toBe(
+        "snap-title"
+      );
+      expect(html.split(SOMA_SCOPE_NOTE)).toHaveLength(2);
+      unmount();
+    }
+  });
+
+  test("metric 5: no excluded-securities wording in the SOMA routes, components or modules", () => {
     const files = [
-      "src/lib/free/mock/soma.ts",
-      "src/tests/free-soma-page.test.ts",
-      "tests/e2e/free-pages.spec.ts",
+      "src/lib/free/soma.ts",
+      "src/lib/server/free-soma.ts",
+      "src/routes/free/+page.server.ts",
+      "src/routes/free/+page.svelte",
     ];
     for (const dir of ["src/routes/free/soma", "src/components/free/soma"]) {
       const entries = readdirSync(path.resolve(dir));
       expect(entries.length).toBeGreaterThan(0);
       files.push(...entries.map((entry) => `${dir}/${entry}`));
     }
-    const sources = files.map((file) => {
+    for (const file of files) {
       expect(existsSync(path.resolve(file))).toBe(true);
-      return [file, readFileSync(path.resolve(file), "utf8")];
-    });
-
-    const types = readFileSync(
-      path.resolve("src/lib/free/mock/types.ts"),
-      "utf8"
-    );
-    const block =
-      types.match(/^export interface SomaResponse \{[\s\S]*?^\}/m)?.[0] ?? "";
-    expect(block).toContain("headline");
-    expect(block).toContain("maturity");
-    sources.push(["SomaResponse", block]);
-
-    // The allowed strings are really there, once each in the mock.
-    const mock = sources[0][1];
-    expect(mock.split(TOTAL_LABEL)).toHaveLength(2);
-    expect(mock.split(NOTE)).toHaveLength(2);
-
-    for (const [file, source] of sources) {
+      const source = readFileSync(path.resolve(file), "utf8");
       expect({
         file,
         hit: withoutAllowed(source).match(EXCLUDED_WORDS)?.[0],
       }).toEqual({ file, hit: undefined });
     }
-
-    // Negative control: a stray excluded word is caught.
     expect(withoutAllowed("M" + "BS paydowns")).toMatch(EXCLUDED_WORDS);
   });
 
@@ -294,18 +325,27 @@ describe("/free/soma page", () => {
       expect(screen.getByLabelText(name).textContent).toBe(source.trimEnd());
     }
   });
+});
 
-  test("the route is mock-only: no server load, +page.ts imports the mock", () => {
-    expect(existsSync(path.resolve(ROUTE, "+page.server.ts"))).toBe(false);
-    expect(existsSync(path.resolve(ROUTE, "+page.server.js"))).toBe(false);
-    const source = readFileSync(path.resolve(ROUTE, "+page.ts"), "utf8");
-    const imports = [
-      ...source.matchAll(/^import\s+(type\s+)?[^;]*?from\s*"([^"]+)"/gm),
-    ];
-    expect(imports.length).toBeGreaterThan(0);
-    for (const [, typeOnly, specifier] of imports) {
-      if (typeOnly && specifier === "./$types") continue;
-      expect(specifier).toMatch(/^\$lib\/free\/mock\//);
-    }
+describe("bucketOf: H.4.1 Table 2 edges, from MATURITY_DATE and the week", () => {
+  test.each([
+    ["2026-10-14", 0],
+    ["2026-10-29", 0], // 15 days
+    ["2026-10-30", 1], // 16 days
+    ["2027-01-12", 1], // 90 days
+    ["2027-01-13", 2], // 91 days
+    ["2027-10-14", 2], // 1 year
+    ["2027-10-15", 3], // 1 year and a day
+    ["2031-10-14", 3], // 5 years
+    ["2031-10-15", 4],
+    ["2036-10-14", 4], // 10 years
+    ["2036-10-15", 5],
+  ])("matures %s → bucket %i", (maturity, bucket) => {
+    expect(bucketOf(maturity, AS_OF)).toBe(bucket);
+  });
+
+  test("the same row moves bucket with the selected week", () => {
+    expect(bucketOf("2026-11-20", "2026-10-14")).toBe(1);
+    expect(bucketOf("2026-11-20", "2026-11-11")).toBe(0);
   });
 });

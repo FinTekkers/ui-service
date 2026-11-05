@@ -32,7 +32,7 @@ import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid"
 // wrapper stays the single mapping point.
 import { PositionFilterOperator } from "@fintekkers/ledger-models/node/wrappers/models/position/position_filter_operator";
 
-function searchPositions(
+export function searchPositions(
   request: ReturnType<QueryPositionRequest["toProto"]>,
   apiKey?: string
 ): Promise<Position[]> {

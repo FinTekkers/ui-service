@@ -1,21 +1,29 @@
 <!-- Section 2 of /free/soma: the dark snapshot card (headline, composition
-     bar and the year-over-year table), from DataExplorer.dc.html. -->
+     bar and the year-over-year table), from DataExplorer.dc.html. US-307:
+     live ledger figures for the week; the scope note shows either way. -->
 <script lang="ts">
   import {
     changeDirection,
     formatChange,
     formatOneDecimal,
   } from "$lib/free/format";
-  import type { SomaResponse } from "$lib/free/mock/types";
+  import {
+    SOMA_SCOPE_NOTE,
+    type Section,
+    type SomaSnapshotView,
+  } from "$lib/free/soma";
 
-  export let data: SomaResponse;
+  export let snapshot: Section<SomaSnapshotView>;
+  export let asOfLabel: string;
 
-  $: compositionLabel =
-    "Composition: " +
-    data.composition
-      .map((slice) => `${slice.spoken} ${slice.pct.toFixed(1)}%`)
-      .join(", ");
-  $: rows = [...data.table.rows, data.table.total];
+  $: view = snapshot.ok ? snapshot.data : null;
+  $: compositionLabel = view
+    ? "Composition: " +
+      view.composition
+        .map((slice) => `${slice.spoken} ${slice.pct.toFixed(1)}%`)
+        .join(", ")
+    : "";
+  $: rows = view ? [...view.rows, view.totalRow] : [];
 </script>
 
 <section aria-labelledby="snap-title" class="snapshot">
@@ -24,60 +32,74 @@
       <span class="eyebrow">Portfolio in Fintekkers</span>
       <h2 id="snap-title">Federal Reserve SOMA Holdings</h2>
     </div>
-    <span class="as-of">As of {data.asOf}</span>
+    <span class="as-of">As of {asOfLabel}</span>
   </div>
   <div class="body">
     <div class="headline">
-      <span class="total">{data.headline.total}</span>
-      <span class="caption">{data.headline.caption}</span>
-      <span class="headline-change">{data.headline.change}</span>
-      <span class="headline-note">{data.headline.note}</span>
+      {#if view}
+        <span class="total">{view.total}</span>
+        <span class="caption">Treasury securities held outright</span>
+        {#if view.change}
+          <span class="headline-change">{view.change}</span>
+        {/if}
+      {:else if !snapshot.ok}
+        <span class="unavailable">{snapshot.message}</span>
+      {/if}
+      <span class="headline-note">{SOMA_SCOPE_NOTE}</span>
     </div>
-    <div class="composition">
-      <div role="img" aria-label={compositionLabel} class="bar">
-        {#each data.composition as slice, i}
-          <div
-            style="flex: {i === data.composition.length - 1
-              ? '1 1 auto'
-              : `0 0 ${slice.pct}%`}; background: {slice.color}"
-          />
-        {/each}
-      </div>
-      <div class="legend">
-        {#each data.composition as slice}
-          <span>
-            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"
-              ><rect width="10" height="10" rx="2" fill={slice.color} /></svg
-            >{slice.label}
-            {slice.pct.toFixed(1)}%
-          </span>
-        {/each}
-      </div>
-    </div>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">$ billions</th>
-            <th scope="col">{data.table.columns[0]}</th>
-            <th scope="col">{data.table.columns[1]}</th>
-            <th scope="col">Change</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each rows as row, i}
-            <tr class:total-row={i === rows.length - 1}>
-              <td>{row.label}</td>
-              <td>{formatOneDecimal(row.current)}</td>
-              <td class="prior">{formatOneDecimal(row.prior)}</td>
-              <td class={changeDirection(row.change)}
-                >{formatChange(row.change)}</td
-              >
-            </tr>
+    {#if view}
+      <div class="composition">
+        <div role="img" aria-label={compositionLabel} class="bar">
+          {#each view.composition as slice, i}
+            <div
+              style="flex: {i === view.composition.length - 1
+                ? '1 1 auto'
+                : `0 0 ${slice.pct}%`}; background: {slice.color}"
+            />
           {/each}
-        </tbody>
-      </table>
-    </div>
+        </div>
+        <div class="legend">
+          {#each view.composition as slice}
+            <span>
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"
+                ><rect width="10" height="10" rx="2" fill={slice.color} /></svg
+              >{slice.label}
+              {slice.pct.toFixed(1)}%
+            </span>
+          {/each}
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">$ billions</th>
+              <th scope="col">{view.columns[0]}</th>
+              <th scope="col">{view.columns[1] ?? "A year ago"}</th>
+              <th scope="col">Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each rows as row, i}
+              <tr class:total-row={i === rows.length - 1}>
+                <td>{row.label}</td>
+                <td>{formatOneDecimal(row.current)}</td>
+                <td class="prior"
+                  >{row.prior === null ? "—" : formatOneDecimal(row.prior)}</td
+                >
+                {#if row.change === null}
+                  <td class="flat">—</td>
+                {:else}
+                  <td class={changeDirection(row.change)}
+                    >{formatChange(row.change)}</td
+                  >
+                {/if}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
   </div>
 </section>
 
@@ -155,6 +177,10 @@
   .headline-note {
     font-size: 13px;
     color: #9aa6b8;
+  }
+  .unavailable {
+    font-size: 16px;
+    color: #c3ccd8;
   }
   .composition {
     display: flex;

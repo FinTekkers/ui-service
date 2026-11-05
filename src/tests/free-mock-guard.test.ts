@@ -4,7 +4,8 @@
  * fetch(), and imports only from an allow-list. Anything else
  * ($lib/valuation, $lib/positions, a ledger-models service client, ...)
  * fails this test. US-298: /free/tips's live figures come from one allowed
- * server load, src/routes/free/tips/+page.server.ts.
+ * server load, src/routes/free/tips/+page.server.ts. US-307: /free/soma's
+ * and /free's live SOMA holdings come from their own two.
  *
  * Files are read with node:fs, not `?raw`: Vite rewrites process.env inside
  * ?raw imports, and fixtures here live outside the source tree.
@@ -25,9 +26,11 @@ const FREE_ROOTS = ["src/routes/free", "src/lib/free", "src/components/free"];
 
 // Exact paths, relative to the repo root, of server files allowed under the
 // free roots. US-254 deleted the /free redirect; US-298 added /free/tips's
-// live load.
+// live load; US-307 added /free/soma's and /free's.
 const ALLOWED_SERVER_FILES = new Set<string>([
   "src/routes/free/tips/+page.server.ts",
+  "src/routes/free/soma/+page.server.ts",
+  "src/routes/free/+page.server.ts",
 ]);
 
 const SERVER_FILE = /^\+(page\.server|layout\.server|server)\.(ts|js)$/;
@@ -168,12 +171,24 @@ describe("Free data explorer stays mock-only", () => {
       return scanFreeTree(repoRoot);
     }
 
-    test("only /free/tips's +page.server.ts is an allowed server file", () => {
+    test("only the /free/tips, /free/soma and /free +page.server.ts are allowed server files", () => {
       expect(
         fixture({
           "src/routes/free/tips/+page.server.ts": `import { fetchFreeTips } from "$lib/server/free-tips";`,
+          "src/routes/free/soma/+page.server.ts": `import { fetchFreeSoma } from "$lib/server/free-soma";`,
+          "src/routes/free/+page.server.ts": `import { fetchFreeSoma } from "$lib/server/free-soma";`,
         })
       ).toEqual([]);
+    });
+
+    test("US-307 adds exactly two allowed server files to US-298's one", () => {
+      expect([...ALLOWED_SERVER_FILES].sort()).toEqual(
+        [
+          "src/routes/free/tips/+page.server.ts",
+          "src/routes/free/soma/+page.server.ts",
+          "src/routes/free/+page.server.ts",
+        ].sort()
+      );
     });
 
     afterEach(() => {
@@ -257,8 +272,16 @@ describe("Free data explorer stays mock-only", () => {
         "src/lib/free/samples/soma.ts",
         `import { Chart } from "chart.js";`,
       ],
-      ["a +page.server.ts", "src/routes/free/soma/+page.server.ts", ""],
-      ["a +page.server.ts on /free", "src/routes/free/+page.server.ts", ""],
+      [
+        "a +page.server.ts on another page",
+        "src/routes/free/other/+page.server.ts",
+        "",
+      ],
+      [
+        "a +page.server.js beside the allowed .ts",
+        "src/routes/free/soma/+page.server.js",
+        "",
+      ],
       ["a +layout.server.ts", "src/routes/free/+layout.server.ts", ""],
       ["a +server.ts", "src/routes/free/data/+server.ts", ""],
     ])("fails on %s", (_name, rel, content) => {
