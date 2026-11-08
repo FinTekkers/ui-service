@@ -6,15 +6,18 @@
  * never a visitor's. Lives under src/lib/server/ so SvelteKit refuses any
  * client import of it. One position search per week, through the broker:
  * DIRECTED_QUANTITY and the ledger's INFLATION_COMPENSATION (LS-206), by
- * PRODUCT_TYPE and MATURITY_DATE, for trades on or before the week. A
- * second search for the year-ago week feeds the table's prior column only.
+ * IDENTIFIER, PRODUCT_TYPE and MATURITY_DATE, for trades on or before the
+ * week. US-309: its rows feed Positions by CUSIP as well as the totals. A
+ * second search for the year-ago week, by PRODUCT_TYPE and MATURITY_DATE
+ * only, feeds the table's prior column only.
  *
  * Totals, shares and the six H.4.1 Table 2 buckets are summed here, from
  * MATURITY_DATE relative to the week. Inflation compensation is the
  * ledger's figure as returned; nothing here recomputes it. Rows of any
  * product type outside the Treasury scope are dropped. A failed or empty
- * search makes every section unavailable. Nothing here throws, and nothing
- * falls back to a mock.
+ * search makes every section unavailable; a row Positions by CUSIP can't
+ * show makes that section alone unavailable. Nothing here throws, and
+ * nothing falls back to a mock.
  */
 import Decimal from "decimal.js";
 import type { FieldMapEntry } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb";
@@ -23,6 +26,8 @@ import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
 import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js";
+import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb.js";
+import type { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb";
 import { PositionFilterOperator } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js";
 import { Position } from "@fintekkers/ledger-models/node/wrappers/models/position/position";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
@@ -40,6 +45,8 @@ import {
   type SomaFinding,
   type SomaMaturityView,
   type SomaPageData,
+  type SomaPosition,
+  type SomaPositionsView,
   type SomaSnapshotView,
   type SomaTableRow,
 } from "$lib/free/soma";
@@ -51,7 +58,15 @@ const { PositionTypeProto, PositionViewProto } = position_pkg;
 /** The ledger portfolio, as src/lib/treasury_positions.ts names it. */
 export const SOMA_PORTFOLIO_NAME = "Federal Reserve SOMA Holdings";
 
+/** The year-ago week's grouping: its rows feed totals only. */
 export const SOMA_FIELDS = [FieldProto.PRODUCT_TYPE, FieldProto.MATURITY_DATE];
+/** The week's grouping: one row per CUSIP, for Positions by CUSIP and the
+ * totals alike. */
+export const SOMA_POSITION_FIELDS = [
+  FieldProto.IDENTIFIER,
+  FieldProto.PRODUCT_TYPE,
+  FieldProto.MATURITY_DATE,
+];
 export const SOMA_MEASURES = [
   MeasureProto.DIRECTED_QUANTITY,
   MeasureProto.INFLATION_COMPENSATION,
@@ -74,11 +89,24 @@ const TREASURY_TYPES = new Map<string, TypeClass>([
   ["TIPS", "tips"],
 ]);
 
+/** Positions by CUSIP's Type column. */
+const TYPE_LABELS = new Map<string, string>([
+  ["TBILL", "Bill"],
+  ["TREASURY_NOTE", "Note"],
+  ["TREASURY_BOND", "Bond"],
+  ["TREASURY_FRN", "FRN"],
+  ["STRIPS", "STRIPS"],
+  ["TIPS", "TIPS"],
+]);
+
 const COLORS = { nominal: "#5B8DEF", bills: "#B9D0FA", tips: "#2F5BB7" };
 
 /** One grouped position row, as the ledger returns it. Decimals are
  * strings; an absent measure or field is null. */
 export interface SomaRow {
+  /** The IDENTIFIER's value when its type is CUSIP; null when the row has
+   * none, or another identifier type. */
+  cusip: string | null;
   productType: string;
   /** ISO date. */
   maturityDate: string | null;
@@ -309,30 +337,89 @@ function maturityView(t: Totals): SomaMaturityView {
 }
 
 /**
+ * Positions by CUSIP: one row per Treasury CUSIP held (non-zero par), par
+ * descending, then CUSIP ascending. Par is DIRECTED_QUANTITY, face only, so
+ * the rows sum to the Treasury total less inflation compensation; weight is
+ * par over that sum. Null, with the reason logged, when a Treasury row has
+ * no CUSIP, maturity or quantity, or a CUSIP comes twice: nothing here
+ * fills in or parses a value.
+ */
+export function somaPositions(rows: SomaRow[]): SomaPositionsView | null {
+  const held: { row: SomaRow; type: string; par: Decimal }[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const type = TYPE_LABELS.get(row.productType);
+    if (!type) continue;
+    if (!row.cusip || !row.maturityDate || !row.directedQuantity) {
+      console.log("SOMA position row unusable for Positions by CUSIP", {
+        cusip: row.cusip,
+        productType: row.productType,
+        maturityDate: row.maturityDate,
+        directedQuantity: row.directedQuantity,
+      });
+      return null;
+    }
+    const par = new Decimal(row.directedQuantity);
+    if (par.isZero()) continue;
+    if (seen.has(row.cusip)) {
+      console.log("SOMA position search returned a CUSIP twice", row.cusip);
+      return null;
+    }
+    seen.add(row.cusip);
+    held.push({ row, type, par });
+  }
+  const total = held.reduce((sum, h) => sum.plus(h.par), new Decimal(0));
+  if (held.length === 0 || total.isZero()) return null;
+  held.sort(
+    (a, b) =>
+      b.par.comparedTo(a.par) ||
+      ((a.row.cusip as string) < (b.row.cusip as string) ? -1 : 1)
+  );
+  return {
+    rows: held.map(
+      ({ row, type, par }): SomaPosition => ({
+        cusip: row.cusip as string,
+        type,
+        maturity: row.maturityDate as string,
+        par: par.toFixed(),
+        parB: Number(par.dividedBy(1e9).toFixed(2)),
+        weightPct: Number(par.dividedBy(total).times(100).toFixed(2)),
+      })
+    ),
+  };
+}
+
+/**
  * Every section for the week `asOf`, from its rows and, when they loaded,
  * the year-ago week's. Rows that can't give totals make every section
- * unavailable; unusable year-ago rows only blank the prior column.
+ * unavailable; unusable year-ago rows only blank the prior column, and rows
+ * Positions by CUSIP can't show blank that section only.
  */
 export function somaRowsToView(
   rows: SomaRow[] | null,
   asOf: string,
   prior: SomaRow[] | null
-): Pick<SomaPageData, "snapshot" | "findings" | "maturity"> {
+): Pick<SomaPageData, "snapshot" | "findings" | "maturity" | "positions"> {
   const priorAsOf = minusDays(asOf, PRIOR_WEEK_DAYS);
+  const message = somaUnavailable(weekLabel(asOf));
   const t = rows && somaTotals(rows, asOf);
   if (!t) {
-    const message = somaUnavailable(weekLabel(asOf));
     return {
       snapshot: { ok: false, message },
       findings: { ok: false, message },
       maturity: { ok: false, message },
+      positions: { ok: false, message },
     };
   }
   const p = prior && somaTotals(prior, priorAsOf);
+  const positions = rows && somaPositions(rows);
   return {
     snapshot: { ok: true, data: snapshotView(t, p, asOf, priorAsOf) },
     findings: { ok: true, data: { cards: findingCards(t, p) } },
     maturity: { ok: true, data: maturityView(t) },
+    positions: positions
+      ? { ok: true, data: positions }
+      : { ok: false, message },
   };
 }
 
@@ -352,6 +439,7 @@ function productTypeOf(entry: FieldMapEntry): string {
 /** A ledger position as a SomaRow. */
 export function somaRowOf(position: Position): SomaRow {
   const out: SomaRow = {
+    cusip: null,
     productType: "",
     maturityDate: null,
     directedQuantity: null,
@@ -360,6 +448,14 @@ export function somaRowOf(position: Position): SomaRow {
   for (const entry of position.getFields()) {
     if (entry.getField() === FieldProto.PRODUCT_TYPE) {
       out.productType = productTypeOf(entry);
+    } else if (
+      entry.getField() === FieldProto.IDENTIFIER &&
+      entry.getFieldValuePacked()
+    ) {
+      const id: IdentifierProto = Position.unpackField(entry);
+      if (id.getIdentifierType() === IdentifierTypeProto.CUSIP) {
+        out.cusip = id.getIdentifierValue() || null;
+      }
     } else if (
       entry.getField() === FieldProto.MATURITY_DATE &&
       entry.getFieldValuePacked()
@@ -379,8 +475,11 @@ export function somaRowOf(position: Position): SomaRow {
 }
 
 /** The position search for one week: SOMA trades on or before it, valued
- * as of the end of its UTC day. */
-export function somaRequest(asOf: string): QueryPositionRequest {
+ * as of the end of its UTC day, grouped by `fields`. */
+export function somaRequest(
+  asOf: string,
+  fields = SOMA_FIELDS
+): QueryPositionRequest {
   const [y, m, d] = asOf.split("-").map(Number);
   const filter = new PositionFilter();
   filter.addEqualsFilter(FieldProto.PORTFOLIO_NAME, SOMA_PORTFOLIO_NAME);
@@ -394,7 +493,7 @@ export function somaRequest(asOf: string): QueryPositionRequest {
     filter,
     PositionTypeProto.TRANSACTION,
     PositionViewProto.DEFAULT_VIEW,
-    SOMA_FIELDS,
+    fields,
     SOMA_MEASURES,
     ZonedDateTime.from(new Date(`${asOf}T23:59:59Z`))
   );
@@ -402,11 +501,12 @@ export function somaRequest(asOf: string): QueryPositionRequest {
 
 async function fetchRows(
   asOf: string,
-  apiKey: string
+  apiKey: string,
+  fields: number[]
 ): Promise<SomaRow[] | null> {
   try {
     const positions = await searchPositions(
-      somaRequest(asOf).toProto(),
+      somaRequest(asOf, fields).toProto(),
       apiKey
     );
     return positions.map(somaRowOf);
@@ -436,8 +536,9 @@ export async function fetchFreeSoma(
   const base = { asOf, asOfLabel: weekLabel(asOf), today };
   if (!apiKey) return { ...base, ...somaRowsToView(null, asOf, null) };
   const [rows, prior] = await Promise.all([
-    fetchRows(asOf, apiKey),
-    fetchRows(minusDays(asOf, PRIOR_WEEK_DAYS), apiKey),
+    fetchRows(asOf, apiKey, SOMA_POSITION_FIELDS),
+    // Totals only: the year-ago rows never feed Positions by CUSIP.
+    fetchRows(minusDays(asOf, PRIOR_WEEK_DAYS), apiKey, SOMA_FIELDS),
   ]);
   return { ...base, ...somaRowsToView(rows, asOf, prior) };
 }

@@ -9,6 +9,9 @@
  * the unavailable text, both naming the week, and records which branch ran;
  * neither shows a figure of the deleted SOMA mock. Each bar's rendered
  * width equals the share its label shows.
+ *
+ * US-309: Positions by CUSIP is live too: search and paging work after
+ * hydration, and at 375 px the page itself never scrolls sideways.
  */
 import { test, expect, type Page } from "@playwright/test";
 import { readFileSync } from "fs";
@@ -17,6 +20,7 @@ import {
   MOCK_SECURITY_MASTER,
   mockFiguresIn,
 } from "../../src/tests/fixtures/free-tips-live";
+import { SOMA_PAGE_SIZE } from "../../src/lib/free/soma";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -248,6 +252,93 @@ for (const route of ["/free/soma", "/free"]) {
     await expectSectionsName(page, week);
   });
 }
+
+test("/free/soma Positions by CUSIP: search a CUSIP, then see every row (or page with Next)", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.goto("/free/soma");
+  await page.waitForLoadState("networkidle");
+  const section = page.getByRole("region", { name: "Positions by CUSIP" });
+  const label = weekLabel(pastWednesday(0));
+  await expect(section).toContainText(`As of ${label}`);
+  const rows = section.locator("tbody tr");
+  const live = (await rows.count()) > 0;
+  test.info().annotations.push({
+    type: "live-data",
+    description: live ? "SOMA positions from the ledger" : "unavailable branch",
+  });
+  if (!live) {
+    await expect(section).toContainText(`Unavailable for ${label}`);
+    await expect(section.locator("table")).toHaveCount(0);
+    return;
+  }
+
+  const status = section.getByText(/^Showing /);
+  const total = Number(
+    /of (\d+) positions$/.exec((await status.textContent()) ?? "")?.[1]
+  );
+  expect(total).toBeGreaterThan(25);
+  const paged = Number.isFinite(SOMA_PAGE_SIZE);
+  const firstPage = `Showing 1–${
+    paged ? SOMA_PAGE_SIZE : total
+  } of ${total} positions`;
+  await expect(status).toHaveText(firstPage);
+  const cusip = (await rows.first().locator("td").first().textContent()) ?? "";
+  expect(cusip).toMatch(/^[0-9A-Z]{9}$/);
+
+  const search = section.getByRole("searchbox", { name: "Search positions" });
+  await search.fill(cusip.toLowerCase());
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText(cusip);
+  await expect(status).toHaveText("Showing 1–1 of 1 positions");
+
+  await search.fill("");
+  await expect(status).toHaveText(firstPage);
+  const next = section.getByRole("button", { name: "Next" });
+  if (!paged) {
+    // US-309 metric 5: show-all is the default.
+    await expect(rows).toHaveCount(total);
+    await expect(next).toHaveCount(0);
+    return;
+  }
+  await next.click();
+  await expect(status).toHaveText(
+    `Showing ${SOMA_PAGE_SIZE + 1}–${2 * SOMA_PAGE_SIZE} of ${total} positions`
+  );
+  await expect(rows).toHaveCount(SOMA_PAGE_SIZE);
+});
+
+test("/free/soma at 375 px: no page-level horizontal scroll; only the tables scroll", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/free/soma");
+  await page.waitForLoadState("networkidle");
+  const widths = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    client: document.documentElement.clientWidth,
+  }));
+  expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+
+  // Every element wider than its box scrolls itself: a table wrapper or a
+  // code block, nothing else.
+  const scrollers = await page.evaluate(() =>
+    [...document.querySelectorAll("main *")]
+      .filter((el) => el.scrollWidth > el.clientWidth + 1)
+      .filter((el) => /auto|scroll/.test(getComputedStyle(el).overflowX))
+      .map((el) =>
+        el.classList.contains("table-scroll") ? "table-scroll" : el.tagName
+      )
+  );
+  expect(scrollers.filter((c) => c !== "table-scroll" && c !== "PRE")).toEqual(
+    []
+  );
+  expect(scrollers).toContain("table-scroll");
+  const section = page.getByRole("region", { name: "Positions by CUSIP" });
+  const box = await section.boundingBox();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(375);
+});
 
 test("the code cards show the sample files verbatim after hydration", async ({
   page,

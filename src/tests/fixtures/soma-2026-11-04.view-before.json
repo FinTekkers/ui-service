@@ -1,0 +1,101 @@
+{
+  "source": "somaRowsToView at main 6d8aa56 (before US-309) on soma-2026-11-04.positions.json's coarse and prior searches",
+  "snapshot": {
+    "ok": true,
+    "data": {
+      "total": "$4.58T",
+      "change": "+$386.0B vs a year ago",
+      "composition": [
+        {
+          "label": "Notes & bonds",
+          "spoken": "notes and bonds",
+          "pct": 79.1,
+          "color": "#5B8DEF"
+        },
+        {
+          "label": "Bills",
+          "spoken": "bills",
+          "pct": 12.5,
+          "color": "#B9D0FA"
+        },
+        {
+          "label": "TIPS incl. inflation comp.",
+          "spoken": "TIPS including inflation compensation",
+          "pct": 8.4,
+          "color": "#2F5BB7"
+        }
+      ],
+      "columns": ["Nov 4, 2026", "Nov 5, 2025"],
+      "rows": [
+        {
+          "label": "Treasury bills",
+          "current": 573.4,
+          "prior": 195.5,
+          "change": 377.9
+        },
+        {
+          "label": "Notes & bonds, nominal",
+          "current": 3620.7,
+          "prior": 3575,
+          "change": 45.7
+        },
+        {
+          "label": "TIPS principal",
+          "current": 277.7,
+          "prior": 309.7,
+          "change": -32.1
+        },
+        {
+          "label": "Inflation compensation",
+          "current": 107,
+          "prior": 112.5,
+          "change": -5.5
+        }
+      ],
+      "totalRow": {
+        "label": "Total held outright, excluding MBS",
+        "current": 4578.7,
+        "prior": 4192.7,
+        "change": 386
+      }
+    }
+  },
+  "findings": {
+    "ok": true,
+    "data": {
+      "cards": [
+        {
+          "figure": "+$386.0B",
+          "title": "The portfolio is growing again",
+          "body": "Total Treasury holdings rose from $4.19T to $4.58T year over year."
+        },
+        {
+          "figure": "2.9×",
+          "title": "Bills compared with a year ago",
+          "body": "From $195.5B to $573.4B."
+        },
+        {
+          "figure": "$384.6B",
+          "title": "A large TIPS holder",
+          "body": "$277.7B of TIPS principal plus $107.0B of accrued inflation compensation.",
+          "link": { "href": "/free/tips", "label": "See how TIPS work" }
+        }
+      ]
+    }
+  },
+  "maturity": {
+    "ok": true,
+    "data": {
+      "note": "Treasuries are spread across the curve. About $1.03T, or 22%, matures within a year.",
+      "totalM": 4578702.182,
+      "buckets": [
+        { "valueM": 122547.902, "sharePct": 2.7 },
+        { "valueM": 411398.634, "sharePct": 9 },
+        { "valueM": 491908.256, "sharePct": 10.7 },
+        { "valueM": 1439373.035, "sharePct": 31.4 },
+        { "valueM": 487297.456, "sharePct": 10.6 },
+        { "valueM": 1626176.9, "sharePct": 35.5 }
+      ]
+    }
+  }
+}

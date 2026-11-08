@@ -1,12 +1,14 @@
 <!-- /free/soma: the 7 sections of the owner's DataExplorer.dc.html artboard,
      inside the Free data explorer shell (../+layout.svelte). Holdings over
-     time and Positions by CUSIP show the artboard's placeholders until
-     US-252b fills them. US-307: the snapshot, findings and maturity profile
-     are the ledger's SOMA Treasury holdings for the Business date's week,
-     from the server load (./+page.server.ts). -->
+     time shows the artboard's placeholder until US-252b fills it. US-307:
+     the snapshot, findings and maturity profile are the ledger's SOMA
+     Treasury holdings for the Business date's week, from the server load
+     (./+page.server.ts). US-309: so is Positions by CUSIP, from the same
+     search. -->
 <script lang="ts">
   import FreeCodeCard from "../../../components/free/FreeCodeCard.svelte";
   import SomaMaturity from "../../../components/free/soma/SomaMaturity.svelte";
+  import SomaPositions from "../../../components/free/soma/SomaPositions.svelte";
   import SomaSnapshot from "../../../components/free/soma/SomaSnapshot.svelte";
   import SomaWeekPicker from "../../../components/free/soma/SomaWeekPicker.svelte";
   import pySample from "$lib/free/samples/soma.py?raw";
@@ -16,7 +18,6 @@
   export let data: PageData;
 
   const RANGES = ["1Y", "5Y", "All"];
-  const PLACEHOLDER_ROWS = 6;
 </script>
 
 <svelte:head>
@@ -117,47 +118,8 @@
   </div>
 </div>
 
-<!-- 6. Positions (artboard placeholder until US-252b) -->
-<div class="card positions">
-  <div class="panel-top positions-top">
-    <h2 class="panel-title">Positions by CUSIP</h2>
-    <label>
-      <span class="visually-hidden">Search positions</span>
-      <input type="search" placeholder="Search securities" disabled />
-    </label>
-  </div>
-  <div class="table-scroll">
-    <table>
-      <thead>
-        <tr>
-          <th scope="col">Security</th>
-          <th scope="col">Type</th>
-          <th scope="col">Maturity</th>
-          <th scope="col" class="num">Par value</th>
-          <th scope="col" class="num">Weight</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each { length: PLACEHOLDER_ROWS } as _}
-          <tr>
-            <td>[Security]</td>
-            <td class="muted">[Type]</td>
-            <td class="muted">[Date]</td>
-            <td class="num">[Par]</td>
-            <td class="num">[%]</td>
-          </tr>
-        {/each}
-      </tbody>
-    </table>
-  </div>
-  <div class="pager">
-    <span>Showing [N] of [TOTAL] positions</span>
-    <div class="pager-buttons">
-      <button type="button" disabled>Previous</button>
-      <button type="button" disabled>Next</button>
-    </div>
-  </div>
-</div>
+<!-- 6. Positions by CUSIP -->
+<SomaPositions positions={data.positions} asOfLabel={data.asOfLabel} />
 
 <!-- 7. Code -->
 <section aria-labelledby="code-title" class="code-section">
@@ -358,105 +320,6 @@
     background: #ffffff;
     padding: 8px 12px;
     border-radius: 6px;
-  }
-
-  .positions {
-    overflow: hidden;
-  }
-  .positions-top {
-    padding: 18px 22px;
-    border-bottom: 1px solid var(--line);
-  }
-  .positions label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--muted);
-  }
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-  }
-  input {
-    min-height: 40px;
-    box-sizing: border-box;
-    padding: 0 12px;
-    border: 1px solid #c9cfd8;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 14px;
-    width: 220px;
-    max-width: 100%;
-  }
-  .table-scroll {
-    overflow-x: auto;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    min-width: 640px;
-  }
-  thead tr {
-    background: #f8f9fb;
-    text-align: left;
-  }
-  th {
-    padding: 12px 16px;
-    font-weight: 600;
-    color: var(--muted);
-    font-size: 13px;
-  }
-  tbody {
-    font-family: var(--mono);
-  }
-  tbody tr {
-    border-top: 1px solid #eef0f3;
-  }
-  td {
-    padding: 14px 16px;
-  }
-  th:first-child,
-  td:first-child,
-  th:last-child,
-  td:last-child {
-    padding-left: 22px;
-    padding-right: 22px;
-  }
-  .num {
-    text-align: right;
-  }
-  .muted {
-    color: var(--muted);
-  }
-  .pager {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 14px 22px;
-    border-top: 1px solid var(--line);
-    font-size: 14px;
-    color: var(--muted);
-  }
-  .pager-buttons {
-    display: flex;
-    gap: 8px;
-  }
-  .pager button {
-    min-height: 40px;
-    padding: 0 14px;
-    border: 1px solid #c9cfd8;
-    border-radius: 8px;
-    background: #ffffff;
-    font-family: inherit;
-    font-size: 14px;
-    color: var(--ink);
   }
 
   .code-section {
