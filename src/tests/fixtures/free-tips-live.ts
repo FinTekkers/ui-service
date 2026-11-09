@@ -65,6 +65,7 @@ export const LIVE: TipsPageData = {
       marketValue: "$1,011.53",
       realYield: "1.987",
       nextCoupon: "$10.92",
+      nextCouponDate: "April 15, 2027",
     },
   },
   calculator: { years: "8.48", inflation: "2.30" },

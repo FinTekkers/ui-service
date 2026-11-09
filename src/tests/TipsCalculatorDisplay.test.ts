@@ -7,7 +7,11 @@
  */
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import { describe, expect, test } from "vitest";
-import { UNAVAILABLE, type TipsPageData } from "$lib/free/tips";
+import {
+  NEXT_COUPON_NOTE,
+  UNAVAILABLE,
+  type TipsPageData,
+} from "$lib/free/tips";
 import TipsCalculatorDisplay from "../components/free/TipsCalculatorDisplay.svelte";
 import { LIVE, liveWithout, mockFiguresIn } from "./fixtures/free-tips-live";
 
@@ -24,7 +28,7 @@ const DEFAULTS: [string, string][] = [
 const TILES: [string, string][] = [
   ["Index ratio", "1.02759"],
   ["Adjusted principal", "$1,027.59"],
-  ["Next coupon", "$10.92"],
+  ["Next coupon (April 15, 2027), at today's index ratio", "$10.92"],
   ["Real clean price (FedInvest, 2026-10-23)", "98.4375"],
   ["Position value", "$1,011.53"],
   ["Nominal YTM", UNAVAILABLE.value],
@@ -65,6 +69,29 @@ describe("TipsCalculatorDisplay", () => {
     expect(mockFiguresIn(container.innerHTML)).toEqual([]);
   });
 
+  test("the next coupon says it's an estimate at today's index ratio", () => {
+    const { container } = renderCalculator();
+    expect(container).toHaveTextContent(
+      "The amount paid uses the index ratio on the payment date, so it will differ if CPI keeps changing."
+    );
+    expect(NEXT_COUPON_NOTE).toBe(
+      "The amount paid uses the index ratio on the payment date, so it will differ if CPI keeps changing."
+    );
+  });
+
+  test("with no next coupon date, the label drops the date", () => {
+    const data = structuredClone(LIVE);
+    if (data.valuation.ok) {
+      data.valuation.data.nextCoupon = null;
+      data.valuation.data.nextCouponDate = null;
+    }
+    const { container } = renderCalculator(data);
+    expect(tileTexts(container)[2]).toEqual([
+      "Next coupon, at today's index ratio",
+      UNAVAILABLE.value,
+    ]);
+  });
+
   test("the cashflow table and total say they are unavailable", () => {
     const { container } = renderCalculator();
     const rows = bodyRows(container);
@@ -79,7 +106,7 @@ describe("TipsCalculatorDisplay", () => {
     expect(tileTexts(container)).toEqual([
       ["Index ratio", UNAVAILABLE.value],
       ["Adjusted principal", UNAVAILABLE.value],
-      ["Next coupon", UNAVAILABLE.value],
+      ["Next coupon, at today's index ratio", UNAVAILABLE.value],
       ["Real clean price (FedInvest, 2026-10-23)", "98.4375"],
       ["Position value", UNAVAILABLE.value],
       ["Nominal YTM", UNAVAILABLE.value],

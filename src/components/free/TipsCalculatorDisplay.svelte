@@ -3,9 +3,15 @@
      figures /free/tips's server load returns (US-298). Nothing recalculates.
      A figure whose source failed reads "Unavailable". The nominal yield and
      the projected cashflows need an inflation forecast the valuation
-     request can't carry yet (US-298b), so they say so. -->
+     request can't carry yet (US-298b), so they say so. The next coupon is
+     an estimate: the first projected cashflow at today's index ratio, not
+     the amount the payment date's ratio will pay (US-310). -->
 <script lang="ts">
-  import { UNAVAILABLE, type TipsPageData } from "$lib/free/tips";
+  import {
+    NEXT_COUPON_NOTE,
+    UNAVAILABLE,
+    type TipsPageData,
+  } from "$lib/free/tips";
 
   export let data: TipsPageData;
 
@@ -30,7 +36,12 @@
   $: tiles = [
     { label: "Index ratio", value: valuation?.indexRatio },
     { label: "Adjusted principal", value: valuation?.adjustedPrincipal },
-    { label: "Next coupon", value: valuation?.nextCoupon },
+    {
+      label: valuation?.nextCouponDate
+        ? `Next coupon (${valuation.nextCouponDate}), at today's index ratio`
+        : "Next coupon, at today's index ratio",
+      value: valuation?.nextCoupon,
+    },
     {
       label: price
         ? `Real clean price (FedInvest, ${price.date})`
@@ -74,6 +85,7 @@
         </div>
       {/each}
     </dl>
+    <p class="note">{NEXT_COUPON_NOTE}</p>
 
     <div class="flows">
       <div class="flows-top">
@@ -194,6 +206,12 @@
     font-size: 22px;
     font-weight: 500;
     overflow-wrap: anywhere;
+  }
+  .note {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--muted);
   }
   .tile.dark {
     background: var(--ink);

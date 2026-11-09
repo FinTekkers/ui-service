@@ -224,6 +224,25 @@ describe("/free/tips load", () => {
     expect(new Set(keysUsed())).toEqual(new Set([SENTINEL]));
   });
 
+  test("the next coupon is the earliest cashflow, dated with its pay date", async () => {
+    const data = await load();
+    expect(data.valuation.ok && data.valuation.data).toMatchObject({
+      nextCoupon: "$10.92",
+      nextCouponDate: "April 15, 2027",
+    });
+  });
+
+  test("with no cashflows, the next coupon and its date are null", async () => {
+    mocks.runValuation.mockImplementation((_: any, callback: Function) =>
+      callback(null, { ...valuationResponse(), getCashflowsList: () => [] })
+    );
+    const data = await load();
+    expect(data.valuation.ok && data.valuation.data).toMatchObject({
+      nextCoupon: null,
+      nextCouponDate: null,
+    });
+  });
+
   test("the valuation asks for the five measures and the cashflows, never CLEAN_PRICE", async () => {
     await load();
     expect(requests).toHaveLength(1);

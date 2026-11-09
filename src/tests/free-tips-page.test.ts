@@ -97,6 +97,9 @@ describe("/free/tips page", () => {
     expect(example).toHaveTextContent(
       "A $1,000 position is now worth $1,000 × 1.02759 in principal terms."
     );
+    expect(example).toHaveTextContent(
+      "This is the April 15, 2027 coupon at today's index ratio. The amount paid uses the index ratio on the payment date, so it will differ if CPI keeps changing."
+    );
     expect(example).toHaveTextContent("On April 15, 2035 the holder receives");
     expect(
       within(example).getByRole("link", {
@@ -148,6 +151,12 @@ describe("/free/tips page", () => {
     expect(calc).toHaveTextContent("Real clean price (FedInvest, 2026-10-23)");
     expect(calc).toHaveTextContent("98.4375");
     expect(calc).toHaveTextContent("$1,011.53");
+    expect(calc).toHaveTextContent(
+      "Next coupon (April 15, 2027), at today's index ratio $10.92"
+    );
+    expect(calc).toHaveTextContent(
+      "The amount paid uses the index ratio on the payment date, so it will differ if CPI keeps changing."
+    );
     expect(
       (within(calc).getByLabelText("Real yield (%)") as HTMLInputElement).value
     ).toBe("1.987");
