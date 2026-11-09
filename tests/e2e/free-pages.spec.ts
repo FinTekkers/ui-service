@@ -21,6 +21,7 @@ import {
   mockFiguresIn,
 } from "../../src/tests/fixtures/free-tips-live";
 import { SOMA_PAGE_SIZE } from "../../src/lib/free/soma";
+import { NEXT_COUPON_NOTE } from "../../src/lib/free/tips";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -468,6 +469,21 @@ test("/free/tips shows live figures or says they are unavailable, never the mock
         .filter({ hasText: "Index ratio" })
         .locator("dd")
     ).toHaveText(/^\d+\.\d{5}$|^Unavailable$/);
+    // US-310: the next coupon is labelled with its pay date as an estimate
+    // at today's index ratio, with the note on why the paid amount differs.
+    // The date comes from the same valuation as the figure, so it is absent
+    // only when the valuation is unavailable.
+    const nextCoupon = calc
+      .locator(".tile")
+      .filter({ has: page.locator("dt", { hasText: "Next coupon" }) });
+    const nextCouponValue =
+      (await nextCoupon.locator("dd").textContent()) ?? "";
+    await expect(nextCoupon.locator("dt")).toHaveText(
+      nextCouponValue === "Unavailable"
+        ? "Next coupon, at today's index ratio"
+        : /^Next coupon \(\w+ \d{1,2}, \d{4}\), at today's index ratio$/
+    );
+    await expect(calc).toContainText(NEXT_COUPON_NOTE);
     // US-312: step 3 names the CPI-U months behind the as-of date's
     // reference CPI (months m-3 and m-2) and states the lag. The example
     // shows only when every source loaded; else it says unavailable.
@@ -482,6 +498,11 @@ test("/free/tips shows live figures or says they are unavailable, never the mock
       await expect(step3).toContainText(
         `built from ${cpiMonthsBehind(priceDate)} CPI`
       );
+      const step5 = example
+        .getByRole("listitem")
+        .filter({ hasText: "Coupons are paid on the larger principal" });
+      await expect(step5).toContainText("at today's index ratio");
+      await expect(step5).toContainText(NEXT_COUPON_NOTE);
     } else {
       await expect(example).toContainText(TIPS_UNAVAILABLE);
     }
