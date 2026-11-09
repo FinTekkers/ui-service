@@ -20,6 +20,9 @@ export interface TipsSecurityView {
   /** ISO dates, and the same dates in words ("January 15, 2026"). */
   datedDate: string;
   datedDateLong: string;
+  /** The CPI-U months behind the dated date's reference CPI (its m-3 and
+   * m-2), e.g. "October–November 2025". */
+  datedReferenceCpiMonths: string;
   maturityDate: string;
   maturityDateLong: string;
   index: string;
@@ -42,6 +45,9 @@ export interface TipsPriceView {
   /** The price month and the next, e.g. "October", "November". */
   monthName: string;
   nextMonthName: string;
+  /** The CPI-U months behind the price date's reference CPI (its m-3 and
+   * m-2), e.g. "July–August 2026". */
+  referenceCpiMonths: string;
 }
 
 /** One monthly CPI-U NSA level from the price service. */

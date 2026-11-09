@@ -75,7 +75,7 @@
         {
           number: "03",
           title: "The index ratio measures inflation so far",
-          body: `${example.valuation.referenceCpi} ÷ ${example.security.baseCpi}. Prices ${example.valuation.inflationVerb} about ${example.valuation.inflationPct} between the dated date and ${example.price.dateLong}, and the bond's principal ${example.valuation.inflationVerb} with them.`,
+          body: `${example.valuation.referenceCpi} ÷ ${example.security.baseCpi}. Reference CPI ${example.valuation.inflationVerb} ${example.valuation.inflationPct} from the dated date's value (built from ${example.security.datedReferenceCpiMonths} CPI) to ${example.price.dateLong}'s (built from ${example.price.referenceCpiMonths} CPI). That is the inflation the principal reflects. Reference CPI lags about three months.`,
           figure: example.valuation.indexRatio,
         },
         {

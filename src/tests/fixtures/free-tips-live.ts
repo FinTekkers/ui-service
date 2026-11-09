@@ -23,6 +23,7 @@ export const LIVE: TipsPageData = {
       payDates: "Apr 15 / Oct 15",
       datedDate: "2025-04-15",
       datedDateLong: "April 15, 2025",
+      datedReferenceCpiMonths: "January–February 2025",
       maturityDate: "2035-04-15",
       maturityDateLong: "April 15, 2035",
       index: "CPI-U NSA",
@@ -40,6 +41,7 @@ export const LIVE: TipsPageData = {
       monthYear: "October 2026",
       monthName: "October",
       nextMonthName: "November",
+      referenceCpiMonths: "July–August 2026",
     },
   },
   cpi: {

@@ -140,6 +140,22 @@ function ymdFromIso(iso: string): Ymd {
   return { year, month, day };
 }
 
+/**
+ * The CPI-U months behind a date's reference CPI: months m-3 and m-2 of its
+ * month, e.g. "2026-11-06" → "August–September 2026", "2026-03-01" →
+ * "December 2025–January 2026".
+ */
+export function referenceCpiMonths(iso: string): string {
+  const { year, month } = ymdFromIso(iso);
+  const [first, second] = [3, 2].map((lag) => {
+    const index = year * 12 + month - 1 - lag;
+    return { year: Math.floor(index / 12), name: MONTH_NAMES[index % 12] };
+  });
+  return first.year === second.year
+    ? `${first.name}–${second.name} ${second.year}`
+    : `${first.name} ${first.year}–${second.name} ${second.year}`;
+}
+
 /** "Jan 15 / Jul 15": the coupon dates in a year, from the maturity date. */
 function payDates(maturity: Ymd, perYear: number | undefined): string {
   const step = perYear ? 12 / perYear : 12;
@@ -190,6 +206,7 @@ export function securityView(proto: SecurityProto): TipsSecurityView | null {
     payDates: payDates(maturity, PERIODS_PER_YEAR[frequency]),
     datedDate: isoDate(dated),
     datedDateLong: longDate(dated),
+    datedReferenceCpiMonths: referenceCpiMonths(isoDate(dated)),
     maturityDate: isoDate(maturity),
     maturityDateLong: longDate(maturity),
     index:
@@ -254,6 +271,7 @@ function priceView(price: { value: string; date: string }): TipsPriceView {
     monthYear: `${MONTH_NAMES[ymd.month - 1]} ${ymd.year}`,
     monthName: MONTH_NAMES[ymd.month - 1],
     nextMonthName: MONTH_NAMES[ymd.month % 12],
+    referenceCpiMonths: referenceCpiMonths(price.date),
   };
 }
 

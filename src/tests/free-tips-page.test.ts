@@ -91,8 +91,9 @@ describe("/free/tips page", () => {
       "October 1 takes July's CPI-U (327.111). November 1 takes August's (328.222)."
     );
     expect(example).toHaveTextContent(
-      "327.92281 ÷ 319.12345. Prices rose about 2.76% between the dated date and October 23, 2026"
+      "327.92281 ÷ 319.12345. Reference CPI rose 2.76% from the dated date's value (built from January–February 2025 CPI) to October 23, 2026's (built from July–August 2026 CPI). That is the inflation the principal reflects. Reference CPI lags about three months."
     );
+    expect(example).not.toHaveTextContent("between the dated date and");
     expect(example).toHaveTextContent(
       "A $1,000 position is now worth $1,000 × 1.02759 in principal terms."
     );
@@ -102,6 +103,43 @@ describe("/free/tips page", () => {
         name: "TreasuryDirect CPI table, October 2026",
       })
     ).toBeInTheDocument();
+  });
+
+  test("US-312: step 3 names the CPI months behind each reference CPI on another as-of date", () => {
+    const data: TipsPageData = structuredClone(LIVE);
+    if (!data.security.ok || !data.price.ok || !data.cpi.ok) throw new Error();
+    Object.assign(data.security.data, {
+      datedDate: "2026-01-15",
+      datedDateLong: "January 15, 2026",
+      datedReferenceCpiMonths: "October–November 2025",
+    });
+    Object.assign(data.price.data, {
+      date: "2026-11-06",
+      dateLong: "November 6, 2026",
+      monthName: "November",
+      nextMonthName: "December",
+      referenceCpiMonths: "August–September 2026",
+    });
+    data.cpi.data.readings = [
+      { label: "CPI-U Aug 2026", monthName: "August", value: "328.222" },
+      { label: "CPI-U Sep 2026", monthName: "September", value: "328.999" },
+    ];
+    renderPage(data);
+    const example = screen.getByRole("article", { name: H2S[2] });
+    const [step2, step3] = [...example.querySelectorAll("ol > li")]
+      .slice(1, 3)
+      .map((li) => li.textContent ?? "");
+    expect(step3).toContain(
+      "from the dated date's value (built from October–November 2025 CPI) to November 6, 2026's (built from August–September 2026 CPI)."
+    );
+    expect(step3).toContain("Reference CPI lags about three months.");
+    // Step 3's price-date months are the two readings step 2 shows.
+    expect(step2).toContain(
+      "November 1 takes August's CPI-U (328.222). December 1 takes September's (328.999)."
+    );
+    expect(step3).toContain(
+      `built from ${data.cpi.data.readings[0].monthName}–${data.cpi.data.readings[1].monthName} 2026 CPI`
+    );
   });
 
   test("the calculator shows the FedInvest price, live measures and unavailable projections", () => {

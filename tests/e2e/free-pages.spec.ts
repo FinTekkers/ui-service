@@ -410,6 +410,22 @@ const TIPS_H2S = [
 ];
 const TIPS_UNAVAILABLE = /unavailable/i;
 
+/** "2026-11-06" → "August–September 2026"; "2026-03-01" → "December
+ * 2025–January 2026": the CPI-U months behind a date's reference CPI. */
+function cpiMonthsBehind(iso: string): string {
+  const [year, month] = iso.split("-").map(Number);
+  const [first, second] = [3, 2].map((lag) => {
+    const d = new Date(Date.UTC(year, month - 1 - lag, 1));
+    return {
+      year: d.getUTCFullYear(),
+      name: d.toLocaleString("en-US", { month: "long", timeZone: "UTC" }),
+    };
+  });
+  return first.year === second.year
+    ? `${first.name}–${second.name} ${second.year}`
+    : `${first.name} ${first.year}–${second.name} ${second.year}`;
+}
+
 test("/free/tips returns 200 with the 5 artboard sections in the shell", async ({
   page,
 }) => {
@@ -452,6 +468,23 @@ test("/free/tips shows live figures or says they are unavailable, never the mock
         .filter({ hasText: "Index ratio" })
         .locator("dd")
     ).toHaveText(/^\d+\.\d{5}$|^Unavailable$/);
+    // US-312: step 3 names the CPI-U months behind the as-of date's
+    // reference CPI (months m-3 and m-2) and states the lag. The example
+    // shows only when every source loaded; else it says unavailable.
+    const example = page.getByRole("article", { name: TIPS_H2S[2] as string });
+    const step3 = example
+      .getByRole("listitem")
+      .filter({ hasText: "The index ratio measures inflation so far" });
+    if ((await example.getByRole("list").count()) > 0) {
+      await expect(step3).toContainText(
+        "Reference CPI lags about three months."
+      );
+      await expect(step3).toContainText(
+        `built from ${cpiMonthsBehind(priceDate)} CPI`
+      );
+    } else {
+      await expect(example).toContainText(TIPS_UNAVAILABLE);
+    }
   } else {
     await expect(asOf).toHaveText(/Live price unavailable/);
     await expect(

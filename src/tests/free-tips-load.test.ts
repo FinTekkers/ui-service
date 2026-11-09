@@ -64,6 +64,7 @@ import { UNAVAILABLE, type TipsPageData } from "$lib/free/tips";
 import {
   FREE_TIPS_CUSIP,
   fetchLatestRealCleanPrice,
+  referenceCpiMonths,
 } from "$lib/server/free-tips";
 import { load } from "../routes/free/tips/+page.server";
 import TipsPage from "../routes/free/tips/+page.svelte";
@@ -428,5 +429,18 @@ describe("fetchLatestRealCleanPrice: the 7-day lookback", () => {
       await fetchLatestRealCleanPrice(SECURITY_UUID, SENTINEL, TODAY)
     ).toEqual(expected);
     expect(mocks.PriceService).toHaveBeenCalledWith(SENTINEL);
+  });
+});
+
+describe("US-312: referenceCpiMonths, the CPI-U months behind a reference CPI", () => {
+  test.each([
+    ["2026-11-06", "August–September 2026"],
+    ["2026-01-15", "October–November 2025"],
+    ["2026-10-23", "July–August 2026"],
+    ["2025-04-15", "January–February 2025"],
+    ["2026-03-01", "December 2025–January 2026"],
+    ["2026-02-28", "November–December 2025"],
+  ])("%s → %s", (date, months) => {
+    expect(referenceCpiMonths(date)).toBe(months);
   });
 });
