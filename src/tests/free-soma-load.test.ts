@@ -5,7 +5,8 @@
  * ledger's SOMA positions through the broker for the Business date's H.4.1
  * week, and make every section unavailable, naming the week, when the
  * search fails, returns nothing or has no key. No figure from the old SOMA
- * mock ever renders.
+ * mock ever renders. US-309: the week's search groups by IDENTIFIER too, for
+ * Positions by CUSIP, which names the week whether or not it loaded.
  *
  * The position search is stubbed; the e2e spec covers the real backend.
  */
@@ -38,6 +39,12 @@ import {
   ROWS,
   positionOf,
 } from "./fixtures/soma-2026-10-14";
+import {
+  AS_OF as RECORDED_AS_OF,
+  FINE_POSITIONS,
+  PRIOR_POSITIONS,
+} from "./fixtures/soma-2026-11-04";
+import { SOMA_FIELDS, SOMA_POSITION_FIELDS } from "$lib/server/free-soma";
 
 const { FieldProto } = field_pkg;
 const { MeasureProto } = measure_pkg;
@@ -148,16 +155,24 @@ describe.each(LOADS)("%s server load", (route, load, Page) => {
     expect(mocks.searchPositions.mock.calls[0][1]).toBe(`${SENTINEL}-rotated`);
   });
 
-  test("searches SOMA for PRODUCT_TYPE × MATURITY_DATE with DIRECTED_QUANTITY and INFLATION_COMPENSATION, for the week and a year before", async () => {
+  test("searches SOMA for IDENTIFIER × PRODUCT_TYPE × MATURITY_DATE with DIRECTED_QUANTITY and INFLATION_COMPENSATION for the week, and PRODUCT_TYPE × MATURITY_DATE a year before", async () => {
     respond();
     process.env.FT_HOMEPAGE_API_KEY = SENTINEL;
     const data = await call(load, `${route}?asOf=${AS_OF}`);
     expect(data.snapshot.ok).toBe(true);
+    expect(requests()).toHaveLength(2);
     const [week, prior] = requests();
     expect(week.getFieldsList()).toEqual([
+      FieldProto.IDENTIFIER,
       FieldProto.PRODUCT_TYPE,
       FieldProto.MATURITY_DATE,
     ]);
+    expect(week.getFieldsList()).toEqual(SOMA_POSITION_FIELDS);
+    expect(prior.getFieldsList()).toEqual([
+      FieldProto.PRODUCT_TYPE,
+      FieldProto.MATURITY_DATE,
+    ]);
+    expect(prior.getFieldsList()).toEqual(SOMA_FIELDS);
     expect(week.getMeasuresList()).toEqual([
       MeasureProto.DIRECTED_QUANTITY,
       MeasureProto.INFLATION_COMPENSATION,
@@ -248,6 +263,61 @@ describe.each(LOADS)("%s server load", (route, load, Page) => {
     expect(texts[1]).toContain("As of Oct 7, 2026");
     expect(texts[2]).toContain("as of Oct 7, 2026");
   });
+
+  test("US-309: the recorded week's one search fills Positions by CUSIP, biggest first", async () => {
+    mocks.searchPositions.mockImplementation(
+      async (request: QueryPositionRequestProto) =>
+        asOfOf(request) === RECORDED_AS_OF ? FINE_POSITIONS : PRIOR_POSITIONS
+    );
+    process.env.FT_HOMEPAGE_API_KEY = SENTINEL;
+    const data = await call(load, route);
+    expect(data.asOf).toBe(RECORDED_AS_OF);
+    expect(requests()).toHaveLength(2);
+    if (!data.positions.ok) throw new Error(data.positions.message);
+    expect(data.positions.data.rows).toHaveLength(434);
+
+    const { container } = renderRoute(Page, data);
+    const section = container.querySelector(
+      'section[aria-labelledby="pos-title"]'
+    ) as HTMLElement;
+    expect(section.textContent).toContain("As of Nov 4, 2026");
+    expect(section.textContent).toContain("Showing 1–434 of 434 positions");
+    expect(section.querySelectorAll("tbody tr")).toHaveLength(434);
+    expect(section.querySelector("tbody td")?.textContent).toBe(
+      data.positions.data.rows[0].cusip
+    );
+  });
+
+  test.each([
+    ["the latest week", "", "Nov 4, 2026", LATEST_WEEK],
+    ["?asOf=2026-10-07", "?asOf=2026-10-07", "Oct 7, 2026", "2026-10-07"],
+  ])(
+    "metric 4 (US-309): a failed load for %s: Positions by CUSIP names the week and is unavailable, with no placeholder or mock row",
+    async (_name, query, label, week) => {
+      mocks.searchPositions.mockRejectedValue(new Error("14 UNAVAILABLE"));
+      process.env.FT_HOMEPAGE_API_KEY = SENTINEL;
+      const data = await call(load, `${route}${query}`);
+      expect(asOfOf(requests()[0])).toBe(week);
+      expect(requests()[0].getFieldsList()).toEqual(SOMA_POSITION_FIELDS);
+      expect(data.positions).toEqual({
+        ok: false,
+        message: `Unavailable for ${label}: the live SOMA holdings could not be loaded.`,
+      });
+
+      const { container } = renderRoute(Page, data);
+      const section = container.querySelector(
+        'section[aria-labelledby="pos-title"]'
+      ) as HTMLElement;
+      expect(section.textContent).toContain(`As of ${label}`);
+      expect(section.textContent).toContain(`Unavailable for ${label}`);
+      expect(section.querySelectorAll("table, tbody tr")).toHaveLength(0);
+      expect(section.textContent).not.toMatch(
+        /\[(Security|Type|Date|Par|%|N|TOTAL)\]|Showing/
+      );
+      const html = container.innerHTML;
+      expect(MOCK_FIGURES.filter((f) => html.includes(f))).toEqual([]);
+    }
+  );
 
   test.each([
     ["2026-10-16", "2026-10-14"], // a Friday → its week's Wednesday

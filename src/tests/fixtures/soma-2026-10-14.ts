@@ -21,9 +21,12 @@ import {
 } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js";
 import { PositionProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
 import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js";
+import { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb.js";
+import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb.js";
 import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import { Position } from "@fintekkers/ledger-models/node/wrappers/models/position/position";
+import { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import { pack } from "@fintekkers/ledger-models/node/wrappers/models/utils/serialization.util";
 import { toDecimalProto } from "../../lib/decimal";
 import type { SomaRow } from "../../lib/server/free-soma";
@@ -49,6 +52,7 @@ function row(
   icM: string | null = null
 ): SomaRow {
   return {
+    cusip: null,
     productType,
     maturityDate,
     directedQuantity: `${faceM}${M}`,
@@ -99,6 +103,19 @@ function dateEntry(iso: string): FieldMapEntry {
     .setFieldValuePacked(pack(new Date(y, m - 1, d)));
 }
 
+/** An IDENTIFIER field, CUSIP-typed unless `type` says otherwise. */
+export function identifierEntry(
+  value: string,
+  type: number = IdentifierTypeProto.CUSIP
+): FieldMapEntry {
+  const proto = new IdentifierProto()
+    .setIdentifierValue(value)
+    .setIdentifierType(type);
+  return new FieldMapEntry()
+    .setField(FieldProto.IDENTIFIER)
+    .setFieldValuePacked(pack(new Identifier(proto)));
+}
+
 function measureEntry(measure: number, value: string): MeasureMapEntry {
   return new MeasureMapEntry()
     .setMeasure(measure)
@@ -106,7 +123,7 @@ function measureEntry(measure: number, value: string): MeasureMapEntry {
 }
 
 /** A row as the broker returns it: a Position over a PositionProto, with
- * PRODUCT_TYPE as its enum value. */
+ * PRODUCT_TYPE as its enum value, and IDENTIFIER when it has a CUSIP. */
 export function positionOf(r: SomaRow): Position {
   const type = (ProductTypeProto as unknown as Record<string, number>)[
     r.productType
@@ -120,6 +137,7 @@ export function positionOf(r: SomaRow): Position {
           .setField(FieldProto.PRODUCT_TYPE)
           .setEnumValue(type),
   ];
+  if (r.cusip) fields.push(identifierEntry(r.cusip));
   if (r.maturityDate) fields.push(dateEntry(r.maturityDate));
   const measures: MeasureMapEntry[] = [];
   if (r.directedQuantity) {

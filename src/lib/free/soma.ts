@@ -138,6 +138,71 @@ export interface SomaMaturityView {
   buckets: SomaBucket[];
 }
 
+/** One row of Positions by CUSIP. */
+export interface SomaPosition {
+  cusip: string;
+  /** Bill, Note, Bond, TIPS, FRN or STRIPS. */
+  type: string;
+  /** ISO date. */
+  maturity: string;
+  /** Dollars of face, exact; inflation compensation excluded. */
+  par: string;
+  /** Par in $ billions, to 2 decimal places (1 would show many CUSIPs as
+   * $0.0B). */
+  parB: number;
+  /** Par over the week's table total, %, to 2 decimal places. */
+  weightPct: number;
+}
+
+export interface SomaPositionsView {
+  /** Par descending, then CUSIP ascending. */
+  rows: SomaPosition[];
+}
+
+/** Positions by CUSIP's rows per page: all of them. US-309 measured the
+ * server load with every row rendered at ~11 ms over 25 a page, under its
+ * 100 ms bar, so one page shows the week; Previous and Next show only for a
+ * finite page size. */
+export const SOMA_PAGE_SIZE = Infinity;
+
+/** The rows whose CUSIP contains `query`, ignoring case and surrounding
+ * spaces; every row for a blank query. */
+export function filterPositions(
+  rows: SomaPosition[],
+  query: string
+): SomaPosition[] {
+  const q = query.trim().toUpperCase();
+  return q ? rows.filter((r) => r.cusip.toUpperCase().includes(q)) : rows;
+}
+
+/** Page `page` (0-based, clamped to the pages there are) of `rows`, `size`
+ * per page (Infinity: all on one page), and where it starts and ends,
+ * 1-based; from and to are 0 when there are no rows. */
+export function pageOf<T>(
+  rows: T[],
+  page: number,
+  size: number
+): { page: number; pages: number; from: number; to: number; rows: T[] } {
+  const pages = Math.max(1, Math.ceil(rows.length / size));
+  const p = Math.min(Math.max(0, page), pages - 1);
+  const start = Number.isFinite(size) ? p * size : 0;
+  const slice = rows.slice(start, start + size);
+  return {
+    page: p,
+    pages,
+    from: slice.length ? start + 1 : 0,
+    to: start + slice.length,
+    rows: slice,
+  };
+}
+
+/** "Showing 1–25 of 434 positions"; "Showing 0 of 0 positions" when none.
+ * `to` never passes `n`. */
+export function showingLabel(from: number, to: number, n: number): string {
+  if (n === 0 || from === 0) return `Showing 0 of ${n} positions`;
+  return `Showing ${from}–${Math.min(to, n)} of ${n} positions`;
+}
+
 export interface SomaPageData {
   /** The H.4.1 week shown (a Wednesday, ISO) and the same in words. */
   asOf: string;
@@ -147,4 +212,5 @@ export interface SomaPageData {
   snapshot: Section<SomaSnapshotView>;
   findings: Section<SomaFindingsView>;
   maturity: Section<SomaMaturityView>;
+  positions: Section<SomaPositionsView>;
 }

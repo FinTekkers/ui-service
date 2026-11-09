@@ -6,17 +6,21 @@
  * findings and maturity profile are the ledger's live SOMA Treasury
  * holdings for the Business date's H.4.1 week. The host ledger may hold no
  * SOMA portfolio, or not that week, so each check accepts live figures or
- * the unavailable text, both naming the week, and records which branch ran;
- * neither shows a figure of the deleted SOMA mock. Each bar's rendered
- * width equals the share its label shows.
+ * the unavailable text, both naming the week, and records which branch ran.
+ * The deleted SOMA mock is imported nowhere and ships in no client script.
+ * Each bar's rendered width equals the share its label shows.
+ *
+ * US-309: Positions by CUSIP is live too: search and paging work after
+ * hydration, and at 375 px the page itself never scrolls sideways.
  */
 import { test, expect, type Page } from "@playwright/test";
-import { readFileSync } from "fs";
+import { existsSync, readdirSync, readFileSync } from "fs";
 import path from "path";
 import {
   MOCK_SECURITY_MASTER,
   mockFiguresIn,
 } from "../../src/tests/fixtures/free-tips-live";
+import { SOMA_PAGE_SIZE } from "../../src/lib/free/soma";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -53,23 +57,18 @@ const SCOPE_NOTE = "Excludes SOMA's mortgage-backed securities (MBS).";
 const TOTAL_LABEL = "Total held outright, excluding MBS";
 // Bracketed so the pattern does not match its own source line.
 const EXCLUDED_WORDS = /m[b]s|mor[t]gage|a[g]ency/i;
-// The deleted SOMA mock's figures (src/lib/free/mock/soma.ts before
-// US-307), as literals: live ledger figures equal to these would be a
-// coincidence, so any hit fails.
-const SOMA_MOCK_FIGURES = [
-  "$4.57T",
-  "+$373.1B",
-  "4,572.9",
-  "4,199.8",
-  "$386.5B",
-  "79.1%",
-  "$106.9B",
-  "$390.8B",
-  "$529.1B",
-  "$1,436.2B",
-  "$482.2B",
-  "$1,625.3B",
+// Prose only the deleted SOMA mock (src/lib/free/mock/soma.ts before
+// US-307) held: the live load never writes these sentences, so a hit in the
+// client bundle means the mock shipped again. Figures are no use here: live
+// notes & bonds is 79.1% for 2026-11-04, the same string as the mock's.
+const SOMA_MOCK_PROSE = [
+  "Bills nearly tripled",
+  "With runoff over, total holdings rose",
+  "Since December 2025 the Fed has bought bills",
 ];
+// An import of the deleted mock module, static or dynamic.
+const SOMA_MOCK_IMPORT =
+  /(from|import)\s*\(?\s*["'][^"']*free\/mock\/soma(\.ts)?["']/;
 const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 
 /** "2026-10-14" → "Oct 14, 2026", as the page names a week. */
@@ -88,13 +87,14 @@ function pastWednesday(weeksBack: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }
 
-/** The text of the three live SOMA sections. */
+/** The text of the four live SOMA sections. */
 async function somaSections(page: Page): Promise<string[]> {
   return Promise.all(
     [
       page.locator('section[aria-labelledby="snap-title"]'),
       page.locator("article.findings"),
       page.getByRole("region", { name: "When the holdings come due" }),
+      page.getByRole("region", { name: "Positions by CUSIP" }),
     ].map(async (s) => (await s.textContent()) ?? "")
   );
 }
@@ -198,7 +198,7 @@ test("the maturity profile shows Treasuries only, with no Asset type toggle", as
 });
 
 for (const route of ["/free/soma", "/free"]) {
-  test(`${route} shows live SOMA figures or says they are unavailable, never the mock or excluded securities`, async ({
+  test(`${route} shows live SOMA figures or says they are unavailable, never excluded securities`, async ({
     page,
   }) => {
     await page.goto(route);
@@ -217,7 +217,6 @@ for (const route of ["/free/soma", "/free"]) {
       /_app\/immutable\/[^"'\s]+/g,
       ""
     );
-    expect(SOMA_MOCK_FIGURES.filter((f) => html.includes(f))).toEqual([]);
     const stripped = html
       .split(SCOPE_NOTE)
       .join("")
@@ -248,6 +247,136 @@ for (const route of ["/free/soma", "/free"]) {
     await expectSectionsName(page, week);
   });
 }
+
+/** Every file under `dir`, recursively. */
+function filesUnder(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory()
+      ? filesUnder(path.join(dir, e.name))
+      : [path.join(dir, e.name)]
+  );
+}
+
+test("the deleted SOMA mock is imported nowhere in src/ and ships in no client script", async ({
+  page,
+}) => {
+  expect(existsSync(path.resolve("src/lib/free/mock/soma.ts"))).toBe(false);
+  const importers = filesUnder(path.resolve("src"))
+    .filter((f) => /\.(ts|js|svelte)$/.test(f))
+    .filter((f) => SOMA_MOCK_IMPORT.test(readFileSync(f, "utf8")));
+  expect(importers).toEqual([]);
+
+  // The scripts both SOMA routes load, as the server serves them.
+  const scripts: string[] = [];
+  page.on("response", async (response) => {
+    if (response.request().resourceType() !== "script") return;
+    scripts.push(await response.text().catch(() => ""));
+  });
+  for (const route of ["/free/soma", "/free"]) {
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+  }
+  expect(scripts.length).toBeGreaterThan(0);
+  // The whole built client too, when this run serves a production build.
+  const client = path.resolve("build/client");
+  if (existsSync(client)) {
+    scripts.push(
+      ...filesUnder(client)
+        .filter((f) => f.endsWith(".js"))
+        .map((f) => readFileSync(f, "utf8"))
+    );
+  }
+  expect(
+    SOMA_MOCK_PROSE.filter((p) => scripts.some((s) => s.includes(p)))
+  ).toEqual([]);
+});
+
+test("/free/soma Positions by CUSIP: search a CUSIP, then see every row (or page with Next)", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.goto("/free/soma");
+  await page.waitForLoadState("networkidle");
+  const section = page.getByRole("region", { name: "Positions by CUSIP" });
+  const label = weekLabel(pastWednesday(0));
+  await expect(section).toContainText(`As of ${label}`);
+  const rows = section.locator("tbody tr");
+  const live = (await rows.count()) > 0;
+  test.info().annotations.push({
+    type: "live-data",
+    description: live ? "SOMA positions from the ledger" : "unavailable branch",
+  });
+  if (!live) {
+    await expect(section).toContainText(`Unavailable for ${label}`);
+    await expect(section.locator("table")).toHaveCount(0);
+    return;
+  }
+
+  const status = section.getByText(/^Showing /);
+  const total = Number(
+    /of (\d+) positions$/.exec((await status.textContent()) ?? "")?.[1]
+  );
+  expect(total).toBeGreaterThan(25);
+  const paged = Number.isFinite(SOMA_PAGE_SIZE);
+  const firstPage = `Showing 1–${
+    paged ? SOMA_PAGE_SIZE : total
+  } of ${total} positions`;
+  await expect(status).toHaveText(firstPage);
+  const cusip = (await rows.first().locator("td").first().textContent()) ?? "";
+  expect(cusip).toMatch(/^[0-9A-Z]{9}$/);
+
+  const search = section.getByRole("searchbox", { name: "Search positions" });
+  await search.fill(cusip.toLowerCase());
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText(cusip);
+  await expect(status).toHaveText("Showing 1–1 of 1 positions");
+
+  await search.fill("");
+  await expect(status).toHaveText(firstPage);
+  const next = section.getByRole("button", { name: "Next" });
+  if (!paged) {
+    // US-309 metric 5: show-all is the default.
+    await expect(rows).toHaveCount(total);
+    await expect(next).toHaveCount(0);
+    return;
+  }
+  await next.click();
+  await expect(status).toHaveText(
+    `Showing ${SOMA_PAGE_SIZE + 1}–${2 * SOMA_PAGE_SIZE} of ${total} positions`
+  );
+  await expect(rows).toHaveCount(SOMA_PAGE_SIZE);
+});
+
+test("/free/soma at 375 px: no page-level horizontal scroll; only the tables scroll", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/free/soma");
+  await page.waitForLoadState("networkidle");
+  const widths = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    client: document.documentElement.clientWidth,
+  }));
+  expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+
+  // Every element wider than its box scrolls itself: a table wrapper or a
+  // code block, nothing else.
+  const scrollers = await page.evaluate(() =>
+    [...document.querySelectorAll("main *")]
+      .filter((el) => el.scrollWidth > el.clientWidth + 1)
+      .filter((el) => /auto|scroll/.test(getComputedStyle(el).overflowX))
+      .map((el) =>
+        el.classList.contains("table-scroll") ? "table-scroll" : el.tagName
+      )
+  );
+  expect(scrollers.filter((c) => c !== "table-scroll" && c !== "PRE")).toEqual(
+    []
+  );
+  expect(scrollers).toContain("table-scroll");
+  const section = page.getByRole("region", { name: "Positions by CUSIP" });
+  const box = await section.boundingBox();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(375);
+});
 
 test("the code cards show the sample files verbatim after hydration", async ({
   page,
