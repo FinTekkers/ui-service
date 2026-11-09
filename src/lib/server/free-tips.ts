@@ -334,6 +334,7 @@ async function loadValuation(
       marketValue: dollars(marketValue),
       realYield: new Decimal(ytm).times(100).toFixed(3),
       nextCoupon: first ? dollars(first.fvAmount) : null,
+      nextCouponDate: first ? longDate(ymdFromIso(first.date)) : null,
     },
   };
 }

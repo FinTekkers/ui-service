@@ -82,6 +82,9 @@ export interface TipsValuationView {
   realYield: string;
   /** The first projected cashflow, in dollars; null when none came back. */
   nextCoupon: string | null;
+  /** That cashflow's pay date, long form, e.g. "January 15, 2027"; null
+   * when none came back. */
+  nextCouponDate: string | null;
 }
 
 export interface TipsPageData {
@@ -111,6 +114,11 @@ export const UNAVAILABLE = {
     "Unavailable: this needs an inflation forecast, which the valuation service doesn't take yet.",
   value: "Unavailable",
 } as const;
+
+/** Why the next coupon is an estimate: it's valued at today's index ratio,
+ * but a TIPS coupon is paid on the payment date's. */
+export const NEXT_COUPON_NOTE =
+  "The amount paid uses the index ratio on the payment date, so it will differ if CPI keeps changing.";
 
 /** The message of the first section that failed, or "" when none did. */
 export function firstUnavailable(...sections: Section<unknown>[]): string {

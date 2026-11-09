@@ -7,6 +7,7 @@
   import FreeCodeCard from "../../../components/free/FreeCodeCard.svelte";
   import TipsCalculatorDisplay from "../../../components/free/TipsCalculatorDisplay.svelte";
   import {
+    NEXT_COUPON_NOTE,
     UNAVAILABLE,
     firstUnavailable,
     type TipsPageData,
@@ -58,6 +59,11 @@
       ]
     : [];
 
+  // Step 05's coupon is an estimate: name it by its pay date when known.
+  $: nextCouponName = valuation?.nextCouponDate
+    ? `${valuation.nextCouponDate} coupon`
+    : "next coupon";
+
   $: steps = example
     ? [
         {
@@ -87,7 +93,7 @@
         {
           number: "05",
           title: "Coupons are paid on the larger principal",
-          body: `Half the ${example.security.couponRate}% annual rate, applied to ${example.valuation.adjustedPrincipal}.`,
+          body: `Half the ${example.security.couponRate}% annual rate, applied to ${example.valuation.adjustedPrincipal}. This is the ${nextCouponName} at today's index ratio. ${NEXT_COUPON_NOTE}`,
           figure: example.valuation.nextCoupon ?? UNAVAILABLE.value,
         },
         {
