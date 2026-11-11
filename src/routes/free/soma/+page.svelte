@@ -1,12 +1,13 @@
 <!-- /free/soma: the 7 sections of the owner's DataExplorer.dc.html artboard,
-     inside the Free data explorer shell (../+layout.svelte). Holdings over
-     time shows the artboard's placeholder until US-252b fills it. US-307:
+     inside the Free data explorer shell (../+layout.svelte). US-307:
      the snapshot, findings and maturity profile are the ledger's SOMA
      Treasury holdings for the Business date's week, from the server load
      (./+page.server.ts). US-309: so is Positions by CUSIP, from the same
-     search. -->
+     search. US-317: Holdings over time is the ledger's weekly SOMA par,
+     streamed after the rest of the page (data.streamed.history). -->
 <script lang="ts">
   import FreeCodeCard from "../../../components/free/FreeCodeCard.svelte";
+  import SomaHistory from "../../../components/free/soma/SomaHistory.svelte";
   import SomaMaturity from "../../../components/free/soma/SomaMaturity.svelte";
   import SomaPositions from "../../../components/free/soma/SomaPositions.svelte";
   import SomaSnapshot from "../../../components/free/soma/SomaSnapshot.svelte";
@@ -16,8 +17,6 @@
   import type { PageData } from "./$types";
 
   export let data: PageData;
-
-  const RANGES = ["1Y", "5Y", "All"];
 </script>
 
 <svelte:head>
@@ -99,24 +98,12 @@
 <!-- 4. Maturity profile -->
 <SomaMaturity maturity={data.maturity} asOfLabel={data.asOfLabel} />
 
-<!-- 5. Holdings over time (artboard placeholder until US-252b) -->
-<div class="card history">
-  <div class="panel-top">
-    <h2 class="panel-title">Holdings over time</h2>
-    <div role="group" aria-label="Time range" class="ranges">
-      {#each RANGES as range}
-        <button
-          type="button"
-          disabled
-          aria-pressed={range === "All" ? "true" : undefined}>{range}</button
-        >
-      {/each}
-    </div>
-  </div>
-  <div class="chart-placeholder">
-    <span>[Live chart component — real-time SOMA holdings]</span>
-  </div>
-</div>
+<!-- 5. Holdings over time -->
+{#await data.streamed.history}
+  <SomaHistory history={null} asOf={data.asOf} asOfLabel={data.asOfLabel} />
+{:then history}
+  <SomaHistory {history} asOf={data.asOf} asOfLabel={data.asOfLabel} />
+{/await}
 
 <!-- 6. Positions by CUSIP -->
 <SomaPositions positions={data.positions} asOfLabel={data.asOfLabel} />
@@ -156,11 +143,6 @@
     font-size: clamp(24px, 2.6vw, 30px);
     line-height: 1.15;
     letter-spacing: -0.02em;
-  }
-  .panel-title {
-    margin: 0;
-    font-weight: 700;
-    font-size: 18px;
   }
   a {
     color: var(--accent);
@@ -264,62 +246,6 @@
     font-size: 15px;
     line-height: 1.6;
     color: var(--muted);
-  }
-
-  .history {
-    padding: 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .panel-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .ranges {
-    display: flex;
-    gap: 4px;
-    background: #f0f2f5;
-    padding: 4px;
-    border-radius: 8px;
-  }
-  .ranges button {
-    min-height: 36px;
-    padding: 0 12px;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .ranges button[aria-pressed="true"] {
-    background: #ffffff;
-    color: var(--ink);
-    font-weight: 500;
-  }
-  .chart-placeholder {
-    height: 300px;
-    border: 1px dashed #c9cfd8;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    text-align: center;
-    background-image: linear-gradient(#eef0f3 1px, transparent 1px);
-    background-size: 100% 60px;
-  }
-  .chart-placeholder span {
-    font-family: var(--mono);
-    font-size: 14px;
-    color: var(--muted);
-    background: #ffffff;
-    padding: 8px 12px;
-    border-radius: 6px;
   }
 
   .code-section {

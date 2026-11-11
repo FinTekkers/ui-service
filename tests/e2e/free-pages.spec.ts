@@ -656,3 +656,111 @@ for (const [route, extra] of [
     expect(headers.filter((h) => h.includes(key))).toEqual([]);
   });
 }
+
+// US-317: Holdings over time is the ledger's weekly SOMA par, streamed after
+// the rest of the page. The host ledger may hold no SOMA history for the
+// week, so each check accepts the chart or the unavailable text, both naming
+// the week, and records which branch ran.
+
+/** Waits for Holdings over time to finish loading for `week`, and checks it
+ * names the week: the chart's latest point, or the unavailable text. */
+async function expectHistoryNames(
+  page: Page,
+  week: string
+): Promise<"live" | "unavailable"> {
+  const label = weekLabel(week);
+  const section = page.getByRole("region", { name: "Holdings over time" });
+  const summary = section.getByText(/^Latest: /);
+  const unavailable = section.getByText(`Unavailable for ${label}`);
+  await expect(summary.or(unavailable)).toBeVisible({ timeout: 30_000 });
+  if (await unavailable.isVisible()) return "unavailable";
+  await expect(summary).toHaveText(
+    new RegExp(`^Latest: \\$\\d+\\.\\d{3}T on ${label}$`)
+  );
+  await expect(section.getByRole("img")).toHaveAccessibleName(
+    new RegExp(`to \\$\\d+\\.\\d{3}T on ${label}, stacked by`)
+  );
+  return "live";
+}
+
+for (const route of ["/free/soma", "/free"]) {
+  test(`${route} Holdings over time: 1Y, 5Y and All select the window, each ending at the week, after hydration`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    const week = pastWednesday(0);
+    const label = weekLabel(week);
+    const branch = await expectHistoryNames(page, week);
+    test.info().annotations.push({
+      type: "live-data",
+      description:
+        branch === "live" ? "SOMA history from the ledger" : "unavailable",
+    });
+    const section = page.getByRole("region", { name: "Holdings over time" });
+    const group = section.getByRole("group", { name: "Time range" });
+    const buttons = group.getByRole("button");
+    await expect(buttons).toHaveText(["1Y", "5Y", "All"]);
+    if (branch === "unavailable") {
+      for (const name of ["1Y", "5Y", "All"]) {
+        await expect(group.getByRole("button", { name })).toBeDisabled();
+      }
+      await expect(page.getByRole("main").locator("h2")).toHaveText(H2S);
+      return;
+    }
+
+    const all = group.getByRole("button", { name: "All" });
+    await expect(all).toHaveAttribute("aria-pressed", "true");
+    await expect(all).toBeEnabled();
+    const chart = section.getByRole("img");
+    const enabled: string[] = [];
+    for (const name of ["1Y", "5Y"]) {
+      const button = group.getByRole("button", { name });
+      if (await button.isDisabled()) {
+        const note = await button.getAttribute("aria-describedby");
+        expect(note).toBeTruthy();
+        const noteText = section.locator(`[id="${note}"]`);
+        await expect(noteText).toBeVisible();
+        await expect(noteText).toContainText(`${name} needs history from`);
+      } else {
+        enabled.push(name);
+      }
+    }
+    // Each enabled range twice, via All: a second pick must not break it.
+    for (const name of [...enabled, "All", ...enabled]) {
+      await group.getByRole("button", { name }).click();
+      await expect(group.getByRole("button", { name })).toHaveAttribute(
+        "aria-pressed",
+        "true"
+      );
+      await expect(chart).toHaveAccessibleName(
+        new RegExp(`^Holdings over time, ${name}: .* on ${label}, stacked by`)
+      );
+      await expect(section.getByText(/^Latest: /)).toHaveText(
+        new RegExp(`on ${label}$`)
+      );
+    }
+  });
+
+  test(`${route} Holdings over time follows the Business date, and on reload`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    await expectHistoryNames(page, pastWednesday(0));
+    const week = pastWednesday(3);
+    await page.getByLabel("Business date").fill(week);
+    await expect(page).toHaveURL(new RegExp(`\\?asOf=${week}$`), {
+      timeout: 30_000,
+    });
+    // A client navigation: the chart streams in through __data.json.
+    const branch = await expectHistoryNames(page, week);
+    test.info().annotations.push({ type: "live-data", description: branch });
+
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await expectHistoryNames(page, week);
+  });
+}

@@ -18,6 +18,15 @@
  * search makes every section unavailable; a row Positions by CUSIP can't
  * show makes that section alone unavailable. Nothing here throws, and
  * nothing falls back to a mock.
+ *
+ * US-317: Holdings over time is a third search, for every week at once:
+ * SOMA's trades by TRADE_DATE, TRANSACTION_TYPE and PRODUCT_TYPE, with
+ * DIRECTED_QUANTITY only. The cash legs (WITHDRAWAL and DEPOSIT) are
+ * dropped, the rest summed cumulatively by date, and each H.4.1 Wednesday
+ * read off; MATURATION rows are negative, so matured bonds net out. The
+ * page renders without waiting for it: it is streamed, capped at
+ * SOMA_HISTORY_TIMEOUT_MS, and a failure makes that section alone
+ * unavailable.
  */
 import Decimal from "decimal.js";
 import type { FieldMapEntry } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb";
@@ -26,6 +35,7 @@ import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import position_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
 import { ProductTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/product_type_pb.js";
+import { TransactionTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/transaction/transaction_type_pb.js";
 import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb.js";
 import type { IdentifierProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb";
 import { PositionFilterOperator } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb.js";
@@ -38,16 +48,22 @@ import { formatOneDecimal } from "$lib/free/format";
 import { searchPositions } from "$lib/positions";
 import {
   SOMA_BUCKET_LABELS,
+  SOMA_STACKS,
   SOMA_TOTAL_LABEL,
   somaUnavailable,
   somaWeek,
   weekLabel,
+  type Section,
   type SomaFinding,
+  type SomaHistoryPoint,
+  type SomaHistoryView,
   type SomaMaturityView,
   type SomaPageData,
+  type SomaPageWithHistory,
   type SomaPosition,
   type SomaPositionsView,
   type SomaSnapshotView,
+  type SomaStack,
   type SomaTableRow,
 } from "$lib/free/soma";
 
@@ -72,6 +88,21 @@ export const SOMA_MEASURES = [
   MeasureProto.INFLATION_COMPENSATION,
 ];
 
+/** US-317: Holdings over time's grouping, every SOMA trade date at once. */
+export const SOMA_HISTORY_FIELDS = [
+  FieldProto.TRADE_DATE,
+  FieldProto.TRANSACTION_TYPE,
+  FieldProto.PRODUCT_TYPE,
+];
+export const SOMA_HISTORY_MEASURES = [MeasureProto.DIRECTED_QUANTITY];
+
+/** How long the page's Holdings over time waits for its search. */
+export const SOMA_HISTORY_TIMEOUT_MS = 10_000;
+
+/** A trade's cash leg, on the USD security: the opposite sign of its BUY
+ * or SELL, so counting it would cancel the holdings. */
+const CASH_LEGS = new Set(["WITHDRAWAL", "DEPOSIT"]);
+
 /** The year-ago week: 52 weeks back, so also a Wednesday. */
 export const PRIOR_WEEK_DAYS = 364;
 
@@ -79,24 +110,19 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 type TypeClass = "bills" | "nominal" | "tips";
 
-/** The Treasury product types SOMA's figures cover, by table row. */
-const TREASURY_TYPES = new Map<string, TypeClass>([
-  ["TBILL", "bills"],
-  ["TREASURY_NOTE", "nominal"],
-  ["TREASURY_BOND", "nominal"],
-  ["TREASURY_FRN", "nominal"],
-  ["STRIPS", "nominal"],
-  ["TIPS", "tips"],
-]);
-
-/** Positions by CUSIP's Type column. */
-const TYPE_LABELS = new Map<string, string>([
-  ["TBILL", "Bill"],
-  ["TREASURY_NOTE", "Note"],
-  ["TREASURY_BOND", "Bond"],
-  ["TREASURY_FRN", "FRN"],
-  ["STRIPS", "STRIPS"],
-  ["TIPS", "TIPS"],
+/** The Treasury product types SOMA's figures cover: the snapshot table's
+ * row, Positions by CUSIP's Type column and Holdings over time's stack
+ * (US-317), from one table so the sections can't drift. */
+const TREASURY_TYPES = new Map<
+  string,
+  { kind: TypeClass; label: string; stack: SomaStack }
+>([
+  ["TBILL", { kind: "bills", label: "Bill", stack: "bills" }],
+  ["TREASURY_NOTE", { kind: "nominal", label: "Note", stack: "notesBonds" }],
+  ["TREASURY_BOND", { kind: "nominal", label: "Bond", stack: "notesBonds" }],
+  ["TREASURY_FRN", { kind: "nominal", label: "FRN", stack: "frns" }],
+  ["STRIPS", { kind: "nominal", label: "STRIPS", stack: "notesBonds" }],
+  ["TIPS", { kind: "tips", label: "TIPS", stack: "tips" }],
 ]);
 
 const COLORS = { nominal: "#5B8DEF", bills: "#B9D0FA", tips: "#2F5BB7" };
@@ -177,7 +203,7 @@ export function somaTotals(rows: SomaRow[], asOf: string): Totals | null {
   const dropped = new Map<string, number>();
   let treasuryRows = 0;
   for (const row of rows) {
-    const kind = TREASURY_TYPES.get(row.productType);
+    const kind = TREASURY_TYPES.get(row.productType)?.kind;
     if (!kind) {
       dropped.set(row.productType, (dropped.get(row.productType) ?? 0) + 1);
       continue;
@@ -348,7 +374,7 @@ export function somaPositions(rows: SomaRow[]): SomaPositionsView | null {
   const held: { row: SomaRow; type: string; par: Decimal }[] = [];
   const seen = new Set<string>();
   for (const row of rows) {
-    const type = TYPE_LABELS.get(row.productType);
+    const type = TREASURY_TYPES.get(row.productType)?.label;
     if (!type) continue;
     if (!row.cusip || !row.maturityDate || !row.directedQuantity) {
       console.log("SOMA position row unusable for Positions by CUSIP", {
@@ -423,12 +449,14 @@ export function somaRowsToView(
   };
 }
 
-function productTypeOf(entry: FieldMapEntry): string {
+/** An enum field's name: its string value, else its enum value's name in
+ * `names`, else its packed value. */
+function enumNameOf(entry: FieldMapEntry, names: object): string {
   if (entry.getStringValue()) return entry.getStringValue();
   if (entry.getEnumValue() > 0) {
     // The generated JS enum has no reverse mapping.
     const value = entry.getEnumValue();
-    const name = Object.entries(ProductTypeProto).find(([, v]) => v === value);
+    const name = Object.entries(names).find(([, v]) => v === value);
     return name ? name[0] : String(value);
   }
   return entry.getFieldValuePacked()
@@ -447,7 +475,7 @@ export function somaRowOf(position: Position): SomaRow {
   };
   for (const entry of position.getFields()) {
     if (entry.getField() === FieldProto.PRODUCT_TYPE) {
-      out.productType = productTypeOf(entry);
+      out.productType = enumNameOf(entry, ProductTypeProto);
     } else if (
       entry.getField() === FieldProto.IDENTIFIER &&
       entry.getFieldValuePacked()
@@ -474,11 +502,131 @@ export function somaRowOf(position: Position): SomaRow {
   return out;
 }
 
+/** One grouped trade row of Holdings over time's search (US-317). */
+export interface SomaTradeRow {
+  /** ISO date. */
+  tradeDate: string | null;
+  /** e.g. "BUY", "MATURATION", "WITHDRAWAL". */
+  transactionType: string;
+  productType: string;
+  /** Dollars of face, signed: negative for a SELL or MATURATION. */
+  directedQuantity: string | null;
+}
+
+/** A ledger position from Holdings over time's search as a SomaTradeRow. */
+export function somaTradeRowOf(position: Position): SomaTradeRow {
+  const out: SomaTradeRow = {
+    tradeDate: null,
+    transactionType: "",
+    productType: "",
+    directedQuantity: null,
+  };
+  for (const entry of position.getFields()) {
+    if (entry.getField() === FieldProto.PRODUCT_TYPE) {
+      out.productType = enumNameOf(entry, ProductTypeProto);
+    } else if (entry.getField() === FieldProto.TRANSACTION_TYPE) {
+      out.transactionType = enumNameOf(entry, TransactionTypeProto);
+    } else if (
+      entry.getField() === FieldProto.TRADE_DATE &&
+      entry.getFieldValuePacked()
+    ) {
+      out.tradeDate = isoDate(Position.unpackField(entry));
+    }
+  }
+  for (const entry of position.getMeasures()) {
+    if (entry.getMeasure() === MeasureProto.DIRECTED_QUANTITY) {
+      out.directedQuantity =
+        fromDecimalProto(entry.getMeasureDecimalValue()) || null;
+    }
+  }
+  return out;
+}
+
+/**
+ * Holdings over time up to `asOf` (a Wednesday): par per stack at every
+ * Wednesday from the first one on or after the earliest trade. Cash legs
+ * are dropped; other rows outside the Treasury scope are dropped and
+ * logged. Null, with the reason logged, when a Treasury row has no trade
+ * date or quantity (never a partial series), or no Treasury row is on or
+ * before `asOf`.
+ */
+export function somaHistory(
+  rows: SomaTradeRow[],
+  asOf: string
+): SomaHistoryView | null {
+  const byDate = new Map<string, Record<SomaStack, Decimal>>();
+  const dropped = new Map<string, number>();
+  for (const row of rows) {
+    if (CASH_LEGS.has(row.transactionType)) continue;
+    const stack = TREASURY_TYPES.get(row.productType)?.stack;
+    if (!stack) {
+      dropped.set(row.productType, (dropped.get(row.productType) ?? 0) + 1);
+      continue;
+    }
+    if (!row.tradeDate || !row.directedQuantity) {
+      console.log("SOMA trade row unusable for Holdings over time", row);
+      return null;
+    }
+    if (row.tradeDate > asOf) continue;
+    let day = byDate.get(row.tradeDate);
+    if (!day) {
+      day = zeroStacks();
+      byDate.set(row.tradeDate, day);
+    }
+    day[stack] = day[stack].plus(row.directedQuantity);
+  }
+  if (dropped.size > 0) {
+    console.log(
+      "SOMA trade rows outside the Treasury scope dropped",
+      Object.fromEntries(dropped)
+    );
+  }
+  const dates = [...byDate.keys()].sort();
+  if (dates.length === 0) return null;
+  // The first Wednesday on or after the earliest trade.
+  const ahead = (3 - new Date(Date.parse(dates[0])).getUTCDay() + 7) % 7;
+  const firstWeek = new Date(Date.parse(dates[0]) + ahead * DAY_MS)
+    .toISOString()
+    .slice(0, 10);
+  if (firstWeek > asOf) return null;
+
+  const held = zeroStacks();
+  const points: SomaHistoryPoint[] = [];
+  let next = 0;
+  for (
+    let ms = Date.parse(firstWeek);
+    ms <= Date.parse(asOf);
+    ms += 7 * DAY_MS
+  ) {
+    const week = new Date(ms).toISOString().slice(0, 10);
+    for (; next < dates.length && dates[next] <= week; next++) {
+      const day = byDate.get(dates[next]) as Record<SomaStack, Decimal>;
+      for (const stack of SOMA_STACKS) {
+        held[stack] = held[stack].plus(day[stack]);
+      }
+    }
+    const par = {} as Record<SomaStack, string>;
+    let total = new Decimal(0);
+    for (const stack of SOMA_STACKS) {
+      par[stack] = held[stack].toFixed();
+      total = total.plus(held[stack]);
+    }
+    points.push({ week, par, total: total.toFixed() });
+  }
+  return { firstWeek, points };
+}
+
+function zeroStacks(): Record<SomaStack, Decimal> {
+  const zero = new Decimal(0);
+  return { bills: zero, notesBonds: zero, tips: zero, frns: zero };
+}
+
 /** The position search for one week: SOMA trades on or before it, valued
- * as of the end of its UTC day, grouped by `fields`. */
+ * as of the end of its UTC day, grouped by `fields`, with `measures`. */
 export function somaRequest(
   asOf: string,
-  fields = SOMA_FIELDS
+  fields = SOMA_FIELDS,
+  measures = SOMA_MEASURES
 ): QueryPositionRequest {
   const [y, m, d] = asOf.split("-").map(Number);
   const filter = new PositionFilter();
@@ -494,7 +642,7 @@ export function somaRequest(
     PositionTypeProto.TRANSACTION,
     PositionViewProto.DEFAULT_VIEW,
     fields,
-    SOMA_MEASURES,
+    measures,
     ZonedDateTime.from(new Date(`${asOf}T23:59:59Z`))
   );
 }
@@ -541,4 +689,76 @@ export async function fetchFreeSoma(
     fetchRows(minusDays(asOf, PRIOR_WEEK_DAYS), apiKey, SOMA_FIELDS),
   ]);
   return { ...base, ...somaRowsToView(rows, asOf, prior) };
+}
+
+/**
+ * Holdings over time for the week `asOf`, from one search for every week.
+ * Never rejects: a failed or empty search, unusable rows, or no answer
+ * within SOMA_HISTORY_TIMEOUT_MS all resolve to unavailable, naming the
+ * week. Logs how long it took.
+ */
+export async function fetchSomaHistory(
+  apiKey: string,
+  asOf: string
+): Promise<Section<SomaHistoryView>> {
+  const unavailable = {
+    ok: false as const,
+    message: somaUnavailable(weekLabel(asOf)),
+  };
+  const started = Date.now();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const search = searchPositions(
+      somaRequest(asOf, SOMA_HISTORY_FIELDS, SOMA_HISTORY_MEASURES).toProto(),
+      apiKey
+    );
+    // searchPositions takes no deadline, so a timed-out search is not
+    // cancelled: it runs on to its end, and its late result or error is
+    // ignored here.
+    search.catch(() => undefined);
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`no answer in ${SOMA_HISTORY_TIMEOUT_MS} ms`)),
+        SOMA_HISTORY_TIMEOUT_MS
+      );
+    });
+    const positions = await Promise.race([search, timeout]);
+    const view = somaHistory(positions.map(somaTradeRowOf), asOf);
+    console.log(
+      `SOMA history for ${asOf}: ${positions.length} rows, ${
+        view?.points.length ?? 0
+      } weeks, in ${Date.now() - started} ms`
+    );
+    return view ? { ok: true, data: view } : unavailable;
+  } catch (error) {
+    // The message only: the error object can carry request metadata.
+    console.log(
+      `Could not fetch SOMA history for ${asOf} after ${
+        Date.now() - started
+      } ms`,
+      (error as Error)?.message
+    );
+    return unavailable;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Both routes' load (US-317): fetchFreeSoma's sections, awaited, and
+ * Holdings over time under `streamed`, started at once but not awaited, so
+ * a slow or failed history never holds up the rest of the page. No key:
+ * unavailable, and no call is made.
+ */
+export async function loadFreeSoma(
+  apiKey: string | undefined,
+  requestedAsOf: string | null,
+  now: Date
+): Promise<SomaPageWithHistory> {
+  const page = fetchFreeSoma(apiKey, requestedAsOf, now);
+  const asOf = somaWeek(requestedAsOf, now.toISOString().slice(0, 10));
+  const history: Promise<Section<SomaHistoryView>> = apiKey
+    ? fetchSomaHistory(apiKey, asOf)
+    : Promise.resolve({ ok: false, message: somaUnavailable(weekLabel(asOf)) });
+  return { ...(await page), streamed: { history } };
 }

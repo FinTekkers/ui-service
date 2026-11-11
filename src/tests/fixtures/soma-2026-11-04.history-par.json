@@ -1,0 +1,9 @@
+{
+  "source": "market-data-inputs df2186c2ebc74525218efbd574e2e9b1562fe350 (origin/main, 2026-11-05), soma.prove_positions: sum of ledger_by_cusip on LiveLedgerSource rows per date, run 2026-11-11; prove() against the NY Fed feed matched every CUSIP on each date (2024-11-13: 409, 2025-11-12: 423, 2026-11-04: 434), mismatched=0 missing=0 extra=0, feed total equal to the ledger total",
+  "asOf": "2026-11-04",
+  "par": {
+    "2024-11-13": "4222599495500",
+    "2025-11-12": "4080237590100",
+    "2026-11-04": "4471748294200"
+  }
+}
