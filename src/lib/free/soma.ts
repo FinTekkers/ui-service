@@ -201,6 +201,78 @@ export function showingLabel(from: number, to: number, n: number): string {
   return `Showing ${from}–${Math.min(to, n)} of ${n} positions`;
 }
 
+/** US-317: Holdings over time's stacks, bottom to top. */
+export const SOMA_STACKS = ["bills", "notesBonds", "tips", "frns"] as const;
+export type SomaStack = (typeof SOMA_STACKS)[number];
+
+export const SOMA_STACK_LABELS: Record<SomaStack, string> = {
+  bills: "Bills",
+  notesBonds: "Notes & bonds",
+  tips: "TIPS",
+  frns: "FRNs",
+};
+
+/** The chart's caption: TIPS are principal only, unlike the headline. */
+export const SOMA_HISTORY_LABEL = "Par, excluding inflation compensation";
+
+/** One H.4.1 Wednesday of Holdings over time. */
+export interface SomaHistoryPoint {
+  /** ISO date, a Wednesday. */
+  week: string;
+  /** Dollars of face held that week, exact, per stack. */
+  par: Record<SomaStack, string>;
+  /** The stacks' exact sum. */
+  total: string;
+}
+
+export interface SomaHistoryView {
+  /** The first week the ledger holds (ISO): where All starts. */
+  firstWeek: string;
+  /** Every week from firstWeek to the page's week, oldest first. */
+  points: SomaHistoryPoint[];
+}
+
+export interface SomaRange {
+  label: string;
+  /** Weeks back from the page's week; null for All. */
+  weeks: number | null;
+}
+
+export const SOMA_RANGES: SomaRange[] = [
+  { label: "1Y", weeks: 52 },
+  { label: "5Y", weeks: 260 },
+  { label: "All", weeks: null },
+];
+
+/**
+ * The weeks `range` shows, ending at `asOf` (the page's week). All starts at
+ * the first loaded week; 1Y and 5Y start `weeks` Wednesdays before `asOf`,
+ * and are enabled only when the ledger holds that week. A disabled range
+ * gets a note saying how far back it needs.
+ */
+export function rangeWindow(
+  view: SomaHistoryView,
+  range: SomaRange,
+  asOf: string
+): { enabled: boolean; note: string | null; points: SomaHistoryPoint[] } {
+  const start =
+    range.weeks === null
+      ? view.firstWeek
+      : new Date(Date.parse(asOf) - range.weeks * 7 * DAY_MS)
+          .toISOString()
+          .slice(0, 10);
+  const enabled = view.firstWeek <= start;
+  return {
+    enabled,
+    note: enabled
+      ? null
+      : `${range.label} needs history from ${weekLabel(
+          start
+        )}. The ledger starts ${weekLabel(view.firstWeek)}.`,
+    points: view.points.filter((p) => p.week >= start && p.week <= asOf),
+  };
+}
+
 export interface SomaPageData {
   /** The H.4.1 week shown (a Wednesday, ISO) and the same in words. */
   asOf: string;
@@ -212,3 +284,10 @@ export interface SomaPageData {
   maturity: Section<SomaMaturityView>;
   positions: Section<SomaPositionsView>;
 }
+
+/** US-317: the server loads' data. Holdings over time arrives after the
+ * rest of the page: SvelteKit streams a promise nested in the data (a
+ * top-level one it awaits), and this one never rejects. */
+export type SomaPageWithHistory = SomaPageData & {
+  streamed: { history: Promise<Section<SomaHistoryView>> };
+};

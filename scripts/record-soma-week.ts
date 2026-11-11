@@ -15,6 +15,11 @@
  *     scripts/record-soma-week.ts 2026-11-04
  * (vitest.config.js, not vite.config's ssr.noExternal, which breaks the
  * grpc-js interop under vite-node.)
+ *
+ * US-317: with --history after the week, it records only Holdings over
+ * time's search (every trade date up to the week, by TRADE_DATE,
+ * TRANSACTION_TYPE and PRODUCT_TYPE) to soma-<week>.history.json, decoded
+ * through the real somaTradeRowOf.
  */
 import { writeFileSync } from "fs";
 import { gzipSync } from "zlib";
@@ -23,6 +28,9 @@ import { searchPositions } from "../src/lib/positions";
 import {
   PRIOR_WEEK_DAYS,
   SOMA_FIELDS,
+  SOMA_HISTORY_FIELDS,
+  SOMA_HISTORY_MEASURES,
+  SOMA_MEASURES,
   SOMA_POSITION_FIELDS,
   somaRequest,
 } from "../src/lib/server/free-soma";
@@ -30,7 +38,9 @@ import {
 const asOf = process.argv[2];
 const key = process.env.FT_HOMEPAGE_API_KEY?.trim();
 if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf ?? "") || !key) {
-  console.error("usage: FT_HOMEPAGE_API_KEY=… record-soma-week.ts YYYY-MM-DD");
+  console.error(
+    "usage: FT_HOMEPAGE_API_KEY=… record-soma-week.ts YYYY-MM-DD [--history]"
+  );
   process.exit(2);
 }
 const priorAsOf = new Date(Date.parse(asOf) - PRIOR_WEEK_DAYS * 86_400_000)
@@ -39,10 +49,11 @@ const priorAsOf = new Date(Date.parse(asOf) - PRIOR_WEEK_DAYS * 86_400_000)
 
 async function record(
   week: string,
-  fields: number[]
+  fields: number[],
+  measures = SOMA_MEASURES
 ): Promise<{ count: number; positions: string }> {
   const positions = await searchPositions(
-    somaRequest(week, fields).toProto(),
+    somaRequest(week, fields, measures).toProto(),
     key
   );
   const parts = positions.flatMap((p) => {
@@ -58,6 +69,29 @@ async function record(
     count: positions.length,
     positions: gzipSync(Buffer.concat(parts), { level: 9 }).toString("base64"),
   };
+}
+
+if (process.argv[3] === "--history") {
+  const history = await record(
+    asOf,
+    SOMA_HISTORY_FIELDS,
+    SOMA_HISTORY_MEASURES
+  );
+  const out = `src/tests/fixtures/soma-${asOf}.history.json`;
+  writeFileSync(
+    out,
+    JSON.stringify(
+      {
+        source: `scripts/record-soma-week.ts --history, broker Position/Search with FT_HOMEPAGE_API_KEY, ${new Date().toISOString()}`,
+        asOf,
+        history,
+      },
+      null,
+      2
+    ) + "\n"
+  );
+  console.log(`${out}: history=${history.count}`);
+  process.exit(0);
 }
 
 const coarse = await record(asOf, SOMA_FIELDS);

@@ -27,7 +27,7 @@ import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/positi
 import { Position } from "@fintekkers/ledger-models/node/wrappers/models/position/position";
 import type { Writable } from "svelte/store";
 import { page } from "$app/stores";
-import type { SomaPageData } from "$lib/free/soma";
+import type { SomaPageWithHistory } from "$lib/free/soma";
 import { load as loadSoma } from "../routes/free/soma/+page.server";
 import { load as loadFree } from "../routes/free/+page.server";
 import SomaPage from "../routes/free/soma/+page.svelte";
@@ -79,9 +79,9 @@ const LOADS = [
   ["/free", loadFree, FreePage],
 ] as const;
 
-type Load = (event: { url: URL }) => Promise<SomaPageData>;
+type Load = (event: { url: URL }) => Promise<SomaPageWithHistory>;
 
-function call(load: Load, href: string): Promise<SomaPageData> {
+function call(load: Load, href: string): Promise<SomaPageWithHistory> {
   return load({ url: new URL(href, "http://localhost") });
 }
 
@@ -117,7 +117,7 @@ function sectionTexts(container: HTMLElement): string[] {
 /** Renders /free/soma's or /free's page; /free's data adds the dataset id. */
 function renderRoute(
   Page: typeof SomaPage | typeof FreePage,
-  data: SomaPageData
+  data: SomaPageWithHistory
 ) {
   return render(Page as unknown as typeof FreePage, {
     props: { data: { ...data, dataset: "soma" } },
@@ -144,7 +144,9 @@ describe.each(LOADS)("%s server load", (route, load, Page) => {
     // The module was imported above, before the key existed.
     process.env.FT_HOMEPAGE_API_KEY = ` ${SENTINEL} `;
     await call(load, `${route}?asOf=${AS_OF}`);
+    // US-317: the third is Holdings over time's.
     expect(mocks.searchPositions.mock.calls.map(([, key]) => key)).toEqual([
+      SENTINEL,
       SENTINEL,
       SENTINEL,
     ]);
@@ -160,7 +162,8 @@ describe.each(LOADS)("%s server load", (route, load, Page) => {
     process.env.FT_HOMEPAGE_API_KEY = SENTINEL;
     const data = await call(load, `${route}?asOf=${AS_OF}`);
     expect(data.snapshot.ok).toBe(true);
-    expect(requests()).toHaveLength(2);
+    // US-317: the third is Holdings over time's (free-soma-history.test.ts).
+    expect(requests()).toHaveLength(3);
     const [week, prior] = requests();
     expect(week.getFieldsList()).toEqual([
       FieldProto.IDENTIFIER,
@@ -272,7 +275,7 @@ describe.each(LOADS)("%s server load", (route, load, Page) => {
     process.env.FT_HOMEPAGE_API_KEY = SENTINEL;
     const data = await call(load, route);
     expect(data.asOf).toBe(RECORDED_AS_OF);
-    expect(requests()).toHaveLength(2);
+    expect(requests()).toHaveLength(3);
     if (!data.positions.ok) throw new Error(data.positions.message);
     expect(data.positions.data.rows).toHaveLength(434);
 
@@ -336,10 +339,10 @@ describe.each(LOADS)("%s server load", (route, load, Page) => {
 });
 
 test("/free's load names the SOMA dataset; /free/soma's does not", async () => {
-  const free = (await call(loadFree, "/free")) as SomaPageData & {
+  const free = (await call(loadFree, "/free")) as SomaPageWithHistory & {
     dataset?: string;
   };
-  const soma = (await call(loadSoma, "/free/soma")) as SomaPageData & {
+  const soma = (await call(loadSoma, "/free/soma")) as SomaPageWithHistory & {
     dataset?: string;
   };
   expect(free.dataset).toBe("soma");

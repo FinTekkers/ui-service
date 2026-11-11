@@ -11,12 +11,25 @@
  *   NY Fed feed on all 434 CUSIPs.
  * - soma-2026-11-04.view-before.json: somaRowsToView's snapshot, findings
  *   and maturity on the coarse search, at the commit before US-309.
+ *
+ * US-317: soma-2026-11-04.history.json is Holdings over time's search for
+ * the same week (`record-soma-week.ts 2026-11-04 --history`), recorded on
+ * 2026-11-11. soma-2026-11-04.history-par.json is its oracle: the ledger's
+ * Treasury par from soma.prove_positions, which matched the NY Fed feed, at
+ * the first, middle and last week.
  */
 import { gunzipSync } from "zlib";
 import { PositionProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_pb.js";
 import { Position } from "@fintekkers/ledger-models/node/wrappers/models/position/position";
-import { somaRowOf, type SomaRow } from "../../lib/server/free-soma";
+import {
+  somaRowOf,
+  somaTradeRowOf,
+  type SomaRow,
+  type SomaTradeRow,
+} from "../../lib/server/free-soma";
 import recording from "./soma-2026-11-04.positions.json";
+import historyRecording from "./soma-2026-11-04.history.json";
+import historyPar from "./soma-2026-11-04.history-par.json";
 import ledgerPar from "./soma-2026-11-04.ledger-par.json";
 import viewBefore from "./soma-2026-11-04.view-before.json";
 
@@ -52,6 +65,14 @@ export const PRIOR_POSITIONS = decode(recording.prior);
 export const COARSE_ROWS: SomaRow[] = decode(recording.coarse).map(somaRowOf);
 export const FINE_ROWS: SomaRow[] = FINE_POSITIONS.map(somaRowOf);
 export const PRIOR_ROWS: SomaRow[] = PRIOR_POSITIONS.map(somaRowOf);
+
+/** Holdings over time's search, as the broker returned it. */
+export const HISTORY_POSITIONS = decode(historyRecording.history);
+export const HISTORY_ROWS: SomaTradeRow[] =
+  HISTORY_POSITIONS.map(somaTradeRowOf);
+
+/** Week → the ledger's Treasury par, dollars, from soma.prove_positions. */
+export const HISTORY_PAR: Record<string, string> = historyPar.par;
 
 /** CUSIP → par, dollars, from soma.prove_positions. */
 export const LEDGER_PAR: Record<string, string> = ledgerPar.par;

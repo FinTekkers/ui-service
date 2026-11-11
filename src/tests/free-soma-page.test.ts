@@ -15,7 +15,8 @@ import {
   SOMA_BUCKET_LABELS,
   SOMA_SCOPE_NOTE,
   SOMA_TOTAL_LABEL,
-  type SomaPageData,
+  somaUnavailable,
+  type SomaPageWithHistory,
 } from "$lib/free/soma";
 import { bucketOf, somaRowsToView, type SomaRow } from "$lib/server/free-soma";
 import SomaPage from "../routes/free/soma/+page.svelte";
@@ -46,26 +47,30 @@ const H2S = [
 function pageData(
   rows: SomaRow[] | null = ROWS,
   prior: SomaRow[] | null = PRIOR_ROWS
-): SomaPageData {
+): SomaPageWithHistory {
   return {
     asOf: AS_OF,
     asOfLabel: WEEK,
     today: "2026-11-05",
     ...somaRowsToView(rows, AS_OF, prior),
+    // US-317: Holdings over time has its own tests.
+    streamed: {
+      history: Promise.resolve({ ok: false, message: somaUnavailable(WEEK) }),
+    },
   };
 }
 
 /** Renders /free/soma's or /free's page; /free's data adds the dataset id. */
 function renderRoute(
   Page: typeof SomaPage | typeof FreePage,
-  data: SomaPageData
+  data: SomaPageWithHistory
 ) {
   return render(Page as unknown as typeof FreePage, {
     props: { data: { ...data, dataset: "soma" } },
   });
 }
 
-function renderPage(data: SomaPageData = pageData()) {
+function renderPage(data: SomaPageWithHistory = pageData()) {
   return render(SomaPage, { props: { data } });
 }
 
