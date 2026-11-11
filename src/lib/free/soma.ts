@@ -159,11 +159,9 @@ export interface SomaPositionsView {
   rows: SomaPosition[];
 }
 
-/** Positions by CUSIP's rows per page: all of them. US-309 measured the
- * server load with every row rendered at ~11 ms over 25 a page, under its
- * 100 ms bar, so one page shows the week; Previous and Next show only for a
- * finite page size. */
-export const SOMA_PAGE_SIZE = Infinity;
+/** Positions by CUSIP's rows per page: 100 (owner, 11 Nov; US-316).
+ * Previous and Next show only for a finite page size. */
+export const SOMA_PAGE_SIZE = 100;
 
 /** The rows whose CUSIP contains `query`, ignoring case and surrounding
  * spaces; every row for a blank query. */

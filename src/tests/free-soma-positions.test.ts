@@ -237,7 +237,7 @@ describe("pageOf and showingLabel", () => {
 describe("SomaPositions: metric 3, search and paging", () => {
   const ok = (rows: SomaPosition[]) => ({ ok: true as const, data: { rows } });
 
-  // Paging at 25 a page; the page's default, show-all, is tested last.
+  // Paging at 25 a page; the page's default, 100 a page, is tested last.
   function renderTable(rows = ROWS, pageSize = 25) {
     return render(SomaPositions, {
       props: { positions: ok(rows), asOfLabel: "Nov 4, 2026", pageSize },
@@ -324,19 +324,27 @@ describe("SomaPositions: metric 3, search and paging", () => {
     expect(shown()).toEqual(ROWS.slice(0, 25).map((r) => r.cusip));
   });
 
-  test("metric 5: the default is show-all: every row on one page, no pager buttons", async () => {
-    expect(SOMA_PAGE_SIZE).toBe(Infinity);
+  test("US-316: the default is 100 a page, biggest first; the last page shows the remainder", async () => {
+    expect(SOMA_PAGE_SIZE).toBe(100);
     render(SomaPositions, {
       props: { positions: ok(ROWS), asOfLabel: "Nov 4, 2026" },
     });
-    expect(shown()).toHaveLength(434);
-    expect(showing()).toBe("Showing 1–434 of 434 positions");
-    expect(screen.queryByRole("button", { name: "Next" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Previous" })).toBeNull();
+    expect(shown()).toEqual(ROWS.slice(0, 100).map((r) => r.cusip));
+    expect(showing()).toBe("Showing 1–100 of 434 positions");
+    expect((previous() as HTMLButtonElement).disabled).toBe(true);
+    expect((next() as HTMLButtonElement).disabled).toBe(false);
+    for (let i = 0; i < 4; i++) await fireEvent.click(next());
+    expect(showing()).toBe("Showing 401–434 of 434 positions");
+    expect(shown()).toEqual(ROWS.slice(400).map((r) => r.cusip));
+    expect((next() as HTMLButtonElement).disabled).toBe(true);
+
+    // A search from the last page starts at page 1, on the narrowed rows.
     await fireEvent.input(search(), { target: { value: "912810" } });
-    const matches = filterPositions(ROWS, "912810").length;
-    expect(shown()).toHaveLength(matches);
-    expect(showing()).toBe(`Showing 1–${matches} of ${matches} positions`);
+    const matches = filterPositions(ROWS, "912810");
+    const first = Math.min(100, matches.length);
+    expect(shown()).toEqual(matches.slice(0, first).map((r) => r.cusip));
+    expect(showing()).toBe(`Showing 1–${first} of ${matches.length} positions`);
+    expect((previous() as HTMLButtonElement).disabled).toBe(true);
   });
 
   test("a row shows its CUSIP, type, maturity, par in $B and weight", () => {
