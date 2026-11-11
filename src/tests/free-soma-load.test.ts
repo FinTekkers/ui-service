@@ -281,8 +281,8 @@ describe.each(LOADS)("%s server load", (route, load, Page) => {
       'section[aria-labelledby="pos-title"]'
     ) as HTMLElement;
     expect(section.textContent).toContain("As of Nov 4, 2026");
-    expect(section.textContent).toContain("Showing 1–434 of 434 positions");
-    expect(section.querySelectorAll("tbody tr")).toHaveLength(434);
+    expect(section.textContent).toContain("Showing 1–100 of 434 positions");
+    expect(section.querySelectorAll("tbody tr")).toHaveLength(100);
     expect(section.querySelector("tbody td")?.textContent).toBe(
       data.positions.data.rows[0].cusip
     );

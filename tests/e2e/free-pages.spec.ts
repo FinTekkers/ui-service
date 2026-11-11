@@ -292,7 +292,7 @@ test("the deleted SOMA mock is imported nowhere in src/ and ships in no client s
   ).toEqual([]);
 });
 
-test("/free/soma Positions by CUSIP: search a CUSIP, then see every row (or page with Next)", async ({
+test("/free/soma Positions by CUSIP: search a CUSIP, then page 100 at a time with Next", async ({
   page,
 }) => {
   test.setTimeout(90_000);
@@ -317,12 +317,14 @@ test("/free/soma Positions by CUSIP: search a CUSIP, then see every row (or page
   const total = Number(
     /of (\d+) positions$/.exec((await status.textContent()) ?? "")?.[1]
   );
-  expect(total).toBeGreaterThan(25);
-  const paged = Number.isFinite(SOMA_PAGE_SIZE);
-  const firstPage = `Showing 1–${
-    paged ? SOMA_PAGE_SIZE : total
-  } of ${total} positions`;
+  expect(total).toBeGreaterThan(SOMA_PAGE_SIZE);
+  const firstPage = `Showing 1–${SOMA_PAGE_SIZE} of ${total} positions`;
   await expect(status).toHaveText(firstPage);
+  await expect(rows).toHaveCount(SOMA_PAGE_SIZE);
+  const next = section.getByRole("button", { name: "Next" });
+  const previous = section.getByRole("button", { name: "Previous" });
+  await expect(previous).toBeDisabled();
+  await expect(next).toBeEnabled();
   const cusip = (await rows.first().locator("td").first().textContent()) ?? "";
   expect(cusip).toMatch(/^[0-9A-Z]{9}$/);
 
@@ -334,18 +336,13 @@ test("/free/soma Positions by CUSIP: search a CUSIP, then see every row (or page
 
   await search.fill("");
   await expect(status).toHaveText(firstPage);
-  const next = section.getByRole("button", { name: "Next" });
-  if (!paged) {
-    // US-309 metric 5: show-all is the default.
-    await expect(rows).toHaveCount(total);
-    await expect(next).toHaveCount(0);
-    return;
-  }
   await next.click();
+  const secondEnd = Math.min(2 * SOMA_PAGE_SIZE, total);
   await expect(status).toHaveText(
-    `Showing ${SOMA_PAGE_SIZE + 1}–${2 * SOMA_PAGE_SIZE} of ${total} positions`
+    `Showing ${SOMA_PAGE_SIZE + 1}–${secondEnd} of ${total} positions`
   );
-  await expect(rows).toHaveCount(SOMA_PAGE_SIZE);
+  await expect(rows).toHaveCount(secondEnd - SOMA_PAGE_SIZE);
+  await expect(previous).toBeEnabled();
 });
 
 test("/free/soma at 375 px: no page-level horizontal scroll; only the tables scroll", async ({

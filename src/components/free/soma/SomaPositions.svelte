@@ -1,8 +1,8 @@
 <!-- Section 6 of /free/soma: Positions by CUSIP, from DataExplorer.dc.html.
      US-309: one row per Treasury CUSIP the ledger's SOMA portfolio holds
      for the week, biggest par first, from the server load. Search and paging
-     run here, on the loaded rows; a new week starts again at page 1. All
-     rows show on one page by default (SOMA_PAGE_SIZE). -->
+     run here, on the loaded rows; a new week starts again at page 1. 100
+     rows a page by default (SOMA_PAGE_SIZE). -->
 <script lang="ts">
   import {
     SOMA_PAGE_SIZE,
