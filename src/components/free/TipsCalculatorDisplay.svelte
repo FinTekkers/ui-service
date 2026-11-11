@@ -5,7 +5,9 @@
      the projected cashflows need an inflation forecast the valuation
      request can't carry yet (US-298b), so they say so. The next coupon is
      an estimate: the first projected cashflow at today's index ratio, not
-     the amount the payment date's ratio will pay (US-310). -->
+     the amount the payment date's ratio will pay (US-310). The clean value
+     is MARKET_VALUE; the accrued interest is ACCRUED_INTEREST and the full
+     value is their sum, both from the load (US-311). -->
 <script lang="ts">
   import {
     NEXT_COUPON_NOTE,
@@ -48,7 +50,10 @@
         : "Real clean price (FedInvest)",
       value: price?.value,
     },
-    { label: "Position value", value: valuation?.marketValue },
+    { label: "Clean value", value: valuation?.marketValue },
+    // US-311: ACCRUED_INTEREST, and clean + accrued.
+    { label: "Accrued interest", value: valuation?.accruedInterest },
+    { label: "Full value (clean + accrued)", value: valuation?.fullValue },
     // US-298b: needs an inflation forecast in the request.
     { label: "Nominal YTM", value: UNAVAILABLE.value },
   ];
@@ -67,10 +72,7 @@
         />
       </label>
     {/each}
-    <p class="wide">
-      Assumes valuation on a coupon date, so there's no accrued interest. Future
-      CPI grows at the assumed rate.
-    </p>
+    <p class="wide">Future CPI grows at the assumed rate.</p>
   </div>
 
   <div class="outputs">

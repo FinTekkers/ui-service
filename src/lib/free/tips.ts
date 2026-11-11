@@ -75,9 +75,14 @@ export interface TipsValuationView {
    * "fell", and by how much, e.g. "2.46%". */
   inflationVerb: "rose" | "fell";
   inflationPct: string;
-  /** INFLATION_ADJUSTED_PRINCIPAL and MARKET_VALUE, in dollars. */
+  /** INFLATION_ADJUSTED_PRINCIPAL and MARKET_VALUE (the clean value), in
+   * dollars. */
   adjustedPrincipal: string;
   marketValue: string;
+  /** ACCRUED_INTEREST, in dollars; null when valuation didn't supply it. */
+  accruedInterest: string | null;
+  /** Clean + accrued, in dollars; null when accruedInterest is null. */
+  fullValue: string | null;
   /** YIELD_TO_MATURITY, which is the real yield for a TIPS, in percent. */
   realYield: string;
   /** The first projected cashflow, in dollars; null when none came back. */

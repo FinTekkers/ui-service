@@ -63,6 +63,8 @@ export const LIVE: TipsPageData = {
       inflationPct: "2.76%",
       adjustedPrincipal: "$1,027.59",
       marketValue: "$1,011.53",
+      accruedInterest: "$7.43",
+      fullValue: "$1,018.96",
       realYield: "1.987",
       nextCoupon: "$10.92",
       nextCouponDate: "April 15, 2027",
@@ -70,6 +72,30 @@ export const LIVE: TipsPageData = {
   },
   calculator: { years: "8.48", inflation: "2.30" },
 };
+
+/** LIVE with `valuation` changed: a valuation the load returned. */
+function liveValuing(
+  valuation: Partial<Extract<TipsPageData["valuation"], { ok: true }>["data"]>
+): TipsPageData {
+  const data: TipsPageData = structuredClone(LIVE);
+  if (data.valuation.ok) Object.assign(data.valuation.data, valuation);
+  return data;
+}
+
+/** US-311: 91282CPU9 on 2026-11-06, valued mid-period: clean, accrued and
+ * full value. */
+export const LIVE_ACCRUED = liveValuing({
+  marketValue: "$969.36",
+  accruedInterest: "$5.99",
+  fullValue: "$975.35",
+});
+
+/** US-311: the same bond on its 2027-01-15 coupon date: nothing accrued. */
+export const LIVE_COUPON_DATE = liveValuing({
+  marketValue: "$969.36",
+  accruedInterest: "$0.00",
+  fullValue: "$969.36",
+});
 
 /** Labels, not figures: the live security shares them with the mock. */
 const SHARED_LABELS = new Set<string>([
