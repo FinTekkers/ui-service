@@ -10,6 +10,8 @@
  * - CPI-U: months m-3 and m-2 of the price date's month;
  * - valuation: valuation-service at the price date, for the position of the
  *   security's face. Never CLEAN_PRICE: the price is an input (VS-138).
+ *   ACCRUED_INTEREST comes from a second call (US-311); without it, only
+ *   the accrued and full values are unavailable.
  * A failed source makes its section, and the sections that need it,
  * unavailable. Nothing here throws, and nothing falls back to the mock.
  *
@@ -58,6 +60,9 @@ export const FREE_TIPS_MEASURES = [
   MeasureProto.YIELD_TO_MATURITY,
   MeasureProto.PRESENT_VALUE_CASHFLOWS,
 ];
+
+/** US-311: the accrual measure, asked for in its own valuation call. */
+export const FREE_TIPS_ACCRUAL_MEASURES = [MeasureProto.ACCRUED_INTEREST];
 
 /** The calculator's labelled inflation assumption, in percent. */
 export const ASSUMED_INFLATION_PCT = "2.30";
@@ -111,6 +116,17 @@ function dollars(value: string, whole = false): string {
   const [int, frac] = fixed.split(".");
   const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return `${d.isNegative() ? "−" : ""}$${grouped}${frac ? `.${frac}` : ""}`;
+}
+
+/**
+ * Clean + accrued in dollars, each rounded to cents first as dollars() rounds
+ * it (Decimal's default, ROUND_HALF_UP), so the three figures shown add up:
+ * "969.355" + "5.985" → "$975.35" (969.36 + 5.99), not the raw sum's
+ * "$975.34".
+ */
+function fullValue(clean: string, accrued: string): string {
+  const cents = (value: string) => new Decimal(value).toDecimalPlaces(2);
+  return dollars(cents(clean).plus(cents(accrued)).toString());
 }
 
 type Ymd = { year: number; month: number; day: number };
@@ -287,6 +303,50 @@ function cpiView(readings: CpiReading[]): TipsCpiView {
   };
 }
 
+/**
+ * valuation-service's ACCRUED_INTEREST for the position of the security's
+ * face at the price date, as it returns it, or null when the call fails or
+ * the measure is missing. Never throws. The value is never adjusted here.
+ */
+export async function loadAccruedInterest(
+  proto: SecurityProto,
+  security: TipsSecurityView,
+  price: Pick<TipsPriceView, "value" | "date">,
+  cpiReadings: CpiReading[],
+  apiKey: string
+): Promise<string | null> {
+  try {
+    const run = await RunTipsMeasures(
+      {
+        mode: "cusip",
+        cusip: security.cusip,
+        price: price.value,
+        cpiReadings,
+        settlementDate: price.date,
+      },
+      FREE_TIPS_ACCRUAL_MEASURES,
+      apiKey,
+      { security: proto, directedQuantity: security.faceValue }
+    );
+    if ("error" in run) {
+      console.log("Could not get the free TIPS accrued interest", run.error);
+      return null;
+    }
+    const accrued = run.values.get(MeasureProto.ACCRUED_INTEREST);
+    if (!accrued || !new Decimal(accrued).isFinite()) {
+      console.log("The free TIPS valuation has no ACCRUED_INTEREST");
+      return null;
+    }
+    return accrued;
+  } catch (error) {
+    console.log(
+      "Could not get the free TIPS accrued interest",
+      (error as Error)?.message
+    );
+    return null;
+  }
+}
+
 async function loadValuation(
   proto: SecurityProto,
   security: TipsSecurityView,
@@ -294,18 +354,24 @@ async function loadValuation(
   cpiReadings: CpiReading[],
   apiKey: string
 ): Promise<Section<TipsValuationView>> {
-  const run = await RunTipsMeasures(
-    {
-      mode: "cusip",
-      cusip: security.cusip,
-      price: price.value,
-      cpiReadings,
-      settlementDate: price.date,
-    },
-    FREE_TIPS_MEASURES,
-    apiKey,
-    { security: proto, directedQuantity: security.faceValue }
-  );
+  // Accrued interest is its own call, not one more measure in the main one:
+  // a failed or missing accrual must leave the clean value and the other
+  // figures showing.
+  const [run, accrued] = await Promise.all([
+    RunTipsMeasures(
+      {
+        mode: "cusip",
+        cusip: security.cusip,
+        price: price.value,
+        cpiReadings,
+        settlementDate: price.date,
+      },
+      FREE_TIPS_MEASURES,
+      apiKey,
+      { security: proto, directedQuantity: security.faceValue }
+    ),
+    loadAccruedInterest(proto, security, price, cpiReadings, apiKey),
+  ]);
   if ("error" in run) {
     console.log("Could not value the free TIPS", run.error);
     return unavailable(UNAVAILABLE.valuation);
@@ -332,6 +398,8 @@ async function loadValuation(
       inflationPct: `${moved.abs().toFixed(2)}%`,
       adjustedPrincipal: dollars(adjusted),
       marketValue: dollars(marketValue),
+      accruedInterest: accrued === null ? null : dollars(accrued),
+      fullValue: accrued === null ? null : fullValue(marketValue, accrued),
       realYield: new Decimal(ytm).times(100).toFixed(3),
       nextCoupon: first ? dollars(first.fvAmount) : null,
       nextCouponDate: first ? longDate(ymdFromIso(first.date)) : null,

@@ -481,6 +481,43 @@ test("/free/tips shows live figures or says they are unavailable, never the mock
         : /^Next coupon \(\w+ \d{1,2}, \d{4}\), at today's index ratio$/
     );
     await expect(calc).toContainText(NEXT_COUPON_NOTE);
+    // US-311: clean value, accrued interest and full value. Accrued comes
+    // from valuation-service; without it, accrued and full both read
+    // Unavailable and clean still shows. Full = clean + accrued to the cent.
+    const tile = (label: string) =>
+      calc
+        .locator(".tile")
+        .filter({
+          has: page.locator("dt", { hasText: new RegExp(`^${label}$`) }),
+        })
+        .locator("dd");
+    const clean = (await tile("Clean value").textContent()) ?? "";
+    const accrued = (await tile("Accrued interest").textContent()) ?? "";
+    const full =
+      (await tile("Full value \\(clean \\+ accrued\\)").textContent()) ?? "";
+    const DOLLARS = /^\$[\d,]+\.\d{2}$/;
+    const cents = (shown: string) =>
+      Math.round(Number(shown.replace(/[$,]/g, "")) * 100);
+    if (clean === "Unavailable") {
+      // The whole valuation failed: every valuation tile says so.
+      expect([accrued, full]).toEqual(["Unavailable", "Unavailable"]);
+    } else {
+      expect(clean).toMatch(DOLLARS);
+      if (accrued === "Unavailable") {
+        expect(full).toBe("Unavailable");
+      } else {
+        expect(accrued).toMatch(DOLLARS);
+        expect(full).toMatch(DOLLARS);
+        expect(cents(full)).toBe(cents(clean) + cents(accrued));
+      }
+    }
+    test.info().annotations.push({
+      type: "accrued-interest",
+      description:
+        accrued === "Unavailable"
+          ? "accrued interest unavailable"
+          : `clean ${clean} + accrued ${accrued} = full ${full}`,
+    });
     // US-312: step 3 names the CPI-U months behind the as-of date's
     // reference CPI (months m-3 and m-2) and states the lag. The example
     // shows only when every source loaded; else it says unavailable.
@@ -509,6 +546,12 @@ test("/free/tips shows live figures or says they are unavailable, never the mock
       page.getByRole("article", { name: TIPS_H2S[2] as string })
     ).toContainText(TIPS_UNAVAILABLE);
   }
+  // US-311: the page no longer assumes a coupon date, and the clean value
+  // is labelled as such.
+  await expect(
+    page.getByText("Assumes valuation on a coupon date")
+  ).toHaveCount(0);
+  await expect(calc.getByText("Position value")).toHaveCount(0);
 
   // The ledger holds the same bond, so its static terms may equal the
   // mock's. Allow a security-master value only where the live panel shows

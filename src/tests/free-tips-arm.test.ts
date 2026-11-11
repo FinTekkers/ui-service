@@ -128,10 +128,11 @@ describe("metric 1: /free/tips values on the returned security's arm", () => {
         FREE_TIPS_CUSIP,
         "homepage-key"
       );
-      expect(mocks.runValuation).toHaveBeenCalledTimes(1);
-      expect(armOf(mocks.runValuation.mock.calls[0][0])).toBe(
-        EXPECTED_ARM[type]
-      );
+      // US-311: the main call and the ACCRUED_INTEREST call, on one arm.
+      expect(mocks.runValuation).toHaveBeenCalledTimes(2);
+      for (const [request] of mocks.runValuation.mock.calls) {
+        expect(armOf(request)).toBe(EXPECTED_ARM[type]);
+      }
     }
   );
 });

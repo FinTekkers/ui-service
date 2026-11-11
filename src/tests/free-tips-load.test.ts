@@ -4,7 +4,8 @@
  * values the TIPS at the latest FedInvest price within 7 days with that
  * date's CPI-U readings, asks valuation-service for exactly the five page
  * measures and the cashflows (never CLEAN_PRICE), and makes a failed
- * source's sections unavailable without a mock figure.
+ * source's sections unavailable without a mock figure. US-311: it asks for
+ * ACCRUED_INTEREST in a second call, whose failure leaves the rest showing.
  *
  * The security lookup, price search, CPI-U lookup and valuation call are
  * stubbed; the e2e spec covers the real backend.
@@ -151,6 +152,9 @@ function cashflow(iso: string, fv: string) {
   };
 }
 
+/** ACCRUED_INTEREST for the accrual call: "$7.43" in LIVE. */
+const ACCRUED = "7.4321";
+
 function valuationResponse(measures: [number, string][] = MEASURES) {
   return {
     getMeasureResultsList: () =>
@@ -163,6 +167,25 @@ function valuationResponse(measures: [number, string][] = MEASURES) {
       cashflow("2027-04-15", "10.9182"),
     ],
   };
+}
+
+/** Whether `request` is the accrual call: it asks for ACCRUED_INTEREST. */
+function isAccrual(request: any): boolean {
+  return request.getMeasuresList().includes(MeasureProto.ACCRUED_INTEREST);
+}
+
+/** Answers the main call with `main`, the accrual call with `accrual`. */
+function answer(
+  main: () => [unknown, unknown?],
+  accrual: () => [unknown, unknown?] = () => [
+    null,
+    valuationResponse([[MeasureProto.ACCRUED_INTEREST, ACCRUED]]),
+  ]
+) {
+  mocks.runValuation.mockImplementation((request: any, callback: Function) => {
+    requests.push(request);
+    callback(...(isAccrual(request) ? accrual() : main()));
+  });
 }
 
 const requests: any[] = [];
@@ -187,10 +210,7 @@ beforeEach(() => {
     readings: READINGS,
     latestMonth: null,
   });
-  mocks.runValuation.mockImplementation((request: any, callback: Function) => {
-    requests.push(request);
-    callback(null, valuationResponse());
-  });
+  answer(() => [null, valuationResponse()]);
 });
 
 afterEach(() => {
@@ -245,8 +265,8 @@ describe("/free/tips load", () => {
 
   test("the valuation asks for the five measures and the cashflows, never CLEAN_PRICE", async () => {
     await load();
-    expect(requests).toHaveLength(1);
-    const measures = requests[0].getMeasuresList();
+    expect(requests).toHaveLength(2);
+    const measures = requests.find((r) => !isAccrual(r)).getMeasuresList();
     expect([...measures].sort((a, b) => a - b)).toEqual(
       [
         MeasureProto.REFERENCE_CPI,
@@ -258,12 +278,13 @@ describe("/free/tips load", () => {
       ].sort((a, b) => a - b)
     );
     expect(measures).not.toContain(MeasureProto.CLEAN_PRICE);
+    expect(measures).not.toContain(MeasureProto.ACCRUED_INTEREST);
   });
 
   test("the valuation uses the FedInvest price, settles on its date and sends that date's CPI-U readings", async () => {
     await load();
     expect(mocks.fetchCpiReadings).toHaveBeenCalledWith("2026-10-23", SENTINEL);
-    const request = requests[0];
+    const request = requests.find((r) => !isAccrual(r));
     const tips = request.getProductInput().getTips();
     expect(fromDecimalProto(tips.getCleanPrice())).toBe("98.4375");
     expect(
@@ -326,6 +347,109 @@ describe("/free/tips load", () => {
     ).toHaveTextContent(UNAVAILABLE.valuation);
     expect(mockFiguresIn(container.innerHTML)).toEqual([]);
   });
+});
+
+describe("US-311: /free/tips accrued interest and full value", () => {
+  /** The load's valuation figures, or a failure. */
+  async function valuation() {
+    const data = await load();
+    if (!data.valuation.ok) throw new Error(data.valuation.message);
+    return data.valuation.data;
+  }
+
+  const UNCHANGED = LIVE.valuation.ok && {
+    marketValue: LIVE.valuation.data.marketValue,
+    indexRatio: LIVE.valuation.data.indexRatio,
+    adjustedPrincipal: LIVE.valuation.data.adjustedPrincipal,
+    referenceCpi: LIVE.valuation.data.referenceCpi,
+    realYield: LIVE.valuation.data.realYield,
+    nextCoupon: LIVE.valuation.data.nextCoupon,
+  };
+
+  test("asks for ACCRUED_INTEREST alone, on the main call's inputs", async () => {
+    await load();
+    const accrual = requests.filter(isAccrual);
+    expect(accrual).toHaveLength(1);
+    expect(accrual[0].getMeasuresList()).toEqual([
+      MeasureProto.ACCRUED_INTEREST,
+    ]);
+    // Same price, settlement date, CPI-U readings, security and quantity:
+    // everything but the measures.
+    const inputs = (request: any) => {
+      const { measuresList: _, ...rest } = request.toObject();
+      return rest;
+    };
+    expect(inputs(accrual[0])).toEqual(
+      inputs(requests.find((r) => !isAccrual(r)))
+    );
+  });
+
+  test("passes ACCRUED_INTEREST through unchanged: 5.987 shows $5.99", async () => {
+    answer(
+      () => [null, valuationResponse()],
+      () => [
+        null,
+        valuationResponse([[MeasureProto.ACCRUED_INTEREST, "5.987"]]),
+      ]
+    );
+    expect(await valuation()).toMatchObject({
+      ...UNCHANGED,
+      accruedInterest: "$5.99",
+      // 1011.5298 → 1,011.53, plus 5.99.
+      fullValue: "$1,017.52",
+    });
+  });
+
+  test("sums clean and accrued after rounding each to cents", async () => {
+    // Cents first: 969.36 + 5.99 = 975.35. The raw sum, 969.355 + 5.985 =
+    // 975.340, would show $975.34: the tiles would not add up.
+    answer(
+      () => [
+        null,
+        valuationResponse(
+          MEASURES.map(([m, v]) => [
+            m,
+            m === MeasureProto.MARKET_VALUE ? "969.355" : v,
+          ])
+        ),
+      ],
+      () => [
+        null,
+        valuationResponse([[MeasureProto.ACCRUED_INTEREST, "5.985"]]),
+      ]
+    );
+    expect(await valuation()).toMatchObject({
+      marketValue: "$969.36",
+      accruedInterest: "$5.99",
+      fullValue: "$975.35",
+    });
+  });
+
+  test.each<[string, () => [unknown, unknown?]]>([
+    [
+      "the accrual response lacks ACCRUED_INTEREST",
+      () => [null, valuationResponse([])],
+    ],
+    ["the accrual call is rejected", () => [{ details: "accrual down" }]],
+  ])(
+    "when %s, accrued and full are null and the rest still shows",
+    async (_name, accrual) => {
+      answer(() => [null, valuationResponse()], accrual);
+      const data = await load();
+      expect(data.valuation).toEqual({
+        ok: true,
+        data: LIVE.valuation.ok && {
+          ...LIVE.valuation.data,
+          accruedInterest: null,
+          fullValue: null,
+        },
+      });
+
+      const { container } = render(TipsPage, { props: { data } });
+      expect(mockFiguresIn(container.innerHTML)).toEqual([]);
+      expect(container.innerHTML).not.toContain("NaN");
+    }
+  );
 });
 
 describe("/free/tips load when a live source fails", () => {

@@ -13,7 +13,13 @@ import {
   type TipsPageData,
 } from "$lib/free/tips";
 import TipsCalculatorDisplay from "../components/free/TipsCalculatorDisplay.svelte";
-import { LIVE, liveWithout, mockFiguresIn } from "./fixtures/free-tips-live";
+import {
+  LIVE,
+  LIVE_ACCRUED,
+  LIVE_COUPON_DATE,
+  liveWithout,
+  mockFiguresIn,
+} from "./fixtures/free-tips-live";
 
 const DEFAULTS: [string, string][] = [
   ["Face value ($)", "1000"],
@@ -30,12 +36,19 @@ const TILES: [string, string][] = [
   ["Adjusted principal", "$1,027.59"],
   ["Next coupon (April 15, 2027), at today's index ratio", "$10.92"],
   ["Real clean price (FedInvest, 2026-10-23)", "98.4375"],
-  ["Position value", "$1,011.53"],
+  ["Clean value", "$1,011.53"],
+  ["Accrued interest", "$7.43"],
+  ["Full value (clean + accrued)", "$1,018.96"],
   ["Nominal YTM", UNAVAILABLE.value],
 ];
 
 function renderCalculator(data: TipsPageData = LIVE) {
   return render(TipsCalculatorDisplay, { props: { data } });
+}
+
+/** The value of the tile labelled `label`. */
+function tileValue(container: HTMLElement, label: string): string | undefined {
+  return tileTexts(container).find(([dt]) => dt === label)?.[1];
 }
 
 /** Each tile's [label, value]. */
@@ -63,7 +76,7 @@ describe("TipsCalculatorDisplay", () => {
     }
   });
 
-  test("shows the 6 output tiles from the live load", () => {
+  test("shows the 8 output tiles from the live load", () => {
     const { container } = renderCalculator();
     expect(tileTexts(container)).toEqual(TILES);
     expect(mockFiguresIn(container.innerHTML)).toEqual([]);
@@ -108,7 +121,9 @@ describe("TipsCalculatorDisplay", () => {
       ["Adjusted principal", UNAVAILABLE.value],
       ["Next coupon, at today's index ratio", UNAVAILABLE.value],
       ["Real clean price (FedInvest, 2026-10-23)", "98.4375"],
-      ["Position value", UNAVAILABLE.value],
+      ["Clean value", UNAVAILABLE.value],
+      ["Accrued interest", UNAVAILABLE.value],
+      ["Full value (clean + accrued)", UNAVAILABLE.value],
       ["Nominal YTM", UNAVAILABLE.value],
     ]);
     const realYield = screen.getByLabelText(
@@ -137,6 +152,55 @@ describe("TipsCalculatorDisplay", () => {
     expect(tileTexts(container)).toEqual(before.tiles);
     expect(bodyRows(container)[0].textContent).toBe(before.first);
     expect(bodyRows(container)).toHaveLength(before.count);
+  });
+
+  test("US-311: shows the clean value, accrued interest and full value", () => {
+    const { container } = renderCalculator(LIVE_ACCRUED);
+    expect(tileValue(container, "Clean value")).toBe("$969.36");
+    expect(tileValue(container, "Accrued interest")).toBe("$5.99");
+    expect(tileValue(container, "Full value (clean + accrued)")).toBe(
+      "$975.35"
+    );
+    expect(tileTexts(container).map(([label]) => label)).not.toContain(
+      "Position value"
+    );
+    expect(mockFiguresIn(container.innerHTML)).toEqual([]);
+  });
+
+  test("US-311: on a coupon date, accrued is $0.00 and full equals clean", () => {
+    const { container } = renderCalculator(LIVE_COUPON_DATE);
+    expect(tileValue(container, "Accrued interest")).toBe("$0.00");
+    expect(tileValue(container, "Full value (clean + accrued)")).toBe(
+      tileValue(container, "Clean value")
+    );
+    expect(tileValue(container, "Clean value")).toBe("$969.36");
+    expect(mockFiguresIn(container.innerHTML)).toEqual([]);
+  });
+
+  test("US-311: the coupon-date assumption no longer renders", () => {
+    const { container } = renderCalculator();
+    expect(container.textContent).not.toContain(
+      "Assumes valuation on a coupon date"
+    );
+    expect(container.textContent).not.toContain("no accrued interest");
+    expect(container).toHaveTextContent(
+      "Future CPI grows at the assumed rate."
+    );
+  });
+
+  test("US-311: without ACCRUED_INTEREST, accrued and full are unavailable and clean still shows", () => {
+    const data = structuredClone(LIVE_ACCRUED);
+    if (data.valuation.ok) {
+      data.valuation.data.accruedInterest = null;
+      data.valuation.data.fullValue = null;
+    }
+    const { container } = renderCalculator(data);
+    expect(tileValue(container, "Clean value")).toBe("$969.36");
+    expect(tileValue(container, "Accrued interest")).toBe(UNAVAILABLE.value);
+    expect(tileValue(container, "Full value (clean + accrued)")).toBe(
+      UNAVAILABLE.value
+    );
+    expect(container).not.toHaveTextContent(UNAVAILABLE.valuation);
   });
 
   test("has no buttons", () => {
