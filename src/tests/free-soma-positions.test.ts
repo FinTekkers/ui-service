@@ -208,6 +208,106 @@ describe("guardrail 4: rows Positions by CUSIP can't show", () => {
   });
 });
 
+describe("US-321: zero-par rows are skipped", () => {
+  const asOf = "2026-11-11";
+  const BILL: SomaRow = {
+    cusip: "912797AB1",
+    productType: "TBILL",
+    maturityDate: "2027-01-14",
+    directedQuantity: "1000000000",
+    inflationCompensation: null,
+  };
+  const TIPS: SomaRow = {
+    cusip: "91282CTP1",
+    productType: "TIPS",
+    maturityDate: "2030-01-15",
+    directedQuantity: "2000000000",
+    inflationCompensation: "300000000",
+  };
+  // Matured in 2016, as the live 2026-11-11 search returns it: par 0, no
+  // INFLATION_COMPENSATION; here with no maturity either.
+  const MATURED: SomaRow = {
+    cusip: "912828FL9",
+    productType: "TIPS",
+    maturityDate: null,
+    directedQuantity: "0",
+    inflationCompensation: null,
+  };
+  const totalsOf = (rows: SomaRow[]) => {
+    const t = somaTotals(rows, asOf);
+    return (
+      t && {
+        bills: t.bills.toFixed(),
+        nominal: t.nominal.toFixed(),
+        tipsPrincipal: t.tipsPrincipal.toFixed(),
+        inflationCompensation: t.inflationCompensation.toFixed(),
+        total: t.total.toFixed(),
+        buckets: t.buckets.map((b) => b.toFixed()),
+      }
+    );
+  };
+
+  test("metric 1: a zero-par TIPS row with no IC or maturity leaves totals from the held rows", () => {
+    expect(totalsOf([BILL, TIPS, MATURED])).toEqual({
+      bills: "1000000000",
+      nominal: "0",
+      tipsPrincipal: "2000000000",
+      inflationCompensation: "300000000",
+      total: "3300000000",
+      buckets: ["0", "1000000000", "0", "2300000000", "0", "0"],
+    });
+  });
+
+  test("metric 2: the held rows alone give the same totals", () => {
+    expect(totalsOf([BILL, TIPS])).toEqual(totalsOf([BILL, TIPS, MATURED]));
+    expect(totalsOf([BILL, TIPS])).not.toBeNull();
+  });
+
+  test("metric 3: a held TIPS row with no IC is still unavailable, with or without zero-par rows", () => {
+    const noIc = { ...TIPS, inflationCompensation: null };
+    expect(somaTotals([BILL, noIc], asOf)).toBeNull();
+    expect(somaTotals([BILL, noIc, MATURED], asOf)).toBeNull();
+    expect(somaTotals([MATURED, BILL, noIc], asOf)).toBeNull();
+  });
+
+  test("metric 4: Positions by CUSIP lists every held row and no zero-par row", () => {
+    const rows = somaPositions([BILL, TIPS, MATURED])?.rows ?? [];
+    expect(rows.map((r) => r.cusip)).toEqual([TIPS.cusip, BILL.cusip]);
+    expect(rows.map((r) => r.cusip)).not.toContain("912828FL9");
+  });
+
+  test("metric 4: a matured and a re-bought row of one CUSIP give one row, at the held par", () => {
+    const matured = { ...BILL, maturityDate: null, directedQuantity: "0" };
+    for (const rows of [
+      [BILL, matured, TIPS],
+      [matured, BILL, TIPS],
+    ]) {
+      const view = somaPositions(rows);
+      expect(view).not.toBeNull();
+      expect(view?.rows.filter((r) => r.cusip === BILL.cusip)).toEqual([
+        expect.objectContaining({ par: "1000000000" }),
+      ]);
+    }
+  });
+
+  test("all rows zero-par: unavailable, never $0", () => {
+    expect(somaTotals([MATURED], asOf)).toBeNull();
+    expect(somaPositions([MATURED])).toBeNull();
+  });
+
+  test.each([
+    ["null", null],
+    ["empty", ""],
+  ])(
+    "guardrail 2: a %s quantity is not zero-par: still unavailable beside a zero-par row",
+    (_, directedQuantity) => {
+      const rows = [BILL, { ...TIPS, directedQuantity }, MATURED];
+      expect(somaTotals(rows, asOf)).toBeNull();
+      expect(somaPositions(rows)).toBeNull();
+    }
+  );
+});
+
 describe("pageOf and showingLabel", () => {
   test.each([
     [0, 25, "Showing 1–25 of 434 positions"],

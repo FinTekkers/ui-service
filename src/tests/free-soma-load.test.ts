@@ -291,6 +291,68 @@ describe.each(LOADS)("%s server load", (route, load, Page) => {
     );
   });
 
+  test("US-321: zero-par rows with missing data in both weeks leave every section live, with the year-ago column", async () => {
+    // As the live 2026-11-11 search returns them: matured holdings at par 0,
+    // with no INFLATION_COMPENSATION and, here, no maturity.
+    const week = "2026-11-11";
+    const held = ROWS.map((r, i) => ({
+      ...r,
+      cusip: `91282C${String(i).padStart(3, "0")}`,
+    }));
+    const matured = {
+      cusip: "912828FL9",
+      productType: "TIPS",
+      maturityDate: null,
+      directedQuantity: "0",
+      inflationCompensation: null,
+    };
+    const priorMatured = { ...matured, cusip: null };
+    vi.setSystemTime(new Date("2026-11-12T15:00:00Z"));
+    mocks.searchPositions.mockImplementation(
+      async (request: QueryPositionRequestProto) =>
+        (asOfOf(request) === week
+          ? [...held, matured]
+          : [...PRIOR_ROWS, priorMatured]
+        ).map(positionOf)
+    );
+    process.env.FT_HOMEPAGE_API_KEY = SENTINEL;
+    const data = await call(load, `${route}?asOf=${week}`);
+    expect(asOfOf(requests()[1])).toBe("2025-11-12");
+    expect([
+      data.snapshot.ok,
+      data.findings.ok,
+      data.maturity.ok,
+      data.positions.ok,
+    ]).toEqual([true, true, true, true]);
+
+    const { container } = renderRoute(Page, data);
+    const positions = container.querySelector(
+      'section[aria-labelledby="pos-title"]'
+    ) as HTMLElement;
+    const texts = [...sectionTexts(container), positions.textContent ?? ""];
+    for (const text of texts) {
+      expect(text).toMatch(/[Aa]s of Nov 11, 2026/);
+      expect(text).not.toMatch(/Unavailable/);
+    }
+    expect(positions.textContent).toContain(
+      `Showing 1–${held.length} of ${held.length} positions`
+    );
+    expect(positions.textContent).not.toContain("912828FL9");
+
+    // The year-ago column is filled, not a placeholder.
+    const snapshot = container.querySelector(
+      'section[aria-labelledby="snap-title"]'
+    ) as HTMLElement;
+    expect(snapshot.querySelector("thead")?.textContent).toContain(
+      "Nov 12, 2025"
+    );
+    const prior = [...snapshot.querySelectorAll("td.prior")].map(
+      (td) => td.textContent
+    );
+    expect(prior).toHaveLength(5);
+    for (const value of prior) expect(value).toMatch(/^\d[\d,]*\.\d$/);
+  });
+
   test.each([
     ["the latest week", "", "Nov 4, 2026", LATEST_WEEK],
     ["?asOf=2026-10-07", "?asOf=2026-10-07", "Oct 7, 2026", "2026-10-07"],

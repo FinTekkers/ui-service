@@ -186,9 +186,19 @@ interface Totals {
 }
 
 /**
+ * US-321: true only when the row's DIRECTED_QUANTITY is present and exactly
+ * zero: a holding matured or sold before the week. A missing quantity is
+ * not zero, so it still fails the checks after this one.
+ */
+function isZeroPar(row: SomaRow): boolean {
+  return !!row.directedQuantity && new Decimal(row.directedQuantity).isZero();
+}
+
+/**
  * The week's Treasury totals and buckets, or null when the rows can't give
  * them: no Treasury row, a row with no quantity or maturity, or a TIPS row
- * with no INFLATION_COMPENSATION (absent is not zero).
+ * with no INFLATION_COMPENSATION (absent is not zero). Zero-par rows
+ * (matured or sold) are skipped first, whatever else they lack.
  */
 export function somaTotals(rows: SomaRow[], asOf: string): Totals | null {
   const zero = new Decimal(0);
@@ -208,6 +218,7 @@ export function somaTotals(rows: SomaRow[], asOf: string): Totals | null {
       dropped.set(row.productType, (dropped.get(row.productType) ?? 0) + 1);
       continue;
     }
+    if (isZeroPar(row)) continue;
     if (!row.directedQuantity || !row.maturityDate) return null;
     const face = new Decimal(row.directedQuantity);
     let value = face;
@@ -366,9 +377,11 @@ function maturityView(t: Totals): SomaMaturityView {
  * Positions by CUSIP: one row per Treasury CUSIP held (non-zero par), par
  * descending, then CUSIP ascending. Par is DIRECTED_QUANTITY, face only, so
  * the rows sum to the Treasury total less inflation compensation; weight is
- * par over that sum. Null, with the reason logged, when a Treasury row has
- * no CUSIP, maturity or quantity, or a CUSIP comes twice: nothing here
- * fills in or parses a value.
+ * par over that sum. Zero-par rows (matured or sold) are skipped before any
+ * check, even with no CUSIP or maturity, and never count as a repeat of a
+ * held CUSIP (US-321). Null, with the reason logged, when a held Treasury
+ * row has no CUSIP, maturity or quantity, or a CUSIP comes twice: nothing
+ * here fills in or parses a value.
  */
 export function somaPositions(rows: SomaRow[]): SomaPositionsView | null {
   const held: { row: SomaRow; type: string; par: Decimal }[] = [];
@@ -376,6 +389,7 @@ export function somaPositions(rows: SomaRow[]): SomaPositionsView | null {
   for (const row of rows) {
     const type = TREASURY_TYPES.get(row.productType)?.label;
     if (!type) continue;
+    if (isZeroPar(row)) continue;
     if (!row.cusip || !row.maturityDate || !row.directedQuantity) {
       console.log("SOMA position row unusable for Positions by CUSIP", {
         cusip: row.cusip,
@@ -386,7 +400,6 @@ export function somaPositions(rows: SomaRow[]): SomaPositionsView | null {
       return null;
     }
     const par = new Decimal(row.directedQuantity);
-    if (par.isZero()) continue;
     if (seen.has(row.cusip)) {
       console.log("SOMA position search returned a CUSIP twice", row.cusip);
       return null;
