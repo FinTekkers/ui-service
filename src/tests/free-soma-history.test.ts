@@ -498,6 +498,40 @@ describe("SomaHistory", () => {
     expect(chart().querySelectorAll("path")).toHaveLength(4);
   });
 
+  test("US-322 metric 1: each year label is slanted -45° about its own x,y, anchored at its end, and sits inside the chart", async () => {
+    render(SomaHistory, {
+      props: { history: ok, asOf: AS_OF, asOfLabel: "Nov 4, 2026" },
+    });
+    const chart = screen.getByRole("img");
+    const group = screen.getByRole("group", { name: "Time range" });
+    const height = Number(chart.getAttribute("viewBox")?.split(" ")[3]);
+    expect(height).toBe(280);
+    const labels = () => [...chart.querySelectorAll("text[transform]")];
+    // The $0 gridline: the plot's bottom edge.
+    const axis = () =>
+      Math.max(
+        ...[...chart.querySelectorAll("line")].map((l) =>
+          Number(l.getAttribute("y1"))
+        )
+      );
+
+    // 2024-11-13 to 2026-11-04 crosses two year boundaries.
+    expect(labels().map((t) => t.textContent)).toEqual(["2025", "2026"]);
+    for (const range of ["1Y", "All"]) {
+      await fireEvent.click(within(group).getByRole("button", { name: range }));
+      expect(labels().length, range).toBeGreaterThan(0);
+      for (const text of labels()) {
+        const x = text.getAttribute("x");
+        const y = text.getAttribute("y");
+        expect(text.getAttribute("text-anchor")).toBe("end");
+        expect(text.getAttribute("transform")).toBe(`rotate(-45 ${x} ${y})`);
+        // ~29 px of 12 px text slanted 45° reaches ~21 px below y.
+        expect(Number(y) + 24).toBeLessThanOrEqual(height);
+        expect(Number(y)).toBeGreaterThan(axis());
+      }
+    }
+  });
+
   test("one week draws without NaN; while loading or unavailable every range is disabled", () => {
     const one = rangeWindow(RECORDED, SOMA_RANGES[2], "2024-11-13");
     const { unmount } = render(SomaHistory, {

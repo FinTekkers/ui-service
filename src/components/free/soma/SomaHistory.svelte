@@ -33,7 +33,9 @@
   const LEFT = 56;
   const RIGHT = 12;
   const TOP = 12;
-  const BOTTOM = 28;
+  // Room under the plot for the slanted year labels.
+  const BOTTOM = 48;
+  const X_LABEL_Y = H - BOTTOM + 14;
   const T = 1e12;
 
   let selected = "All";
@@ -149,9 +151,15 @@
       {#each chart.areas as area}
         <path d={area.d} fill={COLORS[area.stack]} data-stack={area.stack} />
       {/each}
+      <!-- Slanted, each ending at its tick, so All's 20-odd years don't run
+           together (US-322). -->
       {#each chart.xTicks as tick}
-        <text class="tick" x={tick.x} y={H - 8} text-anchor="middle"
-          >{tick.label}</text
+        <text
+          class="tick"
+          x={tick.x}
+          y={X_LABEL_Y}
+          text-anchor="end"
+          transform="rotate(-45 {tick.x} {X_LABEL_Y})">{tick.label}</text
         >
       {/each}
     </svg>
