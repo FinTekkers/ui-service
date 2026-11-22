@@ -183,6 +183,9 @@ interface Totals {
   inflationCompensation: Decimal;
   total: Decimal;
   buckets: Decimal[];
+  /** US-327: each bucket by Holdings over time stack, TIPS with inflation
+   * compensation; one per bucket, summing to it exactly. */
+  bucketStacks: Record<SomaStack, Decimal>[];
 }
 
 /**
@@ -209,12 +212,13 @@ export function somaTotals(rows: SomaRow[], asOf: string): Totals | null {
     inflationCompensation: zero,
     total: zero,
     buckets: SOMA_BUCKET_LABELS.map(() => zero),
+    bucketStacks: SOMA_BUCKET_LABELS.map(() => zeroStacks()),
   };
   const dropped = new Map<string, number>();
   let treasuryRows = 0;
   for (const row of rows) {
-    const kind = TREASURY_TYPES.get(row.productType)?.kind;
-    if (!kind) {
+    const type = TREASURY_TYPES.get(row.productType);
+    if (!type) {
       dropped.set(row.productType, (dropped.get(row.productType) ?? 0) + 1);
       continue;
     }
@@ -222,6 +226,7 @@ export function somaTotals(rows: SomaRow[], asOf: string): Totals | null {
     if (!row.directedQuantity || !row.maturityDate) return null;
     const face = new Decimal(row.directedQuantity);
     let value = face;
+    const { kind } = type;
     if (kind === "tips") {
       if (!row.inflationCompensation) return null;
       const ic = new Decimal(row.inflationCompensation);
@@ -235,6 +240,8 @@ export function somaTotals(rows: SomaRow[], asOf: string): Totals | null {
     t.total = t.total.plus(value);
     const bucket = bucketOf(row.maturityDate, asOf);
     t.buckets[bucket] = t.buckets[bucket].plus(value);
+    const stacks = t.bucketStacks[bucket];
+    stacks[type.stack] = stacks[type.stack].plus(value);
   }
   if (dropped.size > 0) {
     console.log(
@@ -366,10 +373,18 @@ function maturityView(t: Totals): SomaMaturityView {
       .times(100)
       .toFixed(0)}%, matures within a year.`,
     totalM: millions(t.total),
-    buckets: t.buckets.map((b) => ({
-      valueM: millions(b),
-      sharePct: pct(b, t.total),
-    })),
+    buckets: t.buckets.map((b, i) => {
+      const stacks = t.bucketStacks[i];
+      return {
+        valueM: millions(b),
+        sharePct: pct(b, t.total),
+        segments: SOMA_STACKS.filter((s) => !stacks[s].isZero()).map((s) => ({
+          stack: s,
+          valueM: millions(stacks[s]),
+          sharePct: pct(stacks[s], b),
+        })),
+      };
+    }),
   };
 }
 

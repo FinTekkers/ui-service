@@ -8,13 +8,13 @@
     SOMA_HISTORY_LABEL,
     SOMA_RANGES,
     SOMA_STACKS,
+    SOMA_STACK_COLORS,
     SOMA_STACK_LABELS,
     rangeWindow,
     weekLabel,
     type Section,
     type SomaHistoryPoint,
     type SomaHistoryView,
-    type SomaStack,
   } from "$lib/free/soma";
 
   export let history: Section<SomaHistoryView> | null;
@@ -22,12 +22,6 @@
   export let asOf: string;
   export let asOfLabel: string;
 
-  const COLORS: Record<SomaStack, string> = {
-    bills: "#B9D0FA",
-    notesBonds: "#5B8DEF",
-    tips: "#2F5BB7",
-    frns: "#E8A33D",
-  };
   const W = 720;
   const H = 280;
   const LEFT = 56;
@@ -149,7 +143,11 @@
         >
       {/each}
       {#each chart.areas as area}
-        <path d={area.d} fill={COLORS[area.stack]} data-stack={area.stack} />
+        <path
+          d={area.d}
+          fill={SOMA_STACK_COLORS[area.stack]}
+          data-stack={area.stack}
+        />
       {/each}
       <!-- Slanted, each ending at its tick, so All's 20-odd years don't run
            together (US-322). -->
@@ -166,7 +164,7 @@
     <ul class="legend">
       {#each SOMA_STACKS as stack}
         <li>
-          <span class="swatch" style="background: {COLORS[stack]}" />
+          <span class="swatch" style="background: {SOMA_STACK_COLORS[stack]}" />
           {SOMA_STACK_LABELS[stack]}
         </li>
       {/each}

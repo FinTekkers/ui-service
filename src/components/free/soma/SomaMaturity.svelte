@@ -1,19 +1,29 @@
 <!-- Section 4 of /free/soma: remaining maturity by bucket, Treasuries only,
      from DataExplorer.dc.html. US-307: the server load buckets the ledger's
      holdings, inflation compensation included, as H.4.1 Table 2 does; bar
-     widths are its shares. -->
+     widths are its shares. US-327: each bar is stacked by Holdings over
+     time's groups, in its colours, with the same legend. -->
 <script lang="ts">
   import { formatMillionsAsBillions } from "$lib/free/format";
   import {
     SOMA_BUCKET_LABELS,
+    SOMA_STACKS,
+    SOMA_STACK_COLORS,
+    SOMA_STACK_LABELS,
     type Section,
     type SomaMaturityView,
+    type SomaSegment,
   } from "$lib/free/soma";
 
   export let maturity: Section<SomaMaturityView>;
   export let asOfLabel: string;
 
-  const COLOR = "#2F5BB7";
+  /** e.g. "TIPS: $10.0B, 1.9% of bucket". */
+  function segmentLabel(seg: SomaSegment): string {
+    return `${SOMA_STACK_LABELS[seg.stack]}: ${formatMillionsAsBillions(
+      seg.valueM
+    )}, ${seg.sharePct.toFixed(1)}% of bucket`;
+  }
 </script>
 
 <section aria-labelledby="mat-title" class="maturity">
@@ -32,10 +42,19 @@
         <div class="bucket">
           <span class="label">{SOMA_BUCKET_LABELS[i]}</span>
           <div class="track">
-            <div
-              class="fill"
-              style="width: {bucket.sharePct}%; background: {COLOR}"
-            />
+            <div class="fill" style="width: {bucket.sharePct}%">
+              {#each bucket.segments as seg}
+                <div
+                  class="segment"
+                  data-stack={seg.stack}
+                  role="img"
+                  aria-label={segmentLabel(seg)}
+                  style="flex: {seg.valueM} 1 0; background: {SOMA_STACK_COLORS[
+                    seg.stack
+                  ]}"
+                />
+              {/each}
+            </div>
           </div>
           <span class="value"
             >{formatMillionsAsBillions(bucket.valueM)}
@@ -44,6 +63,14 @@
         </div>
       {/each}
     </div>
+    <ul class="legend">
+      {#each SOMA_STACKS as stack}
+        <li>
+          <span class="swatch" style="background: {SOMA_STACK_COLORS[stack]}" />
+          {SOMA_STACK_LABELS[stack]}
+        </li>
+      {/each}
+    </ul>
   {/if}
   <p class="source">
     Remaining maturity, $ billions, as of {asOfLabel}, inflation compensation
@@ -124,8 +151,14 @@
     overflow: hidden;
   }
   .fill {
+    display: flex;
     height: 100%;
     border-radius: 4px;
+    overflow: hidden;
+  }
+  /* No padding, border or margin: flex-grow alone sets each width. */
+  .segment {
+    min-width: 0;
   }
   .value {
     flex: 0 0 150px;
@@ -135,6 +168,25 @@
   }
   .share {
     color: var(--muted);
+  }
+  .legend {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-size: 14px;
+  }
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
   }
   .source {
     margin: 0;

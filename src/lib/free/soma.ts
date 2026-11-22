@@ -121,6 +121,15 @@ export interface SomaFindingsView {
   cards: SomaFinding[];
 }
 
+/** US-327: one Holdings over time stack's part of a maturity bucket. */
+export interface SomaSegment {
+  stack: SomaStack;
+  /** Holdings in $ millions; TIPS include inflation compensation. */
+  valueM: number;
+  /** Share of its bucket, %, to 1 decimal place. */
+  sharePct: number;
+}
+
 /** One remaining-maturity bucket. */
 export interface SomaBucket {
   /** Holdings in $ millions, inflation compensation included. */
@@ -128,6 +137,9 @@ export interface SomaBucket {
   /** Share of the Treasury total, %, to 1 decimal place; also the bar
    * width. */
   sharePct: number;
+  /** US-327: the bucket by stack, in SOMA_STACKS order; zero stacks are
+   * left out. */
+  segments: SomaSegment[];
 }
 
 export interface SomaMaturityView {
@@ -210,6 +222,15 @@ export const SOMA_STACK_LABELS: Record<SomaStack, string> = {
   notesBonds: "Notes & bonds",
   tips: "TIPS",
   frns: "FRNs",
+};
+
+/** The stacks' colours, shared by Holdings over time and the maturity
+ * profile (US-327). */
+export const SOMA_STACK_COLORS: Record<SomaStack, string> = {
+  bills: "#B9D0FA",
+  notesBonds: "#5B8DEF",
+  tips: "#2F5BB7",
+  frns: "#E8A33D",
 };
 
 /** The chart's caption: TIPS are principal only, unlike the headline. */

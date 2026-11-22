@@ -532,6 +532,39 @@ describe("SomaHistory", () => {
     }
   });
 
+  test("US-327 guardrail: areas and legend keep their colours after the palette moved to $lib/free/soma", () => {
+    const { container } = render(SomaHistory, {
+      props: { history: ok, asOf: AS_OF, asOfLabel: "Nov 4, 2026" },
+    });
+    const HEX = {
+      bills: "#B9D0FA",
+      notesBonds: "#5B8DEF",
+      tips: "#2F5BB7",
+      frns: "#E8A33D",
+    };
+    expect(
+      [...screen.getByRole("img").querySelectorAll("path[data-stack]")].map(
+        (p) => [p.getAttribute("data-stack"), p.getAttribute("fill")]
+      )
+    ).toEqual(Object.entries(HEX));
+    // jsdom reads a hex background back as rgb().
+    const rgb = (hex: string) =>
+      `rgb(${[1, 3, 5]
+        .map((i) => parseInt(hex.slice(i, i + 2), 16))
+        .join(", ")})`;
+    expect(
+      [...container.querySelectorAll(".legend li")].map((li) => [
+        li.textContent?.trim(),
+        (li.querySelector(".swatch") as HTMLElement).style.background,
+      ])
+    ).toEqual([
+      ["Bills", rgb(HEX.bills)],
+      ["Notes & bonds", rgb(HEX.notesBonds)],
+      ["TIPS", rgb(HEX.tips)],
+      ["FRNs", rgb(HEX.frns)],
+    ]);
+  });
+
   test("one week draws without NaN; while loading or unavailable every range is disabled", () => {
     const one = rangeWindow(RECORDED, SOMA_RANGES[2], "2024-11-13");
     const { unmount } = render(SomaHistory, {
