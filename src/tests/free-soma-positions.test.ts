@@ -36,6 +36,7 @@ import {
   VIEW_BEFORE,
 } from "./fixtures/soma-2026-11-04";
 import {
+  AS_OF as SYNTHETIC_AS_OF,
   ROWS as SYNTHETIC_ROWS,
   identifierEntry,
   positionOf,
@@ -113,7 +114,18 @@ describe("Positions by CUSIP on the recorded 2026-11-04 week", () => {
     const view = somaRowsToView(FINE_ROWS, AS_OF, PRIOR_ROWS);
     expect(view.snapshot).toEqual(VIEW_BEFORE.snapshot);
     expect(view.findings).toEqual(VIEW_BEFORE.findings);
-    expect(view.maturity).toEqual(VIEW_BEFORE.maturity);
+    // US-327 added each bucket's segments; the rest is as before US-309.
+    const maturity = view.maturity.ok && {
+      ok: true,
+      data: {
+        ...view.maturity.data,
+        buckets: view.maturity.data.buckets.map((b) => ({
+          valueM: b.valueM,
+          sharePct: b.sharePct,
+        })),
+      },
+    };
+    expect(maturity).toEqual(VIEW_BEFORE.maturity);
     expect(view.positions).toEqual({ ok: true, data: VIEW });
   });
 
@@ -205,6 +217,48 @@ describe("guardrail 4: rows Positions by CUSIP can't show", () => {
     const rows = somaPositions([...usable, zero, cash])?.rows ?? [];
     expect(rows.map((r) => r.cusip)).not.toContain("912797XX0");
     expect(rows).toHaveLength(usable.length);
+  });
+});
+
+describe("US-327: each maturity bucket split by Holdings over time stack", () => {
+  const stacksOf = () => {
+    const t = somaTotals(SYNTHETIC_ROWS, SYNTHETIC_AS_OF);
+    if (!t) throw new Error("no totals");
+    return { t, stacks: t.bucketStacks };
+  };
+
+  test("metric 1: each bucket's stacks sum exactly to the bucket total", () => {
+    const { t, stacks } = stacksOf();
+    expect(stacks).toHaveLength(t.buckets.length);
+    stacks.forEach((s, i) => {
+      const sum = s.bills.plus(s.notesBonds).plus(s.tips).plus(s.frns);
+      expect(sum.toFixed(), `bucket ${i}`).toBe(t.buckets[i].toFixed());
+    });
+  });
+
+  test("metric 1: per-stack values, TIPS with inflation compensation and the FRN on its own", () => {
+    const { stacks } = stacksOf();
+    const fixed = stacks.map((s) => ({
+      bills: s.bills.toFixed(),
+      notesBonds: s.notesBonds.toFixed(),
+      tips: s.tips.toFixed(),
+      frns: s.frns.toFixed(),
+    }));
+    // Within 15 days: a bill and a note, no TIPS or FRN.
+    expect(fixed[0]).toEqual({
+      bills: "60000000000",
+      notesBonds: "46926000000",
+      tips: "0",
+      frns: "0",
+    });
+    // 16–90 days: the FRN maturing 2026-12-31.
+    expect(fixed[1].frns).toBe("20000000000");
+    expect(fixed[1].bills).toBe("250000000000");
+    // 91 days–1 yr: TIPS face 8,000 plus IC 2,000 ($ millions).
+    expect(fixed[2].tips).toBe("10000000000");
+    expect(fixed[2].notesBonds).toBe("263088000000");
+    // Over 10 yrs: the bond is notes & bonds.
+    expect(fixed[5].notesBonds).toBe("1487132000000");
   });
 });
 
