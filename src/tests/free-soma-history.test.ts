@@ -15,6 +15,8 @@ import { fireEvent, render, screen, within } from "@testing-library/svelte";
 import { tick } from "svelte";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import Decimal from "decimal.js";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 const mocks = vi.hoisted(() => ({ searchPositions: vi.fn() }));
 
@@ -39,9 +41,11 @@ import {
   SOMA_RANGES,
   SOMA_STACKS,
   rangeWindow,
+  somaXTicks,
   type Section,
   type SomaHistoryView,
   type SomaPageWithHistory,
+  type SomaXTick,
 } from "$lib/free/soma";
 import {
   SOMA_HISTORY_FIELDS,
@@ -498,14 +502,14 @@ describe("SomaHistory", () => {
     expect(chart().querySelectorAll("path")).toHaveLength(4);
   });
 
-  test("US-322 metric 1: each year label is slanted -45° about its own x,y, anchored at its end, and sits inside the chart", async () => {
+  test("US-322 metric 1: each tick label is slanted -45° about its own x,y, anchored at its end, and sits inside the chart", async () => {
     render(SomaHistory, {
       props: { history: ok, asOf: AS_OF, asOfLabel: "Nov 4, 2026" },
     });
     const chart = screen.getByRole("img");
     const group = screen.getByRole("group", { name: "Time range" });
     const height = Number(chart.getAttribute("viewBox")?.split(" ")[3]);
-    expect(height).toBe(280);
+    expect(height).toBe(304);
     const labels = () => [...chart.querySelectorAll("text[transform]")];
     // The $0 gridline: the plot's bottom edge.
     const axis = () =>
@@ -515,8 +519,12 @@ describe("SomaHistory", () => {
         )
       );
 
-    // 2024-11-13 to 2026-11-04 crosses two year boundaries.
-    expect(labels().map((t) => t.textContent)).toEqual(["2025", "2026"]);
+    // 2024-11-13 to 2026-11-04: the first week labels its own year (US-330).
+    expect(labels().map((t) => t.textContent)).toEqual([
+      "2024",
+      "2025",
+      "2026",
+    ]);
     for (const range of ["1Y", "All"]) {
       await fireEvent.click(within(group).getByRole("button", { name: range }));
       expect(labels().length, range).toBeGreaterThan(0);
@@ -525,8 +533,9 @@ describe("SomaHistory", () => {
         const y = text.getAttribute("y");
         expect(text.getAttribute("text-anchor")).toBe("end");
         expect(text.getAttribute("transform")).toBe(`rotate(-45 ${x} ${y})`);
-        // ~29 px of 12 px text slanted 45° reaches ~21 px below y.
-        expect(Number(y) + 24).toBeLessThanOrEqual(height);
+        // "Jan 2026", ~58 px of 12 px text slanted 45°, reaches ~41 px
+        // below y.
+        expect(Number(y) + 44).toBeLessThanOrEqual(height);
         expect(Number(y)).toBeGreaterThan(axis());
       }
     }
@@ -608,6 +617,176 @@ describe("SomaHistory", () => {
     await tick();
     expect(section().querySelector("svg")).not.toBeNull();
     expect(section().textContent).toContain("Latest: $4.472T on Nov 4, 2026");
+  });
+});
+
+describe("US-330 somaXTicks", () => {
+  /** `n` weekly ISO dates from `start`, oldest first. */
+  const weeksFrom = (start: string, n: number) =>
+    Array.from({ length: n }, (_, i) =>
+      new Date(Date.parse(start) + i * 7 * 86_400_000)
+        .toISOString()
+        .slice(0, 10)
+    );
+  const weeksBetween = (start: string, end: string) =>
+    weeksFrom(start, (Date.parse(end) - Date.parse(start)) / 604_800_000 + 1);
+  /** Each tick after the first is the first week of a new bucket. */
+  const expectFirstOfBucket = (
+    weeks: string[],
+    ticks: SomaXTick[],
+    key: (w: string) => string
+  ) => {
+    for (const t of ticks.slice(1)) {
+      expect(key(weeks[t.index]), weeks[t.index]).not.toBe(
+        key(weeks[t.index - 1])
+      );
+    }
+    // And no bucket start is missed after the first tick.
+    const starts = weeks
+      .map((w, i) => i)
+      .filter((i) => i > ticks[0].index && key(weeks[i]) !== key(weeks[i - 1]));
+    expect(ticks.slice(1).map((t) => t.index)).toEqual(starts);
+  };
+  const month = (w: string) => w.slice(0, 7);
+  const quarter = (w: string) =>
+    `${w.slice(0, 4)}-${Math.ceil(Number(w.slice(5, 7)) / 3)}`;
+  const year = (w: string) => w.slice(0, 4);
+
+  const ONE_YEAR = weeksFrom("2025-11-05", 53);
+  const FIVE_YEARS = weeksFrom("2021-11-10", 261);
+  const ALL_LONG = weeksBetween("2004-07-07", "2026-11-04");
+
+  test("metric 1: 1Y ticks each month start, January with its year", () => {
+    expect(ONE_YEAR[52]).toBe("2026-11-04");
+    const ticks = somaXTicks(ONE_YEAR, "1Y");
+    expect(ticks.length).toBeGreaterThanOrEqual(12);
+    expect(ticks.length).toBeLessThanOrEqual(13);
+    expectFirstOfBucket(ONE_YEAR, ticks, month);
+    expect(ticks.map((t) => t.label)).toEqual([
+      "Nov",
+      "Dec",
+      "Jan 2026",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+    ]);
+    expect(ONE_YEAR[ticks[2].index]).toBe("2026-01-07");
+  });
+
+  test("metric 1: a 1Y first label one week from the next month is dropped", () => {
+    const weeks = weeksFrom("2025-11-26", 53);
+    const ticks = somaXTicks(weeks, "1Y");
+    expect(ticks[0].label).toBe("Dec");
+    expect(weeks[ticks[0].index]).toBe("2025-12-03");
+    expect(ticks.length).toBeGreaterThanOrEqual(12);
+    expect(ticks.length).toBeLessThanOrEqual(13);
+    expectFirstOfBucket(weeks, ticks, month);
+  });
+
+  test("metric 2: 5Y ticks each quarter start, labelled like Q1 2023", () => {
+    expect(FIVE_YEARS[260]).toBe("2026-11-04");
+    const ticks = somaXTicks(FIVE_YEARS, "5Y");
+    expect(ticks.length).toBeGreaterThanOrEqual(20);
+    expect(ticks.length).toBeLessThanOrEqual(21);
+    expectFirstOfBucket(FIVE_YEARS, ticks, quarter);
+    for (const t of ticks.slice(1)) {
+      expect(["01", "04", "07", "10"]).toContain(
+        FIVE_YEARS[t.index].slice(5, 7)
+      );
+    }
+    for (const t of ticks) expect(t.label).toMatch(/^Q[1-4] \d{4}$/);
+    expect(ticks.find((t) => t.label === "Q1 2023")).toBeDefined();
+    expect(FIVE_YEARS[ticks[ticks.length - 1].index]).toBe("2026-10-07");
+  });
+
+  test("metric 2: a 5Y first label under 8 weeks from the next quarter is dropped; alt alternates", () => {
+    const weeks = weeksFrom("2021-11-17", 261);
+    const ticks = somaXTicks(weeks, "5Y");
+    expect(ticks.map((t) => t.label)).not.toContain("Q4 2021");
+    expect(ticks[0].label).toBe("Q1 2022");
+    expect(ticks.length).toBeGreaterThanOrEqual(20);
+    expect(ticks.length).toBeLessThanOrEqual(21);
+    expect(ticks.map((t) => t.alt)).toEqual(ticks.map((_, i) => i % 2 === 1));
+  });
+
+  test("metric 3: All ticks once per calendar year, on the first week of each", () => {
+    const weeks = weeksBetween("2024-11-13", "2026-11-04");
+    const ticks = somaXTicks(weeks, "All");
+    expect(ticks.map((t) => t.label)).toEqual(["2024", "2025", "2026"]);
+    expect(ticks.map((t) => weeks[t.index])).toEqual([
+      "2024-11-13",
+      "2025-01-01",
+      "2026-01-07",
+    ]);
+  });
+
+  test("metric 3: a 22-year All series ticks every year 2004 to 2026", () => {
+    const ticks = somaXTicks(ALL_LONG, "All");
+    expect(ticks.map((t) => t.label)).toEqual(
+      Array.from({ length: 23 }, (_, i) => String(2004 + i))
+    );
+    expectFirstOfBucket(ALL_LONG, ticks, year);
+    for (const t of ticks.slice(1)) {
+      expect(ALL_LONG[t.index].slice(5, 7)).toBe("01");
+      expect(Number(ALL_LONG[t.index].slice(8))).toBeLessThanOrEqual(7);
+    }
+  });
+
+  test("metric 4: neighbouring slanted labels clear each other by a 12-unit text line", () => {
+    // SomaHistory's plot: LEFT 56 to W - RIGHT = 708.
+    const PLOT = 720 - 56 - 12;
+    // Slanted 45°, neighbours are parallel lines pitch × sin 45° apart.
+    const gaps = (weeks: string[], ticks: SomaXTick[]) => {
+      const xs = ticks.map((t) => (t.index * PLOT) / (weeks.length - 1));
+      return xs.slice(1).map((x, i) => (x - xs[i]) * Math.SQRT1_2);
+    };
+    const minGap = (weeks: string[], ticks: SomaXTick[]) =>
+      Math.min(...gaps(weeks, ticks));
+    const cases: [string, string[], "1Y" | "5Y" | "All"][] = [
+      ["1Y", ONE_YEAR, "1Y"],
+      ["1Y from Nov 26", weeksFrom("2025-11-26", 53), "1Y"],
+      ["1Y from Nov 19", weeksFrom("2025-11-19", 53), "1Y"],
+      ["5Y", FIVE_YEARS, "5Y"],
+      ["5Y from Nov 17", weeksFrom("2021-11-17", 261), "5Y"],
+      // The host's 1,175 weeks to 2026-11-18.
+      ["All, as on the host", weeksBetween("2004-05-19", "2026-11-18"), "All"],
+    ];
+    for (const [name, weeks, range] of cases) {
+      const ticks = somaXTicks(weeks, range);
+      expect(minGap(weeks, ticks), name).toBeGreaterThanOrEqual(12);
+      if (range === "5Y") {
+        const kept = ticks.filter((t) => !t.alt);
+        expect(kept[0]).toBe(ticks[0]);
+        expect(minGap(weeks, kept), `${name}, thinned`).toBeGreaterThanOrEqual(
+          12
+        );
+      }
+    }
+    // All keeps its first year (metric 3), so a short first part-year sits
+    // close to the next: the accepted first-label gap. Past it, every pair
+    // clears.
+    const rest = gaps(ALL_LONG, somaXTicks(ALL_LONG, "All")).slice(1);
+    expect(Math.min(...rest)).toBeGreaterThanOrEqual(12);
+  });
+
+  test("one week, passed twice as the chart does, gives one tick", () => {
+    expect(somaXTicks(["2024-11-13", "2024-11-13"], "1Y")).toEqual([
+      { index: 0, label: "Nov", alt: false },
+    ]);
+  });
+
+  test("guardrail 3: somaXTicks reads the ISO strings, with no Date or locale API", () => {
+    const source = readFileSync(path.resolve("src/lib/free/soma.ts"), "utf8");
+    const body = source.match(/export function somaXTicks[\s\S]*?\n}\n/)?.[0];
+    expect(body).toBeDefined();
+    expect(body).not.toMatch(/toLocale|new Date|Date\.|Intl\./);
   });
 });
 
