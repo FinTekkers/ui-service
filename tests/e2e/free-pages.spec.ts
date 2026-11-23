@@ -764,3 +764,94 @@ for (const route of ["/free/soma", "/free"]) {
     await expectHistoryNames(page, week);
   });
 }
+
+// US-331: Holdings over time's tooltip. Pointer, tap and arrow keys pick a
+// week; the tooltip stays inside the chart and the page never scrolls
+// sideways. Like US-317, it records whether the ledger's history loaded.
+test.describe("US-331 Holdings over time tooltip", () => {
+  test.use({ hasTouch: true });
+
+  async function openChart(page: Page, width: number) {
+    await page.setViewportSize({ width, height: 812 });
+    await page.goto("/free/soma");
+    await page.waitForLoadState("networkidle");
+    const branch = await expectHistoryNames(page, pastWednesday(0));
+    test.info().annotations.push({
+      type: "live-data",
+      description:
+        branch === "live" ? "SOMA history from the ledger" : "unavailable",
+    });
+    const section = page.getByRole("region", { name: "Holdings over time" });
+    const plot = section.getByRole("group", {
+      name: "Holdings over time, by week",
+    });
+    const tooltip = section.getByTestId("hist-tooltip");
+    return { branch, section, plot, tooltip };
+  }
+
+  test("/free/soma at 375 px: tapping near the chart's right edge shows the tooltip inside the chart", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const { branch, plot, tooltip } = await openChart(page, 375);
+    if (branch === "unavailable") return;
+
+    await plot.scrollIntoViewIfNeeded();
+    const size = await plot.boundingBox();
+    expect(size).not.toBeNull();
+    await plot.tap({
+      position: { x: (size?.width ?? 0) - 6, y: (size?.height ?? 0) / 2 },
+    });
+    await expect(tooltip).toBeVisible();
+
+    const chart = await plot.boundingBox();
+    const tip = await tooltip.boundingBox();
+    expect(chart).not.toBeNull();
+    expect(tip).not.toBeNull();
+    if (!chart || !tip) return;
+    expect(tip.x).toBeGreaterThanOrEqual(chart.x);
+    expect(tip.y).toBeGreaterThanOrEqual(chart.y);
+    expect(tip.x + tip.width).toBeLessThanOrEqual(chart.x + chart.width);
+    expect(tip.y + tip.height).toBeLessThanOrEqual(chart.y + chart.height);
+    const widths = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+    }));
+    expect(widths.scroll).toBeLessThanOrEqual(375);
+    expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+  });
+
+  // Metric 5's PR screenshots, on request only:
+  // SOMA_TOOLTIP_SHOTS=<dir> npx playwright test free-pages -g "screenshots"
+  test("screenshots: the tooltip near each edge, hovered at 1,280 px and tapped at 390 px", async ({
+    page,
+  }) => {
+    const dir = process.env.SOMA_TOOLTIP_SHOTS;
+    test.skip(!dir, "SOMA_TOOLTIP_SHOTS not set: PR screenshots only");
+    test.setTimeout(120_000);
+    for (const [width, how] of [
+      [1280, "hover"],
+      [390, "tap"],
+    ] as const) {
+      const { branch, section, plot, tooltip } = await openChart(page, width);
+      expect(branch, "the ledger's history must load").toBe("live");
+      await section.scrollIntoViewIfNeeded();
+      for (const edge of ["left", "right"] as const) {
+        const box = await plot.boundingBox();
+        if (!box) throw new Error("no chart box");
+        // Just inside the plot: 56 and 708 of the 720-wide viewBox.
+        const x = (box.width * (edge === "left" ? 60 : 704)) / 720;
+        const y = box.height / 3;
+        if (how === "hover") {
+          await page.mouse.move(box.x + x, box.y + y);
+        } else {
+          await plot.tap({ position: { x, y } });
+        }
+        await expect(tooltip).toBeVisible();
+        await section.screenshot({
+          path: path.join(dir as string, `soma-tooltip-${width}-${edge}.png`),
+        });
+      }
+    }
+  });
+});

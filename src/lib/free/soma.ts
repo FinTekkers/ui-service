@@ -352,6 +352,66 @@ export function somaXTicks(
   return ticks.map((t, i) => ({ ...t, alt: i % 2 === 1 }));
 }
 
+/** $ billions to the cent, e.g. "$1,234.56B": Positions by CUSIP and the
+ * Holdings over time tooltip (US-331). */
+export function somaBillions(b: number): string {
+  return `$${b.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}B`;
+}
+
+/**
+ * US-331: the index of the week nearest viewBox x on Holdings over time,
+ * for `n` weeks spread evenly from `left` to `right` (the plot's edges).
+ * Left of the first week or right of the last clamps to that week.
+ */
+export function nearestWeek(
+  x: number,
+  n: number,
+  left: number,
+  right: number
+): number {
+  if (n <= 1 || right <= left) return 0;
+  const i = Math.round(((x - left) / (right - left)) * (n - 1));
+  return Math.min(n - 1, Math.max(0, i));
+}
+
+/** US-331: Holdings over time's tooltip for one week. */
+export interface SomaWeekTooltip {
+  date: string;
+  /** In SOMA_STACKS order, each value in $ billions to the cent. */
+  rows: { stack: SomaStack; label: string; color: string; value: string }[];
+  /** The sum of the rows as shown, so it always adds up. */
+  total: string;
+  /** All of it in one line, for the aria-live region. */
+  text: string;
+}
+
+export function weekTooltip(point: SomaHistoryPoint): SomaWeekTooltip {
+  // Whole cents of $1B: summing them keeps the total exact. `|| 0` turns
+  // a rounded -0 into 0, so it never shows "$-0.00B".
+  const cents = SOMA_STACKS.map(
+    (stack) => Math.round(Number(point.par[stack]) / 1e7) || 0
+  );
+  const rows = SOMA_STACKS.map((stack, i) => ({
+    stack,
+    label: SOMA_STACK_LABELS[stack],
+    color: SOMA_STACK_COLORS[stack],
+    value: somaBillions(cents[i] / 100),
+  }));
+  const total = somaBillions(cents.reduce((a, c) => a + c, 0) / 100);
+  const date = weekLabel(point.week);
+  return {
+    date,
+    rows,
+    total,
+    text: `${date}. ${rows
+      .map((r) => `${r.label} ${r.value}`)
+      .join(", ")}. Total ${total}.`,
+  };
+}
+
 export interface SomaPageData {
   /** The H.4.1 week shown (a Wednesday, ISO) and the same in words. */
   asOf: string;
