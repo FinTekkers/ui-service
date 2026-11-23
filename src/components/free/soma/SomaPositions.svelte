@@ -9,6 +9,7 @@
     filterPositions,
     pageOf,
     showingLabel,
+    somaBillions,
     weekLabel,
     type Section,
     type SomaPositionsView,
@@ -26,12 +27,6 @@
   $: rows, query, (page = 0);
   $: filtered = filterPositions(rows, query);
   $: view = pageOf(filtered, page, pageSize);
-
-  const billions = (b: number) =>
-    `$${b.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}B`;
 </script>
 
 <section aria-labelledby="pos-title" class="positions">
@@ -71,7 +66,7 @@
               <td>{row.cusip}</td>
               <td class="muted">{row.type}</td>
               <td class="muted">{weekLabel(row.maturity)}</td>
-              <td class="num">{billions(row.parB)}</td>
+              <td class="num">{somaBillions(row.parB)}</td>
               <td class="num">{row.weightPct.toFixed(2)}%</td>
             </tr>
           {/each}

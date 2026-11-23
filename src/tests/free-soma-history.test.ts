@@ -40,8 +40,13 @@ import {
   SOMA_HISTORY_LABEL,
   SOMA_RANGES,
   SOMA_STACKS,
+  SOMA_STACK_COLORS,
+  SOMA_STACK_LABELS,
+  nearestWeek,
   rangeWindow,
   somaXTicks,
+  weekLabel,
+  weekTooltip,
   type Section,
   type SomaHistoryView,
   type SomaPageWithHistory,
@@ -819,4 +824,260 @@ test("metric 5 (timing, log only): a 1,200-week history loads well within the pa
   expect(history.data.points).toHaveLength(1200);
   // Loose: the host is shared.
   expect(ms).toBeLessThan(2000);
+});
+
+describe("US-331 nearestWeek", () => {
+  // The chart's plot: LEFT 56 to W - RIGHT = 708 of a 720-wide viewBox.
+  const L = 56;
+  const R = 708;
+
+  test("metric 1: an x maps to the closest week; left of the first or right of the last clamps to that week", () => {
+    // Five weeks, 163 units apart: 56, 219, 382, 545, 708.
+    expect(nearestWeek(219, 5, L, R)).toBe(1);
+    expect(nearestWeek(219 + 81, 5, L, R)).toBe(1);
+    expect(nearestWeek(219 + 82, 5, L, R)).toBe(2);
+    expect(nearestWeek(545 - 81, 5, L, R)).toBe(3);
+    expect(nearestWeek(L, 5, L, R)).toBe(0);
+    expect(nearestWeek(R, 5, L, R)).toBe(4);
+    expect(nearestWeek(0, 5, L, R)).toBe(0);
+    expect(nearestWeek(-50, 5, L, R)).toBe(0);
+    expect(nearestWeek(720, 5, L, R)).toBe(4);
+    expect(nearestWeek(5000, 5, L, R)).toBe(4);
+    for (const x of [0, 300, 720]) expect(nearestWeek(x, 1, L, R)).toBe(0);
+  });
+});
+
+describe("US-331 SomaHistory tooltip", () => {
+  const ok: Section<SomaHistoryView> = { ok: true, data: RECORDED };
+  const points = RECORDED.points;
+  const W = 720;
+  const xOf = (i: number, n = points.length) => 56 + (i * 652) / (n - 1);
+
+  // jsdom 22 has no PointerEvent, and its stand-in drops clientX.
+  const hadPointerEvent = "PointerEvent" in window;
+  beforeEach(() => {
+    if (hadPointerEvent) return;
+    class PointerEvent extends MouseEvent {
+      pointerType: string;
+      constructor(type: string, init: PointerEventInit = {}) {
+        super(type, init);
+        this.pointerType = init.pointerType ?? "";
+      }
+    }
+    vi.stubGlobal("PointerEvent", PointerEvent);
+  });
+  afterEach(() => {
+    if (!hadPointerEvent) vi.unstubAllGlobals();
+  });
+
+  function setup(history: Section<SomaHistoryView> = ok, asOf = AS_OF) {
+    const result = render(SomaHistory, {
+      props: { history, asOf, asOfLabel: weekLabel(asOf) },
+    });
+    const plot = screen.getByRole("group", {
+      name: "Holdings over time, by week",
+    });
+    // The chart's box is the viewBox at 1 px a unit.
+    plot.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        width: W,
+        height: 304,
+        right: W,
+        bottom: 304,
+      } as DOMRect);
+    const guide = () =>
+      result.container.querySelector('[data-testid="hist-guide"]');
+    const tooltip = () =>
+      result.container.querySelector(
+        '[data-testid="hist-tooltip"]'
+      ) as HTMLElement | null;
+    const live = () =>
+      result.container
+        .querySelector('[data-testid="hist-live"]')
+        ?.textContent?.trim();
+    /** The tooltip as shown: its date, rows and total. */
+    const shown = () => {
+      const tip = tooltip() as HTMLElement;
+      const rows = [...tip.querySelectorAll("li")].map((li) => ({
+        label: li.querySelector(".tip-label")?.textContent,
+        value: li.querySelector(".tip-value")?.textContent as string,
+        swatch: (li.querySelector(".swatch") as HTMLElement).style.background,
+      }));
+      return {
+        date: tip.querySelector(".tip-date")?.textContent,
+        rows,
+        total: tip.querySelector(".tip-total .tip-value")
+          ?.textContent as string,
+      };
+    };
+    /** What the tooltip DOM says, in the live region's words. */
+    const shownText = () => {
+      const s = shown();
+      return `${s.date}. ${s.rows
+        .map((r) => `${r.label} ${r.value}`)
+        .join(", ")}. Total ${s.total}.`;
+    };
+    return { ...result, plot, guide, tooltip, live, shown, shownText };
+  }
+
+  const rgb = (hex: string) =>
+    `rgb(${[1, 3, 5]
+      .map((i) => parseInt(hex.slice(i, i + 2), 16))
+      .join(", ")})`;
+  const cents = (v: string) => {
+    expect(v).toMatch(/^\$[\d,]+\.\d{2}B$/);
+    return Math.round(Number(v.replace(/[$,B]/g, "")) * 100);
+  };
+
+  test("guardrail 3: before any interaction there is no guide or tooltip, and the chart is as before", () => {
+    const { guide, tooltip, live } = setup();
+    expect(guide()).toBeNull();
+    expect(tooltip()).toBeNull();
+    expect(live()).toBe("");
+    const chart = screen.getByRole("img");
+    expect(chart.querySelectorAll("path")).toHaveLength(4);
+    expect(chart).toHaveAccessibleName(
+      /^Holdings over time, All: Treasury par from \$4\.223T on Nov 13, 2024 to \$4\.472T on Nov 4, 2026/
+    );
+  });
+
+  test("metric 2: hovering shows the guide and the week's date, the four stacks in legend order with swatches, and their total; leaving with a mouse or pen hides it", async () => {
+    const { plot, guide, tooltip, shown } = setup();
+    for (const pointerType of ["mouse", "pen"]) {
+      await fireEvent.pointerMove(plot, { clientX: xOf(50) + 2, pointerType });
+      expect(guide()).not.toBeNull();
+      expect(Number(guide()?.getAttribute("x1"))).toBeCloseTo(xOf(50), 5);
+      expect(tooltip()).toBeVisible();
+      const s = shown();
+      expect(s.date).toBe(weekLabel(points[50].week));
+      expect(s.rows.map((r) => r.label)).toEqual([
+        "Bills",
+        "Notes & bonds",
+        "TIPS",
+        "FRNs",
+      ]);
+      expect(s.rows.map((r) => r.swatch)).toEqual(
+        SOMA_STACKS.map((k) => rgb(SOMA_STACK_COLORS[k]))
+      );
+      const sum = s.rows.reduce((a, r) => a + cents(r.value), 0);
+      expect(cents(s.total)).toBe(sum);
+      expect(sum).toBeGreaterThan(0);
+
+      await fireEvent.pointerLeave(plot, { pointerType });
+      expect(guide()).toBeNull();
+      expect(tooltip()).toBeNull();
+    }
+  });
+
+  test("metric 2: weekTooltip lists SOMA_STACKS in order and totals the values shown", () => {
+    const tip = weekTooltip(points[points.length - 1]);
+    expect(tip.rows.map((r) => r.label)).toEqual(
+      SOMA_STACKS.map((k) => SOMA_STACK_LABELS[k])
+    );
+    expect(cents(tip.total)).toBe(
+      tip.rows.reduce((a, r) => a + cents(r.value), 0)
+    );
+    expect(tip.text).toBe(
+      `${tip.date}. ${tip.rows
+        .map((r) => `${r.label} ${r.value}`)
+        .join(", ")}. Total ${tip.total}.`
+    );
+  });
+
+  test("metric 3: focus lands on the last week; ArrowLeft and ArrowRight step one week, stop at the ends, and the live region matches the tooltip", async () => {
+    const { plot, shown, shownText, live } = setup();
+    const last = points.length - 1;
+    const expectWeek = (i: number) => {
+      expect(shown().date).toBe(weekLabel(points[i].week));
+      expect(live()).toBe(shownText());
+    };
+    const press = async (key: string) => {
+      // fireEvent returns false once the default is prevented.
+      expect(await fireEvent.keyDown(plot, { key }), key).toBe(false);
+    };
+
+    await fireEvent.focus(plot);
+    expectWeek(last);
+    await press("ArrowLeft");
+    expectWeek(last - 1);
+    await press("ArrowRight");
+    expectWeek(last);
+    expect(live()).toBe(weekTooltip(points[last]).text);
+    await press("ArrowRight");
+    expectWeek(last);
+    for (let i = last - 1; i >= 0; i--) {
+      await press("ArrowLeft");
+      expectWeek(i);
+    }
+    await press("ArrowLeft");
+    expectWeek(0);
+    await press("ArrowRight");
+    expectWeek(1);
+  });
+
+  test("metric 3: with one week the arrow keys leave the date alone and the guide sits at the first x", async () => {
+    const one = rangeWindow(RECORDED, SOMA_RANGES[2], "2024-11-13");
+    const { plot, guide, shown, live, shownText } = setup(
+      { ok: true, data: { firstWeek: "2024-11-13", ...one } },
+      "2024-11-13"
+    );
+    await fireEvent.focus(plot);
+    for (const key of ["ArrowLeft", "ArrowRight", "ArrowRight"]) {
+      await fireEvent.keyDown(plot, { key });
+      expect(shown().date).toBe("Nov 13, 2024");
+      expect(guide()?.getAttribute("x1")).toBe("56");
+      expect(live()).toBe(shownText());
+    }
+  });
+
+  test("guardrail 3: hovering a late week in All, then picking 1Y, clears the tooltip and draws without NaN", async () => {
+    const { plot, tooltip, guide } = setup();
+    await fireEvent.pointerMove(plot, {
+      clientX: xOf(100),
+      pointerType: "mouse",
+    });
+    expect(tooltip()).not.toBeNull();
+    await fireEvent.click(screen.getByRole("button", { name: "1Y" }));
+    expect(tooltip()).toBeNull();
+    expect(guide()).toBeNull();
+    const chart = screen.getByRole("img");
+    expect(chart.querySelectorAll("path")).toHaveLength(4);
+    for (const p of chart.querySelectorAll("path")) {
+      expect(p.getAttribute("d")).not.toMatch(/NaN|Infinity/);
+    }
+    // The next hover reads the 1Y window: its first week, not All's.
+    await fireEvent.pointerMove(plot, { clientX: 0, pointerType: "mouse" });
+    const oneYear = rangeWindow(RECORDED, SOMA_RANGES[0], AS_OF).points;
+    expect(tooltip()?.querySelector(".tip-date")?.textContent).toBe(
+      weekLabel(oneYear[0].week)
+    );
+  });
+
+  test("guardrail 4: a tap is not prevented and stays after its pointerleave; only the arrow keys are prevented; no touch-action", async () => {
+    const { plot, tooltip, live, shownText } = setup();
+    expect(
+      await fireEvent.pointerDown(plot, { clientX: 700, pointerType: "touch" })
+    ).toBe(true);
+    await fireEvent.pointerLeave(plot, { pointerType: "touch" });
+    expect(tooltip()).not.toBeNull();
+    expect(live()).toBe(shownText());
+    expect(await fireEvent.keyDown(plot, { key: "ArrowDown" })).toBe(true);
+    expect(await fireEvent.keyDown(plot, { key: "ArrowUp" })).toBe(true);
+
+    // A moving mouse updates the tooltip but not the live region.
+    const said = live();
+    await fireEvent.pointerMove(plot, { clientX: 100, pointerType: "mouse" });
+    expect(live()).toBe(said);
+
+    await fireEvent.blur(plot);
+    expect(tooltip()).toBeNull();
+
+    const source = readFileSync(
+      path.resolve("src/components/free/soma/SomaHistory.svelte"),
+      "utf8"
+    );
+    expect(source).not.toMatch(/touch-action/);
+  });
 });

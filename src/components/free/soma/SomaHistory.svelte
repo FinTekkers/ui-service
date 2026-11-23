@@ -10,9 +10,11 @@
     SOMA_STACKS,
     SOMA_STACK_COLORS,
     SOMA_STACK_LABELS,
+    nearestWeek,
     rangeWindow,
     somaXTicks,
     weekLabel,
+    weekTooltip,
     type Section,
     type SomaHistoryPoint,
     type SomaHistoryView,
@@ -53,6 +55,67 @@
       ? draw(active.points, active.range.label)
       : null;
 
+  // US-331: the week under the pointer or keyboard, an index into the
+  // shown range's points; null hides the guide and tooltip. A new range or
+  // week starts again with none.
+  let activeIndex: number | null = null;
+  // What the aria-live region says: set on key steps and taps only, so a
+  // moving mouse doesn't flood a screen reader.
+  let liveText = "";
+  $: points = active?.points ?? [];
+  $: chart, (activeIndex = null);
+  $: tip =
+    chart && activeIndex !== null && points[activeIndex]
+      ? weekTooltip(points[activeIndex])
+      : null;
+  $: if (!tip) liveText = "";
+  // The guide's x, in viewBox units; flipped past the plot's middle.
+  $: guideX = chart && activeIndex !== null ? chart.x(activeIndex) : 0;
+  $: flip = guideX > (LEFT + W - RIGHT) / 2;
+
+  function announce(i: number) {
+    if (points[i]) liveText = weekTooltip(points[i]).text;
+  }
+
+  function weekAt(e: PointerEvent): number {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = rect.width ? ((e.clientX - rect.left) / rect.width) * W : 0;
+    return nearestWeek(x, points.length, LEFT, W - RIGHT);
+  }
+
+  // No preventDefault on any pointer event, and the browser keeps its
+  // touch handling: a vertical drag over the chart still scrolls the page.
+  function onPointerMove(e: PointerEvent) {
+    activeIndex = weekAt(e);
+  }
+
+  function onPointerDown(e: PointerEvent) {
+    activeIndex = weekAt(e);
+    announce(activeIndex);
+  }
+
+  // A touch fires pointerleave straight after the tap; keep its tooltip
+  // until a tap elsewhere blurs the chart.
+  function onPointerLeave(e: PointerEvent) {
+    if (e.pointerType !== "touch") activeIndex = null;
+  }
+
+  function onFocus() {
+    if (activeIndex === null) activeIndex = points.length - 1;
+    announce(activeIndex);
+  }
+
+  function onKeydown(e: KeyboardEvent) {
+    const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+    if (step === undefined || !points.length) return;
+    e.preventDefault();
+    activeIndex =
+      activeIndex === null
+        ? points.length - 1
+        : Math.min(points.length - 1, Math.max(0, activeIndex + step));
+    announce(activeIndex);
+  }
+
   /** $ trillions, e.g. "$4.472T". */
   function trillions(dollars: string): string {
     return `$${(Number(dollars) / T).toFixed(3)}T`;
@@ -90,6 +153,7 @@
     const last = points[points.length - 1];
     return {
       range,
+      x,
       areas,
       yTicks,
       xTicks,
@@ -138,38 +202,96 @@
     <p class="summary">
       Latest: {trillions(chart.last.total)} on {asOfLabel}
     </p>
-    <svg
-      role="img"
-      aria-label={chart.label}
-      viewBox="0 0 {W} {H}"
-      class:thin={chart.range === "5Y"}
+    <!-- US-331: hover, tap or arrow keys show one week's values. Focusable
+         so the arrow keys can step it. -->
+    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <div
+      class="plot"
+      role="group"
+      aria-label="Holdings over time, by week"
+      aria-describedby="hist-keys"
+      tabindex="0"
+      on:pointermove={onPointerMove}
+      on:pointerdown={onPointerDown}
+      on:pointerleave={onPointerLeave}
+      on:focus={onFocus}
+      on:blur={() => (activeIndex = null)}
+      on:keydown={onKeydown}
     >
-      {#each chart.yTicks as tick}
-        <line class="grid" x1={LEFT} x2={W - RIGHT} y1={tick.y} y2={tick.y} />
-        <text class="tick" x={LEFT - 8} y={tick.y + 4} text-anchor="end"
-          >{tick.label}</text
-        >
-      {/each}
-      {#each chart.areas as area}
-        <path
-          d={area.d}
-          fill={SOMA_STACK_COLORS[area.stack]}
-          data-stack={area.stack}
-        />
-      {/each}
-      <!-- Slanted, each ending at its tick, so All's 20-odd years don't run
+      <svg
+        role="img"
+        aria-label={chart.label}
+        viewBox="0 0 {W} {H}"
+        class:thin={chart.range === "5Y"}
+      >
+        {#each chart.yTicks as tick}
+          <line class="grid" x1={LEFT} x2={W - RIGHT} y1={tick.y} y2={tick.y} />
+          <text class="tick" x={LEFT - 8} y={tick.y + 4} text-anchor="end"
+            >{tick.label}</text
+          >
+        {/each}
+        {#each chart.areas as area}
+          <path
+            d={area.d}
+            fill={SOMA_STACK_COLORS[area.stack]}
+            data-stack={area.stack}
+          />
+        {/each}
+        <!-- Slanted, each ending at its tick, so All's 20-odd years don't run
            together (US-322). Months on 1Y, quarters on 5Y (US-330). -->
-      {#each chart.xTicks as tick}
-        <text
-          class="tick"
-          class:alt={tick.alt}
-          x={tick.x}
-          y={X_LABEL_Y}
-          text-anchor="end"
-          transform="rotate(-45 {tick.x} {X_LABEL_Y})">{tick.label}</text
+        {#each chart.xTicks as tick}
+          <text
+            class="tick"
+            class:alt={tick.alt}
+            x={tick.x}
+            y={X_LABEL_Y}
+            text-anchor="end"
+            transform="rotate(-45 {tick.x} {X_LABEL_Y})">{tick.label}</text
+          >
+        {/each}
+        {#if tip}
+          <line
+            class="guide"
+            data-testid="hist-guide"
+            x1={guideX}
+            x2={guideX}
+            y1={TOP}
+            y2={H - BOTTOM}
+          />
+        {/if}
+      </svg>
+      {#if tip}
+        <!-- The live region below reads it out. -->
+        <div
+          class="tooltip"
+          class:flip
+          data-testid="hist-tooltip"
+          aria-hidden="true"
+          style="--p: {(guideX / W) * 100}%"
         >
-      {/each}
-    </svg>
+          <p class="tip-date">{tip.date}</p>
+          <ul>
+            {#each tip.rows as row}
+              <li data-stack={row.stack}>
+                <span class="swatch" style="background: {row.color}" />
+                <span class="tip-label">{row.label}</span>
+                <span class="tip-value">{row.value}</span>
+              </li>
+            {/each}
+          </ul>
+          <p class="tip-total">
+            <span class="tip-label">Total</span>
+            <span class="tip-value">{tip.total}</span>
+          </p>
+        </div>
+      {/if}
+    </div>
+    <p id="hist-keys" class="visually-hidden">
+      Use the left and right arrow keys to step by week.
+    </p>
+    <p class="visually-hidden" aria-live="polite" data-testid="hist-live">
+      {liveText}
+    </p>
     <ul class="legend">
       {#each SOMA_STACKS as stack}
         <li>
@@ -251,6 +373,14 @@
   .summary {
     color: var(--ink);
   }
+  .plot {
+    position: relative;
+    border-radius: 4px;
+  }
+  .plot:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 4px;
+  }
   svg {
     display: block;
     width: 100%;
@@ -289,5 +419,71 @@
     width: 12px;
     height: 12px;
     border-radius: 3px;
+  }
+  /* US-331 */
+  .guide {
+    stroke: var(--ink);
+    stroke-width: 1;
+    pointer-events: none;
+  }
+  /* Beside the guide, flipped to its left past the plot's middle; either
+     way clamped inside the chart, with no measuring. */
+  .tooltip {
+    --tip-w: min(216px, 100%);
+    position: absolute;
+    top: 4px;
+    left: min(calc(var(--p) + 8px), calc(100% - var(--tip-w)));
+    width: var(--tip-w);
+    box-sizing: border-box;
+    padding: 6px 8px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.25;
+    color: var(--ink);
+    pointer-events: none;
+  }
+  .tooltip.flip {
+    left: auto;
+    right: min(calc(100% - var(--p) + 8px), calc(100% - var(--tip-w)));
+  }
+  .tooltip p,
+  .tooltip ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tooltip li,
+  .tip-total {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .tooltip .swatch {
+    flex: none;
+  }
+  .tip-date {
+    color: var(--muted);
+  }
+  .tip-value {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+  .tip-total {
+    font-weight: 700;
+  }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>
