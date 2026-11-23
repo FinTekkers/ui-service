@@ -11,10 +11,12 @@
     SOMA_STACK_COLORS,
     SOMA_STACK_LABELS,
     rangeWindow,
+    somaXTicks,
     weekLabel,
     type Section,
     type SomaHistoryPoint,
     type SomaHistoryView,
+    type SomaRangeLabel,
   } from "$lib/free/soma";
 
   export let history: Section<SomaHistoryView> | null;
@@ -23,16 +25,17 @@
   export let asOfLabel: string;
 
   const W = 720;
-  const H = 280;
+  const H = 304;
   const LEFT = 56;
   const RIGHT = 12;
   const TOP = 12;
-  // Room under the plot for the slanted year labels.
-  const BOTTOM = 48;
+  // Room under the plot for the slanted tick labels, "Jan 2026" the longest
+  // (US-330); the plot stays 220 tall.
+  const BOTTOM = 72;
   const X_LABEL_Y = H - BOTTOM + 14;
   const T = 1e12;
 
-  let selected = "All";
+  let selected: SomaRangeLabel = "All";
 
   $: windows =
     history && history.ok
@@ -55,7 +58,7 @@
     return `$${(Number(dollars) / T).toFixed(3)}T`;
   }
 
-  function draw(points: SomaHistoryPoint[], range: string) {
+  function draw(points: SomaHistoryPoint[], range: SomaRangeLabel) {
     // One week still draws across the plot.
     const series = points.length === 1 ? [points[0], points[0]] : points;
     const max = Math.max(...points.map((p) => Number(p.total) / T));
@@ -79,14 +82,14 @@
     for (let t = 0; t <= top + 1e-9; t += step) {
       yTicks.push({ y: y(t), label: `$${Number(t.toFixed(2))}T` });
     }
-    const xTicks = series.flatMap((p, i) =>
-      i > 0 && p.week.slice(0, 4) !== series[i - 1].week.slice(0, 4)
-        ? [{ x: x(i), label: p.week.slice(0, 4) }]
-        : []
-    );
+    const xTicks = somaXTicks(
+      series.map((p) => p.week),
+      range
+    ).map((t) => ({ x: x(t.index), label: t.label, alt: t.alt }));
     const first = points[0];
     const last = points[points.length - 1];
     return {
+      range,
       areas,
       yTicks,
       xTicks,
@@ -135,7 +138,12 @@
     <p class="summary">
       Latest: {trillions(chart.last.total)} on {asOfLabel}
     </p>
-    <svg role="img" aria-label={chart.label} viewBox="0 0 {W} {H}">
+    <svg
+      role="img"
+      aria-label={chart.label}
+      viewBox="0 0 {W} {H}"
+      class:thin={chart.range === "5Y"}
+    >
       {#each chart.yTicks as tick}
         <line class="grid" x1={LEFT} x2={W - RIGHT} y1={tick.y} y2={tick.y} />
         <text class="tick" x={LEFT - 8} y={tick.y + 4} text-anchor="end"
@@ -150,10 +158,11 @@
         />
       {/each}
       <!-- Slanted, each ending at its tick, so All's 20-odd years don't run
-           together (US-322). -->
+           together (US-322). Months on 1Y, quarters on 5Y (US-330). -->
       {#each chart.xTicks as tick}
         <text
           class="tick"
+          class:alt={tick.alt}
           x={tick.x}
           y={X_LABEL_Y}
           text-anchor="end"
@@ -255,6 +264,12 @@
     font-family: var(--mono);
     font-size: 12px;
     fill: var(--muted);
+  }
+  /* At phone widths 5Y keeps every other quarter (US-330). */
+  @media (max-width: 479px) {
+    svg.thin .alt {
+      display: none;
+    }
   }
   .legend {
     margin: 0;
