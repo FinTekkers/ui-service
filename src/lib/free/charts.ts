@@ -6,6 +6,7 @@
 // padding, never from 0; stacked bars and areas always include 0.
 import {
   compactDollars,
+  dateLabel,
   groupDigits,
   type SpyFeeMonth,
   type SpyMonth,
@@ -18,6 +19,7 @@ import {
   weekTooltip,
   type SomaHistoryPoint,
 } from "./soma";
+import { percentLabel, type DrawdownPoint } from "./techVsSp500";
 
 /** One date's extent on a fitted axis. `x` is an ISO date. */
 export interface FitRow {
@@ -66,6 +68,8 @@ export const SPY_NET_COLOR = "#2f5bb7";
 export const SPY_MARKET_COLOR = "#e8a33d";
 export const SPY_AUM_COLOR = INK;
 export const SPY_FEE_COLOR = "#5b8def";
+export const DRAWDOWN_COLOR = "#2f5bb7";
+const DRAWDOWN_FILL = "rgba(47, 91, 183, 0.25)";
 
 const DAY_FORMAT = "%b %-d, %Y";
 const MONTH_FORMAT = "%b %Y";
@@ -447,6 +451,100 @@ export function somaHistorySpec(points: SomaHistoryPoint[]): PlotSpec {
         ticksuffix: "T",
       }),
     }),
+    config: CONFIG,
+    fit,
+  };
+}
+
+/**
+ * US-339 /free/tech-vs-sp500: the XLK ÷ SPY drawdown in %, filled down
+ * from 0, with the latest value and each trough annotated (date and %).
+ * `dtick` sets the y-axis step: the since-2004 panel's is finer.
+ */
+export function drawdownSpec(
+  series: [string, number][],
+  marks: { latest: DrawdownPoint; troughs: DrawdownPoint[] },
+  dtick: number
+): PlotSpec {
+  const fit: FitTarget[] = [
+    {
+      axis: "yaxis",
+      zero: true,
+      rows: series.map(([x, dd]) => ({ x, lo: dd * 100, hi: dd * 100 })),
+    },
+  ];
+  const ranges = withRanges(fit);
+  // A deep trough's label sits above it, inside the fill; a shallow one's
+  // below it, where there is room down to the axis floor, so neither runs
+  // into the top margin. Two distances in turn keep neighbours apart; near
+  // either end a label leans inward, so it never widens the x range. The latest's sits in the top margin on
+  // the right, clear of the range buttons, with a line down to its point.
+  const first = series.length ? series[0][0] : "";
+  const last = series.length ? series[series.length - 1][0] : "";
+  const span = Date.parse(last) - Date.parse(first) || 1;
+  const lean = (date: string) => {
+    const at = (Date.parse(date) - Date.parse(first)) / span;
+    return at < 0.1 ? "left" : at > 0.9 ? "right" : "center";
+  };
+  const floor = series.reduce((m, [, dd]) => Math.min(m, dd), 0);
+  const font = { family: MONO, size: 11, color: INK };
+  const trough = (t: DrawdownPoint, i: number) => ({
+    x: t.date,
+    y: t.dd * 100,
+    text: `${percentLabel(t.dd)}<br>${dateLabel(t.date)}`,
+    showarrow: true,
+    arrowhead: 0,
+    arrowcolor: MUTED,
+    ax: 0,
+    ay: (i % 2 ? 58 : 26) * (t.dd < floor / 2 ? -1 : 1),
+    xanchor: lean(t.date),
+    font,
+    bgcolor: "rgba(255, 255, 255, 0.85)",
+  });
+  const latest = {
+    x: marks.latest.date,
+    y: marks.latest.dd * 100,
+    text: `Latest ${percentLabel(marks.latest.dd)}, ${dateLabel(
+      marks.latest.date
+    )}`,
+    showarrow: true,
+    arrowhead: 0,
+    arrowcolor: MUTED,
+    ax: 0,
+    ayref: "y",
+    ay: 0,
+    xanchor: "right",
+    yanchor: "bottom",
+    font,
+  };
+  return {
+    data: [
+      {
+        type: "scatter",
+        mode: "lines",
+        name: "Drawdown",
+        x: series.map(([d]) => d),
+        y: series.map(([, dd]) => dd * 100),
+        fill: "tozeroy",
+        fillcolor: DRAWDOWN_FILL,
+        line: { color: DRAWDOWN_COLOR, width: 1 },
+        hovertemplate: "Drawdown: %{y:.1f}%<extra></extra>",
+      },
+    ],
+    layout: layoutFor(
+      "",
+      DAY_FORMAT,
+      {
+        yaxis: yAxis("", ranges.yaxis, {
+          ticksuffix: "%",
+          dtick,
+          zerolinecolor: MUTED,
+        }),
+      },
+      {
+        annotations: [...marks.troughs.map(trough), latest],
+      }
+    ),
     config: CONFIG,
     fit,
   };

@@ -1,6 +1,7 @@
 /**
  * US-251: the Free data explorer's dataset picker lists exactly the
- * public datasets (US-334 added SPY as the third), reports its open state with aria-expanded and marks the
+ * public datasets (US-334 added SPY as the third, US-339 the tech vs
+ * S&P 500 drawdown as the fourth), reports its open state with aria-expanded and marks the
  * current dataset with aria-current.
  */
 import { fireEvent, render, screen, within } from "@testing-library/svelte";
@@ -11,9 +12,10 @@ import { FREE_DATASETS, isCurrentDataset } from "$lib/free/datasets";
 const SOMA = "Federal Reserve SOMA Holdings";
 const TIPS = "Treasury Inflation Protected Securities";
 const SPY = "SPDR S&P 500 ETF Trust (SPY)";
+const TECH = "Tech's drawdown relative to the S&P 500";
 
 describe("DatasetPicker", () => {
-  test("opening it lists exactly SOMA, TIPS and SPY and sets aria-expanded", async () => {
+  test("opening it lists exactly SOMA, TIPS, SPY and tech vs S&P 500 and sets aria-expanded", async () => {
     render(DatasetPicker, { props: { currentPath: "/free/tips" } });
     const toggle = screen.getByRole("button");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -33,6 +35,7 @@ describe("DatasetPicker", () => {
       [SOMA, "/free/soma"],
       [TIPS, "/free/tips"],
       [SPY, "/free/spy"],
+      [TECH, "/free/tech-vs-sp500"],
     ]);
   });
 

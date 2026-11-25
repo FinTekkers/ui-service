@@ -6,7 +6,8 @@
  * fails this test. US-298: /free/tips's live figures come from one allowed
  * server load, src/routes/free/tips/+page.server.ts. US-307: /free/soma's
  * and /free's live SOMA holdings come from their own two. US-334: /free/spy's
- * SPY series come from its own one. US-337: one component,
+ * SPY series come from its own one, and US-339's /free/tech-vs-sp500 XLK
+ * and SPY closes from its own one. US-337: one component,
  * PlotlyChart.svelte, may load plotly.js-dist, and only with a dynamic
  * import() (a chart library, not a backend call).
  *
@@ -29,12 +30,14 @@ const FREE_ROOTS = ["src/routes/free", "src/lib/free", "src/components/free"];
 
 // Exact paths, relative to the repo root, of server files allowed under the
 // free roots. US-254 deleted the /free redirect; US-298 added /free/tips's
-// live load; US-307 added /free/soma's and /free's; US-334 /free/spy's.
+// live load; US-307 added /free/soma's and /free's; US-334 /free/spy's;
+// US-339 /free/tech-vs-sp500's.
 const ALLOWED_SERVER_FILES = new Set<string>([
   "src/routes/free/tips/+page.server.ts",
   "src/routes/free/soma/+page.server.ts",
   "src/routes/free/+page.server.ts",
   "src/routes/free/spy/+page.server.ts",
+  "src/routes/free/tech-vs-sp500/+page.server.ts",
 ]);
 
 const SERVER_FILE = /^\+(page\.server|layout\.server|server)\.(ts|js)$/;
@@ -187,24 +190,26 @@ describe("Free data explorer stays mock-only", () => {
       return scanFreeTree(repoRoot);
     }
 
-    test("only the /free/tips, /free/soma, /free/spy and /free +page.server.ts are allowed server files", () => {
+    test("only the /free/tips, /free/soma, /free/spy, /free/tech-vs-sp500 and /free +page.server.ts are allowed server files", () => {
       expect(
         fixture({
           "src/routes/free/tips/+page.server.ts": `import { fetchFreeTips } from "$lib/server/free-tips";`,
           "src/routes/free/soma/+page.server.ts": `import { fetchFreeSoma } from "$lib/server/free-soma";`,
           "src/routes/free/+page.server.ts": `import { fetchFreeSoma } from "$lib/server/free-soma";`,
           "src/routes/free/spy/+page.server.ts": `import { loadFreeSpy } from "$lib/server/free-spy";`,
+          "src/routes/free/tech-vs-sp500/+page.server.ts": `import { loadFreeTechVsSp500 } from "$lib/server/free-tech-vs-sp500";`,
         })
       ).toEqual([]);
     });
 
-    test("US-307 adds exactly two allowed server files to US-298's one, and US-334 one more", () => {
+    test("US-307 adds exactly two allowed server files to US-298's one, US-334 one more, and US-339 one more", () => {
       expect([...ALLOWED_SERVER_FILES].sort()).toEqual(
         [
           "src/routes/free/tips/+page.server.ts",
           "src/routes/free/soma/+page.server.ts",
           "src/routes/free/+page.server.ts",
           "src/routes/free/spy/+page.server.ts",
+          "src/routes/free/tech-vs-sp500/+page.server.ts",
         ].sort()
       );
     });

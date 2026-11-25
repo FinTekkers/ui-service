@@ -15,6 +15,9 @@
  *
  * US-337: the time-series charts (SPY's three, Holdings over time) are
  * Plotly plots, loaded lazily: range buttons, hover, a fitted shares axis.
+ *
+ * US-339: /free/tech-vs-sp500, linked from the dataset picker, draws the
+ * XLK ÷ SPY drawdown in two Plotly panels or says why it can't.
  */
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { existsSync, readdirSync, readFileSync } from "fs";
@@ -1070,6 +1073,121 @@ test.describe("US-337 Plotly charts", () => {
           });
         }
       }
+    }
+  });
+});
+
+// US-339: /free/tech-vs-sp500, the XLK ÷ SPY drawdown from its 252-session
+// high, from PriceService closes. The host may not hold XLK or SPY closes
+// deep enough (MDI-162), so each panel accepts its Plotly plot or
+// "Unavailable" with a reason, and records which branch ran.
+test.describe("US-339 /free/tech-vs-sp500", () => {
+  const ROUTE = "/free/tech-vs-sp500";
+  const PANELS = ["Full history", "Since 2004"];
+
+  /** Both panels drawn (plus the 'worst since' line) or both unavailable. */
+  async function expectTechPanels(page: Page): Promise<string> {
+    await expect(
+      page.getByRole("heading", {
+        name: "Tech's drawdown relative to the S&P 500",
+      })
+    ).toBeVisible();
+    const branches: string[] = [];
+    for (const name of PANELS) {
+      branches.push(await plotBranch(page.getByRole("region", { name })));
+    }
+    expect(branches[1]).toBe(branches[0]);
+    const headline = page.getByTestId("tech-headline");
+    if (branches[0] === "plot") {
+      await expect(headline).toHaveText(
+        /(worst since [A-Z][a-z]{2} \d{1,2}, \d{4}|52-week relative high|deepest on record)/
+      );
+    } else {
+      await expect(headline).toHaveCount(0);
+    }
+    return branches[0];
+  }
+
+  test("journey: /free → dataset picker → tech vs S&P 500 → both panels, and on reload", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto("/free");
+    // The picker opens only once the page has hydrated.
+    await page.waitForLoadState("networkidle");
+    const picker = page.getByRole("button", { name: /Public dataset/ });
+    await picker.click();
+    await expect(picker).toHaveAttribute("aria-expanded", "true");
+    await page
+      .getByRole("link", { name: /drawdown relative to the S&P 500/ })
+      .click();
+    await expect(page).toHaveURL(/\/free\/tech-vs-sp500$/);
+    const branch = await expectTechPanels(page);
+    test.info().annotations.push({ type: "branch", description: branch });
+    const response = await page.reload();
+    expect(response?.status()).toBe(200);
+    expect(await expectTechPanels(page)).toBe(branch);
+  });
+
+  test("/free/tech-vs-sp500 at 375 px: no horizontal scroll once the panels have drawn", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.setViewportSize({ width: 375, height: 812 });
+    const response = await page.goto(ROUTE);
+    expect(response?.status()).toBe(200);
+    // Plotly draws after hydration and could widen the page: measure after.
+    const branch = await expectTechPanels(page);
+    test.info().annotations.push({ type: "branch", description: branch });
+    const widths = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+    }));
+    expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+  });
+
+  test("/free/tech-vs-sp500: FT_HOMEPAGE_API_KEY never reaches the browser", async ({
+    page,
+    request,
+  }) => {
+    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+    test.skip(
+      !key,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
+    for (const url of [ROUTE, `${ROUTE}/__data.json`]) {
+      const response = await request.get(url);
+      expect(response.status(), `GET ${url}`).toBe(200);
+      expect(await response.text(), `GET ${url} body`).not.toContain(key);
+    }
+    const headers: string[] = [];
+    page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
+    await page.goto(ROUTE);
+    await page.waitForLoadState("networkidle");
+    expect(await page.content()).not.toContain(key);
+    expect(headers.filter((h) => h.includes(key))).toEqual([]);
+  });
+
+  // Metric 5's PR screenshots, on request only:
+  // TECH_SHOTS=<dir> npx playwright test free-pages -g "tech vs S&P 500 screenshots"
+  test("tech vs S&P 500 screenshots at 1,280 px and 390 px", async ({
+    page,
+  }) => {
+    const dir = process.env.TECH_SHOTS;
+    test.skip(!dir, "TECH_SHOTS not set: PR screenshots only");
+    for (const width of [1280, 390]) {
+      // The app shell scrolls inside its own container: make the viewport
+      // the page's height for a whole-page shot.
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(ROUTE);
+      await expectTechPanels(page);
+      const height = await page
+        .locator(".ft-free")
+        .evaluate((el) => Math.ceil(el.getBoundingClientRect().height) + 200);
+      await page.setViewportSize({ width, height });
+      await page.screenshot({
+        path: path.join(dir as string, `tech-vs-sp500-${width}.png`),
+      });
     }
   });
 });
