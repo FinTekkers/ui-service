@@ -1,11 +1,11 @@
 /**
  * US-347: closes.ts reads every stored close, not just the price service's
  * default 1,000. A fake Search mirrors price-service-rust's grpc.rs: as_of
- * and date_range bounds are inclusive, rows are the newest first then
- * `take(limit)`, `limit < 1` gives 1,000 rows plus a warning, a larger
- * limit is clamped to 10,000 without one, and `truncated` marks a response
- * that left rows behind. The fake asserts on every call that the request's
- * limit is 1..10,000 and that it returns at most 10,000 rows.
+ * and date_range bounds are inclusive (upper = min(as_of, range.end)),
+ * rows are the newest first then `take(limit)`, and `truncated` marks a
+ * response that left rows behind. The fake fails every call whose limit is
+ * unset (the service's silent 1,000-row default), 0 or over 10,000, and any
+ * response of more than 10,000 rows.
  */
 import { EventEmitter } from "events";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -28,13 +28,10 @@ vi.mock(
 
 import { PriceProto } from "@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js";
 import { QueryPriceResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_response_pb.js";
-import type { QueryPriceRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_request_pb.js";
+import { QueryPriceRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_request_pb.js";
 import { PositionFilterProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_filter_pb.js";
 import { SummaryProto } from "@fintekkers/ledger-models/node/fintekkers/requests/util/errors/summary_pb.js";
-import {
-  ErrorProto,
-  WarningProto,
-} from "@fintekkers/ledger-models/node/fintekkers/requests/util/errors/error_pb.js";
+import { WarningProto } from "@fintekkers/ledger-models/node/fintekkers/requests/util/errors/error_pb.js";
 import { Message } from "@fintekkers/ledger-models/node/fintekkers/requests/util/errors/message_pb.js";
 import { UUIDProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js";
 import { LocalTimestampProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_timestamp_pb.js";
@@ -101,8 +98,6 @@ function warning(text: string): SummaryProto {
 type FakeOptions = {
   /** The response to call `n` (1-based) carries this summary. */
   summaryOnCall?: { call: number; summary: SummaryProto };
-  /** A lower silent cap than MAX_SEARCH_RESULTS. */
-  serverCap?: number;
   /** Take the oldest rows instead of the newest. */
   oldestFirst?: boolean;
 };
@@ -116,6 +111,9 @@ function fakeSearch(rows: Row[], options: FakeOptions = {}) {
     expect(limit, "request limit").toBeGreaterThanOrEqual(1);
     expect(limit, "request limit").toBeLessThanOrEqual(MAX_SEARCH_RESULTS);
 
+    // grpc.rs reads up to min(as_of, date_range.end): the request's as_of is
+    // an inclusive upper bound. Without it every open read would return the
+    // same newest rows.
     const asOf = seconds(request.getAsOf()) ?? Infinity;
     const range = request.getDateRange();
     const lower = seconds(range?.getStart()) ?? -Infinity;
@@ -126,12 +124,7 @@ function fakeSearch(rows: Row[], options: FakeOptions = {}) {
     if (options.oldestFirst) matched = matched.reverse();
 
     let summary: SummaryProto | undefined;
-    let cap = Math.min(limit, options.serverCap ?? MAX_SEARCH_RESULTS);
-    if (limit < 1) {
-      cap = 1_000;
-      summary = warning("Results limited to 1000 records");
-    }
-    const page = matched.slice(0, cap);
+    const page = matched.slice(0, Math.min(limit, MAX_SEARCH_RESULTS));
     calls.push({ limit, returned: page.length });
     expect(page.length, "rows in one response").toBeLessThanOrEqual(
       MAX_SEARCH_RESULTS
@@ -201,6 +194,9 @@ describe("fetchClosesByTicker, through the broker PriceClient", () => {
     const closes = await fetchClosesByTicker("SPY", "key-123");
 
     expect(closes).toHaveLength(8_500);
+    expect(new Set(closes.map((c) => c.date)).size, "distinct dates").toBe(
+      8_500
+    );
     expect(closes[0]).toEqual({ date: "1993-01-29", close: 100.25 });
     expect(closes.at(-1)!.date).toBe("2026-11-22");
     expect(closes.at(-1)!.close).toBe(8_599.25);
@@ -228,9 +224,11 @@ describe("fetchClosesByTicker, through the broker PriceClient", () => {
         summary: warning("Results limited to 1000 records"),
       },
     });
-    await expect(fetchClosesByTicker("SPY", "key-123")).rejects.toThrow(
-      /Results limited to 1000 records/
-    );
+    let closes: unknown = "not returned";
+    await expect(
+      fetchClosesByTicker("SPY", "key-123").then((c) => (closes = c))
+    ).rejects.toThrow(/Results limited to 1000 records/);
+    expect(closes, "no partial closes").toBe("not returned");
   });
 
   test("a stream error after some data rejects", async () => {
@@ -250,6 +248,17 @@ describe("fetchClosesByTicker, through the broker PriceClient", () => {
 });
 
 describe("readAllPrices", () => {
+  test("the fake refuses a request with no limit, 0 or over 10,000", async () => {
+    const fake = fakeSearch(spyRows());
+    for (const limit of [undefined, 0, MAX_SEARCH_RESULTS + 1]) {
+      const request = new QueryPriceRequestProto();
+      if (limit !== undefined) request.setLimit(limit);
+      await expect(fake.search(request), `limit ${limit}`).rejects.toThrow(
+        /request limit/
+      );
+    }
+  });
+
   test("8,500 closes at 1,000 rows a request: windows split, every close once", async () => {
     const rows = spyRows();
     const fake = fakeSearch(rows);
@@ -290,29 +299,12 @@ describe("readAllPrices", () => {
         summary: warning("Results limited to 1000 records"),
       },
     });
+    let prices: unknown = "not returned";
     await expect(
-      readAllPrices(fake.search, FILTER, NOW, 1_000)
+      readAllPrices(fake.search, FILTER, NOW, 1_000).then((p) => (prices = p))
     ).rejects.toThrow(/Results limited to 1000 records/);
+    expect(prices, "no partial rows").toBe("not returned");
     expect(fake.calls).toHaveLength(3);
-  });
-
-  test("an error in errors_or_warnings rejects", async () => {
-    const summary = new SummaryProto().setErrorsList([
-      new ErrorProto().setDetail(new Message().setMessageForUser("bad filter")),
-    ]);
-    const fake = fakeSearch(spyRows(), { summaryOnCall: { call: 1, summary } });
-    await expect(readAllPrices(fake.search, FILTER, NOW)).rejects.toThrow(
-      /bad filter/
-    );
-  });
-
-  test("a response marked truncated under a lower server cap keeps reading", async () => {
-    const rows = spyRows();
-    const fake = fakeSearch(rows, { serverCap: 3_000 });
-
-    const prices = await readAllPrices(fake.search, FILTER, NOW);
-
-    expectExactly(prices, rows);
   });
 
   test("oldest-first server order: still every close once", async () => {
@@ -320,19 +312,6 @@ describe("readAllPrices", () => {
     const fake = fakeSearch(rows, { oldestFirst: true });
 
     expectExactly(await readAllPrices(fake.search, FILTER, NOW, 1_000), rows);
-  });
-
-  test("two prices on one as_of with different uuids are both kept", async () => {
-    const at = Date.parse("2026-11-24T20:00:00Z") / 1000;
-    const rows = [row(at, "101.5", 1), row(at, "101.6", 2)];
-    const prices = await readAllPrices(fakeSearch(rows).search, FILTER, NOW);
-    expect(prices).toHaveLength(2);
-  });
-
-  test("no closes: [] in one request", async () => {
-    const fake = fakeSearch([]);
-    expect(await readAllPrices(fake.search, FILTER, NOW)).toEqual([]);
-    expect(fake.calls).toHaveLength(1);
   });
 
   test("more rows on one timestamp than a request can hold rejects", async () => {

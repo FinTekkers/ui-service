@@ -158,6 +158,8 @@ export async function readAllPrices(
 
   // Round up so a close stamped within `now`'s last second is included.
   let upperS = Math.ceil(now.getTime() / 1000);
+  // The span only shrinks: after one dense stretch every older window stays
+  // that narrow. Fine for daily closes, where it never shrinks at all.
   let spanS = INITIAL_SPAN_S;
   for (;;) {
     const open = await read(upperS);

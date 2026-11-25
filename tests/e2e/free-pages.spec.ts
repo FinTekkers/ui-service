@@ -1244,8 +1244,10 @@ test.describe("US-339 /free/tech-vs-sp500", () => {
 
   // US-347: closes.ts reads every stored close, not the newest 1,000. The
   // host holds XLK from 1998 and SPY from 1993 (MDI-162), so both panels
-  // must plot, and the full history must reach the dot-com trough.
-  test("US-347 /free/tech-vs-sp500: full history reaches the 2000–2002 trough, and on reload", async ({
+  // must plot, "Full history" starts in Dec 1999 (a 252-session warm-up
+  // after 1998-12-22) and reaches the dot-com trough, and "Since 2004"
+  // starts in Jan 2004 with no "Data available from" note.
+  test("US-347 /free/tech-vs-sp500: full history from Dec 1999 reaches the 2000–2002 trough, and on reload", async ({
     page,
   }) => {
     test.setTimeout(90_000);
@@ -1271,6 +1273,21 @@ test.describe("US-339 /free/tech-vs-sp500", () => {
       expect(dotCom, `${pass}: troughs ${JSON.stringify(items)}`).not.toEqual(
         []
       );
+      const [full, since2004] = await Promise.all(
+        PANELS.map((name) =>
+          page.getByRole("region", { name }).locator(".caption").innerText()
+        )
+      );
+      expect(full, `${pass}: Full history caption`).toMatch(
+        /Daily, Dec \d{1,2}, 1999 to/
+      );
+      expect(since2004, `${pass}: Since 2004 caption`).toMatch(
+        /Daily, Jan \d{1,2}, 2004 to/
+      );
+      expect(since2004, `${pass}: Since 2004 caption`).not.toContain(
+        "Data available from"
+      );
+      expect(since2004, `${pass}: the panels differ`).not.toBe(full);
     }
   });
 
@@ -1379,39 +1396,37 @@ test.describe("US-341 /free/sigma-moves", () => {
   });
 
   // US-347: with every stored close read, SPY's "All" reaches back to 1993
-  // (the host holds SPY from 1993-01-29). Reads the drawn x-axis labels.
-  test("US-347 /free/sigma-moves: SPY at All starts by 1995", async ({
+  // (the host holds SPY from 1993-01-29; the 100-day lookback puts the
+  // first point in mid-1993). Reads the panel's "Daily, <first> to" caption.
+  test("US-347 /free/sigma-moves: SPY at All starts in 1993, and on reload", async ({
     page,
   }) => {
     test.setTimeout(90_000);
     const response = await page.goto(ROUTE);
     expect(response?.status()).toBe(200);
-    // The fund and range buttons work only once the page has hydrated.
-    await page.waitForLoadState("networkidle");
-    const fund = page.getByRole("button", { name: "SPY", exact: true });
-    await fund.click();
-    await expect(fund).toHaveAttribute("aria-pressed", "true");
-    const all = page
-      .getByRole("group", { name: "Range" })
-      .getByRole("button", { name: "All", exact: true });
-    await all.click();
-    await expect(all).toHaveAttribute("aria-pressed", "true");
     const name = FUNDS[0].name;
-    expect(await expectSigmaPanel(page, name), "SPY plots").toBe("plot");
-    const ticks = page
-      .getByRole("region", { name })
-      .locator(".js-plotly-plot .xtick text");
-    await expect
-      .poll(
-        async () => {
-          const years = (await ticks.allTextContents())
-            .map((t) => Number(t.match(/\b(\d{4})\b/)?.[1]))
-            .filter((y) => y > 0);
-          return years.length ? Math.min(...years) : Infinity;
-        },
-        { message: "earliest x-axis year", timeout: 30_000 }
-      )
-      .toBeLessThanOrEqual(1995);
+    for (const pass of ["load", "reload"]) {
+      if (pass === "reload") {
+        expect((await page.reload())?.status()).toBe(200);
+      }
+      // The fund and range buttons work only once the page has hydrated.
+      await page.waitForLoadState("networkidle");
+      const fund = page.getByRole("button", { name: "SPY", exact: true });
+      await fund.click();
+      await expect(fund).toHaveAttribute("aria-pressed", "true");
+      const all = page
+        .getByRole("group", { name: "Range" })
+        .getByRole("button", { name: "All", exact: true });
+      await all.click();
+      await expect(all).toHaveAttribute("aria-pressed", "true");
+      expect(await expectSigmaPanel(page, name), `${pass}: SPY plots`).toBe(
+        "plot"
+      );
+      await expect(
+        page.getByRole("region", { name }).locator(".caption"),
+        `${pass}: SPY All caption`
+      ).toHaveText(/Daily, [A-Z][a-z]{2} \d{1,2}, 1993 to/);
+    }
   });
 
   // Metric 5's PR screenshots, on request only:
