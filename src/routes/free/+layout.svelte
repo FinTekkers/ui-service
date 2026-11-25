@@ -1,7 +1,8 @@
 <!-- Shell for every Free data explorer page (/free/*), from the owner's
      DataExplorer.dc.html artboard. These pages never call the backend
      themselves: live figures come only from the allowed server loads (/free,
-     /free/soma, /free/tips, /free/etf/[ticker] and /free/tech-vs-sp500);
+     /free/soma, /free/tips, /free/etf/[ticker], /free/tech-vs-sp500 and
+     /free/sigma-moves);
      src/tests/free-mock-guard.test.ts enforces it. /free/spy only
      redirects. -->
 <script lang="ts">

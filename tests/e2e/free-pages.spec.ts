@@ -18,6 +18,9 @@
  *
  * US-339: /free/tech-vs-sp500, linked from the dataset picker, draws the
  * XLK ÷ SPY drawdown in two Plotly panels or says why it can't.
+ *
+ * US-341: /free/sigma-moves draws each fund's σ moves in a Plotly panel, or
+ * says why it can't, and fits a 375 px screen.
  */
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { existsSync, readdirSync, readFileSync } from "fs";
@@ -1236,6 +1239,111 @@ test.describe("US-339 /free/tech-vs-sp500", () => {
       await page.screenshot({
         path: path.join(dir as string, `tech-vs-sp500-${width}.png`),
       });
+    }
+  });
+});
+
+// US-341: /free/sigma-moves, each fund's daily return in standard
+// deviations of its previous 100, from PriceService closes. The host may not
+// hold enough closes for a fund (TQQQ is unconfirmed), so each panel accepts
+// its Plotly plot or "Unavailable" with a reason, and records which ran.
+test.describe("US-341 /free/sigma-moves", () => {
+  const ROUTE = "/free/sigma-moves";
+  const FUNDS = [
+    { ticker: "SPY", name: "SPDR S&P 500 ETF Trust (SPY)" },
+    { ticker: "TQQQ", name: "ProShares UltraPro QQQ (TQQQ)" },
+  ];
+
+  /** The selected fund's panel drawn (with the summary line) or unavailable. */
+  async function expectSigmaPanel(page: Page, name: string): Promise<string> {
+    const branch = await plotBranch(page.getByRole("region", { name }));
+    const summary = page.getByTestId("sigma-summary");
+    if (branch === "plot") {
+      await expect(summary).toHaveText(
+        /^Latest: [−+]?\d+\.\d{2}σ on [A-Z][a-z]{2} \d{1,2}, \d{4}\. \d+ days? in this range fell outside ±3σ\.$/
+      );
+    } else {
+      await expect(summary).toHaveCount(0);
+    }
+    return branch;
+  }
+
+  test("/free/sigma-moves at 375 px: no horizontal scroll for either fund once drawn", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.setViewportSize({ width: 375, height: 812 });
+    const response = await page.goto(ROUTE);
+    expect(response?.status()).toBe(200);
+    // The fund buttons work only once the page has hydrated.
+    await page.waitForLoadState("networkidle");
+    for (const { ticker, name } of FUNDS) {
+      const button = page.getByRole("button", { name: ticker, exact: true });
+      await button.click();
+      await expect(button).toHaveAttribute("aria-pressed", "true");
+      // Plotly draws after hydration and could widen the page: measure after.
+      const branch = await expectSigmaPanel(page, name);
+      test.info().annotations.push({
+        type: "branch",
+        description: `${ticker}: ${branch}`,
+      });
+      const widths = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        client: document.documentElement.clientWidth,
+      }));
+      expect(widths.scroll, ticker).toBeLessThanOrEqual(widths.client);
+      const tooWide = await page.evaluate(() =>
+        [...document.querySelectorAll("main *")]
+          .filter((el) => el.getBoundingClientRect().right > 375 + 1)
+          .map((el) => `${el.tagName}.${el.className}`)
+      );
+      expect(tooWide, ticker).toEqual([]);
+    }
+  });
+
+  test("/free/sigma-moves: FT_HOMEPAGE_API_KEY never reaches the browser", async ({
+    page,
+    request,
+  }) => {
+    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+    test.skip(
+      !key,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
+    for (const url of [ROUTE, `${ROUTE}/__data.json`]) {
+      const response = await request.get(url);
+      expect(response.status(), `GET ${url}`).toBe(200);
+      expect(await response.text(), `GET ${url} body`).not.toContain(key);
+    }
+    const headers: string[] = [];
+    page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
+    await page.goto(ROUTE);
+    await page.waitForLoadState("networkidle");
+    expect(await page.content()).not.toContain(key);
+    expect(headers.filter((h) => h.includes(key))).toEqual([]);
+  });
+
+  // Metric 5's PR screenshots, on request only:
+  // SIGMA_SHOTS=<dir> npx playwright test free-pages -g "sigma moves screenshots"
+  test("sigma moves screenshots at 1Y for each fund", async ({ page }) => {
+    const dir = process.env.SIGMA_SHOTS;
+    test.skip(!dir, "SIGMA_SHOTS not set: PR screenshots only");
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(ROUTE);
+    await page.waitForLoadState("networkidle");
+    for (const { ticker, name } of FUNDS) {
+      await page.getByRole("button", { name: ticker, exact: true }).click();
+      await expectSigmaPanel(page, name);
+      // The app shell scrolls inside its own container: make the viewport
+      // the page's height for a whole-page shot.
+      const height = await page
+        .locator(".ft-free")
+        .evaluate((el) => Math.ceil(el.getBoundingClientRect().height) + 200);
+      await page.setViewportSize({ width: 1280, height });
+      await page.screenshot({
+        path: path.join(dir as string, `sigma-moves-${ticker}-1Y.png`),
+      });
+      await page.setViewportSize({ width: 1280, height: 900 });
     }
   });
 });

@@ -4,7 +4,7 @@
 import { ETF_FUNDS } from "./etf/funds";
 
 export interface FreeDataset {
-  id: "soma" | "tips" | `etf-${string}` | "tech-vs-sp500";
+  id: "soma" | "tips" | `etf-${string}` | "tech-vs-sp500" | "sigma-moves";
   label: string;
   href: string;
 }
@@ -27,6 +27,12 @@ export const FREE_DATASETS: readonly FreeDataset[] = [
     id: "tech-vs-sp500",
     label: "Tech's drawdown relative to the S&P 500",
     href: "/free/tech-vs-sp500",
+  },
+  // US-341: no ticker in the label; the picker links are found by name.
+  {
+    id: "sigma-moves",
+    label: "Sigma moves: daily returns in standard deviations",
+    href: "/free/sigma-moves",
   },
 ];
 
