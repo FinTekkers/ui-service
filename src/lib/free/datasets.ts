@@ -4,7 +4,7 @@
 import { ETF_FUNDS } from "./etf/funds";
 
 export interface FreeDataset {
-  id: "soma" | "tips" | `etf-${string}`;
+  id: "soma" | "tips" | `etf-${string}` | "tech-vs-sp500";
   label: string;
   href: string;
 }
@@ -23,6 +23,11 @@ export const FREE_DATASETS: readonly FreeDataset[] = [
       href: `/free/etf/${fund.slug}`,
     })
   ),
+  {
+    id: "tech-vs-sp500",
+    label: "Tech's drawdown relative to the S&P 500",
+    href: "/free/tech-vs-sp500",
+  },
 ];
 
 // True on the dataset's page and any page below it (/free/tips/<cusip>),
