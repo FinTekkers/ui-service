@@ -1,34 +1,37 @@
-<!-- /free/spy chart 1: SPY's daily shares outstanding, as stored in
-     SecurityMetricService (State Street figures, loaded by MDI-154).
+<!-- /free/etf/[ticker] chart 1: the fund's daily shares outstanding, as
+     stored in SecurityMetricService (the sponsor's figures; SPY's loaded by
+     MDI-154).
      US-337: drawn by Plotly, with 1Y, 5Y and All range buttons; the y-axis
      fits the dates in view, so a 7% move over a year doesn't look flat. A
      range the series can't fill keeps its note. -->
 <script lang="ts">
   import PlotlyChart from "../PlotlyChart.svelte";
   import { sharesSpec } from "$lib/free/charts";
+  import type { EtfFund } from "$lib/free/etf/funds";
   import {
-    SPY_RANGES,
+    ETF_RANGES,
     dateLabel,
     groupDigits,
-    spyRangeWindow,
+    etfRangeWindow,
     type Section,
-    type SpyPoint,
-  } from "$lib/free/spy";
+    type EtfPoint,
+  } from "$lib/free/etf";
 
-  export let shares: Section<SpyPoint[]>;
+  export let fund: EtfFund;
+  export let shares: Section<EtfPoint[]>;
   /** The page's date (ISO): every range ends here. */
   export let asOf: string;
 
   $: windows = shares.ok
-    ? SPY_RANGES.map((range) => ({
+    ? ETF_RANGES.map((range) => ({
         range,
-        ...spyRangeWindow(shares.ok ? shares.data : [], range, asOf),
+        ...etfRangeWindow(shares.ok ? shares.data : [], range, asOf),
       }))
     : [];
   $: points = windows.find((w) => w.range.years === null)?.points ?? [];
   $: chart = points.length ? draw(points) : null;
 
-  function draw(points: SpyPoint[]) {
+  function draw(points: EtfPoint[]) {
     const first = points[0];
     const last = points[points.length - 1];
     return {
@@ -42,8 +45,8 @@
   }
 </script>
 
-<section aria-labelledby="spy-shares-title" class="panel">
-  <h2 id="spy-shares-title" class="panel-title">
+<section aria-labelledby="etf-shares-title" class="panel">
+  <h2 id="etf-shares-title" class="panel-title">
     Shares outstanding over time
   </h2>
   {#if !shares.ok}
@@ -52,18 +55,18 @@
     <PlotlyChart
       spec={chart.spec}
       label={chart.label}
-      testid="spy-shares-plot"
+      testid="etf-shares-plot"
     />
     <ul class="legend">
       <li><span class="swatch line-swatch" />Shares outstanding, daily</li>
     </ul>
     <p class="caption">
       Daily, {dateLabel(chart.first[0])} to {dateLabel(chart.last[0])}. Source:
-      State Street, via the Fintekkers SecurityMetric service.
+      {fund.sponsor}, via the Fintekkers SecurityMetric service.
     </p>
   {/if}
   {#each windows.filter((w) => w.note) as w}
-    <p id="spy-shares-note-{w.range.label}" class="note">{w.note}</p>
+    <p id="etf-shares-note-{w.range.label}" class="note">{w.note}</p>
   {/each}
 </section>
 

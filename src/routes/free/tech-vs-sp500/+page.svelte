@@ -6,7 +6,7 @@
      and the two panels draw it with Plotly. -->
 <script lang="ts">
   import DrawdownPanel from "../../../components/free/tech/DrawdownPanel.svelte";
-  import { dateLabel } from "$lib/free/spy";
+  import { dateLabel } from "$lib/free/etf";
   import {
     SINCE_2004,
     TECH_VS_SP500_BASIS,

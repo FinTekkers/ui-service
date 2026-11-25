@@ -5,7 +5,7 @@
 <script lang="ts">
   import PlotlyChart from "../PlotlyChart.svelte";
   import { drawdownSpec } from "$lib/free/charts";
-  import { dateLabel } from "$lib/free/spy";
+  import { dateLabel } from "$lib/free/etf";
   import {
     percentLabel,
     type DrawdownPoint,

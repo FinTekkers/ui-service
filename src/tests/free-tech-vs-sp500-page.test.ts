@@ -23,7 +23,7 @@ import { loadFreeTechVsSp500 } from "$lib/server/free-tech-vs-sp500";
 import { load } from "../routes/free/tech-vs-sp500/+page.server";
 import Page from "../routes/free/tech-vs-sp500/+page.svelte";
 import { drawdownSpec } from "$lib/free/charts";
-import { dateLabel } from "$lib/free/spy";
+import { dateLabel } from "$lib/free/etf";
 import type { Close, TechVsSp500PageData } from "$lib/free/techVsSp500";
 
 const SENTINEL = "sentinel-tech-key";

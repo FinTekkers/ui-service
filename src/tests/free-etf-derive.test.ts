@@ -18,8 +18,8 @@ import {
   monthlyFlows,
   tradingCalendar,
   type DailySeries,
-} from "$lib/server/free-spy";
-import { isStale } from "$lib/free/spy";
+} from "$lib/server/free-etf";
+import { isStale } from "$lib/free/etf";
 
 type Row = [string, string];
 

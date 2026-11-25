@@ -1,7 +1,10 @@
 // The public datasets in the Free data explorer (/free/*). DatasetPicker
-// lists these, and each dataset's page lives at its href.
+// lists these, and each dataset's page lives at its href. US-338: one entry
+// per fund in ETF_FUNDS, at /free/etf/<slug>.
+import { ETF_FUNDS } from "./etf/funds";
+
 export interface FreeDataset {
-  id: "soma" | "tips" | "spy" | "tech-vs-sp500";
+  id: "soma" | "tips" | `etf-${string}` | "tech-vs-sp500";
   label: string;
   href: string;
 }
@@ -13,7 +16,13 @@ export const FREE_DATASETS: readonly FreeDataset[] = [
     label: "Treasury Inflation Protected Securities",
     href: "/free/tips",
   },
-  { id: "spy", label: "SPDR S&P 500 ETF Trust (SPY)", href: "/free/spy" },
+  ...ETF_FUNDS.map(
+    (fund): FreeDataset => ({
+      id: `etf-${fund.slug}`,
+      label: `${fund.name} (${fund.ticker})`,
+      href: `/free/etf/${fund.slug}`,
+    })
+  ),
   {
     id: "tech-vs-sp500",
     label: "Tech's drawdown relative to the S&P 500",

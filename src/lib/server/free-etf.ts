@@ -1,6 +1,8 @@
 /**
- * US-334: /free/spy's server load. SPY's stored SecurityMetric series
- * (LM-485), read through the broker with the server-held homepage key
+ * US-334: /free/spy's server load, generalised by US-338 to any fund in
+ * ETF_FUNDS ($lib/free/etf/funds) for /free/etf/[ticker]. The fund's stored
+ * SecurityMetric series (LM-485), read through the broker with the
+ * server-held homepage key
  * (FT_HOMEPAGE_API_KEY), never a visitor's, plus the figures derived from
  * them here: monthly net flows vs market move, and (US-336) sponsor fee
  * revenue from the stored EXPENSE_RATIO series.
@@ -8,9 +10,11 @@
  * Every derivation uses stored series only, in exact decimals. A missing
  * day makes the figures that need it null, never 0, and nothing is
  * interpolated or defaulted. A failed series makes only the sections that
- * need it unavailable. Nothing here throws.
+ * need it unavailable. The only throw is the 404 for a slug that isn't in
+ * the config, before any service call.
  */
 import Decimal from "decimal.js";
+import { error } from "@sveltejs/kit";
 import type { SecurityProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_pb.js";
 import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb";
 import { SecurityMetricClient } from "@fintekkers/ledger-models/node/fintekkers/services/security-metric-service/security_metric_service_grpc_pb";
@@ -37,32 +41,28 @@ import {
   daysOld,
   isStale,
   type Section,
-  type SpyFeeMonth,
-  type SpyFees,
-  type SpyLatest,
-  type SpyMonth,
-  type SpyPageData,
-  type SpyPoint,
-} from "$lib/free/spy";
-
-export const SPY_TICKER = "SPY";
-
-/** SPY's launch: every search starts here, so nothing stored is cut off. */
-export const SPY_INCEPTION = "1993-01-22";
+  type EtfFeeMonth,
+  type EtfFees,
+  type EtfLatest,
+  type EtfMonth,
+  type EtfPageData,
+  type EtfPoint,
+} from "$lib/free/etf";
+import { findEtf, type EtfFund } from "$lib/free/etf/funds";
 
 /** The series the page reads, by SecurityMetricTypeProto name. */
-export const SPY_METRICS = [
+export const ETF_METRICS = [
   "SHARES_OUTSTANDING",
   "NAV_PER_SHARE",
   "TOTAL_NET_ASSETS",
 ] as const;
-type SpyMetric = (typeof SPY_METRICS)[number];
+type EtfMetric = (typeof ETF_METRICS)[number];
 
 /**
- * The fee chart's ratio series, read on its own after SPY_METRICS so a
+ * The fee chart's ratio series, read on its own after ETF_METRICS so a
  * failure here leaves the shares and flows charts as they are.
  */
-export const SPY_RATIO_METRIC = "EXPENSE_RATIO";
+export const ETF_RATIO_METRIC = "EXPENSE_RATIO";
 
 /** A stored series as the derivations take it: [ISO date, value or null]. */
 export type DailySeries = ReadonlyArray<readonly [string, string | null]>;
@@ -129,7 +129,7 @@ export function monthlyFlows(
   shares: DailySeries,
   nav: DailySeries,
   tna: DailySeries
-): SpyMonth[] {
+): EtfMonth[] {
   const calendar = tradingCalendar(shares, nav, tna);
   if (!calendar.length) return [];
   const s = byDate(shares);
@@ -210,7 +210,7 @@ export function feeRevenue(
   tna: DailySeries,
   ratio: DailySeries,
   calendar: string[]
-): SpyFeeMonth[] {
+): EtfFeeMonth[] {
   if (!calendar.length) return [];
   const trading = new Set(calendar);
   const t = byDate(tna);
@@ -249,9 +249,9 @@ export function feeRevenue(
  * date.
  */
 export function mergeRatio(
-  history: readonly SpyPoint[],
-  prior: SpyPoint | null
-): SpyPoint[] {
+  history: readonly EtfPoint[],
+  prior: EtfPoint | null
+): EtfPoint[] {
   const points = new Map<string, string>();
   if (prior) points.set(prior[0], prior[1]);
   for (const [date, value] of history) points.set(date, value);
@@ -328,23 +328,24 @@ function unavailable<T>(message: string): Section<T> {
   return { ok: false, message };
 }
 
-function toPoints(series: MetricSeries): SpyPoint[] {
+function toPoints(series: MetricSeries): EtfPoint[] {
   return series.points.map((p) => [isoDate(p.date), p.value.toString()]);
 }
 
-/** Each SPY_METRICS series, or why it can't be shown. */
+/** Each ETF_METRICS series, or why it can't be shown. */
 async function readSeries(
   service: SecurityMetricService,
+  fund: EtfFund,
   uuid: UUID,
   asOf: string
-): Promise<Record<SpyMetric, Section<SpyPoint[]>>> {
+): Promise<Record<EtfMetric, Section<EtfPoint[]>>> {
   const settled = await Promise.allSettled(
-    SPY_METRICS.map((metric) =>
-      service.getHistory(metric, uuid, SPY_INCEPTION, asOf)
+    ETF_METRICS.map((metric) =>
+      service.getHistory(metric, uuid, fund.searchFrom, asOf)
     )
   );
-  const series = {} as Record<SpyMetric, Section<SpyPoint[]>>;
-  SPY_METRICS.forEach((metric, i) => {
+  const series = {} as Record<EtfMetric, Section<EtfPoint[]>>;
+  ETF_METRICS.forEach((metric, i) => {
     const result = settled[i];
     if (result.status === "rejected") {
       series[metric] = unavailable(
@@ -354,7 +355,7 @@ async function readSeries(
       );
     } else if (!result.value.points.length) {
       series[metric] = unavailable(
-        `Unavailable: no ${metric} values are stored for SPY.`
+        `Unavailable: no ${metric} values are stored for ${fund.ticker}.`
       );
     } else {
       series[metric] = { ok: true, data: toPoints(result.value) };
@@ -371,19 +372,20 @@ async function readSeries(
  */
 async function readFees(
   service: SecurityMetricService,
+  fund: EtfFund,
   uuid: UUID,
-  tna: Section<SpyPoint[]>,
+  tna: Section<EtfPoint[]>,
   asOf: string
-): Promise<Section<SpyFees>> {
+): Promise<Section<EtfFees>> {
   if (!tna.ok) return tna;
   const aumStart = tna.data[0][0];
   const [history, prior] = await Promise.allSettled([
-    service.getHistory(SPY_RATIO_METRIC, uuid, aumStart, asOf),
-    service.get(SPY_RATIO_METRIC, [uuid], aumStart),
+    service.getHistory(ETF_RATIO_METRIC, uuid, aumStart, asOf),
+    service.get(ETF_RATIO_METRIC, [uuid], aumStart),
   ]);
   const failed = (reason: unknown) =>
-    unavailable<SpyFees>(
-      `Unavailable: ${SPY_RATIO_METRIC} could not be read (${errorText(
+    unavailable<EtfFees>(
+      `Unavailable: ${ETF_RATIO_METRIC} could not be read (${errorText(
         reason
       )}).`
     );
@@ -398,7 +400,7 @@ async function readFees(
   );
   if (!ratio.length) {
     return unavailable(
-      `Unavailable: no ${SPY_RATIO_METRIC} values are stored for SPY.`
+      `Unavailable: no ${ETF_RATIO_METRIC} values are stored for ${fund.ticker}.`
     );
   }
   return {
@@ -411,16 +413,24 @@ async function readFees(
 }
 
 /**
- * Everything /free/spy shows. An unset key, or SPY not found, makes every
- * section unavailable with that reason. The fee section reads EXPENSE_RATIO
- * after the other series, so its failure touches no other section.
+ * Everything /free/etf/<slug> shows. A slug not in ETF_FUNDS is a 404,
+ * thrown before the key is read or any client is built, so only configured
+ * tickers reach the broker. An unset key, or the fund not found, makes
+ * every section unavailable with that reason. The fee section reads
+ * EXPENSE_RATIO after the other series, so its failure touches no other
+ * section.
  */
-export async function loadFreeSpy(
+export async function loadFreeEtf(
+  slug: string,
   apiKey: string | undefined,
   now: Date
-): Promise<SpyPageData> {
+): Promise<EtfPageData> {
+  const fund = findEtf(slug);
+  if (!fund) throw error(404, "Unknown fund");
+
   const asOf = now.toISOString().slice(0, 10);
-  const all = (message: string): SpyPageData => ({
+  const all = (message: string): EtfPageData => ({
+    fund,
     asOf,
     latest: unavailable(message),
     shares: unavailable(message),
@@ -435,14 +445,18 @@ export async function loadFreeSpy(
   try {
     security = await FetchSecurityProtoByIdentifier(
       IdentifierTypeProto.EXCH_TICKER,
-      SPY_TICKER,
+      fund.ticker,
       apiKey
     );
   } catch (e) {
-    return all(`Unavailable: SPY could not be found (${errorText(e)}).`);
+    return all(
+      `Unavailable: ${fund.ticker} could not be found (${errorText(e)}).`
+    );
   }
   const uuid = UUID.fromUUIDProto(security.getUuid());
-  if (!uuid) return all("Unavailable: SPY's security record has no ID.");
+  if (!uuid) {
+    return all(`Unavailable: ${fund.ticker}'s security record has no ID.`);
+  }
 
   let fetcher: ReturnType<typeof brokerSecurityMetricFetcher>;
   try {
@@ -455,11 +469,11 @@ export async function loadFreeSpy(
     );
   }
   const service = new SecurityMetricService({ fetcher });
-  let series: Record<SpyMetric, Section<SpyPoint[]>>;
-  let fees: Section<SpyFees>;
+  let series: Record<EtfMetric, Section<EtfPoint[]>>;
+  let fees: Section<EtfFees>;
   try {
-    series = await readSeries(service, uuid, asOf);
-    fees = await readFees(service, uuid, series.TOTAL_NET_ASSETS, asOf);
+    series = await readSeries(service, fund, uuid, asOf);
+    fees = await readFees(service, fund, uuid, series.TOTAL_NET_ASSETS, asOf);
   } finally {
     fetcher.close();
   }
@@ -468,7 +482,7 @@ export async function loadFreeSpy(
   const nav = series.NAV_PER_SHARE;
   const tna = series.TOTAL_NET_ASSETS;
 
-  let latest: Section<SpyLatest>;
+  let latest: Section<EtfLatest>;
   const last = shares.ok ? latestShareCount(shares.data) : null;
   if (!shares.ok) latest = shares;
   else if (!last)
@@ -484,12 +498,12 @@ export async function loadFreeSpy(
     };
   }
 
-  let flows: Section<SpyMonth[]>;
+  let flows: Section<EtfMonth[]>;
   if (!shares.ok) flows = shares;
   else if (!nav.ok) flows = nav;
   else if (!tna.ok) flows = tna;
   else
     flows = { ok: true, data: monthlyFlows(shares.data, nav.data, tna.data) };
 
-  return { asOf, latest, shares, flows, fees };
+  return { fund, asOf, latest, shares, flows, fees };
 }
