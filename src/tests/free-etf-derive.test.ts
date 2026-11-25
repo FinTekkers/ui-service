@@ -19,7 +19,7 @@ import {
   tradingCalendar,
   type DailySeries,
 } from "$lib/server/free-etf";
-import { isStale } from "$lib/free/etf";
+import { feeRunRate, isStale } from "$lib/free/etf";
 
 type Row = [string, string];
 
@@ -164,7 +164,7 @@ describe("metric 1b: fee revenue", () => {
     const may = feeRevenue(tna, ratio, calendar).find(
       (f) => f.month === "2026-05"
     );
-    expect(may).toEqual({ month: "2026-05", fee: null });
+    expect(may).toEqual({ month: "2026-05", fee: null, days: 31 });
   });
 
   test("the latest month runs to the last trading day: 1–3 July at 2 a day = 6", () => {
@@ -245,6 +245,59 @@ describe("metric 1b: fee revenue", () => {
     );
     expect(fees).toHaveLength(1);
     expect(new Decimal(fees[0].fee as string).equals(283_500)).toBe(true);
+  });
+});
+
+// US-346 metric 1: the annualised run rate, (fee ÷ days covered) × 365.
+describe("US-346 metric 1: annualised run rate", () => {
+  test("each month is scaled by its own day count", () => {
+    const july = feeRunRate("60000000", 31);
+    const june = feeRunRate("60000000", 30);
+    const toDate = feeRunRate("60000000", 24);
+    expect(july).toBeCloseTo((60_000_000 / 31) * 365, 4);
+    expect(july).toBeCloseTo(706_451_612.9, 0);
+    expect(june).toBe(730_000_000);
+    expect(toDate).toBe(912_500_000);
+    expect(new Set([july, june, toDate]).size).toBe(3);
+  });
+
+  test("a blank month or no days is null, never 0", () => {
+    expect(feeRunRate(null, 30)).toBeNull();
+    expect(feeRunRate("100", 0)).toBeNull();
+  });
+
+  // May–Jul 2026 weekdays, as in metric 1b; 3 July is the last trading day.
+  test("feeRevenue counts the calendar days each month covers, the latest to date", () => {
+    const calendar = weekdays("2026-05-01", "2026-07-03");
+    const tna: Row[] = calendar.map((d) => [d, "365000"]);
+    const fees = feeRevenue(tna, [["2026-05-15", "0.1"]], calendar);
+    expect(fees.map((f) => [f.month, f.days])).toEqual([
+      ["2026-05", 31],
+      ["2026-06", 30],
+      ["2026-07", 3],
+    ]);
+    // May is blank (no ratio before 15 May) but still counts its days, and
+    // its run rate is null.
+    expect(fees[0].fee).toBeNull();
+    expect(fees[0].days).toBeGreaterThan(0);
+    expect(feeRunRate(fees[0].fee, fees[0].days)).toBeNull();
+  });
+
+  // Backs metric 5: on constant AUM and ratio, every month's run rate,
+  // the month to date included, is AUM × ratio a year.
+  test("constant AUM and ratio: the run rate is AUM × ratio for every month", () => {
+    const calendar = weekdays("2026-05-01", "2026-07-24");
+    const fees = feeRevenue(
+      calendar.map((d) => [d, "600000000000"]),
+      [["2007-01-26", "0.0945"]],
+      calendar
+    );
+    expect(fees.map((f) => f.days)).toEqual([31, 30, 24]);
+    const expected = 600e9 * 0.000945;
+    for (const f of fees) {
+      const rate = feeRunRate(f.fee, f.days) as number;
+      expect(Math.abs(rate - expected) / expected).toBeLessThan(1e-6);
+    }
   });
 });
 

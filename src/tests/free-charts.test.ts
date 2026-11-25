@@ -21,7 +21,12 @@ import {
   somaHistorySpec,
   type PlotSpec,
 } from "$lib/free/charts";
-import type { EtfFeeMonth, EtfMonth, EtfPoint } from "$lib/free/etf";
+import {
+  compactDollars,
+  type EtfFeeMonth,
+  type EtfMonth,
+  type EtfPoint,
+} from "$lib/free/etf";
 import type { SomaHistoryPoint } from "$lib/free/soma";
 
 /** Two years of month-start share counts, flat at 0.9B, then a year rising
@@ -61,9 +66,9 @@ const FLOWS: EtfMonth[] = [
 ];
 
 const FEES: EtfFeeMonth[] = [
-  { month: "2026-05", fee: null },
-  { month: "2026-06", fee: "30000000" },
-  { month: "2026-07", fee: "31000000" },
+  { month: "2026-05", fee: null, days: 31 },
+  { month: "2026-06", fee: "30000000", days: 30 },
+  { month: "2026-07", fee: "31000000", days: 31 },
 ];
 
 function week(
@@ -231,6 +236,7 @@ describe("metric 1: range buttons, colours and names", () => {
     ]);
     expect(named(feesSpec(FEES))).toEqual([
       ["Estimated gross fee revenue", "#5b8def"],
+      ["Annualised run rate (right axis)", "#e8a33d"],
     ]);
     expect(named(somaHistorySpec(SOMA)).slice(0, 4)).toEqual([
       ["Bills", "#B9D0FA"],
@@ -250,7 +256,7 @@ describe("metric 1: range buttons, colours and names", () => {
     expect(title(flows, "yaxis")).toBe("Monthly change in AUM");
     expect(title(flows, "yaxis2")).toBe("Month-end AUM");
     expect(title(flows, "xaxis")).toBe("Month");
-    expect(title(feesSpec(FEES), "yaxis")).toBe("Fee revenue per month");
+    expect(title(feesSpec(FEES), "yaxis")).toBe("Monthly fee");
   });
 
   test("hover shows the page's figures: grouped digits, compact dollars, the SOMA week's values and total", () => {
@@ -279,6 +285,65 @@ describe("metric 1: range buttons, colours and names", () => {
     expect(flows.data[2].y).toEqual([400, 450, null, 600]);
     expect(flows.data[2].connectgaps).toBe(false);
     expect(feesSpec(FEES).data[0].y).toEqual([null, 30, 31]);
+  });
+});
+
+describe("US-346: the fee chart's annualised run-rate line", () => {
+  test("metric 2: bars on the left axis, the run rate on a right axis", () => {
+    const spec = feesSpec(FEES);
+    expect(spec.layout.yaxis.title.text).toBe("Monthly fee");
+    expect(spec.layout.yaxis2.title.text).toBe(
+      "Annualised run rate ($ per year)"
+    );
+    expect(spec.layout.yaxis2).toMatchObject({
+      side: "right",
+      overlaying: "y",
+    });
+    expect(spec.data[1].yaxis).toBe("y2");
+    expect([undefined, "y"]).toContain(spec.data[0].yaxis);
+    expect(spec.data[0].y).toEqual([null, 30, 31]);
+    expect(spec.data[0].hovertemplate).toBe(
+      "Estimated fee revenue: %{customdata}<extra></extra>"
+    );
+    // June: 30M over 30 days × 365 = 365M; July: 31M over 31 days.
+    expect(spec.data[1].y).toEqual([null, 365, 365]);
+  });
+
+  test("metric 2: a blank mid-series month is a gap in the line, not 0", () => {
+    const spec = feesSpec([
+      { month: "2026-05", fee: "30000000", days: 31 },
+      { month: "2026-06", fee: null, days: 30 },
+      { month: "2026-07", fee: "31000000", days: 31 },
+    ]);
+    const y = spec.data[1].y as (number | null)[];
+    expect(y[1]).toBeNull();
+    expect(typeof y[0]).toBe("number");
+    expect(typeof y[2]).toBe("number");
+    expect(spec.data[1].connectgaps).not.toBe(true);
+  });
+
+  test("metric 3: one unified hover shows the month's fee and its run rate", () => {
+    const spec = feesSpec(FEES);
+    expect(spec.layout.hovermode).toBe("x unified");
+    expect(spec.data[1].hovertemplate).toBe(
+      "Annualised run rate: %{customdata} a year<extra></extra>"
+    );
+    expect(spec.data[0].hovertemplate).not.toBe(spec.data[1].hovertemplate);
+    expect((spec.data[0].customdata as string[])[1]).toBe("$30.0M");
+    expect((spec.data[1].customdata as string[])[1]).toBe(
+      compactDollars((30_000_000 / 30) * 365)
+    );
+    expect((spec.data[1].customdata as string[])[0]).toBe("");
+  });
+
+  test("guardrail 4: both axes refit to the visible months, from 0", () => {
+    const spec = feesSpec(FEES);
+    expect(spec.fit.map((t) => t.axis)).toEqual(["yaxis", "yaxis2"]);
+    expect(range(spec, "yaxis2")[0]).toBe(0);
+    const update = refit(spec, "2026-06-01", "2026-06-30");
+    expect(update["yaxis.range"][0]).toBe(0);
+    expect(update["yaxis2.range"][0]).toBe(0);
+    expect(update["yaxis2.range"][1]).toBeGreaterThan(365);
   });
 });
 

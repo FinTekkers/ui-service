@@ -2,10 +2,16 @@
      derived on the server from stored TOTAL_NET_ASSETS and the stored
      EXPENSE_RATIO series (US-336). A month before the first stored ratio has no
      estimate, and a note says so; a ratio is never defaulted. A null month
-     is a gap, never a zero bar. US-337: drawn by Plotly, zero-based. -->
+     is a gap, never a zero bar. US-337: drawn by Plotly, zero-based.
+     US-346: an annualised run-rate line on a right-hand axis, so the month
+     to date and full months compare; a blank month has no point. -->
 <script lang="ts">
   import PlotlyChart from "../PlotlyChart.svelte";
-  import { feesSpec } from "$lib/free/charts";
+  import {
+    ETF_FEE_COLOR,
+    ETF_RUN_RATE_COLOR,
+    feesSpec,
+  } from "$lib/free/charts";
   import { etfFeeNote, type EtfFund } from "$lib/free/etf/funds";
   import {
     ETF_FORMULAS,
@@ -18,8 +24,6 @@
 
   export let fund: EtfFund;
   export let fees: Section<EtfFees>;
-
-  const FEE = "#5b8def";
 
   $: chart = fees.ok && fees.data.months.length ? draw(fees.data.months) : null;
   $: gapNote = fees.ok ? etfFeeGapNote(fees.data, fund.ticker) : null;
@@ -45,20 +49,31 @@
   {:else}
     <PlotlyChart
       spec={chart.spec}
-      label="Estimated {fund.ticker} sponsor fee revenue per month, {monthLabel(
+      label="Estimated {fund.ticker} sponsor fee revenue per month and its annualised run rate, {monthLabel(
         chart.first
       )} to {monthLabel(chart.last)}"
       testid="etf-fees-plot"
     />
     <ul class="legend">
       <li>
-        <span class="swatch" style="background: {FEE}" />Estimated gross fee
-        revenue
+        <span class="swatch" style="background: {ETF_FEE_COLOR}" />Estimated
+        gross fee revenue (left axis)
+      </li>
+      <li>
+        <span
+          class="swatch line-swatch"
+          style="background: {ETF_RUN_RATE_COLOR}"
+        />Annualised run rate (right axis)
       </li>
     </ul>
     <p class="caption">
       Monthly, {monthLabel(chart.first)} to {monthLabel(chart.last)}; the latest
       month is month to date. A month with a missing day is left blank.
+    </p>
+    <p class="caption" data-testid="etf-fee-run-rate-caption">
+      Bars: each month's estimated fee. Line: {ETF_FORMULAS.runRate}, so the
+      month to date and full months compare. A blank month has no bar and no
+      run-rate point.
     </p>
     {#if gapNote}
       <p class="caption" data-testid="etf-fee-gap-note">{gapNote}</p>
@@ -127,5 +142,9 @@
     height: 12px;
     border-radius: 3px;
     flex: none;
+  }
+  .line-swatch {
+    height: 3px;
+    border-radius: 2px;
   }
 </style>

@@ -205,6 +205,8 @@ function nextDay(iso: string): string {
  *   from TOTAL_NET_ASSETS, or a day before the first trading day) or no
  *   ratio in force. Days after the last trading day are not counted, so
  *   the latest month is month to date.
+ * - `days` counts the calendar days summed for each month (US-346): 28–31
+ *   for a full month, the day of the last trading day for the latest.
  */
 export function feeRevenue(
   tna: DailySeries,
@@ -221,6 +223,7 @@ export function feeRevenue(
   const last = calendar[calendar.length - 1];
 
   const fees = new Map<string, Decimal | null>();
+  const days = new Map<string, number>();
   let aum: Decimal | null = null;
   let r = -1;
   for (let day = `${first.slice(0, 7)}-01`; day <= last; day = nextDay(day)) {
@@ -229,6 +232,7 @@ export function feeRevenue(
     while (r + 1 < ratios.length && ratios[r + 1][0] <= day) r++;
     const inForce = r >= 0 ? ratios[r][1] : null;
     const sum = fees.has(month) ? fees.get(month) ?? null : new Decimal(0);
+    days.set(month, (days.get(month) ?? 0) + 1);
     fees.set(
       month,
       sum === null || aum === null || inForce === null
@@ -239,6 +243,7 @@ export function feeRevenue(
   return [...fees.entries()].map(([month, fee]) => ({
     month,
     fee: fee === null ? null : fee.toString(),
+    days: days.get(month) ?? 0,
   }));
 }
 
