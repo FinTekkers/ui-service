@@ -655,7 +655,9 @@ describe("metric 2: each chart renders from a mocked SecurityMetric response", (
     const { getByText, getByTestId } = render(EtfFees, {
       props: { fund: SPY, fees: data.fees },
     });
-    expect(getByText(/Estimated gross fee\s+revenue \(left axis\)/)).toBeTruthy();
+    expect(
+      getByText(/Estimated gross fee\s+revenue \(left axis\)/)
+    ).toBeTruthy();
     expect(getByText("Annualised run rate (right axis)")).toBeTruthy();
     const caption = getByTestId("etf-fee-run-rate-caption").textContent ?? "";
     expect(caption.replace(/\s+/g, " ")).toContain(
