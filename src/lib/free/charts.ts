@@ -20,6 +20,7 @@ import {
   type SomaHistoryPoint,
 } from "./soma";
 import { percentLabel, type DrawdownPoint } from "./techVsSp500";
+import { sigmaLabel, type SigmaPoint } from "./sigma";
 
 /** One date's extent on a fitted axis. `x` is an ISO date. */
 export interface FitRow {
@@ -70,6 +71,8 @@ export const ETF_AUM_COLOR = INK;
 export const ETF_FEE_COLOR = "#5b8def";
 export const DRAWDOWN_COLOR = "#2f5bb7";
 const DRAWDOWN_FILL = "rgba(47, 91, 183, 0.25)";
+export const SIGMA_COLOR = "#2f5bb7";
+const SIGMA_BAND_FILL = "rgba(47, 91, 183, 0.12)";
 
 const DAY_FORMAT = "%b %-d, %Y";
 const MONTH_FORMAT = "%b %Y";
@@ -545,6 +548,119 @@ export function drawdownSpec(
         annotations: [...marks.troughs.map(trough), latest],
       }
     ),
+    config: CONFIG,
+    fit,
+  };
+}
+
+/**
+ * US-341 /free/sigma-moves: each day's σ move as a line over a shaded
+ * ±`band` "normal range", with the latest value and each listed outlier
+ * annotated (date and σ). The page's own 1Y / 5Y / All buttons pick the
+ * points, so the chart has no range buttons of its own.
+ */
+export function sigmaSpec(
+  points: SigmaPoint[],
+  marks: { latest: SigmaPoint; outliers: SigmaPoint[] },
+  band: number
+): PlotSpec {
+  const fit: FitTarget[] = [
+    {
+      axis: "yaxis",
+      zero: false,
+      rows: points.map((p) => ({
+        x: p.date,
+        lo: Math.min(p.sigma, -band),
+        hi: Math.max(p.sigma, band),
+      })),
+    },
+  ];
+  const ranges = withRanges(fit);
+  const first = points.length ? points[0].date : "";
+  const last = points.length ? points[points.length - 1].date : "";
+  const span = Date.parse(last) - Date.parse(first) || 1;
+  const font = { family: MONO, size: 11, color: INK };
+  // Beside its point, towards the middle of the chart so it never widens
+  // the x range, and hanging inward from the point's height so it stays
+  // clear of the latest's label in the top margin.
+  const outlier = (p: SigmaPoint) => {
+    const right = (Date.parse(p.date) - Date.parse(first)) / span > 0.5;
+    return {
+      x: p.date,
+      y: p.sigma,
+      text: `${dateLabel(p.date)} · ${sigmaLabel(p.sigma)}`,
+      showarrow: true,
+      arrowhead: 0,
+      arrowcolor: MUTED,
+      ax: right ? -16 : 16,
+      ay: 0,
+      xanchor: right ? "right" : "left",
+      yanchor: p.sigma < 0 ? "bottom" : "top",
+      font,
+      bgcolor: "rgba(255, 255, 255, 0.85)",
+    };
+  };
+  const latest = {
+    x: marks.latest.date,
+    y: marks.latest.sigma,
+    text: `Latest ${sigmaLabel(marks.latest.sigma)}, ${dateLabel(
+      marks.latest.date
+    )}`,
+    showarrow: true,
+    arrowhead: 0,
+    arrowcolor: MUTED,
+    ax: 0,
+    ayref: "y",
+    ay: ranges.yaxis ? ranges.yaxis[1] : band,
+    xanchor: "right",
+    yanchor: "bottom",
+    font,
+  };
+  // The latest's own label already gives its date and σ.
+  const listed = marks.outliers.filter((p) => p.date !== marks.latest.date);
+  const layout = layoutFor(
+    "",
+    DAY_FORMAT,
+    {
+      yaxis: yAxis("", ranges.yaxis, {
+        ticksuffix: "σ",
+        zerolinecolor: MUTED,
+      }),
+    },
+    {
+      margin: { l: 8, r: 8, t: 28, b: 8 },
+      shapes: [
+        {
+          type: "rect",
+          xref: "paper",
+          x0: 0,
+          x1: 1,
+          yref: "y",
+          y0: -band,
+          y1: band,
+          fillcolor: SIGMA_BAND_FILL,
+          line: { width: 0 },
+          layer: "below",
+        },
+      ],
+      annotations: [...listed.map(outlier), latest],
+    }
+  );
+  const xaxis = { ...layout.xaxis };
+  delete xaxis.rangeselector;
+  return {
+    data: [
+      {
+        type: "scatter",
+        mode: "lines",
+        name: "σ move",
+        x: points.map((p) => p.date),
+        y: points.map((p) => p.sigma),
+        line: { color: SIGMA_COLOR, width: 1 },
+        hovertemplate: "σ move: %{y:.2f}σ<extra></extra>",
+      },
+    ],
+    layout: { ...layout, xaxis },
     config: CONFIG,
     fit,
   };
