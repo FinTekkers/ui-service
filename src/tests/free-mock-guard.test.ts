@@ -6,7 +6,9 @@
  * fails this test. US-298: /free/tips's live figures come from one allowed
  * server load, src/routes/free/tips/+page.server.ts. US-307: /free/soma's
  * and /free's live SOMA holdings come from their own two. US-334: /free/spy's
- * SPY series come from its own one.
+ * SPY series come from its own one. US-337: one component,
+ * PlotlyChart.svelte, may load plotly.js-dist, and only with a dynamic
+ * import() (a chart library, not a backend call).
  *
  * Files are read with node:fs, not `?raw`: Vite rewrites process.env inside
  * ?raw imports, and fixtures here live outside the source tree.
@@ -48,6 +50,9 @@ const LEDGER_MODELS_TYPES = "@fintekkers/ledger-models/node/fintekkers/models/";
 // (that is what it demonstrates) and nothing else.
 const SAMPLES_DIR = "src/lib/free/samples";
 const LEDGER_MODELS = "@fintekkers/ledger-models/";
+
+// US-337: the one file that may import plotly.js-dist, lazily.
+const PLOTLY_IMPORTER = "src/components/free/PlotlyChart.svelte";
 
 function walk(dir: string): string[] {
   let entries;
@@ -105,6 +110,8 @@ function isAllowedImport(
 interface ImportRef {
   specifier: string;
   typeOnly: boolean;
+  /** An import() call or require(), not an import statement. */
+  dynamic?: boolean;
 }
 
 function importsOf(source: string): ImportRef[] {
@@ -121,7 +128,11 @@ function importsOf(source: string): ImportRef[] {
     /\b(?:import|require)\s*\(\s*(["'`]?)([^"'`)]*)/g
   )) {
     // A computed dynamic import can't be checked, so it never passes.
-    refs.push({ specifier: m[1] ? m[2] : "<dynamic>", typeOnly: false });
+    refs.push({
+      specifier: m[1] ? m[2] : "<dynamic>",
+      typeOnly: false,
+      dynamic: true,
+    });
   }
   return refs;
 }
@@ -142,10 +153,13 @@ function scanFreeTree(repoRoot: string): string[] {
       const source = readFileSync(file, "utf8");
       if (/\bfetch\s*\(/.test(source)) violations.push(`${rel}: fetch(`);
       const isSample = isInside(file, path.join(repoRoot, SAMPLES_DIR));
-      for (const { specifier, typeOnly } of importsOf(source)) {
+      for (const { specifier, typeOnly, dynamic } of importsOf(source)) {
         const allowed = isSample
           ? specifier.startsWith(LEDGER_MODELS)
-          : isAllowedImport(specifier, typeOnly, file, repoRoot);
+          : isAllowedImport(specifier, typeOnly, file, repoRoot) ||
+            (rel === PLOTLY_IMPORTER &&
+              specifier === "plotly.js-dist" &&
+              dynamic === true);
         if (!allowed) {
           violations.push(`${rel}: imports ${specifier}`);
         }
@@ -216,6 +230,7 @@ describe("Free data explorer stays mock-only", () => {
           "src/lib/free/mock/types.ts": `import type { MeasureProto } from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb";`,
           "src/routes/free/tips/+page.svelte": `<script>import sample from "$lib/free/samples/tips.ts?raw";</script>`,
           "src/lib/free/samples/tips.ts": `import { PortfolioService } from "@fintekkers/ledger-models/node/wrappers/services/portfolio-service/PortfolioService";`,
+          "src/components/free/PlotlyChart.svelte": `<script>const mod = await import("plotly.js-dist");</script>`,
         })
       ).toEqual([]);
     });
@@ -285,6 +300,16 @@ describe("Free data explorer stays mock-only", () => {
         "a +page.server.js beside the allowed .ts",
         "src/routes/free/soma/+page.server.js",
         "",
+      ],
+      [
+        "a static plotly.js-dist import in PlotlyChart.svelte",
+        "src/components/free/PlotlyChart.svelte",
+        `<script>import Plotly from "plotly.js-dist";</script>`,
+      ],
+      [
+        "a lazy plotly.js-dist import in another component",
+        "src/components/free/spy/SpyShares.svelte",
+        `<script>const P = await import("plotly.js-dist");</script>`,
       ],
       ["a +layout.server.ts", "src/routes/free/+layout.server.ts", ""],
       ["a +server.ts", "src/routes/free/data/+server.ts", ""],

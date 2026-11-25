@@ -190,28 +190,6 @@ export function groupDigits(value: string): string {
   }`;
 }
 
-/**
- * Round axis ticks covering [min, max] (both may be negative): about five
- * steps of 1, 2, 2.5 or 5 × a power of ten. Always includes 0 when the
- * range spans it, and never collapses to one tick.
- */
-export function niceTicks(min: number, max: number): number[] {
-  const lo = Math.min(min, 0);
-  const hi = Math.max(max, 0);
-  const span = hi - lo || Math.abs(hi) || 1;
-  const raw = span / 5;
-  const pow = Math.pow(10, Math.floor(Math.log10(raw)));
-  const step =
-    [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw) ?? 10 * pow;
-  const first = Math.floor(lo / step) * step;
-  const last = Math.max(first + step, Math.ceil(hi / step) * step);
-  const ticks: number[] = [];
-  for (let v = first; v <= last + step / 1e6; v += step) {
-    ticks.push(Number(v.toPrecision(12)));
-  }
-  return ticks;
-}
-
 /** Dollars, compact: "$612.3B", "−$4.1B", "$1.02T", "$812.5M". */
 export function compactDollars(value: string | number): string {
   const n = Number(value);

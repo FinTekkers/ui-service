@@ -4,19 +4,17 @@
  * cash legs dropped, summed cumulatively and read off at each H.4.1
  * Wednesday, stacked by type. On the recorded 2026-11-04 search
  * (fixtures/soma-2026-11-04.ts) the totals equal soma.prove_positions'
- * ledger par, which matched the NY Fed feed. 1Y, 5Y and All end at the
- * page's week; a range the ledger can't fill is disabled with a note. The
+ * ledger par, which matched the NY Fed feed. The chart (US-337: Plotly)
+ * ends at the page's week; a range the ledger can't fill keeps a note. The
  * search is streamed: the rest of the page never waits for it, and a
  * failed, slow or keyless one says unavailable, with no mock.
  *
  * The position search is stubbed; the e2e spec covers the real backend.
  */
-import { fireEvent, render, screen, within } from "@testing-library/svelte";
+import { render, screen, within } from "@testing-library/svelte";
 import { tick } from "svelte";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import Decimal from "decimal.js";
-import { readFileSync } from "node:fs";
-import path from "node:path";
 
 const mocks = vi.hoisted(() => ({ searchPositions: vi.fn() }));
 
@@ -40,17 +38,12 @@ import {
   SOMA_HISTORY_LABEL,
   SOMA_RANGES,
   SOMA_STACKS,
-  SOMA_STACK_COLORS,
   SOMA_STACK_LABELS,
-  nearestWeek,
   rangeWindow,
-  somaXTicks,
-  weekLabel,
   weekTooltip,
   type Section,
   type SomaHistoryView,
   type SomaPageWithHistory,
-  type SomaXTick,
 } from "$lib/free/soma";
 import {
   SOMA_HISTORY_FIELDS,
@@ -472,81 +465,25 @@ describe.each(LOADS)("%s server load", (route, load) => {
 describe("SomaHistory", () => {
   const ok: Section<SomaHistoryView> = { ok: true, data: RECORDED };
 
-  test("metric 3: All is pressed by default; 1Y selects the last 53 weeks; 5Y is disabled with its note", async () => {
-    render(SomaHistory, {
+  test("US-337: a Plotly chart of the whole series up to the week, named with its first and latest week; 5Y keeps its note", () => {
+    const { container } = render(SomaHistory, {
       props: { history: ok, asOf: AS_OF, asOfLabel: "Nov 4, 2026" },
     });
-    const group = screen.getByRole("group", { name: "Time range" });
-    const button = (name: string) =>
-      within(group).getByRole("button", { name });
-    expect(button("All")).toHaveAttribute("aria-pressed", "true");
-    const chart = () => screen.getByRole("img");
-    expect(chart()).toHaveAccessibleName(
-      /^Holdings over time, All: Treasury par from \$4\.223T on Nov 13, 2024 to \$4\.472T on Nov 4, 2026/
+    const plot = screen.getByTestId("hist-plot");
+    expect(plot).toHaveAttribute("role", "img");
+    expect(plot).toHaveAccessibleName(
+      /^Holdings over time: Treasury par from \$4\.223T on Nov 13, 2024 to \$4\.472T on Nov 4, 2026, stacked by bills, notes and bonds, TIPS and FRNs$/
     );
-
-    expect(button("5Y")).toBeDisabled();
-    const note = document.getElementById(
-      button("5Y").getAttribute("aria-describedby") as string
-    );
-    expect(note?.textContent).toBe(
-      "5Y needs history from Nov 10, 2021. The ledger starts Nov 13, 2024."
-    );
-
-    await fireEvent.click(button("1Y"));
-    expect(button("1Y")).toHaveAttribute("aria-pressed", "true");
-    expect(button("All")).toHaveAttribute("aria-pressed", "false");
-    expect(chart()).toHaveAccessibleName(
-      /^Holdings over time, 1Y: Treasury par from \$\d\.\d{3}T on Nov 5, 2025 to \$4\.472T on Nov 4, 2026/
-    );
+    // Plotly draws the range buttons now: the old Svelte ones are gone.
+    expect(within(container).queryAllByRole("button")).toEqual([]);
     expect(screen.getByText("Latest: $4.472T on Nov 4, 2026")).toBeVisible();
     expect(screen.getByText(new RegExp(SOMA_HISTORY_LABEL))).toBeVisible();
-    for (const path of chart().querySelectorAll("path")) {
-      expect(path.getAttribute("d")).not.toMatch(/NaN|Infinity/);
-    }
-    expect(chart().querySelectorAll("path")).toHaveLength(4);
+    expect(container.querySelector("#hist-note-5Y")?.textContent).toBe(
+      "5Y needs history from Nov 10, 2021. The ledger starts Nov 13, 2024."
+    );
   });
 
-  test("US-322 metric 1: each tick label is slanted -45° about its own x,y, anchored at its end, and sits inside the chart", async () => {
-    render(SomaHistory, {
-      props: { history: ok, asOf: AS_OF, asOfLabel: "Nov 4, 2026" },
-    });
-    const chart = screen.getByRole("img");
-    const group = screen.getByRole("group", { name: "Time range" });
-    const height = Number(chart.getAttribute("viewBox")?.split(" ")[3]);
-    expect(height).toBe(304);
-    const labels = () => [...chart.querySelectorAll("text[transform]")];
-    // The $0 gridline: the plot's bottom edge.
-    const axis = () =>
-      Math.max(
-        ...[...chart.querySelectorAll("line")].map((l) =>
-          Number(l.getAttribute("y1"))
-        )
-      );
-
-    // 2024-11-13 to 2026-11-04: the first week labels its own year (US-330).
-    expect(labels().map((t) => t.textContent)).toEqual([
-      "2024",
-      "2025",
-      "2026",
-    ]);
-    for (const range of ["1Y", "All"]) {
-      await fireEvent.click(within(group).getByRole("button", { name: range }));
-      expect(labels().length, range).toBeGreaterThan(0);
-      for (const text of labels()) {
-        const x = text.getAttribute("x");
-        const y = text.getAttribute("y");
-        expect(text.getAttribute("text-anchor")).toBe("end");
-        expect(text.getAttribute("transform")).toBe(`rotate(-45 ${x} ${y})`);
-        // "Jan 2026", ~58 px of 12 px text slanted 45°, reaches ~41 px
-        // below y.
-        expect(Number(y) + 44).toBeLessThanOrEqual(height);
-        expect(Number(y)).toBeGreaterThan(axis());
-      }
-    }
-  });
-
-  test("US-327 guardrail: areas and legend keep their colours after the palette moved to $lib/free/soma", () => {
+  test("US-327 guardrail: the legend keeps its colours after the palette moved to $lib/free/soma", () => {
     const { container } = render(SomaHistory, {
       props: { history: ok, asOf: AS_OF, asOfLabel: "Nov 4, 2026" },
     });
@@ -556,11 +493,6 @@ describe("SomaHistory", () => {
       tips: "#2F5BB7",
       frns: "#E8A33D",
     };
-    expect(
-      [...screen.getByRole("img").querySelectorAll("path[data-stack]")].map(
-        (p) => [p.getAttribute("data-stack"), p.getAttribute("fill")]
-      )
-    ).toEqual(Object.entries(HEX));
     // jsdom reads a hex background back as rgb().
     const rgb = (hex: string) =>
       `rgb(${[1, 3, 5]
@@ -579,7 +511,7 @@ describe("SomaHistory", () => {
     ]);
   });
 
-  test("one week draws without NaN; while loading or unavailable every range is disabled", () => {
+  test("one week still gets a plot; while loading or unavailable there is no plot", () => {
     const one = rangeWindow(RECORDED, SOMA_RANGES[2], "2024-11-13");
     const { unmount } = render(SomaHistory, {
       props: {
@@ -588,19 +520,14 @@ describe("SomaHistory", () => {
         asOfLabel: "Nov 13, 2024",
       },
     });
-    for (const path of screen.getByRole("img").querySelectorAll("path")) {
-      expect(path.getAttribute("d")).not.toMatch(/NaN|Infinity/);
-    }
+    expect(screen.getByTestId("hist-plot")).toBeTruthy();
     unmount();
 
     for (const history of [null, { ok: false as const, message: "X" }]) {
       const { container, unmount } = render(SomaHistory, {
         props: { history, asOf: AS_OF, asOfLabel: "Nov 4, 2026" },
       });
-      const buttons = within(container).getAllByRole("button");
-      expect(buttons.map((b) => b.textContent)).toEqual(["1Y", "5Y", "All"]);
-      for (const b of buttons) expect(b).toBeDisabled();
-      expect(container.querySelector("svg")).toBeNull();
+      expect(container.querySelector("[data-testid$=plot]")).toBeNull();
       expect(container.textContent).toContain(
         history ? "X" : "Loading holdings over time for Nov 4, 2026"
       );
@@ -618,180 +545,11 @@ describe("SomaHistory", () => {
         'section[aria-labelledby="hist-title"]'
       ) as HTMLElement;
     expect(section().textContent).toContain("Loading holdings over time");
+    expect(section().querySelector("[data-testid=hist-plot]")).toBeNull();
     await data.streamed.history;
     await tick();
-    expect(section().querySelector("svg")).not.toBeNull();
+    expect(section().querySelector("[data-testid=hist-plot]")).not.toBeNull();
     expect(section().textContent).toContain("Latest: $4.472T on Nov 4, 2026");
-  });
-});
-
-describe("US-330 somaXTicks", () => {
-  /** `n` weekly ISO dates from `start`, oldest first. */
-  const weeksFrom = (start: string, n: number) =>
-    Array.from({ length: n }, (_, i) =>
-      new Date(Date.parse(start) + i * 7 * 86_400_000)
-        .toISOString()
-        .slice(0, 10)
-    );
-  const weeksBetween = (start: string, end: string) =>
-    weeksFrom(start, (Date.parse(end) - Date.parse(start)) / 604_800_000 + 1);
-  /** Each tick after the first is the first week of a new bucket. */
-  const expectFirstOfBucket = (
-    weeks: string[],
-    ticks: SomaXTick[],
-    key: (w: string) => string
-  ) => {
-    for (const t of ticks.slice(1)) {
-      expect(key(weeks[t.index]), weeks[t.index]).not.toBe(
-        key(weeks[t.index - 1])
-      );
-    }
-    // And no bucket start is missed after the first tick.
-    const starts = weeks
-      .map((w, i) => i)
-      .filter((i) => i > ticks[0].index && key(weeks[i]) !== key(weeks[i - 1]));
-    expect(ticks.slice(1).map((t) => t.index)).toEqual(starts);
-  };
-  const month = (w: string) => w.slice(0, 7);
-  const quarter = (w: string) =>
-    `${w.slice(0, 4)}-${Math.ceil(Number(w.slice(5, 7)) / 3)}`;
-  const year = (w: string) => w.slice(0, 4);
-
-  const ONE_YEAR = weeksFrom("2025-11-05", 53);
-  const FIVE_YEARS = weeksFrom("2021-11-10", 261);
-  const ALL_LONG = weeksBetween("2004-07-07", "2026-11-04");
-
-  test("metric 1: 1Y ticks each month start, January with its year", () => {
-    expect(ONE_YEAR[52]).toBe("2026-11-04");
-    const ticks = somaXTicks(ONE_YEAR, "1Y");
-    expect(ticks.length).toBeGreaterThanOrEqual(12);
-    expect(ticks.length).toBeLessThanOrEqual(13);
-    expectFirstOfBucket(ONE_YEAR, ticks, month);
-    expect(ticks.map((t) => t.label)).toEqual([
-      "Nov",
-      "Dec",
-      "Jan 2026",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-    ]);
-    expect(ONE_YEAR[ticks[2].index]).toBe("2026-01-07");
-  });
-
-  test("metric 1: a 1Y first label one week from the next month is dropped", () => {
-    const weeks = weeksFrom("2025-11-26", 53);
-    const ticks = somaXTicks(weeks, "1Y");
-    expect(ticks[0].label).toBe("Dec");
-    expect(weeks[ticks[0].index]).toBe("2025-12-03");
-    expect(ticks.length).toBeGreaterThanOrEqual(12);
-    expect(ticks.length).toBeLessThanOrEqual(13);
-    expectFirstOfBucket(weeks, ticks, month);
-  });
-
-  test("metric 2: 5Y ticks each quarter start, labelled like Q1 2023", () => {
-    expect(FIVE_YEARS[260]).toBe("2026-11-04");
-    const ticks = somaXTicks(FIVE_YEARS, "5Y");
-    expect(ticks.length).toBeGreaterThanOrEqual(20);
-    expect(ticks.length).toBeLessThanOrEqual(21);
-    expectFirstOfBucket(FIVE_YEARS, ticks, quarter);
-    for (const t of ticks.slice(1)) {
-      expect(["01", "04", "07", "10"]).toContain(
-        FIVE_YEARS[t.index].slice(5, 7)
-      );
-    }
-    for (const t of ticks) expect(t.label).toMatch(/^Q[1-4] \d{4}$/);
-    expect(ticks.find((t) => t.label === "Q1 2023")).toBeDefined();
-    expect(FIVE_YEARS[ticks[ticks.length - 1].index]).toBe("2026-10-07");
-  });
-
-  test("metric 2: a 5Y first label under 8 weeks from the next quarter is dropped; alt alternates", () => {
-    const weeks = weeksFrom("2021-11-17", 261);
-    const ticks = somaXTicks(weeks, "5Y");
-    expect(ticks.map((t) => t.label)).not.toContain("Q4 2021");
-    expect(ticks[0].label).toBe("Q1 2022");
-    expect(ticks.length).toBeGreaterThanOrEqual(20);
-    expect(ticks.length).toBeLessThanOrEqual(21);
-    expect(ticks.map((t) => t.alt)).toEqual(ticks.map((_, i) => i % 2 === 1));
-  });
-
-  test("metric 3: All ticks once per calendar year, on the first week of each", () => {
-    const weeks = weeksBetween("2024-11-13", "2026-11-04");
-    const ticks = somaXTicks(weeks, "All");
-    expect(ticks.map((t) => t.label)).toEqual(["2024", "2025", "2026"]);
-    expect(ticks.map((t) => weeks[t.index])).toEqual([
-      "2024-11-13",
-      "2025-01-01",
-      "2026-01-07",
-    ]);
-  });
-
-  test("metric 3: a 22-year All series ticks every year 2004 to 2026", () => {
-    const ticks = somaXTicks(ALL_LONG, "All");
-    expect(ticks.map((t) => t.label)).toEqual(
-      Array.from({ length: 23 }, (_, i) => String(2004 + i))
-    );
-    expectFirstOfBucket(ALL_LONG, ticks, year);
-    for (const t of ticks.slice(1)) {
-      expect(ALL_LONG[t.index].slice(5, 7)).toBe("01");
-      expect(Number(ALL_LONG[t.index].slice(8))).toBeLessThanOrEqual(7);
-    }
-  });
-
-  test("metric 4: neighbouring slanted labels clear each other by a 12-unit text line", () => {
-    // SomaHistory's plot: LEFT 56 to W - RIGHT = 708.
-    const PLOT = 720 - 56 - 12;
-    // Slanted 45°, neighbours are parallel lines pitch × sin 45° apart.
-    const gaps = (weeks: string[], ticks: SomaXTick[]) => {
-      const xs = ticks.map((t) => (t.index * PLOT) / (weeks.length - 1));
-      return xs.slice(1).map((x, i) => (x - xs[i]) * Math.SQRT1_2);
-    };
-    const minGap = (weeks: string[], ticks: SomaXTick[]) =>
-      Math.min(...gaps(weeks, ticks));
-    const cases: [string, string[], "1Y" | "5Y" | "All"][] = [
-      ["1Y", ONE_YEAR, "1Y"],
-      ["1Y from Nov 26", weeksFrom("2025-11-26", 53), "1Y"],
-      ["1Y from Nov 19", weeksFrom("2025-11-19", 53), "1Y"],
-      ["5Y", FIVE_YEARS, "5Y"],
-      ["5Y from Nov 17", weeksFrom("2021-11-17", 261), "5Y"],
-      // The host's 1,175 weeks to 2026-11-18.
-      ["All, as on the host", weeksBetween("2004-05-19", "2026-11-18"), "All"],
-    ];
-    for (const [name, weeks, range] of cases) {
-      const ticks = somaXTicks(weeks, range);
-      expect(minGap(weeks, ticks), name).toBeGreaterThanOrEqual(12);
-      if (range === "5Y") {
-        const kept = ticks.filter((t) => !t.alt);
-        expect(kept[0]).toBe(ticks[0]);
-        expect(minGap(weeks, kept), `${name}, thinned`).toBeGreaterThanOrEqual(
-          12
-        );
-      }
-    }
-    // All keeps its first year (metric 3), so a short first part-year sits
-    // close to the next: the accepted first-label gap. Past it, every pair
-    // clears.
-    const rest = gaps(ALL_LONG, somaXTicks(ALL_LONG, "All")).slice(1);
-    expect(Math.min(...rest)).toBeGreaterThanOrEqual(12);
-  });
-
-  test("one week, passed twice as the chart does, gives one tick", () => {
-    expect(somaXTicks(["2024-11-13", "2024-11-13"], "1Y")).toEqual([
-      { index: 0, label: "Nov", alt: false },
-    ]);
-  });
-
-  test("guardrail 3: somaXTicks reads the ISO strings, with no Date or locale API", () => {
-    const source = readFileSync(path.resolve("src/lib/free/soma.ts"), "utf8");
-    const body = source.match(/export function somaXTicks[\s\S]*?\n}\n/)?.[0];
-    expect(body).toBeDefined();
-    expect(body).not.toMatch(/toLocale|new Date|Date\.|Intl\./);
   });
 });
 
@@ -826,152 +584,14 @@ test("metric 5 (timing, log only): a 1,200-week history loads well within the pa
   expect(ms).toBeLessThan(2000);
 });
 
-describe("US-331 nearestWeek", () => {
-  // The chart's plot: LEFT 56 to W - RIGHT = 708 of a 720-wide viewBox.
-  const L = 56;
-  const R = 708;
-
-  test("metric 1: an x maps to the closest week; left of the first or right of the last clamps to that week", () => {
-    // Five weeks, 163 units apart: 56, 219, 382, 545, 708.
-    expect(nearestWeek(219, 5, L, R)).toBe(1);
-    expect(nearestWeek(219 + 81, 5, L, R)).toBe(1);
-    expect(nearestWeek(219 + 82, 5, L, R)).toBe(2);
-    expect(nearestWeek(545 - 81, 5, L, R)).toBe(3);
-    expect(nearestWeek(L, 5, L, R)).toBe(0);
-    expect(nearestWeek(R, 5, L, R)).toBe(4);
-    expect(nearestWeek(0, 5, L, R)).toBe(0);
-    expect(nearestWeek(-50, 5, L, R)).toBe(0);
-    expect(nearestWeek(720, 5, L, R)).toBe(4);
-    expect(nearestWeek(5000, 5, L, R)).toBe(4);
-    for (const x of [0, 300, 720]) expect(nearestWeek(x, 1, L, R)).toBe(0);
-  });
-});
-
-describe("US-331 SomaHistory tooltip", () => {
-  const ok: Section<SomaHistoryView> = { ok: true, data: RECORDED };
+describe("weekTooltip", () => {
   const points = RECORDED.points;
-  const W = 720;
-  const xOf = (i: number, n = points.length) => 56 + (i * 652) / (n - 1);
-
-  // jsdom 22 has no PointerEvent, and its stand-in drops clientX.
-  const hadPointerEvent = "PointerEvent" in window;
-  beforeEach(() => {
-    if (hadPointerEvent) return;
-    class PointerEvent extends MouseEvent {
-      pointerType: string;
-      constructor(type: string, init: PointerEventInit = {}) {
-        super(type, init);
-        this.pointerType = init.pointerType ?? "";
-      }
-    }
-    vi.stubGlobal("PointerEvent", PointerEvent);
-  });
-  afterEach(() => {
-    if (!hadPointerEvent) vi.unstubAllGlobals();
-  });
-
-  function setup(history: Section<SomaHistoryView> = ok, asOf = AS_OF) {
-    const result = render(SomaHistory, {
-      props: { history, asOf, asOfLabel: weekLabel(asOf) },
-    });
-    const plot = screen.getByRole("group", {
-      name: "Holdings over time, by week",
-    });
-    // The chart's box is the viewBox at 1 px a unit.
-    plot.getBoundingClientRect = () =>
-      ({
-        left: 0,
-        top: 0,
-        width: W,
-        height: 304,
-        right: W,
-        bottom: 304,
-      } as DOMRect);
-    const guide = () =>
-      result.container.querySelector('[data-testid="hist-guide"]');
-    const tooltip = () =>
-      result.container.querySelector(
-        '[data-testid="hist-tooltip"]'
-      ) as HTMLElement | null;
-    const live = () =>
-      result.container
-        .querySelector('[data-testid="hist-live"]')
-        ?.textContent?.trim();
-    /** The tooltip as shown: its date, rows and total. */
-    const shown = () => {
-      const tip = tooltip() as HTMLElement;
-      const rows = [...tip.querySelectorAll("li")].map((li) => ({
-        label: li.querySelector(".tip-label")?.textContent,
-        value: li.querySelector(".tip-value")?.textContent as string,
-        swatch: (li.querySelector(".swatch") as HTMLElement).style.background,
-      }));
-      return {
-        date: tip.querySelector(".tip-date")?.textContent,
-        rows,
-        total: tip.querySelector(".tip-total .tip-value")
-          ?.textContent as string,
-      };
-    };
-    /** What the tooltip DOM says, in the live region's words. */
-    const shownText = () => {
-      const s = shown();
-      return `${s.date}. ${s.rows
-        .map((r) => `${r.label} ${r.value}`)
-        .join(", ")}. Total ${s.total}.`;
-    };
-    return { ...result, plot, guide, tooltip, live, shown, shownText };
-  }
-
-  const rgb = (hex: string) =>
-    `rgb(${[1, 3, 5]
-      .map((i) => parseInt(hex.slice(i, i + 2), 16))
-      .join(", ")})`;
   const cents = (v: string) => {
     expect(v).toMatch(/^\$[\d,]+\.\d{2}B$/);
     return Math.round(Number(v.replace(/[$,B]/g, "")) * 100);
   };
 
-  test("guardrail 3: before any interaction there is no guide or tooltip, and the chart is as before", () => {
-    const { guide, tooltip, live } = setup();
-    expect(guide()).toBeNull();
-    expect(tooltip()).toBeNull();
-    expect(live()).toBe("");
-    const chart = screen.getByRole("img");
-    expect(chart.querySelectorAll("path")).toHaveLength(4);
-    expect(chart).toHaveAccessibleName(
-      /^Holdings over time, All: Treasury par from \$4\.223T on Nov 13, 2024 to \$4\.472T on Nov 4, 2026/
-    );
-  });
-
-  test("metric 2: hovering shows the guide and the week's date, the four stacks in legend order with swatches, and their total; leaving with a mouse or pen hides it", async () => {
-    const { plot, guide, tooltip, shown } = setup();
-    for (const pointerType of ["mouse", "pen"]) {
-      await fireEvent.pointerMove(plot, { clientX: xOf(50) + 2, pointerType });
-      expect(guide()).not.toBeNull();
-      expect(Number(guide()?.getAttribute("x1"))).toBeCloseTo(xOf(50), 5);
-      expect(tooltip()).toBeVisible();
-      const s = shown();
-      expect(s.date).toBe(weekLabel(points[50].week));
-      expect(s.rows.map((r) => r.label)).toEqual([
-        "Bills",
-        "Notes & bonds",
-        "TIPS",
-        "FRNs",
-      ]);
-      expect(s.rows.map((r) => r.swatch)).toEqual(
-        SOMA_STACKS.map((k) => rgb(SOMA_STACK_COLORS[k]))
-      );
-      const sum = s.rows.reduce((a, r) => a + cents(r.value), 0);
-      expect(cents(s.total)).toBe(sum);
-      expect(sum).toBeGreaterThan(0);
-
-      await fireEvent.pointerLeave(plot, { pointerType });
-      expect(guide()).toBeNull();
-      expect(tooltip()).toBeNull();
-    }
-  });
-
-  test("metric 2: weekTooltip lists SOMA_STACKS in order and totals the values shown", () => {
+  test("US-331 metric 2: lists SOMA_STACKS in order and totals the values shown (the Plotly hover's figures)", () => {
     const tip = weekTooltip(points[points.length - 1]);
     expect(tip.rows.map((r) => r.label)).toEqual(
       SOMA_STACKS.map((k) => SOMA_STACK_LABELS[k])
@@ -984,100 +604,5 @@ describe("US-331 SomaHistory tooltip", () => {
         .map((r) => `${r.label} ${r.value}`)
         .join(", ")}. Total ${tip.total}.`
     );
-  });
-
-  test("metric 3: focus lands on the last week; ArrowLeft and ArrowRight step one week, stop at the ends, and the live region matches the tooltip", async () => {
-    const { plot, shown, shownText, live } = setup();
-    const last = points.length - 1;
-    const expectWeek = (i: number) => {
-      expect(shown().date).toBe(weekLabel(points[i].week));
-      expect(live()).toBe(shownText());
-    };
-    const press = async (key: string) => {
-      // fireEvent returns false once the default is prevented.
-      expect(await fireEvent.keyDown(plot, { key }), key).toBe(false);
-    };
-
-    await fireEvent.focus(plot);
-    expectWeek(last);
-    await press("ArrowLeft");
-    expectWeek(last - 1);
-    await press("ArrowRight");
-    expectWeek(last);
-    expect(live()).toBe(weekTooltip(points[last]).text);
-    await press("ArrowRight");
-    expectWeek(last);
-    for (let i = last - 1; i >= 0; i--) {
-      await press("ArrowLeft");
-      expectWeek(i);
-    }
-    await press("ArrowLeft");
-    expectWeek(0);
-    await press("ArrowRight");
-    expectWeek(1);
-  });
-
-  test("metric 3: with one week the arrow keys leave the date alone and the guide sits at the first x", async () => {
-    const one = rangeWindow(RECORDED, SOMA_RANGES[2], "2024-11-13");
-    const { plot, guide, shown, live, shownText } = setup(
-      { ok: true, data: { firstWeek: "2024-11-13", ...one } },
-      "2024-11-13"
-    );
-    await fireEvent.focus(plot);
-    for (const key of ["ArrowLeft", "ArrowRight", "ArrowRight"]) {
-      await fireEvent.keyDown(plot, { key });
-      expect(shown().date).toBe("Nov 13, 2024");
-      expect(guide()?.getAttribute("x1")).toBe("56");
-      expect(live()).toBe(shownText());
-    }
-  });
-
-  test("guardrail 3: hovering a late week in All, then picking 1Y, clears the tooltip and draws without NaN", async () => {
-    const { plot, tooltip, guide } = setup();
-    await fireEvent.pointerMove(plot, {
-      clientX: xOf(100),
-      pointerType: "mouse",
-    });
-    expect(tooltip()).not.toBeNull();
-    await fireEvent.click(screen.getByRole("button", { name: "1Y" }));
-    expect(tooltip()).toBeNull();
-    expect(guide()).toBeNull();
-    const chart = screen.getByRole("img");
-    expect(chart.querySelectorAll("path")).toHaveLength(4);
-    for (const p of chart.querySelectorAll("path")) {
-      expect(p.getAttribute("d")).not.toMatch(/NaN|Infinity/);
-    }
-    // The next hover reads the 1Y window: its first week, not All's.
-    await fireEvent.pointerMove(plot, { clientX: 0, pointerType: "mouse" });
-    const oneYear = rangeWindow(RECORDED, SOMA_RANGES[0], AS_OF).points;
-    expect(tooltip()?.querySelector(".tip-date")?.textContent).toBe(
-      weekLabel(oneYear[0].week)
-    );
-  });
-
-  test("guardrail 4: a tap is not prevented and stays after its pointerleave; only the arrow keys are prevented; no touch-action", async () => {
-    const { plot, tooltip, live, shownText } = setup();
-    expect(
-      await fireEvent.pointerDown(plot, { clientX: 700, pointerType: "touch" })
-    ).toBe(true);
-    await fireEvent.pointerLeave(plot, { pointerType: "touch" });
-    expect(tooltip()).not.toBeNull();
-    expect(live()).toBe(shownText());
-    expect(await fireEvent.keyDown(plot, { key: "ArrowDown" })).toBe(true);
-    expect(await fireEvent.keyDown(plot, { key: "ArrowUp" })).toBe(true);
-
-    // A moving mouse updates the tooltip but not the live region.
-    const said = live();
-    await fireEvent.pointerMove(plot, { clientX: 100, pointerType: "mouse" });
-    expect(live()).toBe(said);
-
-    await fireEvent.blur(plot);
-    expect(tooltip()).toBeNull();
-
-    const source = readFileSync(
-      path.resolve("src/components/free/soma/SomaHistory.svelte"),
-      "utf8"
-    );
-    expect(source).not.toMatch(/touch-action/);
   });
 });

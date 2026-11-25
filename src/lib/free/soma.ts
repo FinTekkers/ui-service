@@ -296,62 +296,6 @@ export function rangeWindow(
   };
 }
 
-/** US-330: one x-axis tick of Holdings over time. */
-export interface SomaXTick {
-  /** Index into the chart's weekly series. */
-  index: number;
-  label: string;
-  /** Every other tick; CSS may hide it on narrow screens. */
-  alt: boolean;
-}
-
-/** A first label closer than this share of the plot to the next one is
- * dropped on 1Y and 5Y, so the two don't collide: ~20 of 652 units. */
-const FIRST_TICK_MIN_GAP = 0.03;
-
-/**
- * Holdings over time's x-axis ticks for `range`: month starts on 1Y
- * ("Nov", "Jan 2026"), quarter starts on 5Y ("Q1 2023"), years on All
- * ("2025"). Each sits on the first week (ISO, oldest first) on or after its
- * boundary; the first week labels its own part-bucket. Read off the ISO
- * strings, never a Date or locale, so no timezone can move a tick.
- */
-export function somaXTicks(
-  weeks: string[],
-  range: SomaRangeLabel
-): SomaXTick[] {
-  const bucket = (w: string): { key: string; label: string } => {
-    const year = w.slice(0, 4);
-    const month = Number(w.slice(5, 7));
-    if (range === "1Y") {
-      return {
-        key: w.slice(0, 7),
-        label: month === 1 ? `Jan ${year}` : MONTHS[month - 1],
-      };
-    }
-    if (range === "5Y") {
-      const label = `Q${Math.ceil(month / 3)} ${year}`;
-      return { key: label, label };
-    }
-    return { key: year, label: year };
-  };
-  const ticks: { index: number; label: string }[] = [];
-  let previous: string | null = null;
-  weeks.forEach((w, index) => {
-    const { key, label } = bucket(w);
-    if (key !== previous) ticks.push({ index, label });
-    previous = key;
-  });
-  if (
-    range !== "All" &&
-    ticks.length > 1 &&
-    (ticks[1].index - ticks[0].index) / (weeks.length - 1) < FIRST_TICK_MIN_GAP
-  ) {
-    ticks.shift();
-  }
-  return ticks.map((t, i) => ({ ...t, alt: i % 2 === 1 }));
-}
-
 /** $ billions to the cent, e.g. "$1,234.56B": Positions by CUSIP and the
  * Holdings over time tooltip (US-331). */
 export function somaBillions(b: number): string {
@@ -359,22 +303,6 @@ export function somaBillions(b: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}B`;
-}
-
-/**
- * US-331: the index of the week nearest viewBox x on Holdings over time,
- * for `n` weeks spread evenly from `left` to `right` (the plot's edges).
- * Left of the first week or right of the last clamps to that week.
- */
-export function nearestWeek(
-  x: number,
-  n: number,
-  left: number,
-  right: number
-): number {
-  if (n <= 1 || right <= left) return 0;
-  const i = Math.round(((x - left) / (right - left)) * (n - 1));
-  return Math.min(n - 1, Math.max(0, i));
 }
 
 /** US-331: Holdings over time's tooltip for one week. */
