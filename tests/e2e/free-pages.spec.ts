@@ -1242,6 +1242,38 @@ test.describe("US-339 /free/tech-vs-sp500", () => {
     expect(headers.filter((h) => h.includes(key))).toEqual([]);
   });
 
+  // US-347: closes.ts reads every stored close, not the newest 1,000. The
+  // host holds XLK from 1998 and SPY from 1993 (MDI-162), so both panels
+  // must plot, and the full history must reach the dot-com trough.
+  test("US-347 /free/tech-vs-sp500: full history reaches the 2000–2002 trough, and on reload", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const response = await page.goto(ROUTE);
+    expect(response?.status()).toBe(200);
+    for (const pass of ["load", "reload"]) {
+      if (pass === "reload") {
+        expect((await page.reload())?.status()).toBe(200);
+      }
+      expect(
+        await expectTechPanels(page),
+        `${pass}: both panels plot (host holds XLK and SPY since the 1990s)`
+      ).toBe("plot");
+      const items = await page
+        .getByTestId("tech-troughs")
+        .locator("li")
+        .allInnerTexts();
+      const dotCom = items.filter((text) => {
+        const year = Number(text.match(/\b(\d{4})\b/)?.[1]);
+        const pct = Number(text.match(/−(\d+(?:\.\d+)?)%/)?.[1] ?? 0);
+        return year >= 2000 && year <= 2002 && pct >= 40;
+      });
+      expect(dotCom, `${pass}: troughs ${JSON.stringify(items)}`).not.toEqual(
+        []
+      );
+    }
+  });
+
   // Metric 5's PR screenshots, on request only:
   // TECH_SHOTS=<dir> npx playwright test free-pages -g "tech vs S&P 500 screenshots"
   test("tech vs S&P 500 screenshots at 1,280 px and 390 px", async ({
@@ -1344,6 +1376,42 @@ test.describe("US-341 /free/sigma-moves", () => {
     await page.waitForLoadState("networkidle");
     expect(await page.content()).not.toContain(key);
     expect(headers.filter((h) => h.includes(key))).toEqual([]);
+  });
+
+  // US-347: with every stored close read, SPY's "All" reaches back to 1993
+  // (the host holds SPY from 1993-01-29). Reads the drawn x-axis labels.
+  test("US-347 /free/sigma-moves: SPY at All starts by 1995", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const response = await page.goto(ROUTE);
+    expect(response?.status()).toBe(200);
+    // The fund and range buttons work only once the page has hydrated.
+    await page.waitForLoadState("networkidle");
+    const fund = page.getByRole("button", { name: "SPY", exact: true });
+    await fund.click();
+    await expect(fund).toHaveAttribute("aria-pressed", "true");
+    const all = page
+      .getByRole("group", { name: "Range" })
+      .getByRole("button", { name: "All", exact: true });
+    await all.click();
+    await expect(all).toHaveAttribute("aria-pressed", "true");
+    const name = FUNDS[0].name;
+    expect(await expectSigmaPanel(page, name), "SPY plots").toBe("plot");
+    const ticks = page
+      .getByRole("region", { name })
+      .locator(".js-plotly-plot .xtick text");
+    await expect
+      .poll(
+        async () => {
+          const years = (await ticks.allTextContents())
+            .map((t) => Number(t.match(/\b(\d{4})\b/)?.[1]))
+            .filter((y) => y > 0);
+          return years.length ? Math.min(...years) : Infinity;
+        },
+        { message: "earliest x-axis year", timeout: 30_000 }
+      )
+      .toBeLessThanOrEqual(1995);
   });
 
   // Metric 5's PR screenshots, on request only:
