@@ -12,8 +12,11 @@
  *
  * US-309: Positions by CUSIP is live too: search and paging work after
  * hydration, and at 375 px the page itself never scrolls sideways.
+ *
+ * US-337: the time-series charts (SPY's three, Holdings over time) are
+ * Plotly plots, loaded lazily: range buttons, hover, a fitted shares axis.
  */
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import { existsSync, readdirSync, readFileSync } from "fs";
 import path from "path";
 import {
@@ -662,6 +665,34 @@ for (const [route, extra] of [
 // week, so each check accepts the chart or the unavailable text, both naming
 // the week, and records which branch ran.
 
+// US-337: the time-series charts are Plotly plots. Plotly adds
+// .js-plotly-plot to a chart's box once it has drawn; the box itself is
+// rendered (empty) on the server.
+const UNAVAILABLE = /^Unavailable( for [^:]+)?: .{10,}/;
+
+/** A chart section shows one Plotly plot, or "Unavailable…" and no plot. */
+async function plotBranch(section: Locator): Promise<"plot" | "unavailable"> {
+  const plot = section.locator(".js-plotly-plot");
+  const unavailable = section.getByText(UNAVAILABLE);
+  await expect(plot.or(unavailable).first()).toBeVisible({ timeout: 30_000 });
+  if (await unavailable.count()) {
+    await expect(plot).toHaveCount(0);
+    return "unavailable";
+  }
+  await expect(plot).toHaveCount(1);
+  return "plot";
+}
+
+/** A plot's x and y ranges as drawn, and its first trace's points. */
+async function plotState(plot: Locator) {
+  return plot.evaluate((el: any) => ({
+    x: (el._fullLayout.xaxis.range as unknown[]).map(String),
+    y: [...el._fullLayout.yaxis.range] as number[],
+    xs: el.data[0].x as string[],
+    ys: el.data[0].y as (number | null)[],
+  }));
+}
+
 /** Waits for Holdings over time to finish loading for `week`, and checks it
  * names the week: the chart's latest point, or the unavailable text. */
 async function expectHistoryNames(
@@ -677,21 +708,20 @@ async function expectHistoryNames(
   await expect(summary).toHaveText(
     new RegExp(`^Latest: \\$\\d+\\.\\d{3}T on ${label}$`)
   );
-  await expect(section.getByRole("img")).toHaveAccessibleName(
+  await expect(section.getByTestId("hist-plot")).toHaveAccessibleName(
     new RegExp(`to \\$\\d+\\.\\d{3}T on ${label}, stacked by`)
   );
   return "live";
 }
 
 for (const route of ["/free/soma", "/free"]) {
-  test(`${route} Holdings over time: 1Y, 5Y and All select the window, each ending at the week, after hydration`, async ({
+  test(`${route} Holdings over time: Plotly's 1Y, 5Y and All, each ending at the week, the stack from 0`, async ({
     page,
   }) => {
     test.setTimeout(90_000);
     await page.goto(route);
     await page.waitForLoadState("networkidle");
     const week = pastWednesday(0);
-    const label = weekLabel(week);
     const branch = await expectHistoryNames(page, week);
     test.info().annotations.push({
       type: "live-data",
@@ -699,47 +729,28 @@ for (const route of ["/free/soma", "/free"]) {
         branch === "live" ? "SOMA history from the ledger" : "unavailable",
     });
     const section = page.getByRole("region", { name: "Holdings over time" });
-    const group = section.getByRole("group", { name: "Time range" });
-    const buttons = group.getByRole("button");
-    await expect(buttons).toHaveText(["1Y", "5Y", "All"]);
+    const plot = section.locator(".js-plotly-plot");
     if (branch === "unavailable") {
-      for (const name of ["1Y", "5Y", "All"]) {
-        await expect(group.getByRole("button", { name })).toBeDisabled();
-      }
+      await expect(plot).toHaveCount(0);
       await expect(page.getByRole("main").locator("h2")).toHaveText(H2S);
       return;
     }
-
-    const all = group.getByRole("button", { name: "All" });
-    await expect(all).toHaveAttribute("aria-pressed", "true");
-    await expect(all).toBeEnabled();
-    const chart = section.getByRole("img");
-    const enabled: string[] = [];
+    await expect(plot).toHaveCount(1, { timeout: 30_000 });
+    // A range the ledger can't fill keeps its note.
     for (const name of ["1Y", "5Y"]) {
-      const button = group.getByRole("button", { name });
-      if (await button.isDisabled()) {
-        const note = await button.getAttribute("aria-describedby");
-        expect(note).toBeTruthy();
-        const noteText = section.locator(`[id="${note}"]`);
-        await expect(noteText).toBeVisible();
-        await expect(noteText).toContainText(`${name} needs history from`);
-      } else {
-        enabled.push(name);
+      const note = section.locator(`[id="hist-note-${name}"]`);
+      if (await note.count()) {
+        await expect(note).toContainText(`${name} needs history from`);
       }
     }
-    // Each enabled range twice, via All: a second pick must not break it.
-    for (const name of [...enabled, "All", ...enabled]) {
-      await group.getByRole("button", { name }).click();
-      await expect(group.getByRole("button", { name })).toHaveAttribute(
-        "aria-pressed",
-        "true"
-      );
-      await expect(chart).toHaveAccessibleName(
-        new RegExp(`^Holdings over time, ${name}: .* on ${label}, stacked by`)
-      );
-      await expect(section.getByText(/^Latest: /)).toHaveText(
-        new RegExp(`on ${label}$`)
-      );
+    // Each range twice, via All: a second pick must not break it.
+    for (const name of ["1Y", "5Y", "All", "1Y", "5Y"]) {
+      await section.getByText(name, { exact: true }).click();
+      await expect.poll(() => plotState(plot).then((s) => s.y[0])).toBe(0);
+      const state = await plotState(plot);
+      // The last week is the page's week, and it is in view.
+      expect(state.xs[state.xs.length - 1]).toBe(week);
+      expect(state.x[1] >= week).toBe(true);
     }
   });
 
@@ -765,97 +776,6 @@ for (const route of ["/free/soma", "/free"]) {
   });
 }
 
-// US-331: Holdings over time's tooltip. Pointer, tap and arrow keys pick a
-// week; the tooltip stays inside the chart and the page never scrolls
-// sideways. Like US-317, it records whether the ledger's history loaded.
-test.describe("US-331 Holdings over time tooltip", () => {
-  test.use({ hasTouch: true });
-
-  async function openChart(page: Page, width: number) {
-    await page.setViewportSize({ width, height: 812 });
-    await page.goto("/free/soma");
-    await page.waitForLoadState("networkidle");
-    const branch = await expectHistoryNames(page, pastWednesday(0));
-    test.info().annotations.push({
-      type: "live-data",
-      description:
-        branch === "live" ? "SOMA history from the ledger" : "unavailable",
-    });
-    const section = page.getByRole("region", { name: "Holdings over time" });
-    const plot = section.getByRole("group", {
-      name: "Holdings over time, by week",
-    });
-    const tooltip = section.getByTestId("hist-tooltip");
-    return { branch, section, plot, tooltip };
-  }
-
-  test("/free/soma at 375 px: tapping near the chart's right edge shows the tooltip inside the chart", async ({
-    page,
-  }) => {
-    test.setTimeout(90_000);
-    const { branch, plot, tooltip } = await openChart(page, 375);
-    if (branch === "unavailable") return;
-
-    await plot.scrollIntoViewIfNeeded();
-    const size = await plot.boundingBox();
-    expect(size).not.toBeNull();
-    await plot.tap({
-      position: { x: (size?.width ?? 0) - 6, y: (size?.height ?? 0) / 2 },
-    });
-    await expect(tooltip).toBeVisible();
-
-    const chart = await plot.boundingBox();
-    const tip = await tooltip.boundingBox();
-    expect(chart).not.toBeNull();
-    expect(tip).not.toBeNull();
-    if (!chart || !tip) return;
-    expect(tip.x).toBeGreaterThanOrEqual(chart.x);
-    expect(tip.y).toBeGreaterThanOrEqual(chart.y);
-    expect(tip.x + tip.width).toBeLessThanOrEqual(chart.x + chart.width);
-    expect(tip.y + tip.height).toBeLessThanOrEqual(chart.y + chart.height);
-    const widths = await page.evaluate(() => ({
-      scroll: document.documentElement.scrollWidth,
-      client: document.documentElement.clientWidth,
-    }));
-    expect(widths.scroll).toBeLessThanOrEqual(375);
-    expect(widths.scroll).toBeLessThanOrEqual(widths.client);
-  });
-
-  // Metric 5's PR screenshots, on request only:
-  // SOMA_TOOLTIP_SHOTS=<dir> npx playwright test free-pages -g "screenshots"
-  test("screenshots: the tooltip near each edge, hovered at 1,280 px and tapped at 390 px", async ({
-    page,
-  }) => {
-    const dir = process.env.SOMA_TOOLTIP_SHOTS;
-    test.skip(!dir, "SOMA_TOOLTIP_SHOTS not set: PR screenshots only");
-    test.setTimeout(120_000);
-    for (const [width, how] of [
-      [1280, "hover"],
-      [390, "tap"],
-    ] as const) {
-      const { branch, section, plot, tooltip } = await openChart(page, width);
-      expect(branch, "the ledger's history must load").toBe("live");
-      await section.scrollIntoViewIfNeeded();
-      for (const edge of ["left", "right"] as const) {
-        const box = await plot.boundingBox();
-        if (!box) throw new Error("no chart box");
-        // Just inside the plot: 56 and 708 of the 720-wide viewBox.
-        const x = (box.width * (edge === "left" ? 60 : 704)) / 720;
-        const y = box.height / 3;
-        if (how === "hover") {
-          await page.mouse.move(box.x + x, box.y + y);
-        } else {
-          await plot.tap({ position: { x, y } });
-        }
-        await expect(tooltip).toBeVisible();
-        await section.screenshot({
-          path: path.join(dir as string, `soma-tooltip-${width}-${edge}.png`),
-        });
-      }
-    }
-  });
-});
-
 // US-334: /free/spy, SPY's stored SecurityMetric series. The host may hold
 // shares but no NAV or TNA yet, so each chart accepts its plot or
 // "Unavailable" with a reason. US-336: the fee chart reads the stored
@@ -874,10 +794,7 @@ test.describe("US-334 /free/spy", () => {
     for (const name of SPY_HEADINGS) {
       const section = page.getByRole("region", { name });
       await expect(section.getByRole("heading", { name })).toBeVisible();
-      const plot = section.getByRole("img");
-      const unavailable = section.getByText(/^Unavailable: .{10,}/);
-      await expect(plot.or(unavailable).first()).toBeVisible();
-      branches.push((await plot.count()) ? "plot" : "unavailable");
+      branches.push(await plotBranch(section));
     }
     const fees = page.getByRole("region", {
       name: "Sponsor fee revenue over time",
@@ -970,6 +887,189 @@ test.describe("US-334 /free/spy", () => {
       await page.screenshot({
         path: path.join(dir as string, `spy-${width}.png`),
       });
+    }
+  });
+});
+
+// US-337: the free pages' time-series charts are Plotly plots, loaded only
+// on the pages that show them. Each chart is a plot or "Unavailable" with no
+// plot; shares outstanding and Holdings over time must plot on the host.
+test.describe("US-337 Plotly charts", () => {
+  const DAY = /[A-Z][a-z]{2} \d{1,2}, \d{4}/;
+  const MONTH = /[A-Z][a-z]{2} \d{4}/;
+  // A hover row: "Shares outstanding: 1,021,382,116", "Net flows: −$4.1B".
+  const VALUE = /: −?\$?\d[\d,]*(\.\d+)?/;
+  const CHARTS: Record<string, [string, RegExp, boolean][]> = {
+    "/free/spy": [
+      ["Shares outstanding over time", DAY, true],
+      ["Monthly AUM change: net flows vs market move", MONTH, false],
+      ["Sponsor fee revenue over time", MONTH, false],
+    ],
+    "/free/soma": [["Holdings over time", DAY, true]],
+    "/free": [["Holdings over time", DAY, true]],
+  };
+
+  for (const width of [1280, 375]) {
+    for (const [route, charts] of Object.entries(CHARTS)) {
+      test(`${route} at ${width} px: each chart is a Plotly plot or Unavailable, hover shows a date and value, no horizontal scroll`, async ({
+        page,
+      }) => {
+        test.setTimeout(120_000);
+        await page.setViewportSize({ width, height: 812 });
+        await page.goto(route);
+        const branches: string[] = [];
+        for (const [name, date, mustPlot] of charts) {
+          const section = page.getByRole("region", { name });
+          const branch = await plotBranch(section);
+          branches.push(`${name}: ${branch}`);
+          if (mustPlot) expect(branch, `${name} must plot`).toBe("plot");
+          if (branch === "unavailable") continue;
+
+          // Hover a drawn point near the middle: between two thin bars
+          // there may be nothing to show. Re-measured on each try, as a
+          // late resize (Plotly is responsive) can move the plot.
+          const plot = section.locator(".js-plotly-plot");
+          const hover = section.locator(".hoverlayer");
+          await plot.scrollIntoViewIfNeeded();
+          await expect(async () => {
+            const box = await plot.boundingBox();
+            if (!box) throw new Error(`${name}: no plot`);
+            const [px, py] = await plot.evaluate((el: any) => {
+              const { x, y } = el.data[0];
+              let i = Math.floor(x.length / 2);
+              while (i < x.length - 1 && y[i] === null) i++;
+              const xa = el._fullLayout.xaxis;
+              const ya = el._fullLayout.yaxis;
+              return [
+                xa._offset + xa.d2p(x[i]),
+                ya._offset + ya.d2p(Math.max(y[i], 0) / 2),
+              ];
+            });
+            await page.mouse.move(box.x + px - 2, box.y + py);
+            await page.mouse.move(box.x + px, box.y + py);
+            // Plotly throttles hover: the label can follow the move.
+            await expect(hover).toContainText(date, { timeout: 2_000 });
+            await expect(hover).toContainText(VALUE, { timeout: 2_000 });
+          }).toPass({ timeout: 20_000 });
+          await page.mouse.move(0, 0);
+        }
+        test.info().annotations.push({
+          type: "branches",
+          description: branches.join("; "),
+        });
+        if (width !== 375) return;
+
+        const widths = await page.evaluate(() => ({
+          scroll: document.documentElement.scrollWidth,
+          client: document.documentElement.clientWidth,
+        }));
+        expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+        for (const [name] of charts) {
+          const tooWide = await page
+            .getByRole("region", { name })
+            .evaluate((section) =>
+              [section, ...section.querySelectorAll("*")]
+                .filter((el) => el.getBoundingClientRect().right > 375 + 1)
+                .map((el) => `${el.tagName}.${el.getAttribute("class")}`)
+            );
+          expect(tooWide, name).toEqual([]);
+        }
+      });
+    }
+  }
+
+  test("metric 3: /free/spy after 1Y, the shares y-axis starts above 0, within 10% of the 1Y span below the 1Y minimum", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto("/free/spy");
+    const section = page.getByRole("region", {
+      name: "Shares outstanding over time",
+    });
+    expect(await plotBranch(section)).toBe("plot");
+    const plot = section.locator(".js-plotly-plot");
+    const before = await plotState(plot);
+    await section.getByText("1Y", { exact: true }).click();
+    // The refit hook has run once the y range moves off the All fit.
+    await expect
+      .poll(() => plotState(plot).then((s) => s.y[0]), { timeout: 10_000 })
+      .not.toBe(before.y[0]);
+    const { x, y, xs, ys } = await plotState(plot);
+    const visible = ys.filter(
+      (v, i): v is number => v !== null && xs[i] >= x[0] && xs[i] <= x[1]
+    );
+    expect(visible.length).toBeGreaterThan(100);
+    const min = Math.min(...visible);
+    const max = Math.max(...visible);
+    const lo = y[0];
+    test.info().annotations.push({
+      type: "1Y",
+      description: `x ${x.join(" to ")}; data ${min}–${max}B; y from ${lo}`,
+    });
+    expect(lo).toBeGreaterThan(0);
+    expect(lo).toBeLessThanOrEqual(min);
+    expect(lo).toBeGreaterThanOrEqual(min - 0.1 * (max - min));
+  });
+
+  test("metric 4: /free/spy loads the plotly.js-dist chunk; /free/tips requests no Plotly chunk", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const requested: string[] = [];
+    page.on("request", (req) => requested.push(req.url()));
+    await page.goto("/free/tips");
+    await page.waitForLoadState("networkidle");
+    expect(requested.filter((url) => /plotly/i.test(url))).toEqual([]);
+
+    // Vite names the library's chunk plotly.<hash>.js (PlotlyChart.<hash>.js
+    // is the wrapper's, so it doesn't count).
+    const chunk = page.waitForResponse((res) =>
+      /\/plotly\.[\w-]+\.js$/.test(new URL(res.url()).pathname)
+    );
+    await page.goto("/free/spy");
+    const response = await chunk;
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toMatch(/javascript/);
+    await expect(page.locator(".js-plotly-plot").first()).toBeVisible({
+      timeout: 30_000,
+    });
+  });
+
+  // Metric 5's PR screenshots, on request only:
+  // CHART_SHOTS=<dir> npx playwright test free-pages -g "chart screenshots"
+  test("US-337 chart screenshots: each chart at All and 1Y, at 1,280 px and 390 px", async ({
+    page,
+  }) => {
+    const dir = process.env.CHART_SHOTS;
+    test.skip(!dir, "CHART_SHOTS not set: PR screenshots only");
+    test.setTimeout(180_000);
+    const shots: [string, string, string][] = [
+      ["/free/spy", "Shares outstanding over time", "spy-shares"],
+      [
+        "/free/spy",
+        "Monthly AUM change: net flows vs market move",
+        "spy-flows",
+      ],
+      ["/free/spy", "Sponsor fee revenue over time", "spy-fees"],
+      ["/free/soma", "Holdings over time", "soma-history"],
+    ];
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const [route, name, file] of shots) {
+        await page.goto(route);
+        const section = page.getByRole("region", { name });
+        if ((await plotBranch(section)) === "unavailable") continue;
+        await section.scrollIntoViewIfNeeded();
+        for (const range of ["All", "1Y"]) {
+          await section.getByText(range, { exact: true }).click();
+          // Off the buttons: a hovered button is drawn like the active one.
+          await page.mouse.move(0, 0);
+          await page.waitForTimeout(500);
+          await section.screenshot({
+            path: path.join(dir as string, `${file}-${range}-${width}.png`),
+          });
+        }
+      }
     }
   });
 });

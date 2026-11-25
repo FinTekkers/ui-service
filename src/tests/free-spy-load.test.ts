@@ -131,6 +131,7 @@ import {
   type Section,
   type SpyPageData,
 } from "$lib/free/spy";
+import { feesSpec } from "$lib/free/charts";
 import SpyShares from "../components/free/spy/SpyShares.svelte";
 import SpyFlows from "../components/free/spy/SpyFlows.svelte";
 import SpyFees from "../components/free/spy/SpyFees.svelte";
@@ -331,7 +332,12 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
     const { container, getByTestId } = render(SpyFees, {
       props: { fees: data.fees },
     });
-    expect(container.querySelectorAll("rect")).toHaveLength(2);
+    expect(getByTestId("spy-fees-plot")).toBeTruthy();
+    expect(container.querySelector("svg")).toBeNull();
+    // May has no bar: a null value, never 0 (US-337: the Plotly trace).
+    expect(
+      feesSpec(data.fees.ok ? data.fees.data.months : []).data[0].y
+    ).toEqual([null, 30 / 1e6, 31 / 1e6]);
     expect(getByTestId("spy-fee-gap-note").textContent).toBe(
       "No estimate before Jun 2026: SPY's first stored expense ratio is dated May 15, 2026."
     );
@@ -375,6 +381,7 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
       "Unavailable: no EXPENSE_RATIO values are stored for SPY."
     );
     expect(container.querySelector("svg")).toBeNull();
+    expect(container.querySelector("[data-testid$=plot]")).toBeNull();
   });
 
   test.each([
@@ -408,6 +415,7 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
         "Unavailable: EXPENSE_RATIO could not be read (14 UNAVAILABLE: broker down)."
       );
       expect(container.querySelector("svg")).toBeNull();
+      expect(container.querySelector("[data-testid$=plot]")).toBeNull();
     }
   );
 });
@@ -437,43 +445,34 @@ describe("metric 2: each chart renders from a mocked SecurityMetric response", (
     expect(data.flows.data[1].netFlows).toBe("6025000000");
   });
 
-  test("shares chart: axes, legend, range buttons", async () => {
+  test("shares chart: a Plotly plot, its name and legend (axes and range buttons: free-charts.test.ts)", async () => {
     const data = await callLoad();
-    const { container, getByRole, getByText } = render(SpyShares, {
+    const { container, getByText, getByTestId } = render(SpyShares, {
       props: { shares: data.shares, asOf: data.asOf },
     });
-    expect(container.querySelector("svg")).not.toBeNull();
-    expect(
-      container.querySelector("[data-testid=spy-shares-line]")
-    ).not.toBeNull();
-    expect(getByText("Shares outstanding (billions)")).toBeTruthy();
-    expect(getByText("Date")).toBeTruthy();
-    expect(getByText("Shares outstanding, daily")).toBeTruthy();
-    expect(getByRole("button", { name: "All" })).toHaveAttribute(
-      "aria-pressed",
-      "true"
+    expect(getByTestId("spy-shares-plot")).toHaveAccessibleName(
+      "Shares outstanding: from 1,000,000,000 on Aug 28, 2026 to 1,025,000,000 on Oct 30, 2026"
     );
-    // The fixture spans two months, so 1Y and 5Y can't be filled.
-    expect(getByRole("button", { name: "1Y" })).toBeDisabled();
+    expect(getByText("Shares outstanding, daily")).toBeTruthy();
+    expect(container.querySelector("svg")).toBeNull();
+    // The fixture spans two months, so 1Y and 5Y can't be filled: notes.
+    expect(container.querySelector("#spy-shares-note-1Y")?.textContent).toBe(
+      "1Y needs history from Nov 3, 2025. The series starts Aug 28, 2026."
+    );
   });
 
-  test("flows chart: axes, legend, stacked bars, AUM line and formulas", async () => {
+  test("flows chart: a Plotly plot, legend and formulas", async () => {
     const data = await callLoad();
-    const { container, getByText } = render(SpyFlows, {
+    const { container, getByText, getByTestId } = render(SpyFlows, {
       props: { flows: data.flows },
     });
-    expect(container.querySelector("svg")).not.toBeNull();
-    expect(getByText("Monthly change in AUM")).toBeTruthy();
-    expect(getByText("Month-end AUM")).toBeTruthy();
-    expect(getByText("Month")).toBeTruthy();
+    expect(getByTestId("spy-flows-plot")).toHaveAccessibleName(
+      /^Monthly change in SPY's assets under management, Aug 2026 to Oct 2026, stacked/
+    );
+    expect(container.querySelector("svg")).toBeNull();
     expect(getByText("Net flows")).toBeTruthy();
     expect(getByText("Market move")).toBeTruthy();
     expect(getByText("Month-end AUM (right axis)")).toBeTruthy();
-    expect(container.querySelectorAll("rect[data-kind=net]").length).toBe(2);
-    expect(container.querySelectorAll("rect[data-kind=market]").length).toBe(2);
-    expect(
-      container.querySelector("[data-testid=spy-aum-line]")?.getAttribute("d")
-    ).toMatch(/^M.*L.*L/);
     for (const formula of [
       SPY_FORMULAS.aum,
       SPY_FORMULAS.flows,
@@ -483,15 +482,15 @@ describe("metric 2: each chart renders from a mocked SecurityMetric response", (
     }
   });
 
-  test("fee chart: axes, legend, formula, and it says it is an estimate", async () => {
+  test("fee chart: a Plotly plot, legend, formula, and it says it is an estimate", async () => {
     const data = await callLoad();
     expect(data.fees.ok).toBe(true);
-    const { container, getByText } = render(SpyFees, {
+    const { getByText, getByTestId } = render(SpyFees, {
       props: { fees: data.fees },
     });
-    expect(container.querySelectorAll("rect").length).toBeGreaterThan(0);
-    expect(getByText("Fee revenue per month")).toBeTruthy();
-    expect(getByText("Month")).toBeTruthy();
+    expect(getByTestId("spy-fees-plot")).toHaveAccessibleName(
+      "Estimated SPY sponsor fee revenue per month, Aug 2026 to Oct 2026"
+    );
     expect(getByText(/Estimated gross fee\s+revenue/)).toBeTruthy();
     expect(getByText(SPY_FORMULAS.fee)).toBeTruthy();
     expect(getByText(SPY_FEE_NOTE)).toBeTruthy();
@@ -506,6 +505,7 @@ describe("metric 2: with its data missing, each chart says Unavailable and why",
   // No plot and no 0 figure: a gap is never shown as zero.
   function expectNoFigure(container: HTMLElement) {
     expect(container.querySelector("svg")).toBeNull();
+    expect(container.querySelector("[data-testid$=plot]")).toBeNull();
     expect(container.textContent).not.toMatch(/\$0\b|(^|\s)0(\s|$|[.,])/);
   }
 
