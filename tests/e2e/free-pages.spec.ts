@@ -22,7 +22,6 @@ import {
 } from "../../src/tests/fixtures/free-tips-live";
 import { SOMA_PAGE_SIZE } from "../../src/lib/free/soma";
 import { NEXT_COUPON_NOTE } from "../../src/lib/free/tips";
-import { SPY_FEE_UNAVAILABLE } from "../../src/lib/free/spy";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -859,7 +858,9 @@ test.describe("US-331 Holdings over time tooltip", () => {
 
 // US-334: /free/spy, SPY's stored SecurityMetric series. The host may hold
 // shares but no NAV or TNA yet, so each chart accepts its plot or
-// "Unavailable" with a reason; the fee chart is always unavailable live.
+// "Unavailable" with a reason. US-336: the fee chart reads the stored
+// EXPENSE_RATIO series, so once TNA is stored (the flows chart is a plot)
+// the fee chart is a plot too.
 test.describe("US-334 /free/spy", () => {
   const SPY_HEADINGS = [
     "Shares outstanding over time",
@@ -878,11 +879,13 @@ test.describe("US-334 /free/spy", () => {
       await expect(plot.or(unavailable).first()).toBeVisible();
       branches.push((await plot.count()) ? "plot" : "unavailable");
     }
+    const fees = page.getByRole("region", {
+      name: "Sponsor fee revenue over time",
+    });
     await expect(
-      page
-        .getByRole("region", { name: "Sponsor fee revenue over time" })
-        .getByText(SPY_FEE_UNAVAILABLE)
-    ).toBeVisible();
+      fees.getByText(/no expense-ratio series is stored/)
+    ).toHaveCount(0);
+    if (branches[1] === "plot") expect(branches[2]).toBe("plot");
     return branches;
   }
 
@@ -904,7 +907,7 @@ test.describe("US-334 /free/spy", () => {
     });
     const response = await page.reload();
     expect(response?.status()).toBe(200);
-    await expectSpyCharts(page);
+    expect(await expectSpyCharts(page)).toEqual(branches);
   });
 
   test("/free/spy at 375 px: no horizontal scroll, nothing wider than the viewport", async ({

@@ -2,7 +2,9 @@
  * US-334 metric 1: /free/spy's loader derivations on fixed series.
  * (a) each month's net flows + market move equals its ΔAUM exactly;
  * (b) fee revenue sums daily AUM × the expense ratio in force that day ÷ 365
- *     over every calendar day, splitting a month at a ratio change;
+ *     over every calendar day, splitting a month at a ratio change. US-336:
+ *     the ratio is EXPENSE_RATIO in percent (0.0945 = 0.0945%), as the
+ *     ledger-models proto comment defines it;
  * (c) missing days stay gaps (null, never 0) in every derived series.
  *
  * @vitest-environment node
@@ -12,6 +14,7 @@ import { describe, expect, test } from "vitest";
 import {
   feeRevenue,
   latestShareCount,
+  mergeRatio,
   monthlyFlows,
   tradingCalendar,
   type DailySeries,
@@ -131,24 +134,24 @@ describe("metric 1a: net flows + market move = ΔAUM", () => {
 });
 
 describe("metric 1b: fee revenue", () => {
-  // May–Jul 2026, weekdays only. TNA is 365,000 (so 1 a day at 0.001),
+  // May–Jul 2026, weekdays only. TNA is 365,000 (so 1 a day at 0.1%),
   // except Friday 5 June at 730,000, which Saturday and Sunday carry.
   const calendar = weekdays("2026-05-01", "2026-07-03");
   const tna: Row[] = calendar.map((d) => [
     d,
     d === "2026-06-05" ? "730000" : "365000",
   ]);
-  // In force from 15 May; doubles on Monday 15 June.
+  // Percent, as stored: 0.1% from 15 May; doubles to 0.2% on Monday 15 June.
   const ratio: Row[] = [
-    ["2026-05-15", "0.001"],
-    ["2026-06-15", "0.002"],
+    ["2026-05-15", "0.1"],
+    ["2026-06-15", "0.2"],
   ];
 
   // June by hand:
-  //   1–4 June    4 days × 365,000 × 0.001 / 365 = 4
-  //   5–7 June    3 days × 730,000 × 0.001 / 365 = 6  (Fri, and Sat/Sun carry Fri)
-  //   8–14 June   7 days × 1                     = 7
-  //   15–30 June 16 days × 365,000 × 0.002 / 365 = 32 (the change day itself at 0.002)
+  //   1–4 June    4 days × 365,000 × 0.1% / 365 = 4
+  //   5–7 June    3 days × 730,000 × 0.1% / 365 = 6  (Fri, and Sat/Sun carry Fri)
+  //   8–14 June   7 days × 1                    = 7
+  //   15–30 June 16 days × 365,000 × 0.2% / 365 = 32 (the change day itself at 0.2%)
   //   total 49
   test("splits at the change date, applies a ratio on its own date, and carries Friday's AUM over the weekend", () => {
     const fees = feeRevenue(tna, ratio, calendar);
@@ -184,6 +187,64 @@ describe("metric 1b: fee revenue", () => {
 
   test("no ratio series gives every month null, never a default", () => {
     for (const f of feeRevenue(tna, [], calendar)) expect(f.fee).toBeNull();
+  });
+
+  // Friday 19 June is a holiday: in neither the calendar nor TNA, as when
+  // production builds the calendar from TNA. Thursday 18 June's AUM is
+  // doubled so the carry shows: 18–21 June are 4 days × 730,000 × 0.2% / 365
+  // = 16, not 4 × 2 = 8, so June is 49 − 8 + 16 = 57.
+  test("a holiday uses the prior trading day's AUM, like a weekend", () => {
+    const holiday = "2026-06-19";
+    const cal = calendar.filter((d) => d !== holiday);
+    const t: Row[] = without(tna, holiday).map(([d, v]) => [
+      d,
+      d === "2026-06-18" ? "730000" : v,
+    ]);
+    const june = feeRevenue(t, ratio, cal).find((f) => f.month === "2026-06");
+    expect(june?.fee).not.toBeNull();
+    expect(new Decimal(june?.fee as string).equals(57)).toBe(true);
+  });
+
+  // The point in force on the AUM start (from GetLatest) is dated 20 April,
+  // before the first AUM day, so it applies from 1 May: 31 days × 1 = 31.
+  test("a ratio point dated before the AUM start applies from day one", () => {
+    const merged = mergeRatio(ratio, ["2026-04-20", "0.1"]);
+    expect(merged[0]).toEqual(["2026-04-20", "0.1"]);
+    const may = feeRevenue(tna, merged, calendar).find(
+      (f) => f.month === "2026-05"
+    );
+    expect(may?.fee).not.toBeNull();
+    expect(new Decimal(may?.fee as string).equals(31)).toBe(true);
+  });
+
+  test("mergeRatio keeps one point per date, ascending", () => {
+    expect(
+      mergeRatio(
+        [
+          ["2026-06-15", "0.2"],
+          ["2026-05-15", "0.1"],
+        ],
+        ["2026-05-15", "0.1"]
+      )
+    ).toEqual([
+      ["2026-05-15", "0.1"],
+      ["2026-06-15", "0.2"],
+    ]);
+    expect(mergeRatio([], null)).toEqual([]);
+  });
+
+  // Units anchor: SPY's 0.0945% on a constant 3,650,000,000 for all of
+  // June 2026 (30 days) is 3,650,000,000 × 0.0945 / 100 / 365 = 9,450 a day,
+  // 283,500 for the month: average daily AUM × 0.0945% × days ÷ 365.
+  test("EXPENSE_RATIO is percent: 0.0945 is 0.0945% a year", () => {
+    const june = weekdays("2026-06-01", "2026-06-30");
+    const fees = feeRevenue(
+      june.map((d) => [d, "3650000000"]),
+      [["2007-01-26", "0.0945"]],
+      june
+    );
+    expect(fees).toHaveLength(1);
+    expect(new Decimal(fees[0].fee as string).equals(283_500)).toBe(true);
   });
 });
 

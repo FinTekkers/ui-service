@@ -31,6 +31,13 @@ export interface SpyFeeMonth {
   fee: string | null;
 }
 
+/** The fee chart: its months, and where the stored ratio series starts. */
+export interface SpyFees {
+  months: SpyFeeMonth[];
+  /** ISO date of the earliest EXPENSE_RATIO point used. */
+  ratioFrom: string;
+}
+
 export interface SpyLatest {
   /** ISO date of the latest stored share count. */
   date: string;
@@ -47,7 +54,7 @@ export interface SpyPageData {
   latest: Section<SpyLatest>;
   shares: Section<SpyPoint[]>;
   flows: Section<SpyMonth[]>;
-  fees: Section<SpyFeeMonth[]>;
+  fees: Section<SpyFees>;
 }
 
 /** The formulas each derived chart states. */
@@ -61,10 +68,6 @@ export const SPY_FORMULAS = {
 /** What the fee covers, shown with the fee chart. */
 export const SPY_FEE_NOTE =
   "Estimate. SPY is a unit investment trust: its expense ratio pays the trustee (State Street), the S&P index licence and marketing costs.";
-
-/** The fee chart's reason until an expense-ratio series is stored and wired up. */
-export const SPY_FEE_UNAVAILABLE =
-  "Unavailable: no expense-ratio series is stored in SecurityMetricService, so sponsor fee revenue can't be estimated.";
 
 /** The latest share count is flagged once it is more than this many days old. */
 export const SPY_STALE_DAYS = 14;
@@ -154,6 +157,28 @@ const MONTHS = [
 /** "2026-10" → "Oct 2026". */
 export function monthLabel(month: string): string {
   return `${MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
+}
+
+/**
+ * Why the fee chart's early months have no bars, or null when every month
+ * is after the first stored ratio. The month holding that point is blank
+ * too (its earlier days have no ratio), so the note names the first full
+ * month.
+ */
+export function spyFeeGapNote(fees: SpyFees): string | null {
+  if (!fees.months.length || `${fees.months[0].month}-01` >= fees.ratioFrom) {
+    return null;
+  }
+  const y = Number(fees.ratioFrom.slice(0, 4));
+  const m = Number(fees.ratioFrom.slice(5, 7));
+  const firstFull = fees.ratioFrom.endsWith("-01")
+    ? fees.ratioFrom.slice(0, 7)
+    : m === 12
+    ? `${y + 1}-01`
+    : `${y}-${String(m + 1).padStart(2, "0")}`;
+  return `No estimate before ${monthLabel(
+    firstFull
+  )}: SPY's first stored expense ratio is dated ${dateLabel(fees.ratioFrom)}.`;
 }
 
 /** "1021382116" → "1,021,382,116". */
