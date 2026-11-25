@@ -6,7 +6,8 @@
  * fails this test. US-298: /free/tips's live figures come from one allowed
  * server load, src/routes/free/tips/+page.server.ts. US-307: /free/soma's
  * and /free's live SOMA holdings come from their own two. US-334: /free/spy's
- * SPY series come from its own one. US-337: one component,
+ * SPY series come from its own one; US-338 moved it to /free/etf/[ticker],
+ * and /free/spy is a redirect-only +server.ts. US-337: one component,
  * PlotlyChart.svelte, may load plotly.js-dist, and only with a dynamic
  * import() (a chart library, not a backend call).
  *
@@ -29,12 +30,14 @@ const FREE_ROOTS = ["src/routes/free", "src/lib/free", "src/components/free"];
 
 // Exact paths, relative to the repo root, of server files allowed under the
 // free roots. US-254 deleted the /free redirect; US-298 added /free/tips's
-// live load; US-307 added /free/soma's and /free's; US-334 /free/spy's.
+// live load; US-307 added /free/soma's and /free's; US-334 /free/spy's,
+// which US-338 moved to /free/etf/[ticker], leaving /free/spy's redirect.
 const ALLOWED_SERVER_FILES = new Set<string>([
   "src/routes/free/tips/+page.server.ts",
   "src/routes/free/soma/+page.server.ts",
   "src/routes/free/+page.server.ts",
-  "src/routes/free/spy/+page.server.ts",
+  "src/routes/free/etf/[ticker=etf]/+page.server.ts",
+  "src/routes/free/spy/+server.ts",
 ]);
 
 const SERVER_FILE = /^\+(page\.server|layout\.server|server)\.(ts|js)$/;
@@ -187,24 +190,26 @@ describe("Free data explorer stays mock-only", () => {
       return scanFreeTree(repoRoot);
     }
 
-    test("only the /free/tips, /free/soma, /free/spy and /free +page.server.ts are allowed server files", () => {
+    test("only the /free/tips, /free/soma, /free/etf/[ticker] and /free +page.server.ts, and /free/spy's redirect, are allowed server files", () => {
       expect(
         fixture({
           "src/routes/free/tips/+page.server.ts": `import { fetchFreeTips } from "$lib/server/free-tips";`,
           "src/routes/free/soma/+page.server.ts": `import { fetchFreeSoma } from "$lib/server/free-soma";`,
           "src/routes/free/+page.server.ts": `import { fetchFreeSoma } from "$lib/server/free-soma";`,
-          "src/routes/free/spy/+page.server.ts": `import { loadFreeSpy } from "$lib/server/free-spy";`,
+          "src/routes/free/etf/[ticker=etf]/+page.server.ts": `import { loadFreeEtf } from "$lib/server/free-etf";`,
+          "src/routes/free/spy/+server.ts": `import { redirect } from "@sveltejs/kit";`,
         })
       ).toEqual([]);
     });
 
-    test("US-307 adds exactly two allowed server files to US-298's one, and US-334 one more", () => {
+    test("US-307 adds exactly two allowed server files to US-298's one, US-334 one more (moved by US-338), and US-338 the redirect", () => {
       expect([...ALLOWED_SERVER_FILES].sort()).toEqual(
         [
           "src/routes/free/tips/+page.server.ts",
           "src/routes/free/soma/+page.server.ts",
           "src/routes/free/+page.server.ts",
-          "src/routes/free/spy/+page.server.ts",
+          "src/routes/free/etf/[ticker=etf]/+page.server.ts",
+          "src/routes/free/spy/+server.ts",
         ].sort()
       );
     });
@@ -308,11 +313,16 @@ describe("Free data explorer stays mock-only", () => {
       ],
       [
         "a lazy plotly.js-dist import in another component",
-        "src/components/free/spy/SpyShares.svelte",
+        "src/components/free/etf/EtfShares.svelte",
         `<script>const P = await import("plotly.js-dist");</script>`,
       ],
       ["a +layout.server.ts", "src/routes/free/+layout.server.ts", ""],
       ["a +server.ts", "src/routes/free/data/+server.ts", ""],
+      [
+        "a +page.server.ts back at /free/spy",
+        "src/routes/free/spy/+page.server.ts",
+        "",
+      ],
     ])("fails on %s", (_name, rel, content) => {
       const violations = fixture({ [rel]: content });
       expect(violations).toHaveLength(1);

@@ -1,70 +1,69 @@
-<!-- /free/spy (US-334): SPY's history from its stored SecurityMetric series,
-     inside the Free data explorer shell (../+layout.svelte). The server load
-     (./+page.server.ts) reads the series through the broker and derives the
-     flows and fee figures; each chart shows its reason when it can't be
-     built. -->
+<!-- /free/etf/[ticker] (US-334 as /free/spy, US-338 for every fund in
+     ETF_FUNDS): a fund's history from its stored SecurityMetric series,
+     inside the Free data explorer shell (../../+layout.svelte). The server
+     load (./+page.server.ts) reads the series through the broker and
+     derives the flows and fee figures; each chart shows its reason when it
+     can't be built. Every word about the fund comes from its config entry
+     (data.fund). -->
 <script lang="ts">
-  import SpyFees from "../../../components/free/spy/SpyFees.svelte";
-  import SpyFlows from "../../../components/free/spy/SpyFlows.svelte";
-  import SpyShares from "../../../components/free/spy/SpyShares.svelte";
-  import { SPY_STALE_DAYS, dateLabel, groupDigits } from "$lib/free/spy";
-  import type { SpyPageData } from "$lib/free/spy";
+  import EtfFees from "../../../../components/free/etf/EtfFees.svelte";
+  import EtfFlows from "../../../../components/free/etf/EtfFlows.svelte";
+  import EtfShares from "../../../../components/free/etf/EtfShares.svelte";
+  import { ETF_STALE_DAYS, dateLabel, groupDigits } from "$lib/free/etf";
+  import type { EtfPageData } from "$lib/free/etf";
 
-  export let data: SpyPageData;
+  export let data: EtfPageData;
+
+  $: fund = data.fund;
 </script>
 
 <svelte:head>
-  <title>SPDR S&P 500 ETF Trust (SPY) · Free data explorer · Fintekkers</title>
+  <title>{fund.name} ({fund.ticker}) · Free data explorer · Fintekkers</title>
 </svelte:head>
 
 <!-- 1. Narrative -->
 <article class="card narrative">
   <div class="narrative-text">
-    <h2 class="section-title">What is SPY?</h2>
-    <p>
-      The SPDR S&P 500 ETF Trust (SPY) was the first US exchange-traded fund and
-      is still one of the largest. It holds the stocks of the S&P 500 index. It
-      is State Street's fund, part of its SPDR family, not an iShares fund from
-      BlackRock.
-    </p>
-    <p>
-      Authorised participants create and redeem SPY shares in large blocks, so
-      the share count moves with investor demand. Its assets change for two
-      reasons: money flowing in or out, and the market value of the stocks it
-      holds. The charts below separate the two.
-    </p>
+    <h2 class="section-title">What is {fund.ticker}?</h2>
+    {#each fund.paragraphs as paragraph}
+      <p>{paragraph}</p>
+    {/each}
+    {#if fund.splitNote}
+      <p class="split-note" role="note" data-testid="etf-split-note">
+        {fund.splitNote}
+      </p>
+    {/if}
   </div>
   <dl>
     <div>
       <dt>Fund</dt>
-      <dd>SPDR S&P 500 ETF Trust, ticker SPY</dd>
+      <dd>{fund.name}, ticker {fund.ticker}</dd>
     </div>
     <div>
       <dt>Sponsor family</dt>
-      <dd>State Street (SPDR)</dd>
+      <dd>{fund.sponsorFamily}</dd>
     </div>
     <div>
       <dt>Source</dt>
       <dd>
-        <a
-          href="https://www.ssga.com/us/en/intermediary/etfs/spdr-sp-500-etf-trust-spy"
-          >State Street SPY fund data</a
-        >, daily from May 31, 2006
+        <a href={fund.source.href}>{fund.source.label}</a>, daily from {dateLabel(
+          fund.source.since
+        )}
       </dd>
     </div>
   </dl>
 </article>
 
 <!-- 2. Latest share count -->
-<section aria-labelledby="spy-latest-title" class="card latest">
-  <h2 id="spy-latest-title" class="label">Latest shares outstanding</h2>
+<section aria-labelledby="etf-latest-title" class="card latest">
+  <h2 id="etf-latest-title" class="label">Latest shares outstanding</h2>
   {#if data.latest.ok}
     <p class="figure">{groupDigits(data.latest.data.value)}</p>
     <p class="as-of">As of {dateLabel(data.latest.data.date)}</p>
     {#if data.latest.data.stale}
-      <p class="stale" role="note" data-testid="spy-stale">
-        This figure is {data.latest.data.ageDays} days old, more than {SPY_STALE_DAYS}
-        days. Newer State Street figures have not been loaded yet.
+      <p class="stale" role="note" data-testid="etf-stale">
+        This figure is {data.latest.data.ageDays} days old, more than {ETF_STALE_DAYS}
+        days. Newer {fund.sponsor} figures have not been loaded yet.
       </p>
     {/if}
   {:else}
@@ -73,13 +72,13 @@
 </section>
 
 <!-- 3. Shares outstanding over time -->
-<SpyShares shares={data.shares} asOf={data.asOf} />
+<EtfShares {fund} shares={data.shares} asOf={data.asOf} />
 
 <!-- 4. Monthly AUM change -->
-<SpyFlows flows={data.flows} />
+<EtfFlows {fund} flows={data.flows} />
 
 <!-- 5. Sponsor fee revenue -->
-<SpyFees fees={data.fees} />
+<EtfFees {fund} fees={data.fees} />
 
 <style>
   .card {
@@ -171,6 +170,15 @@
     font-family: var(--mono);
     font-size: 13px;
     color: var(--muted);
+  }
+  .narrative-text .split-note {
+    padding: 10px 12px;
+    border-left: 4px solid var(--accent);
+    background: #f5f6f8;
+    border-radius: 4px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
   }
   .stale {
     padding: 10px 12px;

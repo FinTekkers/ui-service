@@ -1,19 +1,22 @@
 /**
  * US-251: the Free data explorer's dataset picker lists exactly the
- * public datasets (US-334 added SPY as the third), reports its open state with aria-expanded and marks the
+ * public datasets (US-334 added SPY as the third; US-338 lists one entry per
+ * fund in ETF_FUNDS, SPY and TQQQ, at /free/etf/<slug>), reports its open state with aria-expanded and marks the
  * current dataset with aria-current.
  */
 import { fireEvent, render, screen, within } from "@testing-library/svelte";
 import { describe, expect, test } from "vitest";
 import DatasetPicker from "../components/free/DatasetPicker.svelte";
 import { FREE_DATASETS, isCurrentDataset } from "$lib/free/datasets";
+import { ETF_FUNDS } from "$lib/free/etf/funds";
 
 const SOMA = "Federal Reserve SOMA Holdings";
 const TIPS = "Treasury Inflation Protected Securities";
 const SPY = "SPDR S&P 500 ETF Trust (SPY)";
+const TQQQ = "ProShares UltraPro QQQ (TQQQ)";
 
 describe("DatasetPicker", () => {
-  test("opening it lists exactly SOMA, TIPS and SPY and sets aria-expanded", async () => {
+  test("opening it lists exactly SOMA, TIPS, SPY and TQQQ and sets aria-expanded", async () => {
     render(DatasetPicker, { props: { currentPath: "/free/tips" } });
     const toggle = screen.getByRole("button");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -32,8 +35,31 @@ describe("DatasetPicker", () => {
     ).toEqual([
       [SOMA, "/free/soma"],
       [TIPS, "/free/tips"],
-      [SPY, "/free/spy"],
+      [SPY, "/free/etf/spy"],
+      [TQQQ, "/free/etf/tqqq"],
     ]);
+  });
+
+  test("US-338: the fund entries are built from ETF_FUNDS", () => {
+    expect(FREE_DATASETS.filter((d) => d.id.startsWith("etf-"))).toEqual(
+      ETF_FUNDS.map((f) => ({
+        id: `etf-${f.slug}`,
+        label: `${f.name} (${f.ticker})`,
+        href: `/free/etf/${f.slug}`,
+      }))
+    );
+  });
+
+  test("US-338: on /free/etf/tqqq only TQQQ is current", async () => {
+    render(DatasetPicker, { props: { currentPath: "/free/etf/tqqq" } });
+    await fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByRole("link", { name: TQQQ })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByRole("link", { name: SPY })).not.toHaveAttribute(
+      "aria-current"
+    );
   });
 
   test("only the current dataset has aria-current", async () => {

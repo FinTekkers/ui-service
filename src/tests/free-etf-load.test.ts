@@ -1,6 +1,7 @@
 /**
- * US-334: /free/spy's server load (src/routes/free/spy/+page.server.ts) and
- * its three charts. The load reads SPY's SHARES_OUTSTANDING, NAV_PER_SHARE
+ * US-334: /free/spy's server load (since US-338,
+ * src/routes/free/etf/[ticker=etf]/+page.server.ts for slug "spy") and its
+ * three charts. The load reads SPY's SHARES_OUTSTANDING, NAV_PER_SHARE
  * and TOTAL_NET_ASSETS through the broker with the server-held
  * FT_HOMEPAGE_API_KEY, via ledger-models' SecurityMetricService (LM-485),
  * and derives the flows on the server. A mocked SecurityMetric Search
@@ -22,6 +23,8 @@ const mocks = vi.hoisted(() => ({
   connection: vi.fn(),
   clients: [] as { args: unknown[]; requests: unknown[]; latest: unknown[] }[],
   series: {} as Record<number, [string, string][] | Error>,
+  /** US-338: per-security series (by UUID string), ahead of `series`. */
+  seriesBy: {} as Record<string, Record<number, [string, string][]>>,
   /** GetLatest's point per metric; unset is "no point on or before". */
   latest: {} as Record<number, [string, string] | Error>,
 }));
@@ -47,6 +50,9 @@ vi.mock(
       "@fintekkers/ledger-models/node/fintekkers/requests/security_metric/get_latest_security_metric_request_pb"
     );
     const { Decimal } = await import("decimal.js");
+    const { UUID } = await import(
+      "@fintekkers/ledger-models/node/wrappers/models/utils/uuid"
+    );
     class SecurityMetricClient {
       requests: any[] = [];
       latest: any[] = [];
@@ -92,7 +98,12 @@ vi.mock(
       search(request: any) {
         this.requests.push(request);
         const stream = new EventEmitter();
-        const rows = mocks.series[request.getMetricsList()[0]] ?? [];
+        const metric = request.getMetricsList()[0];
+        const id = UUID.fromUUIDProto(request.getSecurityId())?.toString();
+        const rows =
+          (id ? mocks.seriesBy[id]?.[metric] : undefined) ??
+          mocks.series[metric] ??
+          [];
         setTimeout(() => {
           if (rows instanceof Error) {
             stream.emit("error", rows);
@@ -124,17 +135,13 @@ import { SecurityProto } from "@fintekkers/ledger-models/node/fintekkers/models/
 import { SecurityMetricTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/security_metric_type_pb";
 import { IdentifierTypeProto } from "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
-import { load } from "../routes/free/spy/+page.server";
-import {
-  SPY_FEE_NOTE,
-  SPY_FORMULAS,
-  type Section,
-  type SpyPageData,
-} from "$lib/free/spy";
+import { load } from "../routes/free/etf/[ticker=etf]/+page.server";
+import { ETF_FORMULAS, type Section, type EtfPageData } from "$lib/free/etf";
 import { feesSpec } from "$lib/free/charts";
-import SpyShares from "../components/free/spy/SpyShares.svelte";
-import SpyFlows from "../components/free/spy/SpyFlows.svelte";
-import SpyFees from "../components/free/spy/SpyFees.svelte";
+import { etfFeeNote, findEtf, type EtfFund } from "$lib/free/etf/funds";
+import EtfShares from "../components/free/etf/EtfShares.svelte";
+import EtfFlows from "../components/free/etf/EtfFlows.svelte";
+import EtfFees from "../components/free/etf/EtfFees.svelte";
 
 const SENTINEL = "sentinel-homepage-key-334";
 const SPY_UUID = UUID.random();
@@ -204,8 +211,13 @@ function iso(d: any): string {
   ).padStart(2, "0")}`;
 }
 
-async function callLoad(): Promise<SpyPageData> {
-  return load();
+const SPY = findEtf("spy") as EtfFund;
+// SPY's fee note, as /free/spy showed it before US-338.
+const SPY_FEE_NOTE =
+  "Estimate. SPY is a unit investment trust: its expense ratio pays the trustee (State Street), the S&P index licence and marketing costs.";
+
+async function callLoad(ticker = "spy"): Promise<EtfPageData> {
+  return load({ params: { ticker } });
 }
 
 beforeEach(() => {
@@ -232,6 +244,117 @@ afterEach(() => {
   mocks.clients.length = 0;
   for (const k of Object.keys(mocks.series)) delete mocks.series[Number(k)];
   for (const k of Object.keys(mocks.latest)) delete mocks.latest[Number(k)];
+  for (const k of Object.keys(mocks.seriesBy)) delete mocks.seriesBy[k];
+});
+
+describe("US-338 metric 1: one shared loader for every fund in the config", () => {
+  const TQQQ_UUID = UUID.random();
+  const TQQQ_SHARES: [string, string][] = DAYS.map((d, i) => [
+    d,
+    String(300_000_000 + i * 1_000_000),
+  ]);
+  const TQQQ_NAV: [string, string][] = DAYS.map((d, i) => [d, String(90 + i)]);
+  const TQQQ_TNA: [string, string][] = DAYS.map((d, i) => [
+    d,
+    new Decimal(TQQQ_SHARES[i][1]).times(TQQQ_NAV[i][1]).toString(),
+  ]);
+
+  beforeEach(() => {
+    mocks.lookup.mockImplementation(async (_type: unknown, ticker: string) =>
+      new SecurityProto().setUuid(
+        (ticker === "TQQQ" ? TQQQ_UUID : SPY_UUID).toUUIDProto()
+      )
+    );
+    mocks.seriesBy[TQQQ_UUID.toString()] = {
+      [SecurityMetricTypeProto.SHARES_OUTSTANDING]: TQQQ_SHARES,
+      [SecurityMetricTypeProto.NAV_PER_SHARE]: TQQQ_NAV,
+      [SecurityMetricTypeProto.TOTAL_NET_ASSETS]: TQQQ_TNA,
+      [RATIO]: [["2026-09-01", "0.78"]],
+    };
+  });
+
+  test.each([
+    ["spy", "SPY", SPY_UUID, SHARES, TNA, "1993-01-22"],
+    ["tqqq", "TQQQ", TQQQ_UUID, TQQQ_SHARES, TQQQ_TNA, "2010-02-09"],
+  ] as const)(
+    "%s: all three sections from the fund's own series, searched by its ID from its launch",
+    async (slug, ticker, uuid, shares, tna, from) => {
+      const data = await callLoad(slug);
+      expect(data.fund.ticker).toBe(ticker);
+      expect(mocks.lookup).toHaveBeenCalledTimes(1);
+      expect(mocks.lookup).toHaveBeenCalledWith(
+        IdentifierTypeProto.EXCH_TICKER,
+        ticker,
+        SENTINEL
+      );
+      expect(data.shares).toEqual({ ok: true, data: shares });
+      expect(data.latest.ok && data.latest.data.value).toBe(
+        shares[shares.length - 1][1]
+      );
+      expect(data.flows.ok && data.flows.data.at(-1)?.aumEnd).toBe(
+        tna[tna.length - 1][1]
+      );
+      expect(data.fees.ok).toBe(true);
+
+      const requests = mocks.clients.flatMap((c) => c.requests as any[]);
+      expect(requests.map((r) => r.getMetricsList()[0]).sort()).toEqual(
+        [
+          SecurityMetricTypeProto.SHARES_OUTSTANDING,
+          SecurityMetricTypeProto.NAV_PER_SHARE,
+          SecurityMetricTypeProto.TOTAL_NET_ASSETS,
+          RATIO,
+        ].sort()
+      );
+      for (const r of requests) {
+        expect(UUID.fromUUIDProto(r.getSecurityId())?.toString()).toBe(
+          uuid.toString()
+        );
+        if (r.getMetricsList()[0] !== RATIO) {
+          expect(iso(r.getStartDate())).toBe(from);
+        }
+      }
+    }
+  );
+
+  test("TQQQ's fee months use its own stored ratio and AUM", async () => {
+    const data = await callLoad("tqqq");
+    expect(data.fees.ok).toBe(true);
+    if (!data.fees.ok) return;
+    expect(data.fees.data.ratioFrom).toBe("2026-09-01");
+    // Sep 1–29 at the Sep 1 TNA, Sep 30 at its own: Σ × 0.78 ÷ (100 × 365).
+    const sep1 = new Decimal(TQQQ_TNA[2][1]);
+    const sep30 = new Decimal(TQQQ_TNA[3][1]);
+    const fee = sep1.times(29).plus(sep30).times("0.78").dividedBy(36500);
+    const sep = data.fees.data.months.find((m) => m.month === "2026-09");
+    // feeRevenue divides day by day, so the last digits can differ.
+    expect(Number(sep?.fee)).toBeCloseTo(fee.toNumber(), 6);
+  });
+
+  test("guardrail: a split-sized step in TQQQ's shares passes through as stored", async () => {
+    const split: [string, string][] = [
+      ["2026-10-28", "150000000"],
+      ["2026-10-29", "300000000"],
+      ["2026-10-30", "300500000"],
+    ];
+    mocks.seriesBy[TQQQ_UUID.toString()][
+      SecurityMetricTypeProto.SHARES_OUTSTANDING
+    ] = split;
+    const data = await callLoad("tqqq");
+    expect(data.shares).toEqual({ ok: true, data: split });
+    expect(data.latest.ok && data.latest.data.value).toBe("300500000");
+  });
+
+  test.each(["xyz", "SPY", "constructor", "__proto__", "toString", "", "spy "])(
+    "%j is a 404, before the key is used or any client is built",
+    async (slug) => {
+      await expect(callLoad(slug)).rejects.toMatchObject({
+        status: 404,
+      });
+      expect(mocks.lookup).not.toHaveBeenCalled();
+      expect(mocks.connection).not.toHaveBeenCalled();
+      expect(mocks.clients).toHaveLength(0);
+    }
+  );
 });
 
 describe("guardrail 1: SecurityMetricService through the broker, with the key", () => {
@@ -329,16 +452,16 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
         ratioFrom: "2026-05-15",
       },
     });
-    const { container, getByTestId } = render(SpyFees, {
-      props: { fees: data.fees },
+    const { container, getByTestId } = render(EtfFees, {
+      props: { fund: SPY, fees: data.fees },
     });
-    expect(getByTestId("spy-fees-plot")).toBeTruthy();
+    expect(getByTestId("etf-fees-plot")).toBeTruthy();
     expect(container.querySelector("svg")).toBeNull();
     // May has no bar: a null value, never 0 (US-337: the Plotly trace).
     expect(
       feesSpec(data.fees.ok ? data.fees.data.months : []).data[0].y
     ).toEqual([null, 30 / 1e6, 31 / 1e6]);
-    expect(getByTestId("spy-fee-gap-note").textContent).toBe(
+    expect(getByTestId("etf-fee-gap-note").textContent).toBe(
       "No estimate before Jun 2026: SPY's first stored expense ratio is dated May 15, 2026."
     );
   });
@@ -352,8 +475,10 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
     if (!data.fees.ok) return;
     expect(data.fees.data.months[0]).toEqual({ month: "2026-05", fee: "31" });
     expect(data.fees.data.ratioFrom).toBe("2026-04-20");
-    const { queryByTestId } = render(SpyFees, { props: { fees: data.fees } });
-    expect(queryByTestId("spy-fee-gap-note")).toBeNull();
+    const { queryByTestId } = render(EtfFees, {
+      props: { fund: SPY, fees: data.fees },
+    });
+    expect(queryByTestId("etf-fee-gap-note")).toBeNull();
   });
 
   // The shares, latest and flows sections with the ratio read as stubbed.
@@ -376,7 +501,9 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
       shares: data.shares,
       flows: data.flows,
     }).toEqual(before);
-    const { container } = render(SpyFees, { props: { fees: data.fees } });
+    const { container } = render(EtfFees, {
+      props: { fund: SPY, fees: data.fees },
+    });
     expect(container.textContent).toContain(
       "Unavailable: no EXPENSE_RATIO values are stored for SPY."
     );
@@ -410,7 +537,9 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
         flows: data.flows,
       }).toEqual(before);
       expect(data.shares.ok && data.flows.ok && data.latest.ok).toBe(true);
-      const { container } = render(SpyFees, { props: { fees: data.fees } });
+      const { container } = render(EtfFees, {
+        props: { fund: SPY, fees: data.fees },
+      });
       expect(container.textContent).toContain(
         "Unavailable: EXPENSE_RATIO could not be read (14 UNAVAILABLE: broker down)."
       );
@@ -447,26 +576,26 @@ describe("metric 2: each chart renders from a mocked SecurityMetric response", (
 
   test("shares chart: a Plotly plot, its name and legend (axes and range buttons: free-charts.test.ts)", async () => {
     const data = await callLoad();
-    const { container, getByText, getByTestId } = render(SpyShares, {
-      props: { shares: data.shares, asOf: data.asOf },
+    const { container, getByText, getByTestId } = render(EtfShares, {
+      props: { fund: SPY, shares: data.shares, asOf: data.asOf },
     });
-    expect(getByTestId("spy-shares-plot")).toHaveAccessibleName(
+    expect(getByTestId("etf-shares-plot")).toHaveAccessibleName(
       "Shares outstanding: from 1,000,000,000 on Aug 28, 2026 to 1,025,000,000 on Oct 30, 2026"
     );
     expect(getByText("Shares outstanding, daily")).toBeTruthy();
     expect(container.querySelector("svg")).toBeNull();
     // The fixture spans two months, so 1Y and 5Y can't be filled: notes.
-    expect(container.querySelector("#spy-shares-note-1Y")?.textContent).toBe(
+    expect(container.querySelector("#etf-shares-note-1Y")?.textContent).toBe(
       "1Y needs history from Nov 3, 2025. The series starts Aug 28, 2026."
     );
   });
 
   test("flows chart: a Plotly plot, legend and formulas", async () => {
     const data = await callLoad();
-    const { container, getByText, getByTestId } = render(SpyFlows, {
-      props: { flows: data.flows },
+    const { container, getByText, getByTestId } = render(EtfFlows, {
+      props: { fund: SPY, flows: data.flows },
     });
-    expect(getByTestId("spy-flows-plot")).toHaveAccessibleName(
+    expect(getByTestId("etf-flows-plot")).toHaveAccessibleName(
       /^Monthly change in SPY's assets under management, Aug 2026 to Oct 2026, stacked/
     );
     expect(container.querySelector("svg")).toBeNull();
@@ -474,9 +603,9 @@ describe("metric 2: each chart renders from a mocked SecurityMetric response", (
     expect(getByText("Market move")).toBeTruthy();
     expect(getByText("Month-end AUM (right axis)")).toBeTruthy();
     for (const formula of [
-      SPY_FORMULAS.aum,
-      SPY_FORMULAS.flows,
-      SPY_FORMULAS.market,
+      ETF_FORMULAS.aum,
+      ETF_FORMULAS.flows,
+      ETF_FORMULAS.market,
     ]) {
       expect(getByText(formula)).toBeTruthy();
     }
@@ -485,17 +614,17 @@ describe("metric 2: each chart renders from a mocked SecurityMetric response", (
   test("fee chart: a Plotly plot, legend, formula, and it says it is an estimate", async () => {
     const data = await callLoad();
     expect(data.fees.ok).toBe(true);
-    const { getByText, getByTestId } = render(SpyFees, {
-      props: { fees: data.fees },
+    const { getByText, getByTestId } = render(EtfFees, {
+      props: { fund: SPY, fees: data.fees },
     });
-    expect(getByTestId("spy-fees-plot")).toHaveAccessibleName(
+    expect(getByTestId("etf-fees-plot")).toHaveAccessibleName(
       "Estimated SPY sponsor fee revenue per month, Aug 2026 to Oct 2026"
     );
     expect(getByText(/Estimated gross fee\s+revenue/)).toBeTruthy();
-    expect(getByText(SPY_FORMULAS.fee)).toBeTruthy();
+    expect(getByText(ETF_FORMULAS.fee)).toBeTruthy();
     expect(getByText(SPY_FEE_NOTE)).toBeTruthy();
-    expect(SPY_FEE_NOTE).toMatch(/^Estimate\./);
-    expect(SPY_FORMULAS.fee).toContain(
+    expect(etfFeeNote(SPY)).toBe(SPY_FEE_NOTE);
+    expect(ETF_FORMULAS.fee).toContain(
       "weekends and holidays use the prior trading day's AUM"
     );
   });
@@ -520,8 +649,8 @@ describe("metric 2: with its data missing, each chart says Unavailable and why",
     expect(reason).toMatch(
       /^Unavailable: SHARES_OUTSTANDING could not be read/
     );
-    const { container } = render(SpyShares, {
-      props: { shares: data.shares, asOf: data.asOf },
+    const { container } = render(EtfShares, {
+      props: { fund: SPY, shares: data.shares, asOf: data.asOf },
     });
     expect(container.textContent).toContain(reason);
     expectNoFigure(container);
@@ -535,7 +664,9 @@ describe("metric 2: with its data missing, each chart says Unavailable and why",
       ok: false,
       message: "Unavailable: no NAV_PER_SHARE values are stored for SPY.",
     });
-    const { container } = render(SpyFlows, { props: { flows: data.flows } });
+    const { container } = render(EtfFlows, {
+      props: { fund: SPY, flows: data.flows },
+    });
     expect(container.textContent).toContain(
       "Unavailable: no NAV_PER_SHARE values are stored for SPY."
     );
@@ -545,7 +676,9 @@ describe("metric 2: with its data missing, each chart says Unavailable and why",
   test("fees: no EXPENSE_RATIO stored", async () => {
     mocks.series[RATIO] = [];
     const data = await callLoad();
-    const { container } = render(SpyFees, { props: { fees: data.fees } });
+    const { container } = render(EtfFees, {
+      props: { fund: SPY, fees: data.fees },
+    });
     expect(container.textContent).toContain(
       "Unavailable: no EXPENSE_RATIO values are stored for SPY."
     );
@@ -554,9 +687,9 @@ describe("metric 2: with its data missing, each chart says Unavailable and why",
   });
 
   test.each([
-    ["SpyShares", SpyShares, "shares"],
-    ["SpyFlows", SpyFlows, "flows"],
-    ["SpyFees", SpyFees, "fees"],
+    ["EtfShares", EtfShares, "shares"],
+    ["EtfFlows", EtfFlows, "flows"],
+    ["EtfFees", EtfFees, "fees"],
   ] as const)("%s shows any reason it is given", (_name, Component, prop) => {
     const section: Section<never> = {
       ok: false,
@@ -565,8 +698,8 @@ describe("metric 2: with its data missing, each chart says Unavailable and why",
     const { container } = render(Component as any, {
       props:
         prop === "shares"
-          ? { shares: section, asOf: "2026-11-03" }
-          : { [prop]: section },
+          ? { fund: SPY, shares: section, asOf: "2026-11-03" }
+          : { fund: SPY, [prop]: section },
     });
     expect(container.textContent).toContain(
       "Unavailable: SPY could not be found (NOT_FOUND)."

@@ -1,18 +1,19 @@
-// What /free/spy's server load (src/lib/server/free-spy.ts) returns, and
-// the display helpers its charts share. Every figure is built on the server
-// from SPY's stored SecurityMetric series; values cross as exact decimal
-// strings. A missing day or month is null, never 0, and a section that
-// can't be built carries the reason instead of figures.
+// What /free/etf/[ticker]'s server load (src/lib/server/free-etf.ts)
+// returns, and the display helpers its charts share. Every figure is built
+// on the server from the fund's stored SecurityMetric series; values cross
+// as exact decimal strings. A missing day or month is null, never 0, and a
+// section that can't be built carries the reason instead of figures.
 import type { Section } from "./tips";
 import { weekLabel } from "./soma";
+import type { EtfFund } from "./etf/funds";
 
 export type { Section } from "./tips";
 
 /** One stored observation: [ISO date, exact decimal string]. */
-export type SpyPoint = [string, string];
+export type EtfPoint = [string, string];
 
 /** One calendar month of the flows chart. */
-export interface SpyMonth {
+export interface EtfMonth {
   /** "2026-10". */
   month: string;
   /** Total net assets on the month's last trading day, else null. */
@@ -26,51 +27,49 @@ export interface SpyMonth {
 }
 
 /** One calendar month of estimated sponsor fee revenue, in dollars. */
-export interface SpyFeeMonth {
+export interface EtfFeeMonth {
   month: string;
   fee: string | null;
 }
 
 /** The fee chart: its months, and where the stored ratio series starts. */
-export interface SpyFees {
-  months: SpyFeeMonth[];
+export interface EtfFees {
+  months: EtfFeeMonth[];
   /** ISO date of the earliest EXPENSE_RATIO point used. */
   ratioFrom: string;
 }
 
-export interface SpyLatest {
+export interface EtfLatest {
   /** ISO date of the latest stored share count. */
   date: string;
   value: string;
   /** Whole days from `date` to the page's date. */
   ageDays: number;
-  /** More than SPY_STALE_DAYS old. */
+  /** More than ETF_STALE_DAYS old. */
   stale: boolean;
 }
 
-export interface SpyPageData {
+export interface EtfPageData {
+  /** The fund's config entry: the page's wording comes from here. */
+  fund: EtfFund;
   /** The page's date (ISO, UTC): every range ends here. */
   asOf: string;
-  latest: Section<SpyLatest>;
-  shares: Section<SpyPoint[]>;
-  flows: Section<SpyMonth[]>;
-  fees: Section<SpyFees>;
+  latest: Section<EtfLatest>;
+  shares: Section<EtfPoint[]>;
+  flows: Section<EtfMonth[]>;
+  fees: Section<EtfFees>;
 }
 
 /** The formulas each derived chart states. */
-export const SPY_FORMULAS = {
+export const ETF_FORMULAS = {
   aum: "ΔAUM = net flows + market move",
   flows: "Net flows = Σ (Δ shares outstanding × that day's NAV per share)",
   market: "Market move = ΔAUM − net flows",
   fee: "Fee ≈ Σ daily AUM × expense ratio in force that day ÷ 365, over every calendar day; weekends and holidays use the prior trading day's AUM",
 } as const;
 
-/** What the fee covers, shown with the fee chart. */
-export const SPY_FEE_NOTE =
-  "Estimate. SPY is a unit investment trust: its expense ratio pays the trustee (State Street), the S&P index licence and marketing costs.";
-
 /** The latest share count is flagged once it is more than this many days old. */
-export const SPY_STALE_DAYS = 14;
+export const ETF_STALE_DAYS = 14;
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -88,14 +87,14 @@ export function daysOld(date: string, now: Date): number {
   return Math.round((today - then) / DAY_MS);
 }
 
-/** True when `date` is more than SPY_STALE_DAYS whole UTC days before `now`. */
+/** True when `date` is more than ETF_STALE_DAYS whole UTC days before `now`. */
 export function isStale(date: string, now: Date): boolean {
-  return daysOld(date, now) > SPY_STALE_DAYS;
+  return daysOld(date, now) > ETF_STALE_DAYS;
 }
 
-export type SpyRangeLabel = "1Y" | "5Y" | "All";
+export type EtfRangeLabel = "1Y" | "5Y" | "All";
 
-export const SPY_RANGES: { label: SpyRangeLabel; years: number | null }[] = [
+export const ETF_RANGES: { label: EtfRangeLabel; years: number | null }[] = [
   { label: "1Y", years: 1 },
   { label: "5Y", years: 5 },
   { label: "All", years: null },
@@ -114,11 +113,11 @@ function yearsBefore(asOf: string, years: number): string {
  * stored day; 1Y and 5Y start that many years before `asOf` and are enabled
  * only when the series reaches back that far.
  */
-export function spyRangeWindow(
-  points: SpyPoint[],
-  range: { label: SpyRangeLabel; years: number | null },
+export function etfRangeWindow(
+  points: EtfPoint[],
+  range: { label: EtfRangeLabel; years: number | null },
   asOf: string
-): { enabled: boolean; note: string | null; points: SpyPoint[] } {
+): { enabled: boolean; note: string | null; points: EtfPoint[] } {
   const first = points.length ? points[0][0] : asOf;
   const start = range.years === null ? first : yearsBefore(asOf, range.years);
   const enabled = points.length > 0 && first <= start;
@@ -165,7 +164,7 @@ export function monthLabel(month: string): string {
  * too (its earlier days have no ratio), so the note names the first full
  * month.
  */
-export function spyFeeGapNote(fees: SpyFees): string | null {
+export function etfFeeGapNote(fees: EtfFees, ticker: string): string | null {
   if (!fees.months.length || `${fees.months[0].month}-01` >= fees.ratioFrom) {
     return null;
   }
@@ -178,7 +177,9 @@ export function spyFeeGapNote(fees: SpyFees): string | null {
     : `${y}-${String(m + 1).padStart(2, "0")}`;
   return `No estimate before ${monthLabel(
     firstFull
-  )}: SPY's first stored expense ratio is dated ${dateLabel(fees.ratioFrom)}.`;
+  )}: ${ticker}'s first stored expense ratio is dated ${dateLabel(
+    fees.ratioFrom
+  )}.`;
 }
 
 /** "1021382116" → "1,021,382,116". */

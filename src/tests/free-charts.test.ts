@@ -21,22 +21,22 @@ import {
   somaHistorySpec,
   type PlotSpec,
 } from "$lib/free/charts";
-import type { SpyFeeMonth, SpyMonth, SpyPoint } from "$lib/free/spy";
+import type { EtfFeeMonth, EtfMonth, EtfPoint } from "$lib/free/etf";
 import type { SomaHistoryPoint } from "$lib/free/soma";
 
 /** Two years of month-start share counts, flat at 0.9B, then a year rising
  * from 1.00B to 1.07B (the owner's 25 Nov example). */
-const SHARES: SpyPoint[] = [
+const SHARES: EtfPoint[] = [
   ...Array.from(
     { length: 12 },
-    (_, i): SpyPoint => [
+    (_, i): EtfPoint => [
       `2024-${String(i + 1).padStart(2, "0")}-01`,
       "900000000",
     ]
   ),
   ...Array.from(
     { length: 12 },
-    (_, i): SpyPoint => [
+    (_, i): EtfPoint => [
       `2025-${String(i + 1).padStart(2, "0")}-01`,
       String(1_000_000_000 + Math.round((i * 70_000_000) / 11)),
     ]
@@ -48,19 +48,19 @@ function month(
   aumEnd: string | null,
   netFlows: string | null,
   marketMove: string | null
-): SpyMonth {
+): EtfMonth {
   return { month: m, aumEnd, deltaAum: null, netFlows, marketMove };
 }
 
 /** AUM rises from $400B to $600B; flows and market move mixed. */
-const FLOWS: SpyMonth[] = [
+const FLOWS: EtfMonth[] = [
   month("2026-01", "400000000000", "5000000000", "-2000000000"),
   month("2026-02", "450000000000", "-3000000000", "8000000000"),
   month("2026-03", null, null, null),
   month("2026-04", "600000000000", null, "4000000000"),
 ];
 
-const FEES: SpyFeeMonth[] = [
+const FEES: EtfFeeMonth[] = [
   { month: "2026-05", fee: null },
   { month: "2026-06", fee: "30000000" },
   { month: "2026-07", fee: "31000000" },

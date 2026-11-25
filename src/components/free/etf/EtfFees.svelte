@@ -1,29 +1,30 @@
-<!-- /free/spy chart 3: estimated sponsor fee revenue per month, derived on
-     the server from stored TOTAL_NET_ASSETS and the stored EXPENSE_RATIO
-     series (US-336). A month before the first stored ratio has no
+<!-- /free/etf/[ticker] chart 3: estimated sponsor fee revenue per month,
+     derived on the server from stored TOTAL_NET_ASSETS and the stored
+     EXPENSE_RATIO series (US-336). A month before the first stored ratio has no
      estimate, and a note says so; a ratio is never defaulted. A null month
      is a gap, never a zero bar. US-337: drawn by Plotly, zero-based. -->
 <script lang="ts">
   import PlotlyChart from "../PlotlyChart.svelte";
   import { feesSpec } from "$lib/free/charts";
+  import { etfFeeNote, type EtfFund } from "$lib/free/etf/funds";
   import {
-    SPY_FEE_NOTE,
-    SPY_FORMULAS,
+    ETF_FORMULAS,
     monthLabel,
-    spyFeeGapNote,
+    etfFeeGapNote,
     type Section,
-    type SpyFeeMonth,
-    type SpyFees,
-  } from "$lib/free/spy";
+    type EtfFeeMonth,
+    type EtfFees,
+  } from "$lib/free/etf";
 
-  export let fees: Section<SpyFees>;
+  export let fund: EtfFund;
+  export let fees: Section<EtfFees>;
 
   const FEE = "#5b8def";
 
   $: chart = fees.ok && fees.data.months.length ? draw(fees.data.months) : null;
-  $: gapNote = fees.ok ? spyFeeGapNote(fees.data) : null;
+  $: gapNote = fees.ok ? etfFeeGapNote(fees.data, fund.ticker) : null;
 
-  function draw(months: SpyFeeMonth[]) {
+  function draw(months: EtfFeeMonth[]) {
     return {
       spec: feesSpec(months),
       first: months[0].month,
@@ -32,20 +33,22 @@
   }
 </script>
 
-<section aria-labelledby="spy-fees-title" class="panel">
-  <h2 id="spy-fees-title" class="panel-title">Sponsor fee revenue over time</h2>
-  <p class="estimate">{SPY_FEE_NOTE}</p>
+<section aria-labelledby="etf-fees-title" class="panel">
+  <h2 id="etf-fees-title" class="panel-title">Sponsor fee revenue over time</h2>
+  <p class="estimate">{etfFeeNote(fund)}</p>
   {#if !fees.ok}
     <p class="status">{fees.message}</p>
   {:else if !chart}
-    <p class="status">Unavailable: no months of SPY data are stored.</p>
+    <p class="status">
+      Unavailable: no months of {fund.ticker} data are stored.
+    </p>
   {:else}
     <PlotlyChart
       spec={chart.spec}
-      label="Estimated SPY sponsor fee revenue per month, {monthLabel(
+      label="Estimated {fund.ticker} sponsor fee revenue per month, {monthLabel(
         chart.first
       )} to {monthLabel(chart.last)}"
-      testid="spy-fees-plot"
+      testid="etf-fees-plot"
     />
     <ul class="legend">
       <li>
@@ -58,11 +61,11 @@
       month is month to date. A month with a missing day is left blank.
     </p>
     {#if gapNote}
-      <p class="caption" data-testid="spy-fee-gap-note">{gapNote}</p>
+      <p class="caption" data-testid="etf-fee-gap-note">{gapNote}</p>
     {/if}
   {/if}
   <ul class="formulas" aria-label="How this estimate is worked out">
-    <li>{SPY_FORMULAS.fee}</li>
+    <li>{ETF_FORMULAS.fee}</li>
   </ul>
 </section>
 
