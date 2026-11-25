@@ -776,117 +776,165 @@ for (const route of ["/free/soma", "/free"]) {
   });
 }
 
-// US-334: /free/spy, SPY's stored SecurityMetric series. The host may hold
-// shares but no NAV or TNA yet, so each chart accepts its plot or
-// "Unavailable" with a reason. US-336: the fee chart reads the stored
-// EXPENSE_RATIO series, so once TNA is stored (the flows chart is a plot)
-// the fee chart is a plot too.
-test.describe("US-334 /free/spy", () => {
-  const SPY_HEADINGS = [
+// US-334: /free/spy, SPY's stored SecurityMetric series. US-338: one page,
+// /free/etf/[ticker], for every fund in ETF_FUNDS (SPY and TQQQ); /free/spy
+// is a 301 to /free/etf/spy, and any other ticker is a 404. The host stores
+// every series these pages read for both funds, so each chart must plot.
+test.describe("US-338 /free/etf/[ticker]", () => {
+  const FUNDS = [
+    { slug: "spy", ticker: "SPY" },
+    { slug: "tqqq", ticker: "TQQQ" },
+  ];
+  const ETF_HEADINGS = [
     "Shares outstanding over time",
     "Monthly AUM change: net flows vs market move",
     "Sponsor fee revenue over time",
   ];
 
-  /** Each chart shows its plot or "Unavailable" and a reason; returns which. */
-  async function expectSpyCharts(page: Page): Promise<string[]> {
-    const branches: string[] = [];
-    for (const name of SPY_HEADINGS) {
+  /** Each chart's region holds exactly one drawn Plotly plot. */
+  async function expectEtfCharts(page: Page, ticker: string) {
+    await expect(
+      page.getByRole("heading", { name: `What is ${ticker}?` })
+    ).toBeVisible();
+    for (const name of ETF_HEADINGS) {
       const section = page.getByRole("region", { name });
       await expect(section.getByRole("heading", { name })).toBeVisible();
-      branches.push(await plotBranch(section));
+      expect(await plotBranch(section), `${ticker}: ${name}`).toBe("plot");
     }
-    const fees = page.getByRole("region", {
-      name: "Sponsor fee revenue over time",
-    });
-    await expect(
-      fees.getByText(/no expense-ratio series is stored/)
-    ).toHaveCount(0);
-    if (branches[1] === "plot") expect(branches[2]).toBe("plot");
-    return branches;
   }
 
-  test("journey: /free → dataset picker → SPY → three charts, and on reload", async ({
-    page,
-  }) => {
-    await page.goto("/free");
+  /** Opens the dataset picker and checks it links both funds. */
+  async function openPickerWithFunds(page: Page) {
     // The picker opens only once the page has hydrated.
     await page.waitForLoadState("networkidle");
     const picker = page.getByRole("button", { name: /Public dataset/ });
     await picker.click();
     await expect(picker).toHaveAttribute("aria-expanded", "true");
-    await page.getByRole("link", { name: /SPY/ }).click();
-    await expect(page).toHaveURL(/\/free\/spy$/);
-    const branches = await expectSpyCharts(page);
-    test.info().annotations.push({
-      type: "branches",
-      description: branches.join(", "),
-    });
-    const response = await page.reload();
-    expect(response?.status()).toBe(200);
-    expect(await expectSpyCharts(page)).toEqual(branches);
-  });
+    for (const { slug, ticker } of FUNDS) {
+      await expect(
+        page.getByRole("link", { name: new RegExp(`\\(${ticker}\\)`) })
+      ).toHaveAttribute("href", `/free/etf/${slug}`);
+    }
+  }
 
-  test("/free/spy at 375 px: no horizontal scroll, nothing wider than the viewport", async ({
+  for (const { slug, ticker } of FUNDS) {
+    test(`journey: /free → dataset picker → ${ticker} → three Plotly charts, and on reload`, async ({
+      page,
+    }) => {
+      test.setTimeout(90_000);
+      await page.goto("/free");
+      await openPickerWithFunds(page);
+      await page
+        .getByRole("link", { name: new RegExp(`\\(${ticker}\\)`) })
+        .click();
+      await expect(page).toHaveURL(new RegExp(`/free/etf/${slug}$`));
+      await expectEtfCharts(page, ticker);
+      const response = await page.reload();
+      expect(response?.status()).toBe(200);
+      await expectEtfCharts(page, ticker);
+    });
+
+    test(`/free/etf/${slug} at 375 px: no horizontal scroll, nothing wider than the viewport`, async ({
+      page,
+    }) => {
+      test.setTimeout(90_000);
+      await page.setViewportSize({ width: 375, height: 812 });
+      const response = await page.goto(`/free/etf/${slug}`);
+      expect(response?.status()).toBe(200);
+      await expectEtfCharts(page, ticker);
+      const widths = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        client: document.documentElement.clientWidth,
+      }));
+      expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+      const tooWide = await page.evaluate(() =>
+        [...document.querySelectorAll("main *")]
+          .filter((el) => el.getBoundingClientRect().right > 375 + 1)
+          .map((el) => `${el.tagName}.${el.className}`)
+      );
+      expect(tooWide).toEqual([]);
+    });
+
+    test(`/free/etf/${slug}: FT_HOMEPAGE_API_KEY never reaches the browser`, async ({
+      page,
+      request,
+    }) => {
+      const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+      test.skip(
+        !key,
+        "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+      );
+      for (const url of [
+        `/free/etf/${slug}`,
+        `/free/etf/${slug}/__data.json`,
+      ]) {
+        const response = await request.get(url);
+        expect(response.status(), `GET ${url}`).toBe(200);
+        expect(await response.text(), `GET ${url} body`).not.toContain(key);
+      }
+      const headers: string[] = [];
+      page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
+      await page.goto(`/free/etf/${slug}`);
+      await page.waitForLoadState("networkidle");
+      expect(await page.content()).not.toContain(key);
+      expect(headers.filter((h) => h.includes(key))).toEqual([]);
+    });
+  }
+
+  test("the dataset picker on /free/etf/tqqq links both funds", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    const response = await page.goto("/free/spy");
-    expect(response?.status()).toBe(200);
-    await expectSpyCharts(page);
-    const widths = await page.evaluate(() => ({
-      scroll: document.documentElement.scrollWidth,
-      client: document.documentElement.clientWidth,
-    }));
-    expect(widths.scroll).toBeLessThanOrEqual(widths.client);
-    const tooWide = await page.evaluate(() =>
-      [...document.querySelectorAll("main *")]
-        .filter((el) => el.getBoundingClientRect().right > 375 + 1)
-        .map((el) => `${el.tagName}.${el.className}`)
-    );
-    expect(tooWide).toEqual([]);
+    await page.goto("/free/etf/tqqq");
+    await openPickerWithFunds(page);
   });
 
-  test("/free/spy: FT_HOMEPAGE_API_KEY never reaches the browser", async ({
+  test("/free/spy: GET and HEAD are a 301 to /free/etf/spy; a visit lands there", async ({
     page,
     request,
   }) => {
-    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
-    test.skip(
-      !key,
-      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
-    );
-    for (const url of ["/free/spy", "/free/spy/__data.json"]) {
-      const response = await request.get(url);
-      expect(response.status(), `GET ${url}`).toBe(200);
-      expect(await response.text(), `GET ${url} body`).not.toContain(key);
+    for (const method of ["get", "head"] as const) {
+      const response = await request[method]("/free/spy", { maxRedirects: 0 });
+      expect(response.status(), method).toBe(301);
+      expect(response.headers()["location"], method).toBe("/free/etf/spy");
     }
-    const headers: string[] = [];
-    page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
-    await page.goto("/free/spy");
-    await page.waitForLoadState("networkidle");
-    expect(await page.content()).not.toContain(key);
-    expect(headers.filter((h) => h.includes(key))).toEqual([]);
+    const response = await page.goto("/free/spy");
+    expect(response?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/free\/etf\/spy$/);
+    await expectEtfCharts(page, "SPY");
   });
 
-  // Metric 5's PR screenshots, on request only:
-  // SPY_SHOTS=<dir> npx playwright test free-pages -g "SPY screenshots"
-  test("SPY screenshots at 1,280 px and 390 px", async ({ page }) => {
-    const dir = process.env.SPY_SHOTS;
-    test.skip(!dir, "SPY_SHOTS not set: PR screenshots only");
-    for (const width of [1280, 390]) {
-      // The app shell scrolls inside its own container, so a full-page
-      // shot stops at the viewport: make the viewport the page's height.
-      await page.setViewportSize({ width, height: 900 });
-      await page.goto("/free/spy");
-      await expectSpyCharts(page);
-      const height = await page
-        .locator(".ft-free")
-        .evaluate((el) => Math.ceil(el.getBoundingClientRect().height) + 200);
-      await page.setViewportSize({ width, height });
-      await page.screenshot({
-        path: path.join(dir as string, `spy-${width}.png`),
-      });
+  test("an unknown or uppercase ticker is a 404", async ({ request }) => {
+    for (const url of [
+      "/free/etf/xyz",
+      "/free/etf/SPY",
+      "/free/etf/xyz/__data.json",
+    ]) {
+      const response = await request.get(url);
+      expect(response.status(), url).toBe(404);
+    }
+  });
+
+  // Metric 3's PR screenshots, on request only:
+  // ETF_SHOTS=<dir> npx playwright test free-pages -g "ETF screenshots"
+  test("ETF screenshots at 1,280 px and 390 px", async ({ page }) => {
+    const dir = process.env.ETF_SHOTS;
+    test.skip(!dir, "ETF_SHOTS not set: PR screenshots only");
+    test.setTimeout(120_000);
+    for (const { slug, ticker } of FUNDS) {
+      for (const width of [1280, 390]) {
+        // The app shell scrolls inside its own container, so a full-page
+        // shot stops at the viewport: make the viewport the page's height.
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(`/free/etf/${slug}`);
+        await expectEtfCharts(page, ticker);
+        const height = await page
+          .locator(".ft-free")
+          .evaluate((el) => Math.ceil(el.getBoundingClientRect().height) + 200);
+        await page.setViewportSize({ width, height });
+        await page.screenshot({
+          path: path.join(dir as string, `${slug}-${width}.png`),
+        });
+      }
     }
   });
 });
@@ -900,7 +948,7 @@ test.describe("US-337 Plotly charts", () => {
   // A hover row: "Shares outstanding: 1,021,382,116", "Net flows: −$4.1B".
   const VALUE = /: −?\$?\d[\d,]*(\.\d+)?/;
   const CHARTS: Record<string, [string, RegExp, boolean][]> = {
-    "/free/spy": [
+    "/free/etf/spy": [
       ["Shares outstanding over time", DAY, true],
       ["Monthly AUM change: net flows vs market move", MONTH, false],
       ["Sponsor fee revenue over time", MONTH, false],
@@ -978,11 +1026,11 @@ test.describe("US-337 Plotly charts", () => {
     }
   }
 
-  test("metric 3: /free/spy after 1Y, the shares y-axis starts above 0, within 10% of the 1Y span below the 1Y minimum", async ({
+  test("metric 3: /free/etf/spy after 1Y, the shares y-axis starts above 0, within 10% of the 1Y span below the 1Y minimum", async ({
     page,
   }) => {
     test.setTimeout(90_000);
-    await page.goto("/free/spy");
+    await page.goto("/free/etf/spy");
     const section = page.getByRole("region", {
       name: "Shares outstanding over time",
     });
@@ -1011,7 +1059,7 @@ test.describe("US-337 Plotly charts", () => {
     expect(lo).toBeGreaterThanOrEqual(min - 0.1 * (max - min));
   });
 
-  test("metric 4: /free/spy loads the plotly.js-dist chunk; /free/tips requests no Plotly chunk", async ({
+  test("metric 4: /free/etf/spy loads the plotly.js-dist chunk; /free/tips requests no Plotly chunk", async ({
     page,
   }) => {
     test.setTimeout(90_000);
@@ -1026,7 +1074,7 @@ test.describe("US-337 Plotly charts", () => {
     const chunk = page.waitForResponse((res) =>
       /\/plotly\.[\w-]+\.js$/.test(new URL(res.url()).pathname)
     );
-    await page.goto("/free/spy");
+    await page.goto("/free/etf/spy");
     const response = await chunk;
     expect(response.status()).toBe(200);
     expect(response.headers()["content-type"]).toMatch(/javascript/);
@@ -1044,13 +1092,13 @@ test.describe("US-337 Plotly charts", () => {
     test.skip(!dir, "CHART_SHOTS not set: PR screenshots only");
     test.setTimeout(180_000);
     const shots: [string, string, string][] = [
-      ["/free/spy", "Shares outstanding over time", "spy-shares"],
+      ["/free/etf/spy", "Shares outstanding over time", "spy-shares"],
       [
-        "/free/spy",
+        "/free/etf/spy",
         "Monthly AUM change: net flows vs market move",
         "spy-flows",
       ],
-      ["/free/spy", "Sponsor fee revenue over time", "spy-fees"],
+      ["/free/etf/spy", "Sponsor fee revenue over time", "spy-fees"],
       ["/free/soma", "Holdings over time", "soma-history"],
     ];
     for (const width of [1280, 390]) {

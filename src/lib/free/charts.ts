@@ -7,10 +7,10 @@
 import {
   compactDollars,
   groupDigits,
-  type SpyFeeMonth,
-  type SpyMonth,
-  type SpyPoint,
-} from "./spy";
+  type EtfFeeMonth,
+  type EtfMonth,
+  type EtfPoint,
+} from "./etf";
 import {
   SOMA_STACKS,
   SOMA_STACK_COLORS,
@@ -61,11 +61,11 @@ const LINE = "#dde1e7";
 const GRID = "#eef0f3";
 const MONO = '"IBM Plex Mono", monospace';
 
-export const SPY_SHARES_COLOR = "#2f5bb7";
-export const SPY_NET_COLOR = "#2f5bb7";
-export const SPY_MARKET_COLOR = "#e8a33d";
-export const SPY_AUM_COLOR = INK;
-export const SPY_FEE_COLOR = "#5b8def";
+export const ETF_SHARES_COLOR = "#2f5bb7";
+export const ETF_NET_COLOR = "#2f5bb7";
+export const ETF_MARKET_COLOR = "#e8a33d";
+export const ETF_AUM_COLOR = INK;
+export const ETF_FEE_COLOR = "#5b8def";
 
 const DAY_FORMAT = "%b %-d, %Y";
 const MONTH_FORMAT = "%b %Y";
@@ -225,8 +225,8 @@ function withRanges(
 const num = (v: string | null, unit: number) =>
   v === null ? null : Number(v) / unit;
 
-/** /free/spy chart 1: daily shares outstanding, in billions. */
-export function sharesSpec(points: SpyPoint[]): PlotSpec {
+/** /free/etf/[ticker] chart 1: daily shares outstanding, in billions. */
+export function sharesSpec(points: EtfPoint[]): PlotSpec {
   const B = 1e9;
   const fit: FitTarget[] = [
     {
@@ -249,7 +249,7 @@ export function sharesSpec(points: SpyPoint[]): PlotSpec {
         x: points.map(([d]) => d),
         y: points.map(([, v]) => Number(v) / B),
         customdata: points.map(([, v]) => groupDigits(v)),
-        line: { color: SPY_SHARES_COLOR, width: 2 },
+        line: { color: ETF_SHARES_COLOR, width: 2 },
         hovertemplate: "Shares outstanding: %{customdata}<extra></extra>",
       },
     ],
@@ -264,12 +264,12 @@ export function sharesSpec(points: SpyPoint[]): PlotSpec {
 }
 
 /**
- * /free/spy chart 2: each month's net flows and market move as bars
+ * /free/etf/[ticker] chart 2: each month's net flows and market move as bars
  * stacked up from 0 (positive) and down from 0 (negative), with month-end
  * AUM as a line on the right axis. Values in $ billions; a null month is a
  * gap, never a zero bar.
  */
-export function flowsSpec(months: SpyMonth[]): PlotSpec {
+export function flowsSpec(months: EtfMonth[]): PlotSpec {
   const B = 1e9;
   const x = months.map((m) => `${m.month}-01`);
   const bars: FitRow[] = [];
@@ -310,8 +310,8 @@ export function flowsSpec(months: SpyMonth[]): PlotSpec {
   });
   return {
     data: [
-      bar("Net flows", "netFlows", SPY_NET_COLOR),
-      bar("Market move", "marketMove", SPY_MARKET_COLOR),
+      bar("Net flows", "netFlows", ETF_NET_COLOR),
+      bar("Market move", "marketMove", ETF_MARKET_COLOR),
       {
         type: "scatter",
         mode: "lines",
@@ -323,7 +323,7 @@ export function flowsSpec(months: SpyMonth[]): PlotSpec {
         ),
         yaxis: "y2",
         connectgaps: false,
-        line: { color: SPY_AUM_COLOR, width: 1.5 },
+        line: { color: ETF_AUM_COLOR, width: 1.5 },
         hovertemplate: "Month-end AUM: %{customdata}<extra></extra>",
       },
     ],
@@ -351,8 +351,8 @@ export function flowsSpec(months: SpyMonth[]): PlotSpec {
   };
 }
 
-/** /free/spy chart 3: estimated fee revenue per month, in $ millions. */
-export function feesSpec(months: SpyFeeMonth[]): PlotSpec {
+/** /free/etf/[ticker] chart 3: estimated fee revenue per month, in $ millions. */
+export function feesSpec(months: EtfFeeMonth[]): PlotSpec {
   const M = 1e6;
   const x = months.map((m) => `${m.month}-01`);
   const fit: FitTarget[] = [
@@ -377,7 +377,7 @@ export function feesSpec(months: SpyFeeMonth[]): PlotSpec {
         customdata: months.map((m) =>
           m.fee === null ? "" : compactDollars(m.fee)
         ),
-        marker: { color: SPY_FEE_COLOR },
+        marker: { color: ETF_FEE_COLOR },
         hovertemplate: "Estimated fee revenue: %{customdata}<extra></extra>",
       },
     ],
