@@ -20,6 +20,10 @@
   /** The y-axis step, in percentage points. */
   export let dtick: number;
 
+  /** US-347: a series starting this many days after `from` still counts as
+   * starting on time (the first session after Jan 1, a holiday week). */
+  const START_SLACK_DAYS = 7;
+
   $: chart = data.ok ? draw(data.data.series, data.data.troughs) : null;
 
   function draw(all: [string, number][], troughs: DrawdownPoint[]) {
@@ -31,11 +35,21 @@
     const shown = troughs.filter((t) => t.date >= first);
     return {
       first,
+      // Tested on the whole series: a panel cut at `from` starts late only
+      // when the stored history itself does.
+      startsLate:
+        start !== null && all[0][0] > addDays(start, START_SLACK_DAYS),
       spec: drawdownSpec(series, { latest, troughs: shown }, dtick),
       label: `${title}: XLK ÷ SPY drawdown from its 52-week high, ${dateLabel(
         first
       )} to ${dateLabel(latest.date)}, latest ${percentLabel(latest.dd)}`,
     };
+  }
+
+  function addDays(iso: string, days: number): string {
+    const d = new Date(`${iso}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
   }
 </script>
 
@@ -48,8 +62,12 @@
   {:else}
     <PlotlyChart spec={chart.spec} label={chart.label} testid="{id}-plot" />
     <p class="caption">
-      Daily, {dateLabel(chart.first)} to {dateLabel(data.data.latest.date)}. 0%
-      is a new 52-week high of the XLK ÷ SPY ratio.
+      Daily, {dateLabel(chart.first)} to {dateLabel(data.data.latest.date)}.
+      {#if chart.startsLate && from}
+        Data available from {dateLabel(chart.first)}; {title} needs history from
+        {dateLabel(from)}.
+      {/if}
+      0% is a new 52-week high of the XLK ÷ SPY ratio.
     </p>
   {/if}
 </section>

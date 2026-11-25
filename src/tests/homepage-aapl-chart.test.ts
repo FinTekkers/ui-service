@@ -4,16 +4,19 @@
  * server-held FT_HOMEPAGE_API_KEY, never the visitor's key, and the page
  * draws them oldest first or shows the empty state.
  *
- * The security search and the price service are stubbed; the e2e journey
- * in tests/e2e/home-sections.spec.ts covers the real backend.
+ * The security search and the broker PriceClient stream are stubbed; the
+ * e2e journey in tests/e2e/home-sections.spec.ts covers the real backend.
  */
+import { EventEmitter } from "events";
 import { render, waitFor } from "@testing-library/svelte";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   FetchSecurity: vi.fn(),
   FetchSecurityUniverse: vi.fn(),
-  PriceService: vi.fn(),
+  BROKER: { url: "broker.sentinel:8085", credentials: { broker: true } },
+  getServiceConnection: vi.fn(),
+  PriceClient: vi.fn(),
   search: vi.fn(),
   SecurityService: vi.fn(),
   newPlot: vi.fn(),
@@ -23,9 +26,12 @@ vi.mock("$lib/security", () => ({
   FetchSecurity: mocks.FetchSecurity,
   FetchSecurityUniverse: mocks.FetchSecurityUniverse,
 }));
+vi.mock("$lib/grpc-auth", () => ({
+  getServiceConnection: mocks.getServiceConnection,
+}));
 vi.mock(
-  "@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService",
-  () => ({ PriceService: mocks.PriceService })
+  "@fintekkers/ledger-models/node/fintekkers/services/price-service/price_service_grpc_pb.js",
+  () => ({ PriceClient: mocks.PriceClient })
 );
 vi.mock(
   "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService",
@@ -50,6 +56,7 @@ vi.mock("plotly.js-dist", () => ({
 import { load } from "../routes/+page.server";
 import HomePage from "../routes/+page.svelte";
 import LiveData from "../components/home/LiveData.svelte";
+import { toDecimalProto } from "$lib/decimal";
 
 const SENTINEL = "sentinel-homepage-key-xyz";
 const VISITOR_KEY = "visitor-key";
@@ -60,11 +67,31 @@ const AAPL = {
 };
 
 function price(date: string, close: number) {
-  const ms = Date.parse(`${date}T20:00:00Z`);
+  const seconds = Date.parse(`${date}T20:00:00Z`) / 1000;
   return {
-    getAsOf: () => ({ toDateTime: () => ({ toMillis: () => ms }) }),
-    getPrice: () => ({ toNumber: () => close }),
+    getUuid: () => ({ getRawUuid_asB64: () => date }),
+    getAsOf: () => ({
+      getTimestamp: () => ({ getSeconds: () => seconds, getNanos: () => 0 }),
+    }),
+    getPrice: () => toDecimalProto(String(close)),
   };
+}
+
+/** The PriceClient stream: one response with the rows `search` gives. */
+function priceStream(request: unknown) {
+  const stream = new EventEmitter();
+  Promise.resolve(mocks.search(request)).then(
+    (rows: unknown[]) => {
+      stream.emit("data", {
+        getPriceResponseList: () => rows,
+        getErrorsOrWarnings: () => undefined,
+        getTruncated: () => false,
+      });
+      stream.emit("end");
+    },
+    (err: unknown) => stream.emit("error", err)
+  );
+  return stream;
 }
 
 // Shuffled on purpose: the loader must sort, not just reverse.
@@ -101,7 +128,8 @@ beforeEach(() => {
   process.env.FT_HOMEPAGE_API_KEY = SENTINEL;
   mocks.FetchSecurity.mockResolvedValue([AAPL]);
   mocks.search.mockResolvedValue(SHUFFLED);
-  mocks.PriceService.mockImplementation(() => ({ search: mocks.search }));
+  mocks.getServiceConnection.mockReturnValue(mocks.BROKER);
+  mocks.PriceClient.mockImplementation(() => ({ search: priceStream }));
 });
 
 afterEach(() => {
@@ -129,9 +157,14 @@ describe("homepage AAPL chart, logged out", () => {
     const args = mocks.FetchSecurity.mock.calls[0];
     expect(args.slice(2, 4)).toEqual(["AAPL", "EXCH_TICKER"]);
     expect(args[6]).toBe(SENTINEL);
-    expect(mocks.PriceService).toHaveBeenCalledTimes(1);
-    expect(mocks.PriceService).toHaveBeenCalledWith(SENTINEL);
+    expect(mocks.getServiceConnection).toHaveBeenCalledTimes(1);
+    expect(mocks.getServiceConnection).toHaveBeenCalledWith(SENTINEL);
+    expect(mocks.PriceClient).toHaveBeenCalledTimes(1);
     expect(mocks.search).toHaveBeenCalledTimes(1);
+    // US-347: an unset limit would bring back the service's 1,000-row cap.
+    const limit = mocks.search.mock.calls[0][0].getLimit();
+    expect(limit).toBeGreaterThanOrEqual(1);
+    expect(limit).toBeLessThanOrEqual(10_000);
     expect(mocks.SecurityService).not.toHaveBeenCalled();
     expect(mocks.FetchSecurityUniverse).not.toHaveBeenCalled();
 
@@ -180,10 +213,10 @@ describe("homepage AAPL chart, signed in", () => {
     const data = await callLoad(signedIn);
     expect(data.closes).toHaveLength(SHUFFLED.length);
     expect(mocks.FetchSecurity.mock.calls[0][6]).toBe(SENTINEL);
-    expect(mocks.PriceService).toHaveBeenCalledWith(SENTINEL);
+    expect(mocks.getServiceConnection).toHaveBeenCalledWith(SENTINEL);
     const allArgs = JSON.stringify([
       mocks.FetchSecurity.mock.calls,
-      mocks.PriceService.mock.calls,
+      mocks.getServiceConnection.mock.calls,
     ]);
     expect(allArgs).not.toContain(VISITOR_KEY);
   });
@@ -193,7 +226,7 @@ describe("homepage AAPL chart, signed in", () => {
     const data = await callLoad(signedIn);
     expect(data).toEqual({ closes: [] });
     expect(mocks.FetchSecurity).not.toHaveBeenCalled();
-    expect(mocks.PriceService).not.toHaveBeenCalled();
+    expect(mocks.PriceClient).not.toHaveBeenCalled();
     expect(mocks.search).not.toHaveBeenCalled();
     expectEmptyState(renderHome(data).container);
   });

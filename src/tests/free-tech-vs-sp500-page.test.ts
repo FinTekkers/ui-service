@@ -246,6 +246,57 @@ describe("page", () => {
   });
 });
 
+// US-347: a panel whose stored history starts after its intended start
+// says so, rather than silently repeating the other panel's range.
+describe("late-start caption", () => {
+  /** XLK and SPY closes from `firstDate`, one a day, 260 of them. */
+  function closesFrom(firstDate: string): [Close[], Close[]] {
+    const first = Date.parse(`${firstDate}T00:00:00Z`);
+    const xlk = [...Array(252).fill(100), ...TAIL].map((close, i) => ({
+      date: new Date(first + i * 86_400_000).toISOString().slice(0, 10),
+      close,
+    }));
+    return [xlk, xlk.map(({ date }) => ({ date, close: 100 }))];
+  }
+
+  function caption(name: string): string {
+    const region = screen.getByRole("region", { name });
+    const text = region.querySelector(".caption")?.textContent ?? "";
+    return text.replace(/\s+/g, " ").trim();
+  }
+
+  test("closes from 2010: 'Since 2004' states the actual start; 'Full history' does not", async () => {
+    const data = await loaded(...closesFrom("2010-03-01"));
+    if (!data.ok) throw new Error("expected data");
+    const first = data.data.series[0][0];
+    expect(first > "2010").toBe(true);
+    renderPage(data);
+    expect(caption("Since 2004")).toContain(
+      `Data available from ${dateLabel(
+        first
+      )}; Since 2004 needs history from ${dateLabel("2004-01-01")}.`
+    );
+    expect(caption("Full history")).not.toContain("Data available from");
+  });
+
+  test("the 2003 fixture: no note on either panel", async () => {
+    renderPage(await loaded());
+    for (const name of ["Full history", "Since 2004"]) {
+      expect(caption(name), name).toMatch(/^Daily, /);
+      expect(caption(name), name).not.toContain("Data available from");
+    }
+  });
+
+  test("a series starting 2004-01-02 (first session after Jan 1): no note", async () => {
+    // 251 days of warm-up before the first drawdown point, on 2004-01-02.
+    const data = await loaded(...closesFrom("2003-04-26"));
+    if (!data.ok) throw new Error("expected data");
+    expect(data.data.series[0][0]).toBe("2004-01-02");
+    renderPage(data);
+    expect(caption("Since 2004")).not.toContain("Data available from");
+  });
+});
+
 describe("drawdownSpec", () => {
   test("a filled area in %, with one annotation per trough plus the latest", async () => {
     const data = await loaded();
