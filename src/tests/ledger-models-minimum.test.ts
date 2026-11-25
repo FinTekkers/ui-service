@@ -1,7 +1,8 @@
 /**
- * US-307 guardrail 4: the ledger-models minimum is raised to the LM-433
- * release (1.1.31, first with MeasureProto.INFLATION_COMPENSATION, which
- * /free/soma requests), and no further. US-303 had raised it to the LM-427
+ * US-334: the ledger-models minimum is raised to the LM-485 release
+ * (1.1.53, first with SecurityMetricService, which /free/spy reads), and no
+ * further. US-307 had raised it to the LM-433 release (1.1.31, first with
+ * MeasureProto.INFLATION_COMPENSATION, which /free/soma requests). US-303 had raised it to the LM-427
  * release (1.1.27, ProductInputs.measuresForArm). The lockfile resolves a
  * release at or above that minimum: the checks' install step refreshes
  * ledger-models to
@@ -11,7 +12,7 @@ import fs from "fs";
 import path from "path";
 import { describe, expect, test } from "vitest";
 
-const MINIMUM = "1.1.31";
+const MINIMUM = "1.1.53";
 
 const readJson = (file: string) =>
   JSON.parse(fs.readFileSync(path.resolve(file), "utf-8"));
@@ -27,7 +28,7 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
-describe("guardrail 4: ledger-models minimum is the LM-433 release", () => {
+describe("ledger-models minimum is the LM-485 release", () => {
   test(`package.json declares exactly ">=${MINIMUM}"`, () => {
     expect(
       readJson("package.json").dependencies["@fintekkers/ledger-models"]
