@@ -8,7 +8,9 @@
  *       locals.user = { apiKey }, and call it for known identifiers (a ticker
  *       and a CUSIP). In parallel, call PriceService.search() directly with
  *       the resolved UUID and assert the returned prices match exactly
- *       (date set + price values).
+ *       (date set + price values). US-350: load() reads every stored price
+ *       while the direct call stops at the service's default 1,000, so the
+ *       page's newest rows must match the direct ones.
  *
  *   (2) HTTP smoke — auth+render validation. Log in via /login?/login, capture
  *       the ft_api_key cookie, GET /data/prices?type=...&id=... with the
@@ -350,14 +352,7 @@ describe("Prices page load() — numbers match PriceService directly", () => {
       date: p.date,
       price: p.price,
     }));
-    expect(loadPrices.length).toBe(directKeyed.length);
-    expect(new Set(loadPrices.map((p: any) => p.date))).toEqual(
-      new Set(directKeyed.map((p) => p.date))
-    );
-    const directByDate = new Map(directKeyed.map((p) => [p.date, p.price]));
-    for (const lp of loadPrices) {
-      expect(directByDate.get(lp.date)).toBeCloseTo(lp.price, 8);
-    }
+    expectPageCoversDirect(loadPrices, directKeyed);
 
     expect(pageData.priceError).toBe("");
     expect(pageData.selectedIdentifier).toBe(chosen.identifier);
@@ -478,14 +473,7 @@ describe("Prices page load() — numbers match PriceService directly", () => {
       date: p.date,
       price: p.price,
     }));
-    expect(loadPrices.length).toBe(directKeyed.length);
-    expect(new Set(loadPrices.map((p: any) => p.date))).toEqual(
-      new Set(directKeyed.map((p) => p.date))
-    );
-    const directByDate = new Map(directKeyed.map((p) => [p.date, p.price]));
-    for (const lp of loadPrices) {
-      expect(directByDate.get(lp.date)).toBeCloseTo(lp.price, 8);
-    }
+    expectPageCoversDirect(loadPrices, directKeyed);
   }, 60_000);
 });
 
@@ -554,6 +542,27 @@ describe("Prices page HTTP — auth + render", () => {
 // ---------------------------------------------------------------------------
 // Local helper
 // ---------------------------------------------------------------------------
+/**
+ * US-350: load() reads every stored price; the direct search returns at
+ * most the service's default 1,000 newest. Both lists are newest first:
+ * the page's newest rows must match the direct rows, and it has at least
+ * as many.
+ */
+function expectPageCoversDirect(
+  loadPrices: { date: string; price: number }[],
+  directKeyed: { date: string; price: number }[]
+) {
+  expect(loadPrices.length).toBeGreaterThanOrEqual(directKeyed.length);
+  const newest = loadPrices.slice(0, directKeyed.length);
+  expect(new Set(newest.map((p) => p.date))).toEqual(
+    new Set(directKeyed.map((p) => p.date))
+  );
+  const directByDate = new Map(directKeyed.map((p) => [p.date, p.price]));
+  for (const lp of newest) {
+    expect(directByDate.get(lp.date)).toBeCloseTo(lp.price, 8);
+  }
+}
+
 function toPriceRows(
   raw: any[]
 ): { date: string; price: number; asOfMs: number }[] {

@@ -1,11 +1,16 @@
 import { FetchSecurity, FetchSecurityUniverse } from "$lib/security";
 import type { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
-import { PriceService } from "@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService";
 import { UUIDProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/uuid_pb.js";
-import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
+import { fromDecimalProto } from "$lib/decimal";
+import {
+  PriceHistoryIncompleteError,
+  asOfMillis,
+  createPriceSearch,
+  readAllPrices,
+} from "$lib/server/closes";
 
 const { FieldProto } = field_pkg;
 
@@ -88,9 +93,6 @@ export async function load({ locals, request }) {
   let priceError = "";
 
   try {
-    const priceService = new PriceService(locals.user?.apiKey);
-    const now = ZonedDateTime.now();
-
     const matches = await FetchSecurity(
       null,
       null,
@@ -127,19 +129,33 @@ export async function load({ locals, request }) {
         ) as unknown as Identifier
       );
 
-      const rawPrices = await priceService.search(now.toProto(), filter);
+      // US-350: every stored price, not the service's default 1,000; a
+      // read cut short throws PriceHistoryIncompleteError.
+      const rawPrices = await readAllPrices(
+        createPriceSearch(locals.user?.apiKey),
+        filter.toProto(),
+        new Date()
+      );
       prices = rawPrices
-        .map((p) => ({
-          date: new Date(p.getAsOf().toDateTime().toMillis())
-            .toISOString()
-            .slice(0, 10),
-          price: p.getPrice().toNumber(),
-          asOfMs: p.getAsOf().toDateTime().toMillis(),
-        }))
+        .map((p) => {
+          const asOfMs = asOfMillis(p);
+          const value = fromDecimalProto(p.getPrice());
+          if (!value) throw new Error("Price value is required");
+          return {
+            date: new Date(asOfMs).toISOString().slice(0, 10),
+            price: Number(value),
+            asOfMs,
+          };
+        })
         .sort((a, b) => b.asOfMs - a.asOfMs);
     }
   } catch (e: any) {
     priceError = e.details ?? e.message ?? "Failed to fetch prices";
+    // Never a silently short list: say the history is incomplete, no rows.
+    if (e instanceof PriceHistoryIncompleteError) {
+      prices = [];
+      priceError = `Price history incomplete: ${e.message}`;
+    }
     console.error("Price fetch error:", priceError);
   }
 

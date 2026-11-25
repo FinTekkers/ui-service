@@ -13,6 +13,9 @@
  * MAX_SEARCH_RESULTS on every request and, when a batch fills, reads back
  * in date windows that each stay under it. The service has no paging. Any
  * error or warning in a response throws: never a silently short history.
+ *
+ * US-350: free-tips and /data/prices read through readAllPrices too. A read
+ * cut short throws PriceHistoryIncompleteError, so a page can say so.
  */
 import { FetchSecurity } from "$lib/security";
 import { getServiceConnection } from "$lib/grpc-auth";
@@ -47,13 +50,22 @@ const MIN_SPAN_S = 60;
 /** Stops a misbehaving service from looping the read forever. */
 const MAX_REQUESTS = 1_000;
 
+/** A price read that could not return every stored row: a truncation
+ * notice in errors_or_warnings, or a history too dense or long to read. */
+export class PriceHistoryIncompleteError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PriceHistoryIncompleteError";
+  }
+}
+
 /** One price Search: every streamed response for `request`. */
 export type PriceSearch = (
   request: QueryPriceRequestProto
 ) => Promise<QueryPriceResponseProto[]>;
 
 /** Price Search through the broker with `apiKey`, as fixings.ts reads. */
-export function createPriceSearch(apiKey: string): PriceSearch {
+export function createPriceSearch(apiKey?: string): PriceSearch {
   const conn = getServiceConnection(apiKey);
   const client = new PriceClient(conn.url, conn.credentials, {
     interceptors: conn.interceptors,
@@ -86,7 +98,9 @@ function rejectWarnings(response: QueryPriceResponseProto): void {
   const text = problems
     .map((p) => p.getDetail()?.getMessageForUser() || `code ${p.getCode()}`)
     .join("; ");
-  throw new Error(`Price search returned an error or warning: ${text}`);
+  throw new PriceHistoryIncompleteError(
+    `Price search returned an error or warning: ${text}`
+  );
 }
 
 function priceKey(p: PriceProto): string {
@@ -125,7 +139,7 @@ export async function readAllPrices(
     lowerS?: number
   ): Promise<{ prices: PriceProto[]; full: boolean }> {
     if (++requests > MAX_REQUESTS) {
-      throw new Error(
+      throw new PriceHistoryIncompleteError(
         `Price search did not finish within ${MAX_REQUESTS} requests`
       );
     }
@@ -174,7 +188,7 @@ export async function readAllPrices(
       }
       spanS = Math.floor(spanS / 2);
       if (spanS < MIN_SPAN_S) {
-        throw new Error(
+        throw new PriceHistoryIncompleteError(
           `Prices too dense to read under ${maxRows} rows per request`
         );
       }
@@ -184,7 +198,7 @@ export async function readAllPrices(
   return [...rows.values()];
 }
 
-function asOfMillis(p: PriceProto): number {
+export function asOfMillis(p: PriceProto): number {
   const ts = p.getAsOf()?.getTimestamp();
   if (!ts) throw new Error("Price search returned a price with no as_of");
   return ts.getSeconds() * 1000 + Math.floor(ts.getNanos() / 1e6);
