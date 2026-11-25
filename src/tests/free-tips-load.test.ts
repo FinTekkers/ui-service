@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   FetchSecurityProtoByCusip: vi.fn(),
-  PriceService: vi.fn(),
+  createPriceSearch: vi.fn(),
   search: vi.fn(),
   fetchCpiReadings: vi.fn(),
   getServiceConnection: vi.fn(),
@@ -33,10 +33,10 @@ vi.mock("$lib/cpi", async (importOriginal) => ({
 vi.mock("$lib/grpc-auth", () => ({
   getServiceConnection: mocks.getServiceConnection,
 }));
-vi.mock(
-  "@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService",
-  () => ({ PriceService: mocks.PriceService })
-);
+vi.mock("$lib/server/closes", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("$lib/server/closes")>()),
+  createPriceSearch: mocks.createPriceSearch,
+}));
 vi.mock(
   "@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js",
   () => ({
@@ -60,6 +60,10 @@ import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/positi
 import { InflationIndexInput } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js";
 import { LocalDateProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_date_pb.js";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
+import { PriceProto } from "@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js";
+import { QueryPriceResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_response_pb.js";
+import { LocalTimestampProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_timestamp_pb.js";
+import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb.js";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
 import { UNAVAILABLE, type TipsPageData } from "$lib/free/tips";
 import {
@@ -109,13 +113,16 @@ function stubSecurity(): SecurityProto {
     );
 }
 
-/** A Price wrapper as PriceService.search returns it. */
+/** A PriceProto as the price Search streams it. */
 function price(isoDateTime: string, value: string) {
-  const ms = Date.parse(isoDateTime);
-  return {
-    getAsOf: () => ({ toDateTime: () => ({ toMillis: () => ms }) }),
-    getPrice: () => ({ toString: () => value }),
-  };
+  const seconds = Date.parse(isoDateTime) / 1000;
+  return new PriceProto()
+    .setAsOf(
+      new LocalTimestampProto().setTimestamp(
+        new Timestamp().setSeconds(seconds)
+      )
+    )
+    .setPrice(toDecimalProto(value));
 }
 
 // Out of order, with one price outside the 7-day window.
@@ -204,7 +211,12 @@ beforeEach(() => {
   mocks.FetchSecurityProtoByCusip.mockImplementation(async () =>
     stubSecurity()
   );
-  mocks.PriceService.mockImplementation(() => ({ search: mocks.search }));
+  // One response holding whatever mocks.search resolves to.
+  mocks.createPriceSearch.mockImplementation(() => async (request: unknown) => [
+    new QueryPriceResponseProto().setPriceResponseList(
+      await mocks.search(request)
+    ),
+  ]);
   mocks.search.mockResolvedValue(PRICES);
   mocks.fetchCpiReadings.mockResolvedValue({
     readings: READINGS,
@@ -225,7 +237,7 @@ afterEach(() => {
 function keysUsed(): unknown[] {
   return [
     ...mocks.FetchSecurityProtoByCusip.mock.calls.map((c) => c[1]),
-    ...mocks.PriceService.mock.calls.map((c) => c[0]),
+    ...mocks.createPriceSearch.mock.calls.map((c) => c[0]),
     ...mocks.fetchCpiReadings.mock.calls.map((c) => c[1]),
     ...mocks.getServiceConnection.mock.calls.map((c) => c[0]),
   ];
@@ -332,7 +344,7 @@ describe("/free/tips load", () => {
     }
     expect(mocks.getServiceConnection).not.toHaveBeenCalled();
     expect(mocks.FetchSecurityProtoByCusip).not.toHaveBeenCalled();
-    expect(mocks.PriceService).not.toHaveBeenCalled();
+    expect(mocks.createPriceSearch).not.toHaveBeenCalled();
     expect(mocks.fetchCpiReadings).not.toHaveBeenCalled();
 
     const { container } = render(TipsPage, { props: { data } });
@@ -571,7 +583,7 @@ describe("fetchLatestRealCleanPrice: the 7-day lookback", () => {
     expect(
       await fetchLatestRealCleanPrice(SECURITY_UUID, SENTINEL, TODAY)
     ).toEqual(expected);
-    expect(mocks.PriceService).toHaveBeenCalledWith(SENTINEL);
+    expect(mocks.createPriceSearch).toHaveBeenCalledWith(SENTINEL);
   });
 });
 

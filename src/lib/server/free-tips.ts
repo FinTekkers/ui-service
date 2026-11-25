@@ -27,13 +27,16 @@ import index_type_pkg from "@fintekkers/ledger-models/node/fintekkers/models/sec
 import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
 import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/field_pb.js";
 import type { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
-import { PriceService } from "@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService";
-import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/utils/datetime";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
 import { fetchCpiReadings, monthLabel, type CpiReading } from "$lib/cpi";
 import { fromDecimalProto } from "$lib/decimal";
 import { FetchSecurityProtoByCusip } from "$lib/security";
+import {
+  asOfMillis,
+  createPriceSearch,
+  readAllPrices,
+} from "$lib/server/closes";
 import { RunTipsMeasures } from "$lib/valuation";
 import {
   UNAVAILABLE,
@@ -236,15 +239,16 @@ export function securityView(proto: SecurityProto): TipsSecurityView | null {
 }
 
 /**
- * The latest price for the security whose UTC date is at most 7 days
- * before `today` (inclusive) and not after it, or null. One price search,
- * as the homepage chart does it.
+ * Every stored price for the security, oldest first, through closes.ts's
+ * chunked reader (US-350): never only the service's default 1,000 rows. A
+ * read cut short throws PriceHistoryIncompleteError, never a partial list.
+ * `value` reads as the PriceService wrapper's getPrice().toString() did.
  */
-export async function fetchLatestRealCleanPrice(
+export async function fetchRealCleanPrices(
   securityUuid: string,
   apiKey: string,
-  today: Date
-): Promise<{ value: string; date: string } | null> {
+  now: Date
+): Promise<{ value: string; date: string; at: number }[]> {
   const filter = new PositionFilter();
   // Same cast as /data/prices: the wrapper's addObjectFilter declares only
   // Identifier, but the runtime accepts a UUID for SECURITY_ID.
@@ -252,10 +256,38 @@ export async function fetchLatestRealCleanPrice(
     FieldProto.SECURITY_ID,
     new UUID(UUID.fromString(securityUuid)) as unknown as Identifier
   );
-  const prices = await new PriceService(apiKey).search(
-    ZonedDateTime.now().toProto(),
-    filter
+  const protos = await readAllPrices(
+    createPriceSearch(apiKey),
+    filter.toProto(),
+    now
   );
+  return protos
+    .map((p) => {
+      const value = fromDecimalProto(p.getPrice());
+      if (!value) {
+        throw new Error("Price search returned a price with no value");
+      }
+      const at = asOfMillis(p);
+      return {
+        value: new Decimal(value).toString(),
+        date: new Date(at).toISOString().slice(0, 10),
+        at,
+      };
+    })
+    .sort((a, b) => a.at - b.at);
+}
+
+/**
+ * The latest price for the security whose UTC date is at most 7 days
+ * before `today` (inclusive) and not after it, or null, picked from every
+ * stored price. A truncated read rejects.
+ */
+export async function fetchLatestRealCleanPrice(
+  securityUuid: string,
+  apiKey: string,
+  today: Date
+): Promise<{ value: string; date: string } | null> {
+  const prices = await fetchRealCleanPrices(securityUuid, apiKey, new Date());
 
   const end = isoDate({
     year: today.getUTCFullYear(),
@@ -268,12 +300,8 @@ export async function fetchLatestRealCleanPrice(
 
   let latest: { value: string; date: string; at: number } | null = null;
   for (const price of prices) {
-    const at = price.getAsOf().toDateTime().toMillis();
-    const date = new Date(at).toISOString().slice(0, 10);
-    if (date < start || date > end) continue;
-    if (!latest || at > latest.at) {
-      latest = { value: price.getPrice().toString(), date, at };
-    }
+    if (price.date < start || price.date > end) continue;
+    if (!latest || price.at > latest.at) latest = price;
   }
   return latest && { value: latest.value, date: latest.date };
 }

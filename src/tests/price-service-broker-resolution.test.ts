@@ -5,12 +5,14 @@
  * connected to API_URL on the ledger port, so the page called
  * ledger-service:8082 and failed with "UNIMPLEMENTED: Method not found:
  * …Price/Search". From 0.4.31 every wrapper client asks ledger-models'
- * service lookup, which puts BROKER_HOST first.
+ * service lookup, which puts BROKER_HOST first. US-350: the page now reads
+ * through closes.ts's PriceClient, built from getServiceConnection.
  *
  *   - metric 1: the price client the prices page load() builds connects
  *     to BROKER_HOST (127.0.0.1:8085), not port 8082.
  *   - guardrail 1: the prices page server code names no address or port.
  */
+import { EventEmitter } from "events";
 import fs from "fs";
 import path from "path";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
@@ -18,23 +20,26 @@ import { UUIDProto } from "@fintekkers/ledger-models/node/fintekkers/models/util
 
 const ROUTE = "src/routes/(authenticated)/data/prices/+page.server.ts";
 
-// Keep the real PriceService constructor (that is what resolves the address)
-// and record each instance; only search() is stubbed so no call goes out.
-const priceServices: any[] = [];
+// Keep the real PriceClient constructor (it opens the channel on the
+// address it is given) and record each instance; only search() is stubbed,
+// as an empty stream, so no call goes out.
+const priceClients: any[] = [];
 vi.mock(
-  "@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService",
+  "@fintekkers/ledger-models/node/fintekkers/services/price-service/price_service_grpc_pb.js",
   async (importOriginal) => {
-    const actual = await importOriginal<
-      typeof import("@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService")
-    >();
-    class RecordingPriceService extends actual.PriceService {
-      constructor(apiKey?: string) {
-        super(apiKey);
-        priceServices.push(this);
+    const actual = await importOriginal<any>();
+    class RecordingPriceClient extends actual.PriceClient {
+      constructor(...args: any[]) {
+        super(...args);
+        priceClients.push(this);
       }
-      search = vi.fn().mockResolvedValue([]);
+      search = vi.fn().mockImplementation(() => {
+        const stream = new EventEmitter();
+        setImmediate(() => stream.emit("end"));
+        return stream;
+      });
     }
-    return { ...actual, PriceService: RecordingPriceService };
+    return { ...actual, PriceClient: RecordingPriceClient };
   }
 );
 
@@ -73,21 +78,21 @@ describe("metric 1: prices page price client resolves to the broker", () => {
   });
 
   test("load() for ticker AAPL builds its PriceClient on 127.0.0.1:8085, not 8082", async () => {
-    priceServices.length = 0;
+    priceClients.length = 0;
     const data = await load({
       locals: { user: { apiKey: "test-key" } },
       request: new Request("http://localhost/data/prices?type=ticker&id=AAPL"),
     });
 
     expect(data.priceError).toBe("");
-    expect(priceServices).toHaveLength(1);
-    const service = priceServices[0];
-    expect(service.search).toHaveBeenCalledTimes(1);
+    expect(priceClients).toHaveLength(1);
+    const client = priceClients[0];
+    expect(client.search).toHaveBeenCalledTimes(1);
 
-    const target: string = service.client.getChannel().getTarget();
+    const target: string = client.getChannel().getTarget();
     expect(target).toMatch(/(^|:)127\.0\.0\.1:8085$/);
     expect(target).not.toContain(":8082");
-    service.client.close();
+    client.close();
   });
 });
 

@@ -36,12 +36,10 @@ vi.mock("$lib/fixings", async (importOriginal) => ({
   ...(await importOriginal<typeof import("$lib/fixings")>()),
   fetchFixings: mocks.fetchFixings,
 }));
-vi.mock(
-  "@fintekkers/ledger-models/node/wrappers/services/price-service/PriceService",
-  () => ({
-    PriceService: vi.fn().mockImplementation(() => ({ search: mocks.search })),
-  })
-);
+vi.mock("$lib/server/closes", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("$lib/server/closes")>()),
+  createPriceSearch: () => mocks.search,
+}));
 vi.mock(
   "@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js",
   () => ({
@@ -55,6 +53,10 @@ import { TipsExtensionProto } from "@fintekkers/ledger-models/node/fintekkers/mo
 import { ReferenceRateFixingProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/product_inputs_pb.js";
 import { LocalDateProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_date_pb.js";
 import index_type_pkg from "@fintekkers/ledger-models/node/fintekkers/models/security/index/index_type_pb.js";
+import { PriceProto } from "@fintekkers/ledger-models/node/fintekkers/models/price/price_pb.js";
+import { QueryPriceResponseProto } from "@fintekkers/ledger-models/node/fintekkers/requests/price/query_price_response_pb.js";
+import { LocalTimestampProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_timestamp_pb.js";
+import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb.js";
 import { toDecimalProto } from "$lib/decimal";
 import { UNAVAILABLE } from "$lib/free/tips";
 import { fetchFreeTips, FREE_TIPS_CUSIP } from "$lib/server/free-tips";
@@ -99,13 +101,20 @@ beforeEach(() => {
         )
         .setRate(toDecimalProto("4.215")),
     ]);
-  const ms = Date.parse("2026-10-23T00:00:00Z");
-  mocks.search.mockReset().mockResolvedValue([
-    {
-      getAsOf: () => ({ toDateTime: () => ({ toMillis: () => ms }) }),
-      getPrice: () => ({ toString: () => "98.4375" }),
-    },
-  ]);
+  const seconds = Date.parse("2026-10-23T00:00:00Z") / 1000;
+  mocks.search
+    .mockReset()
+    .mockResolvedValue([
+      new QueryPriceResponseProto().setPriceResponseList([
+        new PriceProto()
+          .setAsOf(
+            new LocalTimestampProto().setTimestamp(
+              new Timestamp().setSeconds(seconds)
+            )
+          )
+          .setPrice(toDecimalProto("98.4375")),
+      ]),
+    ]);
   mocks.runValuation
     .mockReset()
     .mockImplementation((_request: any, callback: Function) =>
