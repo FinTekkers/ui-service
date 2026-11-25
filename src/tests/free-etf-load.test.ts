@@ -330,6 +330,23 @@ describe("US-338 metric 1: one shared loader for every fund in the config", () =
     expect(Number(sep?.fee)).toBeCloseTo(fee.toNumber(), 6);
   });
 
+  test("US-346 guardrail 3: TQQQ's fee chart gets the run-rate line and right axis", async () => {
+    const data = await callLoad("tqqq");
+    expect(data.fees.ok).toBe(true);
+    if (!data.fees.ok) return;
+    const { getByText } = render(EtfFees, {
+      props: { fund: data.fund, fees: data.fees },
+    });
+    expect(getByText("Annualised run rate (right axis)")).toBeTruthy();
+    const spec = feesSpec(data.fees.data.months);
+    expect(spec.data[1].yaxis).toBe("y2");
+    expect(spec.layout.yaxis2.title.text).toBe(
+      "Annualised run rate ($ per year)"
+    );
+    const sep = data.fees.data.months.find((m) => m.month === "2026-09");
+    expect(sep?.days).toBe(30);
+  });
+
   test("guardrail: a split-sized step in TQQQ's shares passes through as stored", async () => {
     const split: [string, string][] = [
       ["2026-10-28", "150000000"],
@@ -445,9 +462,9 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
       ok: true,
       data: {
         months: [
-          { month: "2026-05", fee: null },
-          { month: "2026-06", fee: "30" },
-          { month: "2026-07", fee: "31" },
+          { month: "2026-05", fee: null, days: 31 },
+          { month: "2026-06", fee: "30", days: 30 },
+          { month: "2026-07", fee: "31", days: 31 },
         ],
         ratioFrom: "2026-05-15",
       },
@@ -473,7 +490,11 @@ describe("metric 2: the fee chart from mocked EXPENSE_RATIO and AUM series", () 
     const data = await callLoad();
     expect(data.fees.ok).toBe(true);
     if (!data.fees.ok) return;
-    expect(data.fees.data.months[0]).toEqual({ month: "2026-05", fee: "31" });
+    expect(data.fees.data.months[0]).toEqual({
+      month: "2026-05",
+      fee: "31",
+      days: 31,
+    });
     expect(data.fees.data.ratioFrom).toBe("2026-04-20");
     const { queryByTestId } = render(EtfFees, {
       props: { fund: SPY, fees: data.fees },
@@ -618,7 +639,7 @@ describe("metric 2: each chart renders from a mocked SecurityMetric response", (
       props: { fund: SPY, fees: data.fees },
     });
     expect(getByTestId("etf-fees-plot")).toHaveAccessibleName(
-      "Estimated SPY sponsor fee revenue per month, Aug 2026 to Oct 2026"
+      "Estimated SPY sponsor fee revenue per month and its annualised run rate, Aug 2026 to Oct 2026"
     );
     expect(getByText(/Estimated gross fee\s+revenue/)).toBeTruthy();
     expect(getByText(ETF_FORMULAS.fee)).toBeTruthy();
@@ -627,6 +648,22 @@ describe("metric 2: each chart renders from a mocked SecurityMetric response", (
     expect(ETF_FORMULAS.fee).toContain(
       "weekends and holidays use the prior trading day's AUM"
     );
+  });
+
+  test("US-346 metric 3: the legend names both series and the caption states the run-rate formula", async () => {
+    const data = await callLoad();
+    const { getByText, getByTestId } = render(EtfFees, {
+      props: { fund: SPY, fees: data.fees },
+    });
+    expect(
+      getByText(/Estimated gross fee\s+revenue \(left axis\)/)
+    ).toBeTruthy();
+    expect(getByText("Annualised run rate (right axis)")).toBeTruthy();
+    const caption = getByTestId("etf-fee-run-rate-caption").textContent ?? "";
+    expect(caption.replace(/\s+/g, " ")).toContain(
+      "(month's fee ÷ days covered) × 365"
+    );
+    expect(caption).toContain("Bars: each month's estimated fee.");
   });
 });
 

@@ -30,6 +30,8 @@ export interface EtfMonth {
 export interface EtfFeeMonth {
   month: string;
   fee: string | null;
+  /** Calendar days the fee covers; the latest month is month to date. */
+  days: number;
 }
 
 /** The fee chart: its months, and where the stored ratio series starts. */
@@ -66,6 +68,7 @@ export const ETF_FORMULAS = {
   flows: "Net flows = Σ (Δ shares outstanding × that day's NAV per share)",
   market: "Market move = ΔAUM − net flows",
   fee: "Fee ≈ Σ daily AUM × expense ratio in force that day ÷ 365, over every calendar day; weekends and holidays use the prior trading day's AUM",
+  runRate: "Annualised run rate = (month's fee ÷ days covered) × 365",
 } as const;
 
 /** The latest share count is flagged once it is more than this many days old. */
@@ -189,6 +192,16 @@ export function groupDigits(value: string): string {
   return `${value.startsWith("-") ? "−" : ""}${grouped}${
     frac ? `.${frac}` : ""
   }`;
+}
+
+/**
+ * A month's fee at a yearly pace: (fee ÷ days covered) × 365, so a month
+ * to date and months of different lengths compare. Null for a blank month
+ * or no days, never 0.
+ */
+export function feeRunRate(fee: string | null, days: number): number | null {
+  if (fee === null || !(days > 0)) return null;
+  return (Number(fee) / days) * 365;
 }
 
 /** Dollars, compact: "$612.3B", "−$4.1B", "$1.02T", "$812.5M". */

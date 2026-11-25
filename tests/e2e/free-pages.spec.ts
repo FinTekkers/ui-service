@@ -21,6 +21,9 @@
  *
  * US-341: /free/sigma-moves draws each fund's σ moves in a Plotly panel, or
  * says why it can't, and fits a 375 px screen.
+ *
+ * US-346: SPY's fee chart must plot, with its annualised run-rate line on a
+ * right-hand axis; one hover shows the month's fee and its run rate.
  */
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { existsSync, readdirSync, readFileSync } from "fs";
@@ -953,11 +956,13 @@ test.describe("US-337 Plotly charts", () => {
   const MONTH = /[A-Z][a-z]{2} \d{4}/;
   // A hover row: "Shares outstanding: 1,021,382,116", "Net flows: −$4.1B".
   const VALUE = /: −?\$?\d[\d,]*(\.\d+)?/;
+  const FEES = "Sponsor fee revenue over time";
   const CHARTS: Record<string, [string, RegExp, boolean][]> = {
     "/free/etf/spy": [
       ["Shares outstanding over time", DAY, true],
       ["Monthly AUM change: net flows vs market move", MONTH, false],
-      ["Sponsor fee revenue over time", MONTH, false],
+      // US-346: the host stores SPY's EXPENSE_RATIO and AUM, so it plots.
+      ["Sponsor fee revenue over time", MONTH, true],
     ],
     "/free/soma": [["Holdings over time", DAY, true]],
     "/free": [["Holdings over time", DAY, true]],
@@ -1004,8 +1009,26 @@ test.describe("US-337 Plotly charts", () => {
             // Plotly throttles hover: the label can follow the move.
             await expect(hover).toContainText(date, { timeout: 2_000 });
             await expect(hover).toContainText(VALUE, { timeout: 2_000 });
+            // US-346: one hover shows the month's fee and its run rate.
+            if (name === FEES) {
+              await expect(hover).toContainText("Annualised run rate", {
+                timeout: 2_000,
+              });
+              await expect(hover).toContainText("a year", { timeout: 2_000 });
+            }
           }).toPass({ timeout: 20_000 });
           await page.mouse.move(0, 0);
+          if (name === FEES) {
+            // US-346: bars and the run-rate line on a right-hand axis.
+            const drawn = await plot.evaluate((el: any) => ({
+              traces: el.data.length,
+              right: el._fullLayout.yaxis2?.title?.text,
+            }));
+            expect(drawn).toEqual({
+              traces: 2,
+              right: "Annualised run rate ($ per year)",
+            });
+          }
         }
         test.info().annotations.push({
           type: "branches",

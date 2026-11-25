@@ -7,6 +7,7 @@
 import {
   compactDollars,
   dateLabel,
+  feeRunRate,
   groupDigits,
   type EtfFeeMonth,
   type EtfMonth,
@@ -69,6 +70,7 @@ export const ETF_NET_COLOR = "#2f5bb7";
 export const ETF_MARKET_COLOR = "#e8a33d";
 export const ETF_AUM_COLOR = INK;
 export const ETF_FEE_COLOR = "#5b8def";
+export const ETF_RUN_RATE_COLOR = "#e8a33d";
 export const DRAWDOWN_COLOR = "#2f5bb7";
 const DRAWDOWN_FILL = "rgba(47, 91, 183, 0.25)";
 export const SIGMA_COLOR = "#2f5bb7";
@@ -358,10 +360,14 @@ export function flowsSpec(months: EtfMonth[]): PlotSpec {
   };
 }
 
-/** /free/etf/[ticker] chart 3: estimated fee revenue per month, in $ millions. */
+/**
+ * /free/etf/[ticker] chart 3: estimated fee revenue per month, in $ millions,
+ * with its annualised run rate (US-346) as a line on the right axis.
+ */
 export function feesSpec(months: EtfFeeMonth[]): PlotSpec {
   const M = 1e6;
   const x = months.map((m) => `${m.month}-01`);
+  const rate = months.map((m) => feeRunRate(m.fee, m.days));
   const fit: FitTarget[] = [
     {
       axis: "yaxis",
@@ -370,6 +376,13 @@ export function feesSpec(months: EtfFeeMonth[]): PlotSpec {
         m.fee === null
           ? []
           : [{ x: x[i], lo: Number(m.fee) / M, hi: Number(m.fee) / M }]
+      ),
+    },
+    {
+      axis: "yaxis2",
+      zero: true,
+      rows: rate.flatMap((r, i) =>
+        r === null ? [] : [{ x: x[i], lo: r / M, hi: r / M }]
       ),
     },
   ];
@@ -387,12 +400,33 @@ export function feesSpec(months: EtfFeeMonth[]): PlotSpec {
         marker: { color: ETF_FEE_COLOR },
         hovertemplate: "Estimated fee revenue: %{customdata}<extra></extra>",
       },
+      {
+        type: "scatter",
+        mode: "lines+markers",
+        name: "Annualised run rate (right axis)",
+        x,
+        y: rate.map((r) => (r === null ? null : r / M)),
+        customdata: rate.map((r) => (r === null ? "" : compactDollars(r))),
+        yaxis: "y2",
+        connectgaps: false,
+        line: { color: ETF_RUN_RATE_COLOR, width: 2 },
+        marker: { color: ETF_RUN_RATE_COLOR, size: 5 },
+        hovertemplate:
+          "Annualised run rate: %{customdata} a year<extra></extra>",
+      },
     ],
     layout: layoutFor(
       "Month",
       MONTH_FORMAT,
       {
-        yaxis: yAxis("Fee revenue per month", ranges.yaxis, {
+        yaxis: yAxis("Monthly fee", ranges.yaxis, {
+          tickprefix: "$",
+          ticksuffix: "M",
+        }),
+        yaxis2: yAxis("Annualised run rate ($ per year)", ranges.yaxis2, {
+          overlaying: "y",
+          side: "right",
+          showgrid: false,
           tickprefix: "$",
           ticksuffix: "M",
         }),
