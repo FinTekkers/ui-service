@@ -940,10 +940,45 @@ export async function FetchSecurityProtoByCusip(
   cusip: string,
   apiKey?: string
 ): Promise<SecurityProto> {
+  const results = await searchByIdentifier(
+    IdentifierTypeProto.CUSIP,
+    cusip,
+    apiKey
+  );
+  if (results.length === 0) {
+    throw new Error(`No security found for CUSIP: ${cusip}`);
+  }
+  return results[0];
+}
+
+/**
+ * US-334: the raw SecurityProto for one identifier of any type (e.g. the
+ * EXCH_TICKER "SPY"). Throws, naming the type, when no security matches.
+ */
+export async function FetchSecurityProtoByIdentifier(
+  type: IdentifierTypeProto,
+  value: string,
+  apiKey?: string
+): Promise<SecurityProto> {
+  const results = await searchByIdentifier(type, value, apiKey);
+  if (results.length === 0) {
+    const typeName =
+      Object.entries(IdentifierTypeProto).find(([, v]) => v === type)?.[0] ??
+      String(type);
+    throw new Error(`No security found for ${typeName}: ${value}`);
+  }
+  return results[0];
+}
+
+async function searchByIdentifier(
+  type: IdentifierTypeProto,
+  value: string,
+  apiKey?: string
+): Promise<SecurityProto[]> {
   const filter = new PositionFilter();
   const identifierProto = new IdentifierProto()
-    .setIdentifierType(IdentifierTypeProto.CUSIP)
-    .setIdentifierValue(cusip.trim());
+    .setIdentifierType(type)
+    .setIdentifierValue(value.trim());
   filter.addObjectFilter(
     FieldProto.IDENTIFIER,
     new Identifier(identifierProto)
@@ -959,7 +994,7 @@ export async function FetchSecurityProtoByCusip(
   searchRequest.setAsOf(ZonedDateTime.now().toProto());
   searchRequest.setSearchSecurityInput(filter.toProto());
 
-  const results = await new Promise<SecurityProto[]>((resolve, reject) => {
+  return new Promise<SecurityProto[]>((resolve, reject) => {
     const list: SecurityProto[] = [];
     const stream = client.search(searchRequest);
     stream.on("data", (response: any) => {
@@ -970,9 +1005,4 @@ export async function FetchSecurityProtoByCusip(
     stream.on("end", () => resolve(list));
     stream.on("error", (err: any) => reject(err));
   });
-
-  if (results.length === 0) {
-    throw new Error(`No security found for CUSIP: ${cusip}`);
-  }
-  return results[0];
 }

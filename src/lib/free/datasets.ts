@@ -1,7 +1,7 @@
 // The public datasets in the Free data explorer (/free/*). DatasetPicker
 // lists these, and each dataset's page lives at its href.
 export interface FreeDataset {
-  id: "soma" | "tips";
+  id: "soma" | "tips" | "spy";
   label: string;
   href: string;
 }
@@ -13,6 +13,7 @@ export const FREE_DATASETS: readonly FreeDataset[] = [
     label: "Treasury Inflation Protected Securities",
     href: "/free/tips",
   },
+  { id: "spy", label: "SPDR S&P 500 ETF Trust (SPY)", href: "/free/spy" },
 ];
 
 // True on the dataset's page and any page below it (/free/tips/<cusip>),

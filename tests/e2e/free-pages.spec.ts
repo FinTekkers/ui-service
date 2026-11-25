@@ -22,6 +22,7 @@ import {
 } from "../../src/tests/fixtures/free-tips-live";
 import { SOMA_PAGE_SIZE } from "../../src/lib/free/soma";
 import { NEXT_COUPON_NOTE } from "../../src/lib/free/tips";
+import { SPY_FEE_UNAVAILABLE } from "../../src/lib/free/spy";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -852,6 +853,120 @@ test.describe("US-331 Holdings over time tooltip", () => {
           path: path.join(dir as string, `soma-tooltip-${width}-${edge}.png`),
         });
       }
+    }
+  });
+});
+
+// US-334: /free/spy, SPY's stored SecurityMetric series. The host may hold
+// shares but no NAV or TNA yet, so each chart accepts its plot or
+// "Unavailable" with a reason; the fee chart is always unavailable live.
+test.describe("US-334 /free/spy", () => {
+  const SPY_HEADINGS = [
+    "Shares outstanding over time",
+    "Monthly AUM change: net flows vs market move",
+    "Sponsor fee revenue over time",
+  ];
+
+  /** Each chart shows its plot or "Unavailable" and a reason; returns which. */
+  async function expectSpyCharts(page: Page): Promise<string[]> {
+    const branches: string[] = [];
+    for (const name of SPY_HEADINGS) {
+      const section = page.getByRole("region", { name });
+      await expect(section.getByRole("heading", { name })).toBeVisible();
+      const plot = section.getByRole("img");
+      const unavailable = section.getByText(/^Unavailable: .{10,}/);
+      await expect(plot.or(unavailable).first()).toBeVisible();
+      branches.push((await plot.count()) ? "plot" : "unavailable");
+    }
+    await expect(
+      page
+        .getByRole("region", { name: "Sponsor fee revenue over time" })
+        .getByText(SPY_FEE_UNAVAILABLE)
+    ).toBeVisible();
+    return branches;
+  }
+
+  test("journey: /free → dataset picker → SPY → three charts, and on reload", async ({
+    page,
+  }) => {
+    await page.goto("/free");
+    // The picker opens only once the page has hydrated.
+    await page.waitForLoadState("networkidle");
+    const picker = page.getByRole("button", { name: /Public dataset/ });
+    await picker.click();
+    await expect(picker).toHaveAttribute("aria-expanded", "true");
+    await page.getByRole("link", { name: /SPY/ }).click();
+    await expect(page).toHaveURL(/\/free\/spy$/);
+    const branches = await expectSpyCharts(page);
+    test.info().annotations.push({
+      type: "branches",
+      description: branches.join(", "),
+    });
+    const response = await page.reload();
+    expect(response?.status()).toBe(200);
+    await expectSpyCharts(page);
+  });
+
+  test("/free/spy at 375 px: no horizontal scroll, nothing wider than the viewport", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    const response = await page.goto("/free/spy");
+    expect(response?.status()).toBe(200);
+    await expectSpyCharts(page);
+    const widths = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+    }));
+    expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+    const tooWide = await page.evaluate(() =>
+      [...document.querySelectorAll("main *")]
+        .filter((el) => el.getBoundingClientRect().right > 375 + 1)
+        .map((el) => `${el.tagName}.${el.className}`)
+    );
+    expect(tooWide).toEqual([]);
+  });
+
+  test("/free/spy: FT_HOMEPAGE_API_KEY never reaches the browser", async ({
+    page,
+    request,
+  }) => {
+    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+    test.skip(
+      !key,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
+    for (const url of ["/free/spy", "/free/spy/__data.json"]) {
+      const response = await request.get(url);
+      expect(response.status(), `GET ${url}`).toBe(200);
+      expect(await response.text(), `GET ${url} body`).not.toContain(key);
+    }
+    const headers: string[] = [];
+    page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
+    await page.goto("/free/spy");
+    await page.waitForLoadState("networkidle");
+    expect(await page.content()).not.toContain(key);
+    expect(headers.filter((h) => h.includes(key))).toEqual([]);
+  });
+
+  // Metric 5's PR screenshots, on request only:
+  // SPY_SHOTS=<dir> npx playwright test free-pages -g "SPY screenshots"
+  test("SPY screenshots at 1,280 px and 390 px", async ({ page }) => {
+    const dir = process.env.SPY_SHOTS;
+    test.skip(!dir, "SPY_SHOTS not set: PR screenshots only");
+    for (const width of [1280, 390]) {
+      // The app shell scrolls inside its own container, so a full-page
+      // shot stops at the viewport: make the viewport the page's height.
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/free/spy");
+      await expectSpyCharts(page);
+      const height = await page
+        .locator(".ft-free")
+        .evaluate((el) => Math.ceil(el.getBoundingClientRect().height) + 200);
+      await page.setViewportSize({ width, height });
+      await page.screenshot({
+        path: path.join(dir as string, `spy-${width}.png`),
+      });
     }
   });
 });
