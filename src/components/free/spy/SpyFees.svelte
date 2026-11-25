@@ -1,7 +1,7 @@
 <!-- /free/spy chart 3: estimated sponsor fee revenue per month, derived on
-     the server from stored TOTAL_NET_ASSETS and a stored expense-ratio
-     series. No expense-ratio series is stored yet, so the live page shows
-     this chart's reason instead; a ratio is never defaulted. A null month
+     the server from stored TOTAL_NET_ASSETS and the stored EXPENSE_RATIO
+     series (US-336). A month before the first stored ratio has no
+     estimate, and a note says so; a ratio is never defaulted. A null month
      is a gap, never a zero bar. -->
 <script lang="ts">
   import { somaXTicks } from "$lib/free/soma";
@@ -11,11 +11,13 @@
     compactDollars,
     monthLabel,
     niceTicks,
+    spyFeeGapNote,
     type Section,
     type SpyFeeMonth,
+    type SpyFees,
   } from "$lib/free/spy";
 
-  export let fees: Section<SpyFeeMonth[]>;
+  export let fees: Section<SpyFees>;
 
   const W = 720;
   const H = 320;
@@ -28,7 +30,8 @@
   const M = 1e6;
   const FEE = "#5b8def";
 
-  $: chart = fees.ok && fees.data.length ? draw(fees.data) : null;
+  $: chart = fees.ok && fees.data.months.length ? draw(fees.data.months) : null;
+  $: gapNote = fees.ok ? spyFeeGapNote(fees.data) : null;
 
   function draw(months: SpyFeeMonth[]) {
     const values = months.flatMap((m) =>
@@ -124,6 +127,9 @@
       Monthly, {monthLabel(chart.first)} to {monthLabel(chart.last)}; the latest
       month is month to date. A month with a missing day is left blank.
     </p>
+    {#if gapNote}
+      <p class="caption" data-testid="spy-fee-gap-note">{gapNote}</p>
+    {/if}
   {/if}
   <ul class="formulas" aria-label="How this estimate is worked out">
     <li>{SPY_FORMULAS.fee}</li>

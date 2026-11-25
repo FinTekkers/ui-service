@@ -2,8 +2,8 @@
  * US-334: /free/spy's server load. SPY's stored SecurityMetric series
  * (LM-485), read through the broker with the server-held homepage key
  * (FT_HOMEPAGE_API_KEY), never a visitor's, plus the figures derived from
- * them here: monthly net flows vs market move, and (once an expense-ratio
- * series is stored) sponsor fee revenue.
+ * them here: monthly net flows vs market move, and (US-336) sponsor fee
+ * revenue from the stored EXPENSE_RATIO series.
  *
  * Every derivation uses stored series only, in exact decimals. A missing
  * day makes the figures that need it null, never 0, and nothing is
@@ -34,11 +34,11 @@ import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid"
 import { getServiceConnection } from "$lib/grpc-auth";
 import { FetchSecurityProtoByIdentifier } from "$lib/security";
 import {
-  SPY_FEE_UNAVAILABLE,
   daysOld,
   isStale,
   type Section,
   type SpyFeeMonth,
+  type SpyFees,
   type SpyLatest,
   type SpyMonth,
   type SpyPageData,
@@ -57,6 +57,12 @@ export const SPY_METRICS = [
   "TOTAL_NET_ASSETS",
 ] as const;
 type SpyMetric = (typeof SPY_METRICS)[number];
+
+/**
+ * The fee chart's ratio series, read on its own after SPY_METRICS so a
+ * failure here leaves the shares and flows charts as they are.
+ */
+export const SPY_RATIO_METRIC = "EXPENSE_RATIO";
 
 /** A stored series as the derivations take it: [ISO date, value or null]. */
 export type DailySeries = ReadonlyArray<readonly [string, string | null]>;
@@ -188,9 +194,10 @@ function nextDay(iso: string): string {
  * Estimated sponsor fee revenue per month: Σ over every calendar day d of
  * AUM(d) × the expense ratio in force on d ÷ 365.
  *
- * - The ratio is an annual fraction (0.000945 for 9.45 bp). The one in
- *   force on d is the latest stored with observation date ≤ d, so a change
- *   applies from its own date and splits its month there.
+ * - The ratio is EXPENSE_RATIO as ledger-models defines it: percent a year
+ *   (0.0945 = 0.0945%), so it is divided by 100 here. The one in force on
+ *   d is the latest stored with observation date ≤ d, so a change applies
+ *   from its own date and splits its month there.
  * - AUM(d) is TOTAL_NET_ASSETS on d for a trading day; a non-trading day
  *   (weekend, holiday) uses the previous trading day's, as the trust
  *   accrues its fee daily.
@@ -226,13 +233,29 @@ export function feeRevenue(
       month,
       sum === null || aum === null || inForce === null
         ? null
-        : sum.plus(aum.times(inForce).dividedBy(365))
+        : sum.plus(aum.times(inForce).dividedBy(100 * 365))
     );
   }
   return [...fees.entries()].map(([month, fee]) => ({
     month,
     fee: fee === null ? null : fee.toString(),
   }));
+}
+
+/**
+ * The ratio series feeRevenue takes: the stored points over the AUM range
+ * plus `prior`, the point in force on the AUM start (it may be dated
+ * earlier, and then applies from the first day). Ascending, one point per
+ * date.
+ */
+export function mergeRatio(
+  history: readonly SpyPoint[],
+  prior: SpyPoint | null
+): SpyPoint[] {
+  const points = new Map<string, string>();
+  if (prior) points.set(prior[0], prior[1]);
+  for (const [date, value] of history) points.set(date, value);
+  return [...points.entries()].sort(([a], [b]) => (a < b ? -1 : 1));
 }
 
 /** The latest non-null point of `series`, or null. */
@@ -309,24 +332,100 @@ function toPoints(series: MetricSeries): SpyPoint[] {
   return series.points.map((p) => [isoDate(p.date), p.value.toString()]);
 }
 
+/** Each SPY_METRICS series, or why it can't be shown. */
+async function readSeries(
+  service: SecurityMetricService,
+  uuid: UUID,
+  asOf: string
+): Promise<Record<SpyMetric, Section<SpyPoint[]>>> {
+  const settled = await Promise.allSettled(
+    SPY_METRICS.map((metric) =>
+      service.getHistory(metric, uuid, SPY_INCEPTION, asOf)
+    )
+  );
+  const series = {} as Record<SpyMetric, Section<SpyPoint[]>>;
+  SPY_METRICS.forEach((metric, i) => {
+    const result = settled[i];
+    if (result.status === "rejected") {
+      series[metric] = unavailable(
+        `Unavailable: ${metric} could not be read (${errorText(
+          result.reason
+        )}).`
+      );
+    } else if (!result.value.points.length) {
+      series[metric] = unavailable(
+        `Unavailable: no ${metric} values are stored for SPY.`
+      );
+    } else {
+      series[metric] = { ok: true, data: toPoints(result.value) };
+    }
+  });
+  return series;
+}
+
+/**
+ * The fee chart: EXPENSE_RATIO over the AUM range, plus the point in force
+ * on the AUM start, applied to TOTAL_NET_ASSETS by feeRevenue. Without AUM
+ * it carries the TNA reason and reads no ratio. A failed ratio call, or no
+ * stored ratio, makes it unavailable; a ratio is never defaulted.
+ */
+async function readFees(
+  service: SecurityMetricService,
+  uuid: UUID,
+  tna: Section<SpyPoint[]>,
+  asOf: string
+): Promise<Section<SpyFees>> {
+  if (!tna.ok) return tna;
+  const aumStart = tna.data[0][0];
+  const [history, prior] = await Promise.allSettled([
+    service.getHistory(SPY_RATIO_METRIC, uuid, aumStart, asOf),
+    service.get(SPY_RATIO_METRIC, [uuid], aumStart),
+  ]);
+  const failed = (reason: unknown) =>
+    unavailable<SpyFees>(
+      `Unavailable: ${SPY_RATIO_METRIC} could not be read (${errorText(
+        reason
+      )}).`
+    );
+  if (history.status === "rejected") return failed(history.reason);
+  if (prior.status === "rejected") return failed(prior.reason);
+  // GetLatest answers "no point on or before the AUM start" with an empty
+  // series, which the wrapper maps to undefined: not an error.
+  const before = prior.value.get(uuid.toString());
+  const ratio = mergeRatio(
+    toPoints(history.value),
+    before ? [isoDate(before.date), before.value.toString()] : null
+  );
+  if (!ratio.length) {
+    return unavailable(
+      `Unavailable: no ${SPY_RATIO_METRIC} values are stored for SPY.`
+    );
+  }
+  return {
+    ok: true,
+    data: {
+      months: feeRevenue(tna.data, ratio, tradingCalendar(tna.data)),
+      ratioFrom: ratio[0][0],
+    },
+  };
+}
+
 /**
  * Everything /free/spy shows. An unset key, or SPY not found, makes every
- * section unavailable with that reason. The fee section is always
- * unavailable: no expense-ratio series is stored (and none is read), and a
- * ratio is never defaulted.
+ * section unavailable with that reason. The fee section reads EXPENSE_RATIO
+ * after the other series, so its failure touches no other section.
  */
 export async function loadFreeSpy(
   apiKey: string | undefined,
   now: Date
 ): Promise<SpyPageData> {
   const asOf = now.toISOString().slice(0, 10);
-  const fees = unavailable<SpyFeeMonth[]>(SPY_FEE_UNAVAILABLE);
   const all = (message: string): SpyPageData => ({
     asOf,
     latest: unavailable(message),
     shares: unavailable(message),
     flows: unavailable(message),
-    fees,
+    fees: unavailable(message),
   });
   if (!apiKey) {
     return all("Unavailable: live data is not configured on this server.");
@@ -356,30 +455,14 @@ export async function loadFreeSpy(
     );
   }
   const service = new SecurityMetricService({ fetcher });
-  const settled = await Promise.allSettled(
-    SPY_METRICS.map((metric) =>
-      service.getHistory(metric, uuid, SPY_INCEPTION, asOf)
-    )
-  );
-  fetcher.close();
-
-  const series = {} as Record<SpyMetric, Section<SpyPoint[]>>;
-  SPY_METRICS.forEach((metric, i) => {
-    const result = settled[i];
-    if (result.status === "rejected") {
-      series[metric] = unavailable(
-        `Unavailable: ${metric} could not be read (${errorText(
-          result.reason
-        )}).`
-      );
-    } else if (!result.value.points.length) {
-      series[metric] = unavailable(
-        `Unavailable: no ${metric} values are stored for SPY.`
-      );
-    } else {
-      series[metric] = { ok: true, data: toPoints(result.value) };
-    }
-  });
+  let series: Record<SpyMetric, Section<SpyPoint[]>>;
+  let fees: Section<SpyFees>;
+  try {
+    series = await readSeries(service, uuid, asOf);
+    fees = await readFees(service, uuid, series.TOTAL_NET_ASSETS, asOf);
+  } finally {
+    fetcher.close();
+  }
 
   const shares = series.SHARES_OUTSTANDING;
   const nav = series.NAV_PER_SHARE;
