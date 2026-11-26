@@ -1,6 +1,7 @@
 <!-- "Missing a chart or dataset?" band (US-352), from the "Entry points on
      every free page" artboard. The free layout shows it above FreeFooter on
-     every /free page except /free/request itself. -->
+     every /free page except /free/request itself. Its title is not a
+     heading, so a page's h2s stay its own sections. -->
 <script lang="ts">
   import { FREE_REQUEST_PATH } from "$lib/free/request";
 </script>
@@ -8,7 +9,7 @@
 <section class="request-band" aria-labelledby="request-band-title">
   <div class="container band">
     <div class="copy">
-      <h2 id="request-band-title">Missing a chart or dataset?</h2>
+      <p id="request-band-title" class="title">Missing a chart or dataset?</p>
       <p>
         Tell us what you'd like to see. We build the most requested analyses
         into the free data explorer.
@@ -39,8 +40,9 @@
     flex-direction: column;
     gap: 6px;
   }
-  h2 {
+  .title {
     margin: 0;
+    color: var(--ink);
     font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.01em;
