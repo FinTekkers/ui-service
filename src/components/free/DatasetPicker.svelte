@@ -2,10 +2,12 @@
      artboard. Lists FREE_DATASETS only (not the artboard's [Dataset 3..10]
      placeholders) and marks the current one with aria-current: the dataset
      whose id is selectedId when the page names one (/free shows SOMA),
-     else the one at currentPath. -->
+     else the one at currentPath. US-352: the last item, not a dataset,
+     links to /free/request. -->
 <script lang="ts">
   import { FREE_DATASETS, isCurrentDataset } from "$lib/free/datasets";
   import type { FreeDataset } from "$lib/free/datasets";
+  import { FREE_REQUEST_PATH } from "$lib/free/request";
 
   export let currentPath: string;
   export let selectedId: FreeDataset["id"] | undefined = undefined;
@@ -88,6 +90,15 @@
         </a>
       </li>
     {/each}
+    <li class="request">
+      <a
+        href={FREE_REQUEST_PATH}
+        aria-current={currentPath === FREE_REQUEST_PATH ? "page" : undefined}
+        on:click={close}
+      >
+        <span>+ Request a free analysis</span>
+      </a>
+    </li>
   </ul>
 </div>
 
@@ -173,6 +184,15 @@
   }
   .menu a:hover {
     background: var(--bg);
+  }
+  .menu .request {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
+  }
+  .menu .request a {
+    color: var(--accent);
+    font-weight: 600;
   }
   .menu a[aria-current] {
     background: #eef2fb;
