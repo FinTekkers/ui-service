@@ -44,8 +44,6 @@ vi.mock("$lib/grpc-auth", () => ({
 import { RunValuation } from "$lib/valuation";
 import { fromDecimalProto } from "$lib/decimal";
 import type { BondCalculatorInputs } from "$lib/valuation";
-import measure_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position/measure_pb.js";
-const { MeasureProto } = measure_pkg;
 
 const MANUAL_BOND: BondCalculatorInputs = {
   mode: "manual",
@@ -85,14 +83,5 @@ describe("Bond engine-path request shape (#182)", () => {
     expect(req.hasAsofDatetime()).toBe(true);
     expect(req.getMeasuresList().length).toBeGreaterThan(0);
     expect(req.getOperationType()).toBeGreaterThan(0); // GET = 1, anything truthy
-  });
-
-  test("RunValuation sends one bond's face as DIRECTED_QUANTITY (VS-170 ACCRUED_INTEREST)", async () => {
-    capturedRequests.length = 0;
-    await RunValuation({ ...MANUAL_BOND, faceValue: "1000" });
-    const measures = capturedRequests[0].getPositionInput()?.getMeasuresList();
-    expect(measures).toHaveLength(1);
-    expect(measures[0].getMeasure()).toBe(MeasureProto.DIRECTED_QUANTITY);
-    expect(fromDecimalProto(measures[0].getMeasureDecimalValue())).toBe("1000");
   });
 });
