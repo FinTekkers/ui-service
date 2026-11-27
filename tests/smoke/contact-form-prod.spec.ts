@@ -17,7 +17,7 @@ import {
  * https://www.fintekkers.org/contactus exactly once, then confirms the
  * matching email reached the fintekkers.org Gmail inbox (read over IMAP,
  * read-only) within 5 minutes.
- * A success banner without the email is a failure. See tests/smoke/README.md.
+ * A confirmation without the email is a failure. See tests/smoke/README.md.
  */
 test("contact form submission is delivered to the Gmail inbox", async ({
   page,
@@ -51,11 +51,11 @@ test("contact form submission is delivered to the Gmail inbox", async ({
     await page.locator("#message").fill(`Automated smoke test ${marker}`);
 
     const submittedAt = Date.now();
-    await page.locator("input.submit_btn").click();
+    await page.getByRole("button", { name: "Send message" }).click();
 
     await expect(
-      page.locator(".form_success"),
-      "Form did not show success banner"
+      page.getByRole("heading", { name: "Thanks, your message is sent" }),
+      "Form did not show the confirmation"
     ).toBeVisible({ timeout: 30_000 });
     expect(contactPosts, "contact form must be POSTed exactly once").toBe(1);
 

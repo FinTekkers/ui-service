@@ -14,6 +14,7 @@ import {
   type FreeRequestValues,
 } from "$lib/free/request";
 import type { GmailMessage } from "./gmail";
+import { escapeHtml } from "./mail-html";
 
 export const DEFAULT_REQUEST_TO = "dave@fintekkers.org";
 export const RATE_LIMIT = 5;
@@ -88,14 +89,7 @@ export function validateRequest(input: FreeRequestValues): ValidationResult {
   }
 }
 
-export function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+export { escapeHtml };
 
 /** FREE_REQUEST_TO, else dave@fintekkers.org. */
 export function requestRecipient(): string {

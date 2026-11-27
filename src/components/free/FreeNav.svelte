@@ -1,4 +1,10 @@
-<!-- Free data explorer nav, from the owner's DataExplorer.dc.html artboard. -->
+<!-- Free data explorer nav, from the owner's DataExplorer.dc.html artboard.
+     `current` is the section the page is in: the Free data explorer, or
+     Contact (/contactus, US-356). -->
+<script lang="ts">
+  export let current: "free" | "contact" = "free";
+</script>
+
 <header class="free-nav">
   <nav aria-label="Primary" class="container">
     <a href="/" class="brand">
@@ -18,9 +24,18 @@
     <div class="links">
       <!-- "true", not "page": every /free/* page is in this section, but
            only /free itself is the link's page. -->
-      <a href="/free" aria-current="true" class="current">Free data explorer</a>
+      <a
+        href="/free"
+        aria-current={current === "free" ? "true" : undefined}
+        class={current === "free" ? "current" : "text-link"}
+        >Free data explorer</a
+      >
       <a href="/login" class="pro">Pro register/login</a>
-      <a href="/contactus" class="text-link">Contact</a>
+      <a
+        href="/contactus"
+        aria-current={current === "contact" ? "page" : undefined}
+        class={current === "contact" ? "current" : "text-link"}>Contact</a
+      >
     </div>
   </nav>
 </header>

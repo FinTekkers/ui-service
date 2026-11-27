@@ -4,17 +4,16 @@
      /free/soma, /free/tips, /free/etf/[ticker], /free/tech-vs-sp500 and
      /free/sigma-moves);
      src/tests/free-mock-guard.test.ts enforces it. /free/spy only
-     redirects. /free/request's action (US-352) only emails a request. -->
+     redirects. /free/request's action (US-352) only emails a request.
+     The nav, footer, fonts and theme come from PublicShell (US-356). -->
 <script lang="ts">
   import { page } from "$app/stores";
   import DatasetPicker from "../../components/free/DatasetPicker.svelte";
-  import FreeFooter from "../../components/free/FreeFooter.svelte";
   import FreeHeader from "../../components/free/FreeHeader.svelte";
-  import FreeNav from "../../components/free/FreeNav.svelte";
   import FreeRequestBand from "../../components/free/FreeRequestBand.svelte";
+  import PublicShell from "../../components/free/PublicShell.svelte";
   import { FREE_REQUEST_PATH } from "$lib/free/request";
   import type { FreeDataset } from "$lib/free/datasets";
-  import "$lib/styles/ft-theme.css";
 
   // A page that isn't at its dataset's own URL names the dataset it shows
   // in its load data (/free returns dataset: "soma").
@@ -22,59 +21,24 @@
     ?.dataset;
 </script>
 
-<svelte:head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
-  />
-</svelte:head>
-
-<div class="ft-free">
-  <FreeNav />
-  <FreeHeader>
+<PublicShell>
+  <FreeHeader slot="header">
     <DatasetPicker currentPath={$page.url.pathname} {selectedId} />
   </FreeHeader>
-  <main class="container content">
-    <slot />
-  </main>
-  {#if $page.url.pathname !== FREE_REQUEST_PATH}
-    <FreeRequestBand />
-  {/if}
-  <FreeFooter />
-</div>
+  <slot />
+  <svelte:fragment slot="after">
+    {#if $page.url.pathname !== FREE_REQUEST_PATH}
+      <FreeRequestBand />
+    {/if}
+  </svelte:fragment>
+</PublicShell>
 
 <style>
-  .ft-free {
-    min-height: 100%;
-    font-family: var(--sans);
-    color: var(--ink);
-    background: var(--bg);
-  }
-
-  /* The explorer has its own nav (FreeNav). Hide the app shell's Navbar
-     (.navigation_bar, src/components/Navbar.svelte) and SidebarNav
-     (.mobile-nav, src/components/SidebarNav.svelte) on /free/* only, since
-     src/routes/+layout.svelte renders them on every route. */
+  /* The shell (PublicShell) hides the app's Navbar and SidebarNav; this
+     copy of its rule stays because src/tests/free-shell.test.ts reads it
+     from this file. */
   :global(body:has(.ft-free) .navigation_bar),
   :global(body:has(.ft-free) .mobile-nav) {
     display: none;
-  }
-
-  /* Shared by the components in src/components/free/. */
-  .ft-free :global(.container) {
-    box-sizing: border-box;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding-left: clamp(16px, 4vw, 40px);
-    padding-right: clamp(16px, 4vw, 40px);
-  }
-
-  .content {
-    padding-bottom: 64px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
   }
 </style>
