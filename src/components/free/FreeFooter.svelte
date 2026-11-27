@@ -6,6 +6,7 @@
       <a href="/">Home</a>
       <a href="https://github.com/FinTekkers/ledger-models">GitHub</a>
       <a href="/contactus">Contact</a>
+      <a href="/free/request">Request an analysis</a>
     </nav>
   </div>
 </footer>

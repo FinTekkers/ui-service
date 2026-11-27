@@ -24,6 +24,10 @@
  *
  * US-346: SPY's fee chart must plot, with its annualised run-rate line on a
  * right-hand axis; one hover shows the month's fee and its run rate.
+ *
+ * US-352: /free/request, reached from the dataset picker, shows field
+ * errors, never claims success when mail can't be sent, and confirms a
+ * request; the mail transport ships in no client script.
  */
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { existsSync, readdirSync, readFileSync } from "fs";
@@ -1451,5 +1455,152 @@ test.describe("US-341 /free/sigma-moves", () => {
       });
       await page.setViewportSize({ width: 1280, height: 900 });
     }
+  });
+});
+
+test.describe("US-352 /free/request", () => {
+  const ROUTE = "/free/request";
+  const BAND = "Missing a chart or dataset?";
+  const VALID = {
+    title: "Corporate bond spreads",
+    description: "Daily IG and HY spreads since 2000.",
+    email: "e2e-visitor@example.com",
+  };
+
+  async function fill(page: Page, fields: typeof VALID) {
+    await page.getByLabel("Short title").fill(fields.title);
+    await page.getByLabel("Description").fill(fields.description);
+    await page.getByLabel("Email").fill(fields.email);
+  }
+
+  test("journey: /free/soma → dataset picker → + Request a free analysis → the request page, with no band", async ({
+    page,
+  }) => {
+    await page.goto("/free/soma");
+    // The picker opens only once the page has hydrated.
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("region", { name: BAND })).toBeVisible();
+    const picker = page.getByRole("button", { name: /Public dataset/ });
+    await picker.click();
+    await expect(picker).toHaveAttribute("aria-expanded", "true");
+    await page.getByRole("link", { name: "+ Request a free analysis" }).click();
+    await expect(page).toHaveURL(/\/free\/request$/);
+    await expect(
+      page.getByRole("heading", { name: "Request a free analysis" })
+    ).toBeVisible();
+    await expect(page.getByRole("region", { name: BAND })).toHaveCount(0);
+  });
+
+  test("a whitespace-only title and description show field errors; email and kind are kept", async ({
+    page,
+  }) => {
+    await page.goto(ROUTE);
+    await page.waitForLoadState("networkidle");
+    await page.getByText("A new dataset", { exact: true }).click();
+    // Native `required` accepts spaces; the server's trim() rejects them.
+    await fill(page, { ...VALID, title: "   ", description: "   " });
+    await page.getByRole("button", { name: "Send request" }).click();
+
+    const title = page.getByLabel("Short title");
+    const description = page.getByLabel("Description");
+    await expect(page.locator("#title-error")).toHaveText(
+      "Enter a short title"
+    );
+    await expect(page.locator("#description-error")).toHaveText(
+      "Describe what you'd like to see"
+    );
+    await expect(title).toHaveAttribute("aria-describedby", "title-error");
+    await expect(title).toHaveAttribute("aria-invalid", "true");
+    await expect(description).toHaveAttribute(
+      "aria-describedby",
+      "description-error"
+    );
+    await expect(page.getByLabel("Email")).toHaveValue(VALID.email);
+    await expect(
+      page.getByRole("radio", { name: "A new dataset" })
+    ).toBeChecked();
+    await expect(
+      page.getByRole("heading", { name: /we've got your request/ })
+    ).toHaveCount(0);
+  });
+
+  test("a valid request while mail is unconfigured says so and never shows the confirmation", async ({
+    page,
+  }) => {
+    test.skip(
+      Boolean(process.env.CONTACT_GMAIL_USER?.trim()),
+      "CONTACT_GMAIL_USER is set: a valid submit would send real mail"
+    );
+    await page.goto(ROUTE);
+    await page.waitForLoadState("networkidle");
+    await fill(page, VALID);
+    await page.getByRole("button", { name: "Send request" }).click();
+    await expect(page.getByRole("alert")).toHaveText(
+      "Requests are temporarily unavailable. Please email us directly."
+    );
+    await expect(
+      page.getByRole("heading", { name: /we've got your request/ })
+    ).toHaveCount(0);
+    await expect(page.getByLabel("Short title")).toHaveValue(VALID.title);
+  });
+
+  test("confirmation: links back, and Send another request starts an empty form", async ({
+    page,
+  }) => {
+    await page.goto(ROUTE);
+    await page.waitForLoadState("networkidle");
+    await page.getByText("Both", { exact: true }).click();
+    await fill(page, VALID);
+    // The honeypot: the server replies with success and sends no email.
+    await page
+      .locator('input[name="website"]')
+      .fill("https://spam.test", { force: true });
+    await page.getByRole("button", { name: "Send request" }).click();
+
+    await expect(
+      page.getByRole("heading", { name: /we've got your request/ })
+    ).toBeVisible();
+    const again = page.getByRole("link", { name: "Send another request" });
+    await expect(again).toHaveAttribute("href", "/free/request");
+    await expect(
+      page.getByRole("link", { name: "Back to the free data explorer" })
+    ).toHaveAttribute("href", "/free");
+
+    await again.click();
+    await expect(page).toHaveURL(/\/free\/request$/);
+    await expect(page.getByLabel("Short title")).toHaveValue("");
+    await expect(page.getByLabel("Description")).toHaveValue("");
+    await expect(page.getByLabel("Email")).toHaveValue("");
+    await expect(page.getByText("0 / 2,000")).toBeVisible();
+    await expect(
+      page.getByRole("radio", { name: "A new chart" })
+    ).toBeChecked();
+  });
+
+  test("the mail transport and its settings ship in no client script", async ({
+    page,
+  }) => {
+    const scripts: string[] = [];
+    page.on("response", async (response) => {
+      if (response.request().resourceType() !== "script") return;
+      scripts.push(await response.text().catch(() => ""));
+    });
+    await page.goto(ROUTE);
+    await page.waitForLoadState("networkidle");
+    expect(scripts.length).toBeGreaterThan(0);
+    // The whole built client too, when this run serves a production build.
+    const client = path.resolve("build/client");
+    if (existsSync(client)) {
+      scripts.push(
+        ...filesUnder(client)
+          .filter((f) => f.endsWith(".js"))
+          .map((f) => readFileSync(f, "utf8"))
+      );
+    }
+    expect(
+      ["CONTACT_GMAIL", "createTransport", "FREE_REQUEST_TO"].filter((s) =>
+        scripts.some((script) => script.includes(s))
+      )
+    ).toEqual([]);
   });
 });

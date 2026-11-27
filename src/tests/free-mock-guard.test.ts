@@ -9,7 +9,8 @@
  * SPY series come from its own one; US-338 moved it to /free/etf/[ticker],
  * and /free/spy is a redirect-only +server.ts. US-339's /free/tech-vs-sp500
  * XLK and SPY closes come from its own one, and US-341's /free/sigma-moves
- * SPY and TQQQ closes from its own one. US-337: one component,
+ * SPY and TQQQ closes from its own one. US-352's /free/request has one form
+ * action, which only emails a request. US-337: one component,
  * PlotlyChart.svelte, may load plotly.js-dist, and only with a dynamic
  * import() (a chart library, not a backend call).
  *
@@ -34,7 +35,8 @@ const FREE_ROOTS = ["src/routes/free", "src/lib/free", "src/components/free"];
 // free roots. US-254 deleted the /free redirect; US-298 added /free/tips's
 // live load; US-307 added /free/soma's and /free's; US-334 /free/spy's,
 // which US-338 moved to /free/etf/[ticker], leaving /free/spy's redirect;
-// US-339 /free/tech-vs-sp500's; US-341 /free/sigma-moves's.
+// US-339 /free/tech-vs-sp500's; US-341 /free/sigma-moves's; US-352
+// /free/request's form action.
 const ALLOWED_SERVER_FILES = new Set<string>([
   "src/routes/free/tips/+page.server.ts",
   "src/routes/free/soma/+page.server.ts",
@@ -43,6 +45,7 @@ const ALLOWED_SERVER_FILES = new Set<string>([
   "src/routes/free/spy/+server.ts",
   "src/routes/free/tech-vs-sp500/+page.server.ts",
   "src/routes/free/sigma-moves/+page.server.ts",
+  "src/routes/free/request/+page.server.ts",
 ]);
 
 const SERVER_FILE = /^\+(page\.server|layout\.server|server)\.(ts|js)$/;
@@ -195,7 +198,7 @@ describe("Free data explorer stays mock-only", () => {
       return scanFreeTree(repoRoot);
     }
 
-    test("only the /free/tips, /free/soma, /free/etf/[ticker], /free/tech-vs-sp500, /free/sigma-moves and /free +page.server.ts, and /free/spy's redirect, are allowed server files", () => {
+    test("only the /free/tips, /free/soma, /free/etf/[ticker], /free/tech-vs-sp500, /free/sigma-moves, /free/request and /free +page.server.ts, and /free/spy's redirect, are allowed server files", () => {
       expect(
         fixture({
           "src/routes/free/tips/+page.server.ts": `import { fetchFreeTips } from "$lib/server/free-tips";`,
@@ -205,11 +208,12 @@ describe("Free data explorer stays mock-only", () => {
           "src/routes/free/spy/+server.ts": `import { redirect } from "@sveltejs/kit";`,
           "src/routes/free/tech-vs-sp500/+page.server.ts": `import { loadFreeTechVsSp500 } from "$lib/server/free-tech-vs-sp500";`,
           "src/routes/free/sigma-moves/+page.server.ts": `import { loadFreeSigma } from "$lib/server/free-sigma";`,
+          "src/routes/free/request/+page.server.ts": `import { getGmailTransport } from "$lib/server/gmail";`,
         })
       ).toEqual([]);
     });
 
-    test("US-307 adds exactly two allowed server files to US-298's one, US-334 one more (moved by US-338), US-338 the redirect, US-339 one more and US-341 one more", () => {
+    test("US-307 adds exactly two allowed server files to US-298's one, US-334 one more (moved by US-338), US-338 the redirect, US-339 one more, US-341 one more and US-352 one more", () => {
       expect([...ALLOWED_SERVER_FILES].sort()).toEqual(
         [
           "src/routes/free/tips/+page.server.ts",
@@ -219,6 +223,7 @@ describe("Free data explorer stays mock-only", () => {
           "src/routes/free/spy/+server.ts",
           "src/routes/free/tech-vs-sp500/+page.server.ts",
           "src/routes/free/sigma-moves/+page.server.ts",
+          "src/routes/free/request/+page.server.ts",
         ].sort()
       );
     });

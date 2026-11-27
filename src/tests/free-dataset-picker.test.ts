@@ -3,7 +3,8 @@
  * public datasets (US-334 added SPY as the third; US-338 lists one entry per
  * fund in ETF_FUNDS, SPY and TQQQ, at /free/etf/<slug>; US-339 adds the tech
  * vs S&P 500 drawdown after them, and US-341 sigma moves last), reports its open state with aria-expanded and marks the
- * current dataset with aria-current.
+ * current dataset with aria-current. US-352: after the datasets, a last
+ * item links to /free/request.
  */
 import { fireEvent, render, screen, within } from "@testing-library/svelte";
 import { describe, expect, test } from "vitest";
@@ -17,9 +18,10 @@ const SPY = "SPDR S&P 500 ETF Trust (SPY)";
 const TQQQ = "ProShares UltraPro QQQ (TQQQ)";
 const TECH = "Tech's drawdown relative to the S&P 500";
 const SIGMA = "Sigma moves: daily returns in standard deviations";
+const REQUEST = "+ Request a free analysis";
 
 describe("DatasetPicker", () => {
-  test("opening it lists exactly SOMA, TIPS, SPY, TQQQ, tech vs S&P 500 and sigma moves and sets aria-expanded", async () => {
+  test("opening it lists exactly SOMA, TIPS, SPY, TQQQ, tech vs S&P 500 and sigma moves, then the request link, and sets aria-expanded", async () => {
     render(DatasetPicker, { props: { currentPath: "/free/tips" } });
     const toggle = screen.getByRole("button");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -42,6 +44,22 @@ describe("DatasetPicker", () => {
       [TQQQ, "/free/etf/tqqq"],
       [TECH, "/free/tech-vs-sp500"],
       [SIGMA, "/free/sigma-moves"],
+      [REQUEST, "/free/request"],
+    ]);
+  });
+
+  test("US-352: the request link is the last item, current only on /free/request, where the button asks to choose a dataset", async () => {
+    render(DatasetPicker, { props: { currentPath: "/free/request" } });
+    const toggle = screen.getByRole("button");
+    expect(toggle).toHaveTextContent("Choose a dataset");
+    await fireEvent.click(toggle);
+    const links = within(screen.getByRole("list")).getAllByRole("link");
+    const last = links[links.length - 1];
+    expect(last).toHaveTextContent(REQUEST);
+    expect(last).toHaveAttribute("href", "/free/request");
+    expect(last).toHaveAttribute("aria-current", "page");
+    expect(links.filter((link) => link.hasAttribute("aria-current"))).toEqual([
+      last,
     ]);
   });
 

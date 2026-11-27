@@ -4,13 +4,15 @@
      /free/soma, /free/tips, /free/etf/[ticker], /free/tech-vs-sp500 and
      /free/sigma-moves);
      src/tests/free-mock-guard.test.ts enforces it. /free/spy only
-     redirects. -->
+     redirects. /free/request's action (US-352) only emails a request. -->
 <script lang="ts">
   import { page } from "$app/stores";
   import DatasetPicker from "../../components/free/DatasetPicker.svelte";
   import FreeFooter from "../../components/free/FreeFooter.svelte";
   import FreeHeader from "../../components/free/FreeHeader.svelte";
   import FreeNav from "../../components/free/FreeNav.svelte";
+  import FreeRequestBand from "../../components/free/FreeRequestBand.svelte";
+  import { FREE_REQUEST_PATH } from "$lib/free/request";
   import type { FreeDataset } from "$lib/free/datasets";
   import "$lib/styles/ft-theme.css";
 
@@ -37,6 +39,9 @@
   <main class="container content">
     <slot />
   </main>
+  {#if $page.url.pathname !== FREE_REQUEST_PATH}
+    <FreeRequestBand />
+  {/if}
   <FreeFooter />
 </div>
 
