@@ -67,7 +67,7 @@ export async function fetchPricesForSecurity(
         const asOf = p.getAsOf?.();
         let value: string | undefined;
         try {
-          value = fromDecimalProto(p.getPrice?.());
+          value = fromDecimalProto(p.getMid?.());
         } catch (e) {
           // A throw here would escape the stream handler: skip the row.
           console.warn("Skipping price, invalid decimal:", e);

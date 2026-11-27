@@ -305,7 +305,7 @@ describe("US-212 guardrail: absent and unset decimals read as before", () => {
   test("a malformed price is skipped in the price stream, not thrown", async () => {
     const priceRow = (decimal: DecimalValueProto, seconds: number) => ({
       getAsOf: () => ({ getTimestamp: () => ({ getSeconds: () => seconds }) }),
-      getPrice: () => decimal,
+      getMid: () => decimal,
     });
     priceResponses = [
       // Scale over the codec's 4096 limit: decoding throws.

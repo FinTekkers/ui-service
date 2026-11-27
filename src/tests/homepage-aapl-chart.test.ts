@@ -73,7 +73,7 @@ function price(date: string, close: number) {
     getAsOf: () => ({
       getTimestamp: () => ({ getSeconds: () => seconds, getNanos: () => 0 }),
     }),
-    getPrice: () => toDecimalProto(String(close)),
+    getMid: () => toDecimalProto(String(close)),
   };
 }
 

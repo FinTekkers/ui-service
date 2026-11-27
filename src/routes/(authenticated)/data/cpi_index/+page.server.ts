@@ -168,7 +168,7 @@ async function fetchPrices(
         const asOf = price.getAsOf?.();
         let priceVal: string | undefined;
         try {
-          priceVal = fromDecimalProto(price.getPrice?.());
+          priceVal = fromDecimalProto(price.getMid?.());
         } catch (e) {
           // A throw here would escape the stream handler: skip the row.
           console.warn("Skipping CPI price, invalid decimal:", e);

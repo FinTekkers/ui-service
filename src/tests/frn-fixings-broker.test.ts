@@ -84,7 +84,7 @@ function fixingRow(date: string, rate: string) {
   const seconds = Date.parse(`${date}T04:00:00Z`) / 1000;
   return {
     getAsOf: () => ({ getTimestamp: () => ({ getSeconds: () => seconds }) }),
-    getPrice: () => toDecimalProto(rate),
+    getMid: () => toDecimalProto(rate),
   };
 }
 
