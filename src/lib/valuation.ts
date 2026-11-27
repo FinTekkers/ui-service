@@ -350,7 +350,7 @@ async function priceSecurity(
   }
   const productInput = forSecurity(
     security,
-    new PriceProto().setPrice(toDecimalProto(price)),
+    new PriceProto().setMid(toDecimalProto(price)),
     marketData
   );
   checkProductInput(productInput);

@@ -205,7 +205,7 @@ export function asOfMillis(p: PriceProto): number {
 }
 
 function closeOf(p: PriceProto): number {
-  const value = fromDecimalProto(p.getPrice());
+  const value = fromDecimalProto(p.getMid());
   if (!value) throw new Error("Price search returned a price with no value");
   return Number(value);
 }

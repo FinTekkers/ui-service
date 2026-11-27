@@ -112,7 +112,7 @@ beforeEach(() => {
               new Timestamp().setSeconds(seconds)
             )
           )
-          .setPrice(toDecimalProto("98.4375")),
+          .setMid(toDecimalProto("98.4375")),
       ]),
     ]);
   mocks.runValuation

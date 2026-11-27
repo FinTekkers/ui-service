@@ -143,7 +143,7 @@ async function rowThroughTransactions(
   proto.setUuid(UUID.random().toUUIDProto());
   proto.setAsOf(ZonedDateTime.now().toProto());
   proto.setSecurity(new SecurityProto());
-  proto.setPrice(new PriceProto().setPrice(price));
+  proto.setPrice(new PriceProto().setMid(price));
   proto.setQuantity(quantity);
   searchResults = [new Transaction(proto)];
   const rows = await FetchTransactionWithFilter({} as any);

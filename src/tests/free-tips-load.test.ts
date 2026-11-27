@@ -122,7 +122,7 @@ function price(isoDateTime: string, value: string) {
         new Timestamp().setSeconds(seconds)
       )
     )
-    .setPrice(toDecimalProto(value));
+    .setMid(toDecimalProto(value));
 }
 
 // Out of order, with one price outside the 7-day window.
