@@ -1,428 +1,179 @@
+<!-- /contactus (US-356): Contact us in the public-site look, matching
+     /free/request (US-352): the PublicShell nav and footer, and the shared
+     form styles (src/lib/styles/ft-form.css). The form posts to ?/message
+     (./+page.server.ts), which emails the message; it works without JS, and
+     use:enhance swaps in the confirmation without a reload. -->
 <script lang="ts">
-  import type { formError } from "$lib/types";
-  import { writable } from "svelte/store";
+  import { enhance } from "$app/forms";
+  import PublicShell from "../../components/free/PublicShell.svelte";
+  import type { ContactField, ContactFormState } from "$lib/contact";
+  import "$lib/styles/ft-form.css";
 
-  export let data;
+  export let form: ContactFormState | null = null;
 
-  /** @type {import('./$types').ActionData} */
-  export let form: formError;
-  let showSuccess = form?.success;
+  let submitting = false;
 
-  let focusedElement: string | null = null;
-  let inputValue: { [key: string]: string } = {};
-  let isTypingField = writable<string>("");
+  $: values = form?.values;
+  $: errors = form?.errors ?? {};
 
-  // functions handling micro interaction of form
-  const handleFocus = (field: string) => {
-    focusedElement = field;
-  };
-
-  const handleChange = (fieldName: string, value: string) => {
-    inputValue[fieldName] = value;
-    isTypingField.update((store) => {
-      store = fieldName;
-      return store;
-    });
-  };
-
-  // displaying errors from form
-  const displayError = (fieldName: string) => {
-    isTypingField.update((store) => {
-      store = fieldName;
-      return store;
-    });
-    if (form?.formError) {
-      const errors = Array.from(form.formError);
-      return errors.includes(fieldName) && fieldName === $isTypingField;
-    }
-    return false;
-  };
-
-  // clear form
-  const handleClear = () => {
-    form = {};
-  };
+  $: errorId = (field: ContactField): string | undefined =>
+    errors[field] ? `${field}-error` : undefined;
 </script>
 
 <svelte:head>
-  <title>{"Contact us"}</title>
+  <title>Contact us · Fintekkers</title>
 </svelte:head>
 
-{#if showSuccess}
-  <div class="form_success">
-    <p>✅ Your message was sent successfully. Thank you!</p>
-  </div>
-{/if}
+<PublicShell current="contact">
+  <div class="contact ft-form">
+    {#if form?.success}
+      <section class="card confirmation" aria-labelledby="contact-sent-title">
+        <svg
+          class="sent-icon"
+          width="40"
+          height="40"
+          viewBox="0 0 40 40"
+          aria-hidden="true"
+        >
+          <circle cx="20" cy="20" r="20" fill="currentColor" />
+          <path
+            d="M12 20.5l5.5 5.5L28 15.5"
+            stroke="#ffffff"
+            stroke-width="3"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <p class="eyebrow">Message sent</p>
+        <h2 id="contact-sent-title" class="section-title">
+          Thanks, your message is sent
+        </h2>
+        <p>We'll reply to the email you gave us.</p>
+        <div class="actions">
+          <a class="button primary" href="/contactus">Send another message</a>
+        </div>
+      </section>
+    {:else}
+      <section class="card form-card" aria-labelledby="contact-title">
+        <p class="eyebrow">Contact</p>
+        <h2 id="contact-title" class="section-title">Contact us</h2>
+        <p class="lede">
+          Questions about Fintekkers, the free data explorer or the API? Send us
+          a message and we'll reply by email.
+        </p>
 
-<div class="contact-us">
-  <div class="contact-us-text">
-    <h1>Contact Us</h1>
-    <p>
-      Need to get in touch with us? Either fill out the form with your inquiry
-      or find the email you'd like to contact below
-    </p>
-  </div>
-  <div class="contact-us-form">
-    <form method="POST" action="?/message">
-      <label for="fistname">
-        <span
-          class={`${
-            focusedElement === "firstname" || inputValue["firstname"]
-              ? "labelFloat"
-              : ""
-          }`}
-        >
-          First name
-        </span>
-        <input
-          on:focus={() => handleFocus("firstname")}
-          on:change={(event) =>
-            handleChange("firstname", event.currentTarget.value)}
-          on:blur={() => handleBlur("firstname")}
-          id="firstname"
-          name="firstname"
-          type="text"
-          value={form?.firstname ?? ""}
-        />
-        {#if displayError("firstname")}
-          <div class="error_message">
-            <p class="form_error">⚠️ Enter firstname</p>
-          </div>
+        {#if form?.formError}
+          <p class="form-error" role="alert">{form.formError}</p>
         {/if}
-      </label>
 
-      <label for="lastname">
-        <span
-          class={`${
-            focusedElement === "lastname" || inputValue["lastname"]
-              ? "labelFloat"
-              : ""
-          }`}
+        <form
+          method="POST"
+          action="?/message"
+          novalidate
+          use:enhance={() => {
+            submitting = true;
+            return async ({ update }) => {
+              await update();
+              submitting = false;
+            };
+          }}
         >
-          Last name
-        </span>
-        <input
-          on:focus={() => handleFocus("lastname")}
-          on:change={(event) =>
-            handleChange("lastname", event.currentTarget.value)}
-          on:blur={() => handleBlur("lastname")}
-          id="lastname"
-          name="lastname"
-          type="text"
-          value={form?.lastname ?? ""}
-        />
-        {#if displayError("lastname")}
-          <div class="error_message">
-            <p class="form_error">⚠️ Enter lastname</p>
-          </div>
-        {/if}
-      </label>
-      <label for="email">
-        <span
-          class={`${
-            focusedElement === "email" || inputValue["email"]
-              ? "labelFloat"
-              : ""
-          }`}
-        >
-          Email
-        </span>
-        <input
-          on:focus={() => handleFocus("email")}
-          on:change={(event) =>
-            handleChange("email", event.currentTarget.value)}
-          on:blur={() => handleBlur("email")}
-          id="email"
-          type="email"
-          name="email"
-          value={form?.email ?? ""}
-        />
-        {#if displayError("email")}
-          <div class="error_message">
-            <p class="form_error">⚠️ Enter email</p>
-          </div>
-        {/if}
-      </label>
-      <label for="message">
-        <span
-          class={`${
-            focusedElement === "message" || inputValue["message"]
-              ? "labelFloat"
-              : ""
-          }`}
-        >
-          Enter your message
-        </span>
-        <textarea
-          on:focus={() => handleFocus("message")}
-          on:change={(event) =>
-            handleChange("message", event.currentTarget.value)}
-          on:blur={() => handleBlur("message")}
-          id="message"
-          name="message"
-          rows="3"
-          value={form?.message ?? ""}
-        />
-        {#if displayError("message")}
-          <div class="error_message">
-            <p class="form_error">⚠️ Enter message</p>
-          </div>
-        {/if}
-      </label>
-      <label for="">
-        <button class="clear_form" on:click={handleClear}>Clear</button>
-      </label>
-      <label for="">
-        <input class="submit_btn" type="submit" />
-      </label>
-    </form>
-  </div>
-</div>
+          <div class="names">
+            <div class="field">
+              <label for="firstname">First name</label>
+              <input
+                id="firstname"
+                name="firstname"
+                type="text"
+                required
+                autocomplete="given-name"
+                value={values?.firstname ?? ""}
+                aria-invalid={errors.firstname ? "true" : undefined}
+                aria-describedby={errorId("firstname")}
+              />
+              {#if errors.firstname}
+                <p id="firstname-error" class="error">{errors.firstname}</p>
+              {/if}
+            </div>
 
-<style lang="scss">
-  @import "../../styles/_shared.scss";
-  .form_success {
-    grid-column: 1 / -1;
-    color: $success; // or any green tone
-    background: rgba(0, 128, 0, 0.1);
-    padding: 1em;
-    border-radius: $bd-radius;
-    margin-bottom: 1em;
-    font-weight: bold;
+            <div class="field">
+              <label for="lastname">Last name</label>
+              <input
+                id="lastname"
+                name="lastname"
+                type="text"
+                required
+                autocomplete="family-name"
+                value={values?.lastname ?? ""}
+                aria-invalid={errors.lastname ? "true" : undefined}
+                aria-describedby={errorId("lastname")}
+              />
+              {#if errors.lastname}
+                <p id="lastname-error" class="error">{errors.lastname}</p>
+              {/if}
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              value={values?.email ?? ""}
+              aria-invalid={errors.email ? "true" : undefined}
+              aria-describedby={errorId("email")}
+            />
+            {#if errors.email}
+              <p id="email-error" class="error">{errors.email}</p>
+            {/if}
+          </div>
+
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea
+              id="message"
+              name="message"
+              rows="6"
+              required
+              value={values?.message ?? ""}
+              aria-invalid={errors.message ? "true" : undefined}
+              aria-describedby={errorId("message")}
+            />
+            {#if errors.message}
+              <p id="message-error" class="error">{errors.message}</p>
+            {/if}
+          </div>
+
+          <button class="button primary" type="submit" disabled={submitting}>
+            {submitting ? "Sending…" : "Send message"}
+          </button>
+        </form>
+      </section>
+    {/if}
+  </div>
+</PublicShell>
+
+<style>
+  /* No FreeHeader here, so the card takes its 48px gap below the nav. */
+  .contact {
+    max-width: 760px;
+    padding-top: 48px;
   }
-
-  .contact-us {
-    padding: 1em;
+  .names {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: 1fr;
-    height: 100vh;
-    background: $bgc-color;
-
-    .contact-us-text {
-      padding: 1em;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: repeat(8, 50px);
-
-      h1 {
-        font-size: 2rem;
-        color: $white;
-        grid-area: 5/2/5/3;
-      }
-
-      :is(p) {
-        color: $white;
-        grid-area: 6/2/6/4;
-      }
-    }
-
-    .contact-us-form {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      grid-template-rows: repeat(6, 100px);
-
-      .error_message {
-        grid-column: 1/3;
-        color: $error;
-        display: grid;
-        left: 0;
-      }
-
-      form {
-        grid-column: 2/6;
-        grid-row: 2/7;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(8, minmax(90px, 100px));
-        gap: 1em;
-
-        :is(label) {
-          @include flex(column, center, flex-start, 0.5em);
-          color: $grey;
-          height: max-content;
-          position: relative;
-          grid-column: 1/-1;
-          display: grid;
-          grid-template-columns: 1fr;
-          grid-template-rows: 1fr;
-
-          &:nth-child(n) {
-            position: relative;
-
-            span {
-              width: max-content;
-              position: absolute;
-              transition: all 0.5s ease-in-out;
-              left: 3%;
-              top: -25%;
-              pointer-events: none;
-              background-color: $bgc-color;
-              border-radius: $bd-radius;
-              padding: 0 0.5rem;
-            }
-
-            .labelFloat {
-              background-color: $primary-button;
-              border-radius: $bd-radius;
-              color: $white;
-            }
-          }
-
-          &:nth-child(1) {
-            grid-area: 1/1/2/-1;
-          }
-          &:nth-child(2) {
-            grid-area: 2/1/3/-1;
-          }
-          &:nth-child(3) {
-            grid-area: 3/1/4/-1;
-          }
-          &:nth-child(4) {
-            grid-area: 4/1/5/-1;
-            span {
-              top: -10%;
-            }
-          }
-          &:nth-child(5) {
-            grid-area: 5/1/5/2;
-          }
-
-          &:nth-child(6) {
-            grid-area: 5/2/6/3;
-          }
-
-          input,
-          textarea {
-            color: $grey;
-            padding-left: 1em;
-            border-radius: $bd-radius;
-            min-height: 6vh;
-            background-color: transparent;
-            border: solid 1px $white;
-          }
-
-          textarea {
-            padding: 1em;
-          }
-        }
-        .submit_btn {
-          margin-top: 2em;
-          grid-column: 1/1;
-          grid-row: 5/5;
-          height: 8vh;
-          border-radius: $bd-radius;
-          background-color: $primary-color;
-          font-weight: bold;
-          cursor: pointer;
-          color: $white;
-          transition: background-color 0.5s ease;
-          border: none;
-
-          &:hover {
-            background-color: $primary-button;
-          }
-        }
-
-        .clear_form {
-          @include button-style;
-          margin-top: 2em;
-          grid-column: 1/1;
-          grid-row: 5/5;
-          height: 8vh;
-          background-color: $grey;
-          color: $white;
-          transition: background-color 0.5s ease;
-
-          &:hover {
-            background-color: $ltgrey;
-          }
-        }
-      }
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  @media (max-width: 560px) {
+    .names {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
-
-  @media screen and (max-width: $breakingpoint_medium) {
-    .contact-us {
-      grid-template-columns: 1fr;
-      grid-template-rows: repeat(3, 1fr);
-
-      .contact-us-text {
-        grid-area: 1/1/1/-1;
-        grid-template-rows: repeat(1, 50px);
-
-        h1 {
-          font-size: 1.5rem;
-          color: $white;
-          grid-area: 1/2/1/4;
-        }
-
-        :is(p) {
-          color: $white;
-          grid-area: 2/2/2/4;
-          display: none;
-        }
-      }
-
-      .contact-us-form {
-        grid-template-columns: repeat(8, 1fr);
-
-        form {
-          grid-column: 3/7;
-          grid-row: 1/7;
-          display: grid;
-          grid-template-columns: repeat(auto-fit, 1fr);
-          grid-template-rows: repeat(8, 100px);
-          gap: 1em;
-        }
-      }
-    }
-  }
-
-  @media screen and (max-width: $breakingpoint_mobile) {
-    .contact-us-text {
-      padding: 1em;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: repeat(8, 50px);
-
-      h1 {
-        font-size: 2rem;
-        color: $white;
-        width: 80vw;
-        padding-top: 0.2em;
-      }
-
-      :is(p) {
-        color: $white;
-        grid-area: 6/2/6/4;
-      }
-    }
-
-    .contact-us-form {
-      grid-template-columns: repeat(8, 1fr);
-
-      form {
-        grid-column: 1/-1;
-        grid-row: 2/7;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, 1fr);
-        grid-template-rows: repeat(8, 100px);
-        gap: 1em;
-        width: 80vw;
-        margin-top: 2em;
-
-        .submit_btn {
-          padding: 0;
-          margin: 0;
-        }
-
-        :is(label) {
-          &:nth-child(4) {
-            grid-column: 1/-1;
-          }
-        }
-      }
-    }
+  .sent-icon {
+    color: var(--accent);
   }
 </style>

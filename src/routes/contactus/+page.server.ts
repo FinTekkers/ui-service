@@ -1,96 +1,47 @@
-import { redirect } from "@sveltejs/kit";
-import * as Yup from "yup";
-import { isValidationError } from "$lib/helper";
+// /contactus (US-356): each valid message is one email, through the Gmail
+// transport (src/lib/server/gmail.ts), from and to CONTACT_GMAIL_USER with
+// Reply-To the visitor. Nothing is stored. The action keeps its name,
+// ?/message, so older posts still land here.
+import { fail } from "@sveltejs/kit";
+import type { Actions } from "./$types";
 import { getGmailTransport, gmailUser } from "$lib/server/gmail";
+import { buildContactEmail, validateContact } from "$lib/server/contact";
+import type { ContactValues } from "$lib/contact";
 
-const validationSchema = Yup.object({
-  firstname: Yup.string().required("firstname"),
-  lastname: Yup.string().required("lastname"),
-  email: Yup.string().required("email").email("Invalid email"),
-  message: Yup.string().required("message"),
-});
+const UNAVAILABLE =
+  "Contact form is temporarily unavailable. Please email us directly.";
+const SEND_FAILED =
+  "There was an error sending your message. Please try again later.";
 
-// Gmail SMTP credentials come from CONTACT_GMAIL_USER /
-// CONTACT_GMAIL_APP_PASSWORD (see src/lib/server/gmail.ts). .env carries
-// local-dev values (or is empty, in which case the contact form
-// fails-soft); GH Actions secrets inject production values during
-// deployment (see build_deploy.py + .github/workflows/deploy.yml).
-// Hardcoded credentials were removed — the previously-committed app
-// password MUST be rotated in Gmail (the leak is in git history
-// regardless of this fix).
-
-export const actions = {
+export const actions: Actions = {
   message: async ({ request }) => {
-    console.log("Will attempt to send mail");
+    const data = await request.formData();
+    const field = (name: string) =>
+      (data.get(name)?.toString() ?? "").replace(/\r\n/g, "\n");
 
-    let formError: string[] | null = null;
+    const values: ContactValues = {
+      firstname: field("firstname"),
+      lastname: field("lastname"),
+      email: field("email"),
+      message: field("message"),
+    };
+    const result = validateContact(values);
+    if (!result.ok) return fail(400, { errors: result.errors, values });
+
+    const transporter = getGmailTransport();
+    if (!transporter) {
+      console.error(
+        "Contact form: CONTACT_GMAIL_USER / CONTACT_GMAIL_APP_PASSWORD env vars not configured."
+      );
+      return fail(503, { formError: UNAVAILABLE, values });
+    }
 
     try {
-      const data = await request.formData();
-
-      const firstname = data.get("firstname")?.toString() || "";
-      const lastname = data.get("lastname")?.toString() || "";
-      const email = data.get("email")?.toString() || "";
-      const message = data.get("message")?.toString() || "";
-
-      await validationSchema.validate(
-        { firstname, lastname, email, message },
-        { abortEarly: false }
-      );
-
-      const transporter = getGmailTransport();
-      if (!transporter) {
-        // Surface a user-facing error rather than try-then-throw
-        // against gmail (which would expose internals via the
-        // catch branch below). Server log carries the real reason.
-        console.error(
-          "Contact form: CONTACT_GMAIL_USER / CONTACT_GMAIL_APP_PASSWORD env vars not configured."
-        );
-        return {
-          formError: [
-            "Contact form is temporarily unavailable. Please email us directly.",
-          ],
-        };
-      }
-
-      // Email content. `to` mirrors the authenticated user
-      // (the form just routes inbound contact messages to
-      // whichever inbox the SMTP account belongs to) — one
-      // env var configures both sender and destination.
-      const mailOptions = {
-        from: email,
-        to: gmailUser(),
-        subject: `New message from ${firstname} ${lastname}`,
-        text: message,
-        html: `<p><strong>From:</strong> ${firstname} ${lastname} (${email})</p>
-                       <p><strong>Message:</strong></p>
-                       <p>${message}</p>`,
-      };
-
-      // Send the email
-      await transporter.sendMail(mailOptions);
-      console.log("Email sent");
-
-      // After email is sent successfully
-      return {
-        success: true,
-        firstname,
-        lastname,
-        email,
-        message,
-      };
+      await transporter.sendMail(buildContactEmail(result.value, gmailUser()));
     } catch (error) {
-      if (isValidationError(error)) {
-        const validationErrors = error.inner.map((err: any) => err.message);
-        formError = validationErrors;
-      } else {
-        console.error("Email error:", error);
-        formError = [
-          "There was an error sending your message. Please try again later.",
-        ];
-      }
-
-      return { formError };
+      console.error("Contact form email error:", error);
+      return fail(500, { formError: SEND_FAILED, values });
     }
+    return { success: true };
   },
 };

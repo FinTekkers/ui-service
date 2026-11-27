@@ -15,6 +15,7 @@
     type FreeRequestField,
     type FreeRequestFormState,
   } from "$lib/free/request";
+  import "$lib/styles/ft-form.css";
 
   export let form: FreeRequestFormState | null = null;
 
@@ -35,7 +36,7 @@
   <title>Request a free analysis · Free data explorer · Fintekkers</title>
 </svelte:head>
 
-<div class="request">
+<div class="request ft-form">
   {#if form?.success}
     <section class="card confirmation" aria-labelledby="request-sent-title">
       <p class="eyebrow">Request sent</p>
@@ -258,71 +259,10 @@
       grid-template-columns: minmax(0, 1fr);
     }
   }
-  .card {
-    background: #ffffff;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-  }
-  .form-card,
-  .confirmation {
-    padding: clamp(24px, 4vw, 40px);
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    min-width: 0;
-  }
-  .eyebrow {
-    margin: 0;
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
-  .section-title {
-    margin: 0;
-    font-weight: 700;
-    font-size: clamp(24px, 2.6vw, 30px);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-  }
   .panel-title {
     margin: 0;
     font-weight: 700;
     font-size: 18px;
-  }
-  .lede,
-  .confirmation p:not(.eyebrow) {
-    margin: 0;
-    max-width: 60ch;
-    font-size: 17px;
-    line-height: 1.6;
-    color: #33404f;
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: 8px;
-  }
-  fieldset {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    min-width: 0;
-  }
-  legend,
-  .field label {
-    padding: 0;
-    margin-bottom: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--ink);
-  }
-  .optional {
-    font-weight: 400;
-    color: var(--muted);
   }
   .toggle {
     display: inline-flex;
@@ -363,11 +303,6 @@
     outline: 2px solid var(--accent);
     outline-offset: -2px;
   }
-  .field {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
   .label-row {
     display: flex;
     justify-content: space-between;
@@ -379,100 +314,12 @@
     font-size: 13px;
     color: var(--muted);
   }
-  input[type="text"],
-  input[type="url"],
-  input[type="email"],
-  textarea,
-  select {
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 44px;
-    padding: 10px 12px;
-    border: 1px solid #c9cfd8;
-    border-radius: 8px;
-    background: #ffffff;
-    font-family: inherit;
-    font-size: 15px;
-    color: var(--ink);
-  }
-  textarea {
-    resize: vertical;
-    line-height: 1.5;
-  }
-  input:focus-visible,
-  textarea:focus-visible,
-  select:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
-  }
-  [aria-invalid="true"] {
-    border-color: #b42318;
-  }
-  .help {
-    margin: 8px 0 0;
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--muted);
-  }
-  .error,
-  .form-error {
-    margin: 6px 0 0;
-    font-size: 14px;
-    color: #b42318;
-  }
-  .form-error {
-    margin: 0;
-    padding: 12px 14px;
-    border-radius: 8px;
-    background: #fef3f2;
-  }
   .hp {
     position: absolute;
     left: -10000px;
     width: 1px;
     height: 1px;
     overflow: hidden;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 8px;
-  }
-  .button {
-    min-height: 44px;
-    padding: 0 20px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .primary {
-    align-self: flex-start;
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: #ffffff;
-  }
-  .primary:hover {
-    background: var(--accent-hover);
-    border-color: var(--accent-hover);
-  }
-  .primary:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-  .secondary {
-    border: 1px solid #c9cfd8;
-    background: #ffffff;
-    color: var(--ink);
-  }
-  .secondary:hover {
-    border-color: var(--ink);
   }
   .sidebar {
     display: flex;

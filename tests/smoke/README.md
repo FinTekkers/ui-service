@@ -17,8 +17,8 @@ test`, `npm run test:e2e`, CI, git hooks or the deploy script.
    before mail is sent.
 2. Builds a unique marker, `FTSMOKE` + UTC `YYYYMMDDHHmmss` + 8 hex chars, and
    puts it in the last name (so it lands in the email subject) and the message.
-3. Fills and submits the form once, and asserts the success banner and exactly
-   one POST to `/contactus`.
+3. Fills and submits the form once, and asserts the "Thanks, your message is
+   sent" confirmation and exactly one POST to `/contactus`.
 4. Polls the inbox every 10 s with the Gmail search `<marker> newer_than:1d`.
    A candidate counts only if its `Subject` header contains the exact marker.
    Only envelopes are fetched; bodies are never downloaded.
