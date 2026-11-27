@@ -333,9 +333,16 @@ describe("page: funds, band and method (metric 3)", () => {
     );
     expect(note).toHaveTextContent(`±${SIGMA_BAND}σ`);
     expect(note).toHaveTextContent(`starts ${SIGMA_WINDOW + 1} trading days`);
-    // LM-493 stores no dividends yet: the page says as-traded.
-    expect(note).toHaveTextContent(/as-traded daily closes/);
-    expect(container.textContent).not.toMatch(/dividend-adjusted/i);
+    expect(screen.getByText(SIGMA_BASIS).tagName).toBe("P");
+    expect(note).toHaveTextContent(
+      "Daily closes adjusted for dividends and splits (Yahoo Finance adjusted closes, as stored by the Fintekkers price service), so each return includes dividends."
+    );
+    expect(note).toHaveTextContent(
+      "σ compares a day with the previous 100 trading days. It is not a probability: market returns have fat tails, so moves beyond ±3σ happen far more often than a normal distribution predicts."
+    );
+    expect(note.textContent).not.toMatch(/not adjusted for dividends/i);
+    expect(note.textContent).not.toMatch(/price change only/i);
+    expect((container.textContent ?? "").match(/Price basis/g)).toHaveLength(1);
     expect(container.innerHTML).not.toContain(SENTINEL);
   });
 

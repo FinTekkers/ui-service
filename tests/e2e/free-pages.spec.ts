@@ -1433,6 +1433,33 @@ test.describe("US-341 /free/sigma-moves", () => {
     }
   });
 
+  // US-359: the Method note says the closes are dividend-adjusted and that σ
+  // is not a probability. The note renders whatever the host data holds.
+  test("US-359 /free/sigma-moves: the Method note's price basis and σ caveat, and on reload", async ({
+    page,
+  }) => {
+    const response = await page.goto(ROUTE);
+    expect(response?.status()).toBe(200);
+    for (const pass of ["load", "reload"]) {
+      if (pass === "reload") {
+        expect((await page.reload())?.status()).toBe(200);
+      }
+      const note = page.getByRole("region", { name: "Method" });
+      await expect(note, `${pass}: price basis`).toContainText(
+        "Daily closes adjusted for dividends and splits (Yahoo Finance adjusted closes, as stored by the Fintekkers price service), so each return includes dividends."
+      );
+      await expect(note, `${pass}: not a probability`).toContainText(
+        "σ compares a day with the previous 100 trading days. It is not a probability: market returns have fat tails, so moves beyond ±3σ happen far more often than a normal distribution predicts."
+      );
+      await expect(note, `${pass}: old basis gone`).not.toContainText(
+        "not adjusted for dividends"
+      );
+      await expect(note, `${pass}: old basis gone`).not.toContainText(
+        "price change only"
+      );
+    }
+  });
+
   // Metric 5's PR screenshots, on request only:
   // SIGMA_SHOTS=<dir> npx playwright test free-pages -g "sigma moves screenshots"
   test("sigma moves screenshots at 1Y for each fund", async ({ page }) => {
