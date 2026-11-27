@@ -114,6 +114,9 @@ REGRESSION_SPECS=(
   # US-300: a page served on localhost loads no GA tag and calls no
   # googletagmanager.com.
   tests/e2e/no-analytics-on-localhost.spec.ts
+  # US-356: /contactus in the public-site shell: the journey from /, field
+  # errors, and computed form styles matching /free/request.
+  tests/e2e/contactus.spec.ts
 )
 # Tests that fail on the host for lack of data, logged as "known" without
 # failing the check. Any other failure fails it, and so does a listed test
