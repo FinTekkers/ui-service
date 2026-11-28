@@ -1795,10 +1795,16 @@ test.describe("US-354 /free/corporate-bond/crwv-2030", () => {
   // catalog (30/360 accrued, w = DSC/E stub, semiannual) gives YTM
   // 0.1643998… and modified duration 2.64528…, which show as 16.44% and
   // 2.65. US-354's metric quotes 16.46% and 2.64; the catalog formula, not
-  // the metric, is the spec, so these are the service's figures.
+  // the metric, is the spec, so these are the service's figures. The gap
+  // waits on an owner ruling (amend the metric, or a valuation-service ask);
+  // METRIC_GAP puts it in every golden run's report until then.
   const SETTLEMENT = "2026-11-27";
   const YTM = "16.44%";
   const MODIFIED = "2.65";
+  const METRIC_GAP = {
+    type: "metric-gap",
+    description: `US-354 metric line 2 quotes YTM 16.46% and modified duration 2.64; valuation-service returns ${YTM} and ${MODIFIED}. Owner ruling pending.`,
+  };
   const COUPON_DATES = [
     "2026-12-01",
     "2027-06-01",
@@ -1827,6 +1833,7 @@ test.describe("US-354 /free/corporate-bond/crwv-2030", () => {
 
   /** The golden figures, as the tiles show them and as returned. */
   async function expectGolden(page: Page): Promise<void> {
+    test.info().annotations.push(METRIC_GAP);
     await expect(tile(page, "settlement")).toHaveAttribute(
       "data-value",
       SETTLEMENT,
@@ -2018,6 +2025,12 @@ test.describe("US-354 /free/corporate-bond/crwv-2030", () => {
       !existsSync(entry),
       "no build/index.js (scripts/checks/e2e.sh builds it before the specs)"
     );
+    // Without the key the loader is unavailable before any broker call.
+    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+    test.skip(
+      !key,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
     const [port, closed] = [await freePort(), await freePort()];
     const base = `http://127.0.0.1:${port}`;
     const server = spawn(process.execPath, [entry], {
@@ -2056,14 +2069,11 @@ test.describe("US-354 /free/corporate-bond/crwv-2030", () => {
       await expect(page.getByTestId(/^tile-/)).toHaveCount(0);
       await expect(page.getByTestId("cashflow-row")).toHaveCount(0);
       await expect(page.getByTestId("sweep-point")).toHaveCount(0);
-      const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
-      if (key) {
-        const data = await request.get(
-          `${base}${ROUTE}/__data.json?price=81.375&tradeDate=${TRADE}`
-        );
-        expect(data.status()).toBe(200);
-        expect(await data.text()).not.toContain(key);
-      }
+      const data = await request.get(
+        `${base}${ROUTE}/__data.json?price=81.375&tradeDate=${TRADE}`
+      );
+      expect(data.status()).toBe(200);
+      expect(await data.text()).not.toContain(key);
     } finally {
       server.kill();
     }
