@@ -14,11 +14,17 @@ import {
   type EtfPoint,
 } from "./etf";
 import {
+  SOMA_MIX_AVG_COLOR,
+  SOMA_MIX_BUCKETS,
+  SOMA_MIX_COLORS,
+  SOMA_MIX_YEARS_RANGE,
   SOMA_STACKS,
   SOMA_STACK_COLORS,
   SOMA_STACK_LABELS,
+  mixTooltip,
   weekTooltip,
   type SomaHistoryPoint,
+  type SomaMixPoint,
 } from "./soma";
 import { percentLabel, type DrawdownPoint } from "./techVsSp500";
 import { sigmaLabel, type SigmaPoint } from "./sigma";
@@ -490,6 +496,92 @@ export function somaHistorySpec(points: SomaHistoryPoint[]): PlotSpec {
     }),
     config: CONFIG,
     fit,
+  };
+}
+
+/**
+ * US-365 /free/soma Maturity mix over time: one 100% bar per quarter,
+ * stacked by remaining-maturity bucket from short (light) to long (dark),
+ * with the par-weighted average maturity as an orange line on a right-hand
+ * axis fixed at SOMA_MIX_YEARS_RANGE. Each bar sits at its quarter's
+ * week; the section's own 1Y / 5Y / All buttons pick the points, so the
+ * chart has no range buttons and no zoom. Hover shows mixTooltip().
+ */
+export function somaMixSpec(points: SomaMixPoint[]): PlotSpec {
+  const x = points.map((p) => p.week);
+  const tips = points.map(mixTooltip);
+  // Each bar's width in ms: most of the gap to its nearer neighbour, so a
+  // partial latest quarter's short gap doesn't thin every bar.
+  const QUARTER_MS = 91 * 24 * 60 * 60 * 1000;
+  const ms = x.map((d) => Date.parse(d));
+  const width = ms.map(
+    (t, i) =>
+      0.8 *
+      Math.min(
+        QUARTER_MS,
+        i > 0 ? t - ms[i - 1] : QUARTER_MS,
+        i < ms.length - 1 ? ms[i + 1] - t : QUARTER_MS
+      )
+  );
+  const bars = SOMA_MIX_BUCKETS.map((label, b) => ({
+    type: "bar",
+    name: label,
+    x,
+    width,
+    y: points.map((p) => p.shares[b]),
+    customdata: tips.map((t) => t.rows[b].value),
+    marker: { color: SOMA_MIX_COLORS[b], line: { color: "#ffffff", width: 0 } },
+    hovertemplate: `${label}: %{customdata}<extra></extra>`,
+  }));
+  const avg = {
+    type: "scatter",
+    mode: points.length > 1 ? "lines" : "lines+markers",
+    name: "Average maturity (right axis)",
+    x,
+    y: points.map((p) => p.avgYears),
+    customdata: tips.map((t) => t.rows[SOMA_MIX_BUCKETS.length].value),
+    yaxis: "y2",
+    line: { color: SOMA_MIX_AVG_COLOR, width: 2.5 },
+    marker: { color: SOMA_MIX_AVG_COLOR, size: 6 },
+    hovertemplate: "Average maturity: %{customdata}<extra></extra>",
+  };
+  // The bar's week, drawn nowhere: it only heads the hover.
+  const week = {
+    type: "scatter",
+    mode: "lines",
+    name: "Week",
+    x,
+    y: points.map(() => 100),
+    customdata: tips.map((t) => t.title),
+    line: { color: INK, width: 0 },
+    hovertemplate: "%{customdata}<extra></extra>",
+  };
+  const layout = layoutFor(
+    "",
+    "",
+    {
+      yaxis: yAxis("", [0, 100], { ticksuffix: "%", dtick: 25 }),
+      yaxis2: yAxis("", SOMA_MIX_YEARS_RANGE, {
+        overlaying: "y",
+        side: "right",
+        showgrid: false,
+        ticksuffix: " yrs",
+        dtick: 3,
+      }),
+    },
+    { barmode: "stack", margin: { l: 8, r: 8, t: 8, b: 8 } }
+  );
+  // Each bar at its week: a date axis thins its labels to the width.
+  const xaxis = axis("", {
+    type: "date",
+    fixedrange: true,
+    hoverformat: DAY_FORMAT,
+  });
+  return {
+    data: [week, ...bars, avg],
+    layout: { ...layout, xaxis },
+    config: CONFIG,
+    fit: [],
   };
 }
 

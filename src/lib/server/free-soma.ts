@@ -27,6 +27,14 @@
  * page renders without waiting for it: it is streamed, capped at
  * SOMA_HISTORY_TIMEOUT_MS, and a failure makes that section alone
  * unavailable.
+ *
+ * US-365: Maturity mix over time is a fourth search, streamed the same
+ * way and started once the third has settled (side by side, they slowed
+ * it): SOMA's trades by TRADE_DATE, PRODUCT_TYPE and MATURITY_DATE
+ * (soma-mix.ts does the maths). Holdings over time keeps its own search
+ * unchanged. Both whole-history results are
+ * cached in this process, keyed by the latest SOMA trade date
+ * (soma-cache.ts), so a page view normally makes neither search.
  */
 import Decimal from "decimal.js";
 import type { FieldMapEntry } from "@fintekkers/ledger-models/node/fintekkers/models/position/position_util_pb";
@@ -46,6 +54,13 @@ import { QueryPositionRequest } from "@fintekkers/ledger-models/node/wrappers/re
 import { fromDecimalProto } from "$lib/decimal";
 import { formatOneDecimal } from "$lib/free/format";
 import { searchPositions } from "$lib/positions";
+import { createWeekCache, type Computed } from "./soma-cache";
+import {
+  somaMixView,
+  somaMixWeeks,
+  type SomaMixRow,
+  type SomaMixWeeks,
+} from "./soma-mix";
 import {
   SOMA_BUCKET_LABELS,
   SOMA_STACKS,
@@ -58,6 +73,7 @@ import {
   type SomaHistoryPoint,
   type SomaHistoryView,
   type SomaMaturityView,
+  type SomaMixView,
   type SomaPageData,
   type SomaPageWithHistory,
   type SomaPosition,
@@ -96,7 +112,24 @@ export const SOMA_HISTORY_FIELDS = [
 ];
 export const SOMA_HISTORY_MEASURES = [MeasureProto.DIRECTED_QUANTITY];
 
-/** How long the page's Holdings over time waits for its search. */
+/** US-365: Maturity mix over time's grouping, every SOMA trade date at
+ * once. No TRANSACTION_TYPE: the cash legs are CURRENCY rows, dropped with
+ * the other non-Treasury types, and the grouping is about a third faster
+ * without it. */
+export const SOMA_MIX_FIELDS = [
+  FieldProto.TRADE_DATE,
+  FieldProto.PRODUCT_TYPE,
+  FieldProto.MATURITY_DATE,
+];
+export const SOMA_MIX_MEASURES = [MeasureProto.DIRECTED_QUANTITY];
+
+/** US-365: the caches' check for a newer week: SOMA's trade dates up to
+ * the latest week. (The ledger ignores a TRADE_DATE MORE_THAN_OR_EQUALS
+ * filter, so the probe can't ask for only the dates after a week.) */
+export const SOMA_PROBE_FIELDS = [FieldProto.TRADE_DATE];
+
+/** How long the page's Holdings over time waits for its search; Maturity
+ * mix over time and the caches' probe wait as long. */
 export const SOMA_HISTORY_TIMEOUT_MS = 10_000;
 
 /** A trade's cash leg, on the USD security: the opposite sign of its BUY
@@ -570,20 +603,28 @@ export function somaTradeRowOf(position: Position): SomaTradeRow {
   return out;
 }
 
+/** US-365: Holdings over time's trades summed per trade date and stack, up
+ * to the week searched: what the cache holds. `badFrom` is the earliest
+ * trade date of a Treasury row with no quantity ("" for one with no trade
+ * date): a week on or after it has no series. */
+export interface SomaHistoryByDate {
+  byDate: Map<string, Record<SomaStack, Decimal>>;
+  badFrom: string | null;
+}
+
 /**
- * Holdings over time up to `asOf` (a Wednesday): par per stack at every
- * Wednesday from the first one on or after the earliest trade. Cash legs
- * are dropped; other rows outside the Treasury scope are dropped and
- * logged. Null, with the reason logged, when a Treasury row has no trade
- * date or quantity (never a partial series), or no Treasury row is on or
- * before `asOf`.
+ * The first half of somaHistory: trades on or before `upTo` summed per date
+ * and stack. Cash legs are dropped; other rows outside the Treasury scope
+ * are dropped and logged; an unusable Treasury row is logged and marks
+ * `badFrom`, never filled in.
  */
-export function somaHistory(
+export function somaHistoryByDate(
   rows: SomaTradeRow[],
-  asOf: string
-): SomaHistoryView | null {
+  upTo: string
+): SomaHistoryByDate {
   const byDate = new Map<string, Record<SomaStack, Decimal>>();
   const dropped = new Map<string, number>();
+  let badFrom: string | null = null;
   for (const row of rows) {
     if (CASH_LEGS.has(row.transactionType)) continue;
     const stack = TREASURY_TYPES.get(row.productType)?.stack;
@@ -593,9 +634,11 @@ export function somaHistory(
     }
     if (!row.tradeDate || !row.directedQuantity) {
       console.log("SOMA trade row unusable for Holdings over time", row);
-      return null;
+      const from = row.tradeDate ?? "";
+      if (badFrom === null || from < badFrom) badFrom = from;
+      continue;
     }
-    if (row.tradeDate > asOf) continue;
+    if (row.tradeDate > upTo) continue;
     let day = byDate.get(row.tradeDate);
     if (!day) {
       day = zeroStacks();
@@ -609,7 +652,33 @@ export function somaHistory(
       Object.fromEntries(dropped)
     );
   }
-  const dates = [...byDate.keys()].sort();
+  return { byDate, badFrom };
+}
+
+/**
+ * Holdings over time up to `asOf` (a Wednesday): par per stack at every
+ * Wednesday from the first one on or after the earliest trade. Cash legs
+ * are dropped; other rows outside the Treasury scope are dropped and
+ * logged. Null, with the reason logged, when a Treasury row on or before
+ * `asOf` has no quantity, one has no trade date (never a partial series),
+ * or no Treasury row is on or before `asOf`.
+ */
+export function somaHistory(
+  rows: SomaTradeRow[],
+  asOf: string
+): SomaHistoryView | null {
+  return somaHistoryWalk(somaHistoryByDate(rows, asOf), asOf);
+}
+
+/** The second half of somaHistory: the weekly series up to `asOf` from
+ * the per-date sums, which may run past it (the cached whole history). */
+export function somaHistoryWalk(
+  history: SomaHistoryByDate,
+  asOf: string
+): SomaHistoryView | null {
+  const { byDate, badFrom } = history;
+  if (badFrom !== null && badFrom <= asOf) return null;
+  const dates = [...byDate.keys()].filter((d) => d <= asOf).sort();
   if (dates.length === 0) return null;
   // The first Wednesday on or after the earliest trade.
   const ahead = (3 - new Date(Date.parse(dates[0])).getUTCDay() + 7) % 7;
@@ -642,6 +711,57 @@ export function somaHistory(
     points.push({ week, par, total: total.toFixed() });
   }
   return { firstWeek, points };
+}
+
+/** US-365: a ledger position from Maturity mix over time's search as a
+ * SomaMixRow. */
+export function somaMixRowOf(position: Position): SomaMixRow {
+  const out: SomaMixRow = {
+    tradeDate: null,
+    maturityDate: null,
+    productType: "",
+    directedQuantity: null,
+  };
+  for (const entry of position.getFields()) {
+    if (entry.getField() === FieldProto.PRODUCT_TYPE) {
+      out.productType = enumNameOf(entry, ProductTypeProto);
+    } else if (
+      entry.getField() === FieldProto.TRADE_DATE &&
+      entry.getFieldValuePacked()
+    ) {
+      out.tradeDate = isoDate(Position.unpackField(entry));
+    } else if (
+      entry.getField() === FieldProto.MATURITY_DATE &&
+      entry.getFieldValuePacked()
+    ) {
+      out.maturityDate = isoDate(Position.unpackField(entry));
+    }
+  }
+  for (const entry of position.getMeasures()) {
+    if (entry.getMeasure() === MeasureProto.DIRECTED_QUANTITY) {
+      out.directedQuantity =
+        fromDecimalProto(entry.getMeasureDecimalValue()) || null;
+    }
+  }
+  return out;
+}
+
+/** The mix's rows in the Treasury scope; the rest (cash legs included) are
+ * dropped and logged. */
+export function somaMixTreasuryRows(rows: SomaMixRow[]): SomaMixRow[] {
+  const dropped = new Map<string, number>();
+  const kept = rows.filter((row) => {
+    if (TREASURY_TYPES.has(row.productType)) return true;
+    dropped.set(row.productType, (dropped.get(row.productType) ?? 0) + 1);
+    return false;
+  });
+  if (dropped.size > 0) {
+    console.log(
+      "SOMA mix rows outside the Treasury scope dropped",
+      Object.fromEntries(dropped)
+    );
+  }
+  return kept;
 }
 
 function zeroStacks(): Record<SomaStack, Decimal> {
@@ -719,64 +839,165 @@ export async function fetchFreeSoma(
   return { ...base, ...somaRowsToView(rows, asOf, prior) };
 }
 
-/**
- * Holdings over time for the week `asOf`, from one search for every week.
- * Never rejects: a failed or empty search, unusable rows, or no answer
- * within SOMA_HISTORY_TIMEOUT_MS all resolve to unavailable, naming the
- * week. Logs how long it took.
- */
-export async function fetchSomaHistory(
-  apiKey: string,
-  asOf: string
-): Promise<Section<SomaHistoryView>> {
-  const unavailable = {
-    ok: false as const,
-    message: somaUnavailable(weekLabel(asOf)),
-  };
-  const started = Date.now();
+/** A search raced against SOMA_HISTORY_TIMEOUT_MS. searchPositions takes
+ * no deadline, so a timed-out search is not cancelled: it runs on to its
+ * end, and its late result or error is ignored here. */
+async function withTimeout<T>(search: Promise<T>): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
+  search.catch(() => undefined);
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`no answer in ${SOMA_HISTORY_TIMEOUT_MS} ms`)),
+      SOMA_HISTORY_TIMEOUT_MS
+    );
+  });
   try {
-    const search = searchPositions(
-      somaRequest(asOf, SOMA_HISTORY_FIELDS, SOMA_HISTORY_MEASURES).toProto(),
-      apiKey
-    );
-    // searchPositions takes no deadline, so a timed-out search is not
-    // cancelled: it runs on to its end, and its late result or error is
-    // ignored here.
-    search.catch(() => undefined);
-    const timeout = new Promise<never>((_, reject) => {
-      timer = setTimeout(
-        () => reject(new Error(`no answer in ${SOMA_HISTORY_TIMEOUT_MS} ms`)),
-        SOMA_HISTORY_TIMEOUT_MS
-      );
-    });
-    const positions = await Promise.race([search, timeout]);
-    const view = somaHistory(positions.map(somaTradeRowOf), asOf);
-    console.log(
-      `SOMA history for ${asOf}: ${positions.length} rows, ${
-        view?.points.length ?? 0
-      } weeks, in ${Date.now() - started} ms`
-    );
-    return view ? { ok: true, data: view } : unavailable;
-  } catch (error) {
-    // The message only: the error object can carry request metadata.
-    console.log(
-      `Could not fetch SOMA history for ${asOf} after ${
-        Date.now() - started
-      } ms`,
-      (error as Error)?.message
-    );
-    return unavailable;
+    return await Promise.race([search, timeout]);
   } finally {
     clearTimeout(timer);
   }
 }
 
+/** The latest of the rows' trade dates, or null when none has one. */
+function latestDate(rows: { tradeDate: string | null }[]): string | null {
+  let latest: string | null = null;
+  for (const { tradeDate } of rows) {
+    if (tradeDate && (latest === null || tradeDate > latest)) {
+      latest = tradeDate;
+    }
+  }
+  return latest;
+}
+
+/**
+ * US-365: Holdings over time's one search for every trade up to `upTo`,
+ * summed per date: what the cache holds, with the latest trade date it
+ * read. Null, logged, when the search fails, times out or returns nothing.
+ */
+export async function fetchSomaHistoryByDate(
+  apiKey: string,
+  upTo: string
+): Promise<Computed<SomaHistoryByDate> | null> {
+  const started = Date.now();
+  try {
+    const positions = await withTimeout(
+      searchPositions(
+        somaRequest(upTo, SOMA_HISTORY_FIELDS, SOMA_HISTORY_MEASURES).toProto(),
+        apiKey
+      )
+    );
+    const rows = positions.map(somaTradeRowOf);
+    const latestWeek = latestDate(rows);
+    console.log(
+      `SOMA history for ${upTo}: ${positions.length} rows, in ${
+        Date.now() - started
+      } ms`
+    );
+    return latestWeek
+      ? { latestWeek, value: somaHistoryByDate(rows, upTo) }
+      : null;
+  } catch (error) {
+    // The message only: the error object can carry request metadata.
+    console.log(
+      `Could not fetch SOMA history for ${upTo} after ${
+        Date.now() - started
+      } ms`,
+      (error as Error)?.message
+    );
+    return null;
+  }
+}
+
+/**
+ * Holdings over time for the week `asOf`, from one search for every week.
+ * Never rejects: a failed or empty search, unusable rows, or no answer
+ * within SOMA_HISTORY_TIMEOUT_MS all resolve to unavailable, naming the
+ * week. Logs how long it took. Uncached: the page reads it through
+ * somaHistoryCache instead.
+ */
+export async function fetchSomaHistory(
+  apiKey: string,
+  asOf: string
+): Promise<Section<SomaHistoryView>> {
+  const history = await fetchSomaHistoryByDate(apiKey, asOf);
+  const view = history && somaHistoryWalk(history.value, asOf);
+  return view
+    ? { ok: true, data: view }
+    : { ok: false, message: somaUnavailable(weekLabel(asOf)) };
+}
+
+/**
+ * US-365: Maturity mix over time's one search for every trade up to
+ * `upTo`, as every week's mix: what the cache holds, with the latest trade
+ * date it read. Null, logged, when the search fails, times out or gives no
+ * week.
+ */
+export async function fetchSomaMixWeeks(
+  apiKey: string,
+  upTo: string
+): Promise<Computed<SomaMixWeeks> | null> {
+  const started = Date.now();
+  try {
+    const positions = await withTimeout(
+      searchPositions(
+        somaRequest(upTo, SOMA_MIX_FIELDS, SOMA_MIX_MEASURES).toProto(),
+        apiKey
+      )
+    );
+    const rows = positions.map(somaMixRowOf);
+    const latestWeek = latestDate(rows);
+    const mix = somaMixWeeks(somaMixTreasuryRows(rows), upTo);
+    console.log(
+      `SOMA maturity mix for ${upTo}: ${positions.length} rows, ${
+        mix?.weeks.length ?? 0
+      } weeks, in ${Date.now() - started} ms`
+    );
+    return latestWeek && mix ? { latestWeek, value: mix } : null;
+  } catch (error) {
+    // The message only: the error object can carry request metadata.
+    console.log(
+      `Could not fetch SOMA maturity mix for ${upTo} after ${
+        Date.now() - started
+      } ms`,
+      (error as Error)?.message
+    );
+    return null;
+  }
+}
+
+/** US-365: the ledger's latest SOMA trade date on or before `upTo`, or
+ * null when it has none; throws when the search fails or times out. */
+export async function fetchSomaLatestTrade(
+  apiKey: string,
+  upTo: string
+): Promise<string | null> {
+  const positions = await withTimeout(
+    searchPositions(
+      somaRequest(upTo, SOMA_PROBE_FIELDS, SOMA_HISTORY_MEASURES).toProto(),
+      apiKey
+    )
+  );
+  return latestDate(positions.map(somaTradeRowOf));
+}
+
+/** US-365: the whole-history results, per process (see soma-cache.ts). */
+export const somaHistoryCache =
+  createWeekCache<SomaHistoryByDate>("SOMA history");
+export const somaMixCache = createWeekCache<SomaMixWeeks>("SOMA maturity mix");
+
+/** Empties both caches: for tests. */
+export function resetSomaCaches(): void {
+  somaHistoryCache.reset();
+  somaMixCache.reset();
+}
+
 /**
  * Both routes' load (US-317): fetchFreeSoma's sections, awaited, and
  * Holdings over time under `streamed`, started at once but not awaited, so
- * a slow or failed history never holds up the rest of the page. No key:
- * unavailable, and no call is made.
+ * a slow or failed history never holds up the rest of the page. US-365:
+ * Maturity mix over time likewise, from its own search, started once the
+ * history's has settled. Both read through their caches for the latest week, then cut
+ * to the page's week. No key: unavailable, and no call is made.
  */
 export async function loadFreeSoma(
   apiKey: string | undefined,
@@ -784,9 +1005,50 @@ export async function loadFreeSoma(
   now: Date
 ): Promise<SomaPageWithHistory> {
   const page = fetchFreeSoma(apiKey, requestedAsOf, now);
-  const asOf = somaWeek(requestedAsOf, now.toISOString().slice(0, 10));
-  const history: Promise<Section<SomaHistoryView>> = apiKey
-    ? fetchSomaHistory(apiKey, asOf)
-    : Promise.resolve({ ok: false, message: somaUnavailable(weekLabel(asOf)) });
-  return { ...(await page), streamed: { history } };
+  const today = now.toISOString().slice(0, 10);
+  const asOf = somaWeek(requestedAsOf, today);
+  const unavailable = {
+    ok: false as const,
+    message: somaUnavailable(weekLabel(asOf)),
+  };
+  if (!apiKey) {
+    return {
+      ...(await page),
+      streamed: {
+        history: Promise.resolve(unavailable),
+        mix: Promise.resolve(unavailable),
+      },
+    };
+  }
+  // The caches hold every trade up to the latest week; a picked week is
+  // cut from that.
+  const upTo = somaWeek(null, today);
+  // One probe per request, shared by both caches when both check.
+  let latest: Promise<string | null> | undefined;
+  const probe = () => (latest ??= fetchSomaLatestTrade(apiKey, upTo));
+  const byDate = somaHistoryCache.get(
+    upTo,
+    (week) => fetchSomaHistoryByDate(apiKey, week),
+    probe
+  );
+  // The mix's search starts once the holdings' has settled: run side by
+  // side on the host, it slowed the holdings search by about half
+  // (scripts/time-soma-load.ts). Registered first, so it starts before
+  // the history resolves.
+  const startMix = () =>
+    somaMixCache.get(upTo, (week) => fetchSomaMixWeeks(apiKey, week), probe);
+  const mixWeeks = byDate.then(startMix, startMix);
+  const history: Promise<Section<SomaHistoryView>> = byDate
+    .then((sums) => {
+      const view = sums && somaHistoryWalk(sums, asOf);
+      return view ? { ok: true as const, data: view } : unavailable;
+    })
+    .catch(() => unavailable);
+  const mix: Promise<Section<SomaMixView>> = mixWeeks
+    .then((weeks) => {
+      const view = weeks && somaMixView(weeks, asOf);
+      return view ? { ok: true as const, data: view } : unavailable;
+    })
+    .catch(() => unavailable);
+  return { ...(await page), streamed: { history, mix } };
 }

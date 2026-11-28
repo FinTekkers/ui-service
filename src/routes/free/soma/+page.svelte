@@ -4,11 +4,14 @@
      Treasury holdings for the Business date's week, from the server load
      (./+page.server.ts). US-309: so is Positions by CUSIP, from the same
      search. US-317: Holdings over time is the ledger's weekly SOMA par,
-     streamed after the rest of the page (data.streamed.history). -->
+     streamed after the rest of the page (data.streamed.history). US-365:
+     Maturity mix over time, below it, is streamed from its own search
+     (data.streamed.mix). -->
 <script lang="ts">
   import FreeCodeCard from "../../../components/free/FreeCodeCard.svelte";
   import SomaHistory from "../../../components/free/soma/SomaHistory.svelte";
   import SomaMaturity from "../../../components/free/soma/SomaMaturity.svelte";
+  import SomaMaturityMix from "../../../components/free/soma/SomaMaturityMix.svelte";
   import SomaPositions from "../../../components/free/soma/SomaPositions.svelte";
   import SomaSnapshot from "../../../components/free/soma/SomaSnapshot.svelte";
   import SomaWeekPicker from "../../../components/free/soma/SomaWeekPicker.svelte";
@@ -104,6 +107,15 @@
 {:then history}
   <SomaHistory {history} asOf={data.asOf} asOfLabel={data.asOfLabel} />
 {/await}
+
+<!-- 5b. Maturity mix over time (US-365): streamed from its own search -->
+{#if data.streamed.mix}
+  {#await data.streamed.mix}
+    <SomaMaturityMix mix={null} asOfLabel={data.asOfLabel} />
+  {:then mix}
+    <SomaMaturityMix {mix} asOfLabel={data.asOfLabel} />
+  {/await}
+{/if}
 
 <!-- 6. Positions by CUSIP -->
 <SomaPositions positions={data.positions} asOfLabel={data.asOfLabel} />
