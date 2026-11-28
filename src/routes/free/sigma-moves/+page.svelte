@@ -12,6 +12,7 @@
     SIGMA_BAND,
     SIGMA_BASIS,
     SIGMA_FORMULA,
+    SIGMA_NOT_PROBABILITY,
     SIGMA_RANGES,
     SIGMA_RETURNS,
     SIGMA_WINDOW,
@@ -101,6 +102,7 @@
     <p>{SIGMA_FORMULA}</p>
     <p>{SIGMA_RETURNS}</p>
     <p>{SIGMA_BASIS}</p>
+    <p>{SIGMA_NOT_PROBABILITY}</p>
   </div>
 </section>
 

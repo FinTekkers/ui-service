@@ -175,4 +175,6 @@ export const SIGMA_RETURNS = `A daily return is the change from one stored close
 } trading days after its first close. A ${SIGMA_WINDOW}-day window whose returns never vary gives no value for the next day.`;
 
 export const SIGMA_BASIS =
-  "Price basis: as-traded daily closes, as the Fintekkers price service stores them. They are not adjusted for dividends (none are stored yet), so each return is the price change only.";
+  "Price basis: Daily closes adjusted for dividends and splits (Yahoo Finance adjusted closes, as stored by the Fintekkers price service), so each return includes dividends.";
+
+export const SIGMA_NOT_PROBABILITY = `σ compares a day with the previous ${SIGMA_WINDOW} trading days. It is not a probability: market returns have fat tails, so moves beyond ±${SIGMA_BAND}σ happen far more often than a normal distribution predicts.`;
