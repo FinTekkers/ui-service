@@ -12,6 +12,11 @@
  * hard-coded, worked out outside this code: 1Y has 2 days outside ±3σ,
  * 5Y 4, All 5; one day sits at exactly 3.00σ and is never counted; the
  * latest is −0.94σ on Jul 28, 2025.
+ *
+ * US-360: the same closes on EWMA (λ = 0.94), the default, worked out
+ * independently: the alternation settles at σ ±1.00, so 1Y has 3 days
+ * outside ±3σ (the 3.00σ day is +3.01σ), 5Y 5, All 6; the latest is
+ * −1.00σ. The 100-day expectations above hold with ?method=100d.
  */
 import {
   fireEvent,
@@ -25,6 +30,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   fetchClosesByTicker: vi.fn(),
+  goto: vi.fn(),
   react: vi.fn(),
   relayout: vi.fn(),
   purge: vi.fn(),
@@ -34,6 +40,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("$lib/server/closes", () => ({
   fetchClosesByTicker: mocks.fetchClosesByTicker,
 }));
+vi.mock("$app/navigation", () => ({ goto: mocks.goto }));
 // Under Vitest, `svelte` resolves to its SSR build, whose onMount is a
 // no-op; PlotlyChart loads Plotly in onMount, so use the real hooks.
 vi.mock("svelte", async (importOriginal) => {
@@ -52,6 +59,8 @@ vi.mock("plotly.js-dist", () => ({
   },
 }));
 
+import type { Writable } from "svelte/store";
+import { page as appPage } from "$app/stores";
 import { loadFreeSigma } from "$lib/server/free-sigma";
 import { load } from "../routes/free/sigma-moves/+page.server";
 import Page from "../routes/free/sigma-moves/+page.svelte";
@@ -59,8 +68,13 @@ import {
   SIGMA_BAND,
   SIGMA_BASIS,
   SIGMA_FORMULA,
+  SIGMA_FORMULA_EWMA,
+  SIGMA_NOT_PROBABILITY_REASON,
+  SIGMA_SOURCE_EWMA,
   SIGMA_TICKERS,
   SIGMA_WINDOW,
+  dailyReturns,
+  sigmaSeries,
   type Close,
   type SigmaPageData,
 } from "$lib/free/sigma";
@@ -120,6 +134,25 @@ const LABELS = {
   ],
 };
 
+const SUMMARY_EWMA = {
+  "1Y": "Latest: −1.00σ on Jul 28, 2025. 3 days in this range fell outside ±3σ.",
+  All: "Latest: −1.00σ on Jul 28, 2025. 6 days in this range fell outside ±3σ.",
+};
+const LATEST_LABEL_EWMA = "Latest −1.00σ, Jul 28, 2025";
+const LABELS_EWMA_1Y = [
+  "Oct 1, 2024 · +4.00σ",
+  "May 9, 2025 · −3.50σ",
+  "Jan 19, 2025 · +3.01σ",
+];
+
+const ROUTE = "/free/sigma-moves";
+// The test stub ($app/stores in vitest.config.js) is a writable.
+const page = appPage as unknown as Writable<{ url: URL }>;
+/** Point the `$app/stores` stand-in at the route with `search`. */
+function atUrl(search = ""): void {
+  page.set({ url: new URL(`http://localhost${ROUTE}${search}`) });
+}
+
 const byTicker =
   (map: Record<string, Close[]>) =>
   async (ticker: string): Promise<Close[]> =>
@@ -148,6 +181,7 @@ const annotations = () =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  atUrl();
   mocks.react.mockImplementation(async (el: { on?: unknown }) => {
     el.on = vi.fn();
   });
@@ -169,12 +203,27 @@ describe("load", () => {
       SIGMA_TICKERS.map((t) => t.ticker)
     );
     for (const f of data.funds) {
-      expect(f.series.ok).toBe(true);
-      if (!f.series.ok) continue;
+      const window = f.series["100d"];
+      expect(window.ok).toBe(true);
+      if (!window.ok) continue;
       // 2,400 returns: the first σ is on return 101, day 101.
-      expect(f.series.data).toHaveLength(2300);
-      expect(f.series.data[0][0]).toBe(day(101));
-      expect(f.series.data.at(-1)).toEqual(["2025-07-28", -0.9436]);
+      expect(window.data).toHaveLength(2300);
+      expect(window.data[0][0]).toBe(day(101));
+      expect(window.data.at(-1)).toEqual(["2025-07-28", -0.9436]);
+      // US-360: exactly today's series, rounded to 4 dp.
+      const closes = f.ticker === "SPY" ? SPY : TQQQ;
+      expect(window.data).toEqual(
+        sigmaSeries(dailyReturns(closes)).map((p) => [
+          p.date,
+          Math.round(p.sigma * 1e4) / 1e4 || 0,
+        ])
+      );
+      const ewma = f.series.ewma;
+      expect(ewma.ok).toBe(true);
+      if (!ewma.ok) continue;
+      expect(ewma.data).toHaveLength(2300);
+      expect(ewma.data[0][0]).toBe(day(101));
+      expect(ewma.data.at(-1)).toEqual(["2025-07-28", -0.9975]);
     }
     const json = JSON.stringify(data);
     expect(json).not.toContain(SENTINEL);
@@ -200,7 +249,10 @@ describe("load", () => {
     async (_n, run, message) => {
       const data = await run();
       for (const f of data.funds) {
-        expect(f.series).toEqual({ ok: false, message });
+        expect(f.series).toEqual({
+          ewma: { ok: false, message },
+          "100d": { ok: false, message },
+        });
       }
     }
   );
@@ -222,26 +274,52 @@ describe("load", () => {
     async (_n, tqqq, message) => {
       const data = await loaded({ SPY, TQQQ: tqqq });
       const [spy, t] = data.funds;
-      expect(spy.series.ok).toBe(true);
-      expect(t.series).toEqual({ ok: false, message });
+      expect(spy.series.ewma.ok).toBe(true);
+      expect(spy.series["100d"].ok).toBe(true);
+      expect(t.series).toEqual({
+        ewma: { ok: false, message },
+        "100d": { ok: false, message },
+      });
     }
   );
+
+  test("US-360: a method with no points fails alone: steady 1% growth has no 100-day spread, but an EWMA", async () => {
+    const steady: Close[] = [{ date: day(0), close: 100 }];
+    for (let i = 1; i <= 200; i++) {
+      steady.push({ date: day(i), close: steady[i - 1].close * 1.01 });
+    }
+    const data = await loaded({ SPY, TQQQ: steady });
+    const t = data.funds[1];
+    expect(t.series["100d"]).toEqual({
+      ok: false,
+      message: "Unavailable: TQQQ's stored closes never vary over 100 days.",
+    });
+    expect(t.series.ewma.ok).toBe(true);
+    if (!t.series.ewma.ok) return;
+    // The seed is only rounding, so the first point is return 102: the
+    // first update makes the variance 0.06 × 0.01², and 1 ÷ √0.06 = 4.0825.
+    expect(t.series.ewma.data[0]).toEqual([day(102), 4.0825]);
+  });
 
   test("a throw for one fund leaves the other", async () => {
     const data = await loadFreeSigma(SENTINEL, async (ticker) => {
       if (ticker === "TQQQ") throw new Error("deadline exceeded");
       return SPY;
     });
-    expect(data.funds[0].series.ok).toBe(true);
+    expect(data.funds[0].series["100d"].ok).toBe(true);
+    const message =
+      "Unavailable: the price service could not be read (deadline exceeded).";
     expect(data.funds[1].series).toEqual({
-      ok: false,
-      message:
-        "Unavailable: the price service could not be read (deadline exceeded).",
+      ewma: { ok: false, message },
+      "100d": { ok: false, message },
     });
   });
 });
 
 describe("page: summary, ranges and labels (metric 2)", () => {
+  // US-341's 100-day values, on ?method=100d since US-360.
+  beforeEach(() => atUrl("?method=100d"));
+
   test("1Y is the default: pressed, with the latest σ and the 1Y count", async () => {
     renderPage(await loaded());
     expect(screen.getByRole("button", { name: "1Y" })).toHaveAttribute(
@@ -289,6 +367,8 @@ describe("page: summary, ranges and labels (metric 2)", () => {
 });
 
 describe("page: funds, band and method (metric 3)", () => {
+  beforeEach(() => atUrl("?method=100d"));
+
   test("each SIGMA_TICKERS fund draws its σ line and the ±SIGMA_BAND band", async () => {
     renderPage(await loaded());
     for (const { ticker, name } of SIGMA_TICKERS) {
@@ -379,6 +459,187 @@ describe("page: funds, band and method (metric 3)", () => {
   });
 });
 
+describe("US-360: the method toggle (metric 3)", () => {
+  const methodButton = (name: string) =>
+    within(screen.getByRole("group", { name: "Method" })).getByRole("button", {
+      name,
+    });
+
+  const outlierTexts = () =>
+    within(screen.getByTestId("sigma-spy-outliers"))
+      .getAllByRole("listitem")
+      .map((li) => li.textContent?.replace(/\s+/g, " ").trim());
+
+  test("EWMA is the default: pressed, with its latest σ, count, labels and list", async () => {
+    renderPage(await loaded());
+    expect(methodButton("EWMA (λ 0.94)")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(methodButton("Last 100 days")).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+    expect(screen.getByTestId("sigma-summary")).toHaveTextContent(
+      SUMMARY_EWMA["1Y"]
+    );
+    await waitFor(() =>
+      expect(annotations()).toEqual([...LABELS_EWMA_1Y, LATEST_LABEL_EWMA])
+    );
+    expect(outlierTexts()).toEqual(
+      LABELS_EWMA_1Y.map((l) => l.replace(" · ", " "))
+    );
+  });
+
+  test("?method=100d selects the trailing window", async () => {
+    atUrl("?method=100d");
+    renderPage(await loaded());
+    expect(methodButton("Last 100 days")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(methodButton("EWMA (λ 0.94)")).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+    expect(screen.getByTestId("sigma-summary")).toHaveTextContent(
+      SUMMARY["1Y"]
+    );
+    await waitFor(() =>
+      expect(annotations()).toEqual([...LABELS["1Y"], LATEST_LABEL])
+    );
+  });
+
+  test("an unknown ?method falls back to EWMA", async () => {
+    atUrl("?method=foo");
+    renderPage(await loaded());
+    expect(methodButton("EWMA (λ 0.94)")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(screen.getByTestId("sigma-summary")).toHaveTextContent(
+      SUMMARY_EWMA["1Y"]
+    );
+  });
+
+  test("the latest value, the ±3σ count and the outlier list follow the method, at All too", async () => {
+    renderPage(await loaded());
+    await fireEvent.click(screen.getByRole("button", { name: "All" }));
+    expect(screen.getByTestId("sigma-summary")).toHaveTextContent(
+      SUMMARY_EWMA.All
+    );
+    const ewmaList = outlierTexts();
+    atUrl("?method=100d");
+    await waitFor(() =>
+      expect(screen.getByTestId("sigma-summary")).toHaveTextContent(SUMMARY.All)
+    );
+    // The range is kept.
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(outlierTexts()).toEqual(
+      LABELS.All.map((l) => l.replace(" · ", " "))
+    );
+    expect(outlierTexts()).not.toEqual(ewmaList);
+  });
+
+  test("the buttons navigate: 'Last 100 days' sets ?method=100d, EWMA drops it", async () => {
+    renderPage(await loaded());
+    await fireEvent.click(methodButton("Last 100 days"));
+    expect(mocks.goto).toHaveBeenLastCalledWith(`${ROUTE}?method=100d`, {
+      keepFocus: true,
+      noScroll: true,
+      replaceState: true,
+    });
+    atUrl("?method=100d");
+    await fireEvent.click(await waitFor(() => methodButton("EWMA (λ 0.94)")));
+    expect(mocks.goto).toHaveBeenLastCalledWith(ROUTE, {
+      keepFocus: true,
+      noScroll: true,
+      replaceState: true,
+    });
+  });
+
+  test("one method unavailable: its reason shows on the page and in the panel; the other still draws", async () => {
+    const data = await loaded();
+    const message =
+      "Unavailable: SPY's stored closes never vary over 100 days.";
+    data.funds[0].series.ewma = { ok: false, message };
+    renderPage(data);
+    const region = screen.getByRole("region", {
+      name: "SPDR S&P 500 ETF Trust (SPY)",
+    });
+    expect(within(region).getByText(message)).toBeInTheDocument();
+    expect(within(region).queryByRole("img")).toBeNull();
+    expect(screen.getAllByText(message)).toHaveLength(2);
+    expect(screen.queryByTestId("sigma-summary")).toBeNull();
+
+    atUrl("?method=100d");
+    await waitFor(() =>
+      expect(screen.getByTestId("sigma-summary")).toHaveTextContent(
+        SUMMARY["1Y"]
+      )
+    );
+    expect(screen.queryByText(message)).toBeNull();
+  });
+
+  test("both methods unavailable: the same reason under either method", async () => {
+    const message = "Unavailable: price data is not configured on this server.";
+    renderPage(await loadFreeSigma(undefined, byTicker(FIXTURE)));
+    for (const search of ["", "?method=100d"]) {
+      atUrl(search);
+      await waitFor(() =>
+        expect(
+          within(
+            screen.getByRole("region", { name: "SPDR S&P 500 ETF Trust (SPY)" })
+          ).getByText(message)
+        ).toBeInTheDocument()
+      );
+      expect(screen.getAllByText(message)).toHaveLength(2);
+    }
+  });
+});
+
+describe("US-360: the method note (metric 5)", () => {
+  test("EWMA by default: its wording and the RiskMetrics source, not the 100-day wording", async () => {
+    renderPage(await loaded());
+    const note = screen.getByTestId("sigma-note");
+    expect(note).toHaveTextContent(SIGMA_FORMULA_EWMA);
+    expect(note).toHaveTextContent("each day back counts 6% less");
+    expect(note).toHaveTextContent(SIGMA_SOURCE_EWMA);
+    expect(note).toHaveTextContent(
+      "J.P. Morgan/Reuters, RiskMetrics Technical Document, 4th ed., 1996"
+    );
+    expect(note.textContent).not.toContain(SIGMA_FORMULA);
+    expect(note.textContent).not.toContain("previous 100 trading days");
+    expect(note.textContent).not.toContain("previous 100 daily returns");
+  });
+
+  test("?method=100d: today's 100-day wording, no EWMA wording or source", async () => {
+    atUrl("?method=100d");
+    renderPage(await loaded());
+    const note = screen.getByTestId("sigma-note");
+    expect(note).toHaveTextContent(SIGMA_FORMULA);
+    expect(note.textContent).not.toContain("6% less");
+    expect(note.textContent).not.toContain("RiskMetrics");
+  });
+
+  test.each(["", "?method=100d"])(
+    "US-359's price basis and not-a-probability sentences in both methods (%s)",
+    async (search) => {
+      atUrl(search);
+      renderPage(await loaded());
+      const note = screen.getByTestId("sigma-note");
+      expect(note).toHaveTextContent(SIGMA_BASIS);
+      expect(note).toHaveTextContent(SIGMA_NOT_PROBABILITY_REASON);
+      expect(note).toHaveTextContent(
+        "It is not a probability: market returns have fat tails, so moves beyond ±3σ happen far more often than a normal distribution predicts."
+      );
+    }
+  );
+});
+
 describe("own design: no third-party branding (guardrail 1)", () => {
   const SOURCES = [
     "src/lib/free/sigma.ts",
@@ -392,6 +653,17 @@ describe("own design: no third-party branding (guardrail 1)", () => {
   test("the page's sources name no other publisher or company", () => {
     for (const file of SOURCES) {
       expect(readFileSync(file, "utf8"), file).not.toMatch(BRANDS);
+    }
+  });
+
+  test("US-360: no σ maths in the browser: the page and panel import none of it", () => {
+    for (const file of [
+      "src/routes/free/sigma-moves/+page.svelte",
+      "src/components/free/sigma/SigmaPanel.svelte",
+    ]) {
+      expect(readFileSync(file, "utf8"), file).not.toMatch(
+        /\b(sigmaSeries|ewmaSigmaSeries|sampleStdev|dailyReturns)\b/
+      );
     }
   });
 

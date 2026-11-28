@@ -3,24 +3,35 @@
      each fund in SIGMA_TICKERS, inside the Free data explorer shell
      (../+layout.svelte). The server load (./+page.server.ts) reads the
      closes through the broker and computes each fund's [date, σ] series;
-     the fund and range buttons only pick from it. -->
+     the fund and range buttons only pick from it. US-360: the server sends
+     one series per method (EWMA by default, or the trailing 100 days); the
+     method buttons pick one and keep it in ?method=100d. No σ maths here. -->
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
   import SigmaPanel from "../../../components/free/sigma/SigmaPanel.svelte";
   import { dateLabel } from "$lib/free/etf";
   import {
+    DEFAULT_METHOD,
     DEFAULT_RANGE,
     SIGMA_BAND,
     SIGMA_BASIS,
+    SIGMA_COMPARES,
     SIGMA_FORMULA,
-    SIGMA_NOT_PROBABILITY,
+    SIGMA_FORMULA_EWMA,
+    SIGMA_INTRO,
+    SIGMA_METHODS,
+    SIGMA_NOT_PROBABILITY_REASON,
     SIGMA_RANGES,
     SIGMA_RETURNS,
-    SIGMA_WINDOW,
+    SIGMA_SOURCE_EWMA,
     countOutside,
     daysLabel,
     inRange,
+    parseMethod,
     sigmaLabel,
     topOutliers,
+    type SigmaMethod,
     type SigmaPageData,
     type SigmaPoint,
     type SigmaRange,
@@ -31,14 +42,28 @@
   let ticker = data.funds[0]?.ticker ?? "";
   let range: SigmaRange = DEFAULT_RANGE;
 
+  $: method = parseMethod($page.url.searchParams.get("method"));
   $: fund = data.funds.find((f) => f.ticker === ticker) ?? data.funds[0];
-  $: all = fund?.series.ok
-    ? fund.series.data.map(([date, sigma]): SigmaPoint => ({ date, sigma }))
+  $: series = fund?.series[method];
+  $: all = series?.ok
+    ? series.data.map(([date, sigma]): SigmaPoint => ({ date, sigma }))
     : [];
   $: points = inRange(all, range);
   $: outliers = topOutliers(points);
   $: latest = points.length ? points[points.length - 1] : null;
   $: outside = countOutside(points);
+
+  /** The default method drops the parameter; 100d sets it. */
+  function chooseMethod(next: SigmaMethod): void {
+    const url = new URL($page.url);
+    if (next === DEFAULT_METHOD) url.searchParams.delete("method");
+    else url.searchParams.set("method", next);
+    goto(`${url.pathname}${url.search}`, {
+      keepFocus: true,
+      noScroll: true,
+      replaceState: true,
+    });
+  }
 </script>
 
 <svelte:head>
@@ -49,11 +74,10 @@
 <article class="card narrative" aria-labelledby="sigma-title">
   <h2 id="sigma-title" class="section-title">Sigma moves</h2>
   <p>
-    How unusual was a fund's move today? Each day's return is divided by the
-    standard deviation of its previous {SIGMA_WINDOW} daily returns. A 2% day is
-    ordinary for a leveraged fund and rare for a broad index fund: in standard deviations,
-    both are measured against their own recent past. Days beyond ±{SIGMA_BAND}σ
-    are unusual.
+    How unusual was a fund's move today? Each day's return is divided by
+    {SIGMA_INTRO[method]}. A 2% day is ordinary for a leveraged fund and rare
+    for a broad index fund: in standard deviations, both are measured against
+    their own recent past. Days beyond ±{SIGMA_BAND}σ are unusual.
   </p>
 
   <div class="controls">
@@ -77,10 +101,20 @@
         >
       {/each}
     </div>
+    <div class="group" role="group" aria-label="Method">
+      {#each SIGMA_METHODS as m (m.id)}
+        <button
+          type="button"
+          class="toggle"
+          aria-pressed={m.id === method}
+          on:click={() => chooseMethod(m.id)}>{m.label}</button
+        >
+      {/each}
+    </div>
   </div>
 
-  {#if fund && !fund.series.ok}
-    <p class="status">{fund.series.message}</p>
+  {#if series && !series.ok}
+    <p class="status">{series.message}</p>
   {:else if latest}
     <p class="summary" data-testid="sigma-summary">
       Latest: {sigmaLabel(latest.sigma)} on {dateLabel(latest.date)}. {daysLabel(
@@ -91,18 +125,23 @@
 </article>
 
 <!-- 2. The selected fund's chart and its largest moves -->
-{#if fund}
-  <SigmaPanel {fund} {range} {points} {outliers} />
+{#if fund && series}
+  <SigmaPanel {fund} {series} {range} {points} {outliers} />
 {/if}
 
 <!-- 3. Method note -->
 <section aria-labelledby="sigma-note-title" class="card block">
   <h2 id="sigma-note-title" class="panel-title">Method</h2>
   <div class="note" data-testid="sigma-note">
-    <p>{SIGMA_FORMULA}</p>
+    {#if method === "ewma"}
+      <p>{SIGMA_FORMULA_EWMA}</p>
+      <p>{SIGMA_SOURCE_EWMA}</p>
+    {:else}
+      <p>{SIGMA_FORMULA}</p>
+    {/if}
     <p>{SIGMA_RETURNS}</p>
     <p>{SIGMA_BASIS}</p>
-    <p>{SIGMA_NOT_PROBABILITY}</p>
+    <p>{SIGMA_COMPARES[method]} {SIGMA_NOT_PROBABILITY_REASON}</p>
   </div>
 </section>
 

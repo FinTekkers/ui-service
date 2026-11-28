@@ -1,6 +1,8 @@
 // US-341: /free/sigma-moves, how unusual each day's move is. A fund's daily
 // return divided by the sample standard deviation of its previous 100 daily
 // returns, today excluded: return_t ÷ stdev(return_{t-100} … return_{t-1}).
+// US-360: or, the default, divided by an exponentially weighted volatility
+// (EWMA, λ = 0.94, RiskMetrics) of the earlier returns.
 // Pure functions only: the server load (src/lib/server/free-sigma.ts) feeds
 // them PriceService closes.
 import type { Close, Section } from "./techVsSp500";
@@ -32,6 +34,24 @@ export type SigmaRange = "1Y" | "5Y" | "All";
 export const SIGMA_RANGES: readonly SigmaRange[] = ["1Y", "5Y", "All"];
 export const DEFAULT_RANGE: SigmaRange = "1Y";
 
+/** RiskMetrics' daily decay factor: each day back weighs 6% less. */
+export const EWMA_LAMBDA = 0.94;
+
+/** How each day's σ is measured: EWMA, or the trailing 100-day window. */
+export type SigmaMethod = "ewma" | "100d";
+
+/** The method buttons, in order. `?method=100d` selects the window. */
+export const SIGMA_METHODS: readonly { id: SigmaMethod; label: string }[] = [
+  { id: "ewma", label: "EWMA (λ 0.94)" },
+  { id: "100d", label: "Last 100 days" },
+];
+export const DEFAULT_METHOD: SigmaMethod = "ewma";
+
+/** The `method` URL parameter: exactly "100d" picks it; anything else EWMA. */
+export function parseMethod(raw: string | null): SigmaMethod {
+  return raw === "100d" ? "100d" : DEFAULT_METHOD;
+}
+
 export interface DailyReturn {
   date: string;
   ret: number;
@@ -45,8 +65,8 @@ export interface SigmaPoint {
 export interface SigmaFund {
   ticker: string;
   name: string;
-  /** [date, σ] per day, oldest first. */
-  series: Section<[string, number][]>;
+  /** Per method, [date, σ] per day, oldest first. */
+  series: Record<SigmaMethod, Section<[string, number][]>>;
 }
 
 export interface SigmaPageData {
@@ -115,6 +135,40 @@ export function sigmaSeries(
   return out;
 }
 
+/**
+ * US-360: σ for each return against an exponentially weighted variance
+ * (RiskMetrics). The variance starts as the sample variance (n − 1) of the
+ * first `window` returns; σ_i = return_i ÷ √variance, from returns before i
+ * only (today excluded); then variance ← λ·variance + (1 − λ)·return_i²,
+ * zero mean. The first value lands on return window + 1, as sigmaSeries.
+ *
+ * The rounding guard scales by the largest |return| among the `window`
+ * returns before i, as sigmaSeries does: a variance that is only float
+ * rounding gives no point, but the variance still updates on that day.
+ */
+export function ewmaSigmaSeries(
+  returns: DailyReturn[],
+  window = SIGMA_WINDOW,
+  lambda = EWMA_LAMBDA
+): SigmaPoint[] {
+  const out: SigmaPoint[] = [];
+  if (returns.length <= window) return out;
+  let variance = sampleStdev(returns.slice(0, window).map((r) => r.ret)) ** 2;
+  for (let i = window; i < returns.length; i++) {
+    const ret = returns[i].ret;
+    const sd = Math.sqrt(variance);
+    const scale = Math.max(
+      ...returns.slice(i - window, i).map((r) => Math.abs(r.ret))
+    );
+    const sigma = ret / sd;
+    if (sd > ROUNDING * scale && Number.isFinite(sigma)) {
+      out.push({ date: returns[i].date, sigma });
+    }
+    variance = lambda * variance + (1 - lambda) * ret * ret;
+  }
+  return out;
+}
+
 /** The ISO date `years` calendar years before `iso`. */
 function yearsBefore(iso: string, years: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
@@ -177,4 +231,27 @@ export const SIGMA_RETURNS = `A daily return is the change from one stored close
 export const SIGMA_BASIS =
   "Price basis: Daily closes adjusted for dividends and splits (Yahoo Finance adjusted closes, as stored by the Fintekkers price service), so each return includes dividends.";
 
-export const SIGMA_NOT_PROBABILITY = `σ compares a day with the previous ${SIGMA_WINDOW} trading days. It is not a probability: market returns have fat tails, so moves beyond ±${SIGMA_BAND}σ happen far more often than a normal distribution predicts.`;
+/** US-360: the method note's opening sentence for EWMA. */
+export const SIGMA_FORMULA_EWMA = `σ move = today's daily return ÷ an exponentially weighted volatility (EWMA, λ = ${EWMA_LAMBDA}) of the earlier daily returns (today excluded). It weights recent days more: each day back counts ${Math.round(
+  (1 - EWMA_LAMBDA) * 100
+)}% less, so the last month or two dominate. It starts from the sample standard deviation of the first ${SIGMA_WINDOW} returns, with no mean subtracted after that. The shaded band is ±${SIGMA_BAND}σ.`;
+
+export const SIGMA_SOURCE_EWMA =
+  "Source: J.P. Morgan/Reuters, RiskMetrics Technical Document, 4th ed., 1996.";
+
+/** The narrative's "each day's return is divided by …", per method. */
+export const SIGMA_INTRO: Record<SigmaMethod, string> = {
+  ewma: "an exponentially weighted volatility of its earlier daily returns, which weights recent days more",
+  "100d": `the standard deviation of its previous ${SIGMA_WINDOW} daily returns`,
+};
+
+/** US-360: what σ compares a day with, per method (US-359's opening clause). */
+export const SIGMA_COMPARES: Record<SigmaMethod, string> = {
+  ewma: "σ compares a day with recent volatility, weighted toward the last month or two.",
+  "100d": `σ compares a day with the previous ${SIGMA_WINDOW} trading days.`,
+};
+
+/** US-359's caveat, the same under either method. */
+export const SIGMA_NOT_PROBABILITY_REASON = `It is not a probability: market returns have fat tails, so moves beyond ±${SIGMA_BAND}σ happen far more often than a normal distribution predicts.`;
+
+export const SIGMA_NOT_PROBABILITY = `${SIGMA_COMPARES["100d"]} ${SIGMA_NOT_PROBABILITY_REASON}`;
