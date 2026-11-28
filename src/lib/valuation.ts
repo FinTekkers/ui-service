@@ -68,6 +68,8 @@ export interface CashflowEntry {
   fvAmount: string;
   pvAmount: string;
   couponRate?: string;
+  /** TIPS rows only: the row's index ratio (CashflowProto.index_ratio). */
+  indexRatio?: string;
 }
 
 export interface ValuationResult {
@@ -194,11 +196,13 @@ function parseCashflows(response: any): CashflowEntry[] {
     const fvAmount = fromDecimalProto(cf.getFvAmount()) ?? "0";
     const pvAmount = fromDecimalProto(cf.getPvAmount()) ?? "0";
     const couponRate = fromDecimalProto(cf.getCouponRate?.());
+    const indexRatio = fromDecimalProto(cf.getIndexRatio?.());
     cashflows.push({
       date,
       fvAmount,
       pvAmount,
       ...(couponRate != null ? { couponRate } : {}),
+      ...(indexRatio ? { indexRatio } : {}),
     });
   }
   return cashflows;
@@ -336,6 +340,8 @@ async function priceSecurity(
     asOf?: ZonedDateTime;
     position?: PositionProto;
     sources?: MarketDataSources;
+    /** US-328: TipsInput.assumed_inflation_rate, percent a year. */
+    assumedInflationRate?: string;
   } = {}
 ) {
   const asOf = opts.asOf ?? ZonedDateTime.now();
@@ -353,6 +359,16 @@ async function priceSecurity(
     new PriceProto().setMid(toDecimalProto(price)),
     marketData
   );
+  // US-328: set on the built TIPS arm, before validation. Its home is
+  // ledger-models' MarketData once a second consumer needs it (the soft ask
+  // on US-328); until then this page is the only one.
+  if (opts.assumedInflationRate !== undefined) {
+    const tips = productInput.getTips();
+    if (!tips) {
+      throw new Error("An assumed inflation rate applies to a TIPS only.");
+    }
+    tips.setAssumedInflationRate(toDecimalProto(opts.assumedInflationRate));
+  }
   checkProductInput(productInput);
 
   // valuation-service rejects a whole request that asks an arm for a measure
@@ -600,7 +616,11 @@ async function priceTipsInputs(
   inputs: TipsCalculatorInputs,
   measures: number[],
   apiKey?: string,
-  options: { security?: SecurityProto; position?: PositionProto } = {}
+  options: {
+    security?: SecurityProto;
+    position?: PositionProto;
+    assumedInflationRate?: string;
+  } = {}
 ) {
   return priceSecurity(
     await buildTipsSecurity(inputs, apiKey, options.security),
@@ -611,6 +631,7 @@ async function priceTipsInputs(
       asOf: settlementAsOf(inputs.settlementDate),
       position: options.position,
       sources: { cpi: async () => buildInflationIndexInput(inputs) },
+      assumedInflationRate: options.assumedInflationRate,
     }
   );
 }
@@ -691,12 +712,18 @@ export interface TipsMeasuresResult {
  * One TIPS valuation for exactly `measures`. In CUSIP mode, pass `security`
  * when the caller already holds the SecurityProto, to skip a second lookup.
  * MARKET_VALUE needs `directedQuantity`, the position's face amount.
+ * `assumedInflationRate` (percent a year) is sent as
+ * TipsInput.assumed_inflation_rate; without it the request is unchanged.
  */
 export async function RunTipsMeasures(
   inputs: TipsCalculatorInputs,
   measures: number[],
   apiKey?: string,
-  options: { security?: SecurityProto; directedQuantity?: string } = {}
+  options: {
+    security?: SecurityProto;
+    directedQuantity?: string;
+    assumedInflationRate?: string;
+  } = {}
 ): Promise<TipsMeasuresResult | { error: string }> {
   const invalid = validateTipsInputs(inputs);
   if (invalid) return { error: invalid };
@@ -707,6 +734,7 @@ export async function RunTipsMeasures(
       position: options.directedQuantity
         ? directedQuantityInput(options.directedQuantity)
         : undefined,
+      assumedInflationRate: options.assumedInflationRate,
     });
     const values = new Map<number, string | undefined>();
     response.getMeasureResultsList().forEach((entry) => {

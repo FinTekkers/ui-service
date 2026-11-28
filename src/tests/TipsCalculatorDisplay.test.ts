@@ -2,8 +2,9 @@
  * US-253 / US-298: the /free/tips calculator is display only. Its 7 inputs
  * are disabled and default to the live figures (the inflation assumption
  * stays a labelled 2.30), its tiles show the live measures and the FedInvest
- * price, the nominal yield and cashflows say they are unavailable, and an
- * input event recalculates nothing.
+ * price, the nominal yield says it is unavailable, and an input event
+ * recalculates nothing. US-328: the cashflow table shows the projected rows
+ * the load returns, or its message.
  */
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import { describe, expect, test } from "vitest";
@@ -105,12 +106,23 @@ describe("TipsCalculatorDisplay", () => {
     ]);
   });
 
-  test("the cashflow table and total say they are unavailable", () => {
+  test("US-328: the cashflow table shows the projected rows, their total and the assumption", () => {
     const { container } = renderCalculator();
+    expect(bodyRows(container)).toHaveLength(3);
+    expect(container).toHaveTextContent("Total received: $1,258.00");
+    expect(container).toHaveTextContent(
+      "Assumes CPI-U keeps rising 3.0% a year, its change over the 12 months to September 2026."
+    );
+    expect(mockFiguresIn(container.innerHTML)).toEqual([]);
+  });
+
+  test("US-328: without a projection, the table and total say so", () => {
+    const { container } = renderCalculator(liveWithout("projection"));
     const rows = bodyRows(container);
     expect(rows).toHaveLength(1);
     expect(rows[0].textContent).toBe(UNAVAILABLE.projection);
     expect(container).toHaveTextContent(`Total received: ${UNAVAILABLE.value}`);
+    expect(container.textContent).not.toContain("Assumes CPI-U");
   });
 
   test("with no valuation, its tiles and inputs read unavailable", () => {

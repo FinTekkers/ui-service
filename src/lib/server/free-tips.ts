@@ -12,6 +12,10 @@
  *   security's face. Never CLEAN_PRICE: the price is an input (VS-138).
  *   ACCRUED_INTEREST comes from a second call (US-311); without it, only
  *   the accrued and full values are unavailable.
+ * - projected cashflows (US-328): a third call for PRESENT_VALUE_CASHFLOWS
+ *   alone, at CPI-U's change over the 12 months to its latest month as
+ *   TipsInput.assumed_inflation_rate. Without that change no call is made:
+ *   there is never a default rate.
  * A failed source makes its section, and the sections that need it,
  * unavailable. Nothing here throws, and nothing falls back to the mock.
  *
@@ -29,7 +33,13 @@ import field_pkg from "@fintekkers/ledger-models/node/fintekkers/models/position
 import type { Identifier } from "@fintekkers/ledger-models/node/wrappers/models/security/identifier";
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { UUID } from "@fintekkers/ledger-models/node/wrappers/models/utils/uuid";
-import { fetchCpiReadings, monthLabel, type CpiReading } from "$lib/cpi";
+import {
+  fetchCpiReadings,
+  fetchLatestCpiChange,
+  monthLabel,
+  type CpiChange,
+  type CpiReading,
+} from "$lib/cpi";
 import { fromDecimalProto } from "$lib/decimal";
 import { FetchSecurityProtoByCusip } from "$lib/security";
 import {
@@ -37,13 +47,18 @@ import {
   createPriceSearch,
   readAllPrices,
 } from "$lib/server/closes";
-import { RunTipsMeasures } from "$lib/valuation";
+import { RunTipsMeasures, type CashflowEntry } from "$lib/valuation";
 import {
   UNAVAILABLE,
+  assumptionLine,
+  projectionNoYearAgo,
+  treasuryIndexNote,
   type Section,
   type TipsCpiView,
   type TipsPageData,
   type TipsPriceView,
+  type TipsProjectionRowView,
+  type TipsProjectionView,
   type TipsSecurityView,
   type TipsValuationView,
 } from "$lib/free/tips";
@@ -66,6 +81,11 @@ export const FREE_TIPS_MEASURES = [
 
 /** US-311: the accrual measure, asked for in its own valuation call. */
 export const FREE_TIPS_ACCRUAL_MEASURES = [MeasureProto.ACCRUED_INTEREST];
+
+/** US-328: the projected cashflows, asked for in their own call. */
+export const FREE_TIPS_PROJECTION_MEASURES = [
+  MeasureProto.PRESENT_VALUE_CASHFLOWS,
+];
 
 /** The calculator's labelled inflation assumption, in percent. */
 export const ASSUMED_INFLATION_PCT = "2.30";
@@ -128,8 +148,17 @@ function dollars(value: string, whole = false): string {
  * "$975.34".
  */
 function fullValue(clean: string, accrued: string): string {
-  const cents = (value: string) => new Decimal(value).toDecimalPlaces(2);
-  return dollars(cents(clean).plus(cents(accrued)).toString());
+  return sumCents([clean, accrued]);
+}
+
+/** The values summed after rounding each to cents, in dollars: display
+ * arithmetic, so the figures shown add up to the total shown. */
+function sumCents(values: string[]): string {
+  const total = values.reduce(
+    (sum, value) => sum.plus(new Decimal(value).toDecimalPlaces(2)),
+    new Decimal(0)
+  );
+  return dollars(total.toString());
 }
 
 type Ymd = { year: number; month: number; day: number };
@@ -143,6 +172,11 @@ function isoDate({ year, month, day }: Ymd): string {
 
 function longDate({ year, month, day }: Ymd): string {
   return `${MONTH_NAMES[month - 1]} ${day}, ${year}`;
+}
+
+/** "Apr 15, 2027". */
+function shortDate({ year, month, day }: Ymd): string {
+  return `${MONTH_NAMES[month - 1].slice(0, 3)} ${day}, ${year}`;
 }
 
 function ymdOf(proto: LocalDateProto | undefined): Ymd | null {
@@ -435,6 +469,97 @@ async function loadValuation(
   };
 }
 
+/** A coupon row has coupon_rate set; the principal row has it unset. */
+function isCoupon(row: CashflowEntry): boolean {
+  return !!row.couponRate;
+}
+
+/** A cashflow row as valuation-service returned it, formatted only. */
+function projectionRow(row: CashflowEntry): TipsProjectionRowView {
+  const total = dollars(row.fvAmount);
+  return {
+    date: shortDate(ymdFromIso(row.date)),
+    indexRatio: row.indexRatio ? new Decimal(row.indexRatio).toFixed(5) : null,
+    coupon: isCoupon(row) ? total : null,
+    principal: isCoupon(row) ? null : total,
+    total,
+  };
+}
+
+/**
+ * US-328: valuation-service's PRESENT_VALUE_CASHFLOWS at `change`, CPI-U's
+ * latest 12-month change, sent as TipsInput.assumed_inflation_rate. Without
+ * a change no call is made. Never throws: a failure leaves the rest of the
+ * page showing.
+ */
+export async function loadProjection(
+  proto: SecurityProto,
+  security: TipsSecurityView,
+  price: Pick<TipsPriceView, "value" | "date">,
+  cpiReadings: CpiReading[],
+  change: CpiChange,
+  apiKey: string
+): Promise<Section<TipsProjectionView>> {
+  if (!change.ok) {
+    return unavailable(
+      change.reason === "no-year-ago"
+        ? projectionNoYearAgo(change.missingMonth)
+        : UNAVAILABLE.projection
+    );
+  }
+  try {
+    const run = await RunTipsMeasures(
+      {
+        mode: "cusip",
+        cusip: security.cusip,
+        price: price.value,
+        cpiReadings,
+        settlementDate: price.date,
+      },
+      FREE_TIPS_PROJECTION_MEASURES,
+      apiKey,
+      {
+        security: proto,
+        directedQuantity: security.faceValue,
+        assumedInflationRate: change.rate,
+      }
+    );
+    if ("error" in run) {
+      console.log("Could not project the free TIPS cashflows", run.error);
+      return unavailable(UNAVAILABLE.projection);
+    }
+    if (run.cashflows.length === 0) {
+      return unavailable(UNAVAILABLE.projectionNoCashflows);
+    }
+    // By date; on the maturity date the final coupon, then the principal.
+    const sorted = [...run.cashflows].sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) ||
+        Number(isCoupon(b)) - Number(isCoupon(a))
+    );
+    return {
+      ok: true,
+      data: {
+        rows: sorted.map(projectionRow),
+        totalReceived: sumCents(sorted.map((row) => row.fvAmount)),
+        assumption: assumptionLine(change.pct, change.month),
+        treasuryNote: change.treasuryIndex
+          ? treasuryIndexNote(
+              change.treasuryIndex.month,
+              change.treasuryIndex.value
+            )
+          : null,
+      },
+    };
+  } catch (error) {
+    console.log(
+      "Could not project the free TIPS cashflows",
+      (error as Error)?.message
+    );
+    return unavailable(UNAVAILABLE.projection);
+  }
+}
+
 /** Actual/365 years from the price date to maturity, to 2 decimals. */
 function yearsToMaturity(priceDate: string, maturityDate: string): string {
   const days = (Date.parse(maturityDate) - Date.parse(priceDate)) / DAY_MS;
@@ -454,6 +579,7 @@ export async function fetchFreeTips(
     price: unavailable(UNAVAILABLE.price),
     cpi: unavailable(UNAVAILABLE.cpi),
     valuation: unavailable(UNAVAILABLE.valuation),
+    projection: unavailable(UNAVAILABLE.projection),
     calculator: { years: null, inflation: ASSUMED_INFLATION_PCT },
   };
   if (!apiKey) return data;
@@ -486,23 +612,24 @@ export async function fetchFreeTips(
   data.asOf.priceDate = price.date;
   data.calculator.years = yearsToMaturity(price.date, security.maturityDate);
 
-  // Never throws: a failed lookup reads as no readings.
-  const { readings } = await fetchCpiReadings(price.date, apiKey);
+  // Neither throws: a failed lookup reads as no readings, or no change.
+  const [{ readings }, change] = await Promise.all([
+    fetchCpiReadings(price.date, apiKey),
+    fetchLatestCpiChange(apiKey),
+  ]);
   if (!readings || readings.length !== 2) return data;
   const cpi = cpiView(readings);
   data.cpi = { ok: true, data: cpi };
   data.asOf.cpiMonths = cpi.months;
 
-  try {
-    data.valuation = await loadValuation(
-      proto,
-      security,
-      price,
-      readings,
-      apiKey
-    );
-  } catch (error) {
-    console.log("Could not value the free TIPS", (error as Error)?.message);
-  }
+  const [valuation, projection] = await Promise.all([
+    loadValuation(proto, security, price, readings, apiKey).catch((error) => {
+      console.log("Could not value the free TIPS", (error as Error)?.message);
+      return data.valuation;
+    }),
+    loadProjection(proto, security, price, readings, change, apiKey),
+  ]);
+  data.valuation = valuation;
+  data.projection = projection;
   return data;
 }

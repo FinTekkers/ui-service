@@ -92,6 +92,35 @@ export interface TipsValuationView {
   nextCouponDate: string | null;
 }
 
+/**
+ * US-328: one row of valuation-service's projected cashflows, as returned.
+ * A coupon row (coupon_rate set) fills coupon; the principal row
+ * (coupon_rate unset) fills principal. Each total is the row's fv_amount.
+ */
+export interface TipsProjectionRowView {
+  /** The payment date, e.g. "Apr 15, 2027". */
+  date: string;
+  /** The row's index_ratio to 5 decimals, or null when it has none. */
+  indexRatio: string | null;
+  /** In dollars; null on the other kind of row. */
+  coupon: string | null;
+  principal: string | null;
+  total: string;
+}
+
+/** US-328: the projected cashflows at the latest 12-month CPI-U change. */
+export interface TipsProjectionView {
+  /** By payment date; a maturity date's coupon comes before its principal. */
+  rows: TipsProjectionRowView[];
+  /** The rows' totals summed, each rounded to cents first, in dollars. */
+  totalReceived: string;
+  /** The line under the table: the assumed inflation and its CPI month. */
+  assumption: string;
+  /** Set when the year-ago CPI-U month is Treasury's TIPS index, not BLS's:
+   * the note saying so. */
+  treasuryNote: string | null;
+}
+
 export interface TipsPageData {
   cusip: string;
   /** What the figures are as of: the price date and the CPI-U months. */
@@ -100,6 +129,7 @@ export interface TipsPageData {
   price: Section<TipsPriceView>;
   cpi: Section<TipsCpiView>;
   valuation: Section<TipsValuationView>;
+  projection: Section<TipsProjectionView>;
   /** Calculator inputs that are not a single section's figure. */
   calculator: {
     /** Years from the price date to maturity, or null without both. */
@@ -114,11 +144,28 @@ export const UNAVAILABLE = {
   price: "The live FedInvest price is unavailable right now.",
   cpi: "Live CPI-U data is unavailable right now.",
   valuation: "The live valuation is unavailable right now.",
-  // US-298b: needs an inflation assumption in the valuation request.
-  projection:
-    "Unavailable: this needs an inflation forecast, which the valuation service doesn't take yet.",
+  projection: "Projected cashflows are unavailable right now.",
+  projectionNoCashflows:
+    "Unavailable: the valuation service returned no projected cashflows.",
   value: "Unavailable",
 } as const;
+
+/** US-328: no projection without CPI-U's same month a year earlier. */
+export function projectionNoYearAgo(missingMonth: string): string {
+  return `Unavailable: CPI-U has no reading for ${missingMonth}, a year before its latest month, so there is no 12-month inflation rate.`;
+}
+
+/** US-328: "Assumes CPI-U keeps rising 3.0% a year, its change over the 12
+ * months to September 2026." */
+export function assumptionLine(pct: string, month: string): string {
+  return `Assumes CPI-U keeps rising ${pct}% a year, its change over the 12 months to ${month}.`;
+}
+
+/** US-328: "October 2025 uses Treasury's official TIPS index (325.604), as
+ * BLS published no October 2025 CPI." */
+export function treasuryIndexNote(month: string, value: string): string {
+  return `${month} uses Treasury's official TIPS index (${value}), as BLS published no ${month} CPI.`;
+}
 
 /** Why the next coupon is an estimate: it's valued at today's index ratio,
  * but a TIPS coupon is paid on the payment date's. */

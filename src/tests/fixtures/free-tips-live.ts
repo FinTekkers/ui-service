@@ -3,7 +3,8 @@
  * valuation responses. Every figure differs from src/lib/free/mock/tips.ts,
  * so a test that finds one on the page knows it came from the load, not the
  * mock. free-tips-load.test.ts stubs the services so load() returns exactly
- * this.
+ * this. US-328: the projection is its three stubbed cashflow rows, out of
+ * order there, at CPI-U's 300.0 against 291.26 a year earlier (3.0%).
  */
 import { tips } from "../../lib/free/mock/tips";
 import { UNAVAILABLE, type TipsPageData } from "../../lib/free/tips";
@@ -68,6 +69,40 @@ export const LIVE: TipsPageData = {
       realYield: "1.987",
       nextCoupon: "$10.92",
       nextCouponDate: "April 15, 2027",
+    },
+  },
+  projection: {
+    ok: true,
+    data: {
+      rows: [
+        {
+          date: "Apr 15, 2027",
+          indexRatio: "1.05712",
+          coupon: "$11.00",
+          principal: null,
+          total: "$11.00",
+        },
+        {
+          date: "Apr 15, 2035",
+          indexRatio: "1.23457",
+          coupon: "$13.00",
+          principal: null,
+          total: "$13.00",
+        },
+        {
+          date: "Apr 15, 2035",
+          indexRatio: "1.23457",
+          coupon: null,
+          principal: "$1,234.00",
+          total: "$1,234.00",
+        },
+      ],
+      // Each total to cents, then summed: 11.00 + 13.00 + 1,234.00. The raw
+      // sum, 1,258.012, would show $1,258.01.
+      totalReceived: "$1,258.00",
+      assumption:
+        "Assumes CPI-U keeps rising 3.0% a year, its change over the 12 months to September 2026.",
+      treasuryNote: null,
     },
   },
   calculator: { years: "8.48", inflation: "2.30" },
@@ -156,7 +191,7 @@ export function mockFiguresIn(text: string): string[] {
 
 /** LIVE with each of `sections` failed, with the load's messages. */
 export function liveWithout(
-  ...sections: ("security" | "price" | "cpi" | "valuation")[]
+  ...sections: ("security" | "price" | "cpi" | "valuation" | "projection")[]
 ): TipsPageData {
   const data: TipsPageData = structuredClone(LIVE);
   for (const section of sections) {
