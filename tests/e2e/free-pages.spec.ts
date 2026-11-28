@@ -33,6 +33,11 @@
  * values the CoreWeave 2030 notes through the broker and live
  * valuation-service from its GET form; invalid prices are field errors; a
  * server whose broker is down says Unavailable with no numbers.
+ *
+ * US-365: /free/soma and /free stream Maturity mix over time below Holdings
+ * over time: quarterly bars by remaining maturity, whose 1Y / 5Y / All
+ * switch shows 5, 21 or every quarter from 2004Q2, following the Business
+ * date through a client navigation and a reload.
  */
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { spawn } from "child_process";
@@ -68,6 +73,7 @@ const H2S = [
   "What the portfolio is telling us",
   "When the holdings come due",
   "Holdings over time",
+  "Maturity mix over time",
   "Positions by CUSIP",
   "Pull SOMA data from the API",
 ];
@@ -158,13 +164,13 @@ for (const route of ["/free", "/free/soma", "/free/tips"]) {
   });
 }
 
-test("/free shows the same 7 SOMA sections as /free/soma, in order", async ({
+test("/free shows the same 8 SOMA sections as /free/soma, in order", async ({
   page,
 }) => {
   const sectionTitles = async (route: string): Promise<string[]> => {
     await page.goto(route);
     const h2s = page.getByRole("main").locator("h2");
-    await expect(h2s).toHaveCount(7);
+    await expect(h2s).toHaveCount(8);
     await expect(h2s).toHaveText(H2S);
     return h2s.allTextContents();
   };
@@ -173,7 +179,7 @@ test("/free shows the same 7 SOMA sections as /free/soma, in order", async ({
   );
 });
 
-test("/free/soma returns 200 with the 7 artboard sections", async ({
+test("/free/soma returns 200 with the 8 artboard sections", async ({
   page,
 }) => {
   const response = await page.goto("/free/soma");
@@ -849,6 +855,104 @@ for (const route of ["/free/soma", "/free"]) {
     await page.reload();
     await page.waitForLoadState("networkidle");
     await expectHistoryNames(page, week);
+  });
+}
+
+/** Waits for Maturity mix over time to finish loading for `week`, and
+ * checks it names the week: the Latest line, or the unavailable text. */
+async function expectMixNames(
+  page: Page,
+  week: string
+): Promise<"live" | "unavailable"> {
+  const label = weekLabel(week);
+  const section = page.getByRole("region", { name: "Maturity mix over time" });
+  const summary = section.getByText(/^Latest: /);
+  const unavailable = section.getByText(`Unavailable for ${label}`);
+  await expect(summary.or(unavailable)).toBeVisible({ timeout: 30_000 });
+  if (await unavailable.isVisible()) return "unavailable";
+  await expect(summary).toHaveText(
+    new RegExp(
+      `^Latest: \\d+\\.\\d% under 1 yr, average maturity \\d+\\.\\d yrs, on ${label}$`
+    )
+  );
+  return "live";
+}
+
+/** "2026-11-25" → "2026Q4". */
+function quarterOf(iso: string): string {
+  const [y, m] = iso.split("-").map(Number);
+  return `${y}Q${Math.ceil(m / 3)}`;
+}
+
+/** Quarters from 2004Q2 to `iso`'s, inclusive. */
+function quartersSince2004Q2(iso: string): number {
+  const [y, m] = iso.split("-").map(Number);
+  return (y - 2004) * 4 + Math.ceil(m / 3) - 1;
+}
+
+for (const route of ["/free/soma", "/free"]) {
+  test(`${route} Maturity mix over time: streams in; 1Y, 5Y and All show 5, 21 and every quarter, ending at the week's`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    const week = pastWednesday(0);
+    const branch = await expectMixNames(page, week);
+    test.info().annotations.push({
+      type: "live-data",
+      description:
+        branch === "live" ? "SOMA maturity mix from the ledger" : "unavailable",
+    });
+    const section = page.getByRole("region", {
+      name: "Maturity mix over time",
+    });
+    const plot = section.locator(".js-plotly-plot");
+    if (branch === "unavailable") {
+      await expect(plot).toHaveCount(0);
+      await expect(page.getByRole("main").locator("h2")).toHaveText(H2S);
+      return;
+    }
+    await expect(plot).toHaveCount(1, { timeout: 30_000 });
+    await expect(section.locator(".finding")).toHaveCount(3);
+    const all = quartersSince2004Q2(week);
+    const xs = () => plot.evaluate((el: any) => el.data[0].x as string[]);
+    for (const [name, bars] of [
+      ["1Y", 5],
+      ["5Y", 21],
+      ["All", all],
+      ["1Y", 5],
+    ] as const) {
+      await section.getByRole("button", { name, exact: true }).click();
+      await expect
+        .poll(() => xs().then((x) => x.length), { message: name })
+        .toBe(bars);
+      // Each bar sits at its quarter's last week; the latest is the page's.
+      const x = await xs();
+      expect(x[x.length - 1]).toBe(week);
+      if (name === "All") expect(quarterOf(x[0])).toBe("2004Q2");
+    }
+  });
+
+  test(`${route} Maturity mix over time follows the Business date, and on reload`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    await expectMixNames(page, pastWednesday(0));
+    const week = pastWednesday(3);
+    await page.getByLabel("Business date").fill(week);
+    await expect(page).toHaveURL(new RegExp(`\\?asOf=${week}$`), {
+      timeout: 30_000,
+    });
+    // A client navigation: the mix streams in through __data.json.
+    const branch = await expectMixNames(page, week);
+    test.info().annotations.push({ type: "live-data", description: branch });
+
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await expectMixNames(page, week);
   });
 }
 

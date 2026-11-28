@@ -20,6 +20,11 @@
  * time's search (every trade date up to the week, by TRADE_DATE,
  * TRANSACTION_TYPE and PRODUCT_TYPE) to soma-<week>.history.json, decoded
  * through the real somaTradeRowOf.
+ *
+ * US-365: with --mix after the week, it records only Maturity mix over
+ * time's search (every trade date up to the week, by TRADE_DATE,
+ * PRODUCT_TYPE and MATURITY_DATE) to soma-<week>.mix.json, decoded through
+ * the real somaMixRowOf.
  */
 import { writeFileSync } from "fs";
 import { gzipSync } from "zlib";
@@ -31,6 +36,8 @@ import {
   SOMA_HISTORY_FIELDS,
   SOMA_HISTORY_MEASURES,
   SOMA_MEASURES,
+  SOMA_MIX_FIELDS,
+  SOMA_MIX_MEASURES,
   SOMA_POSITION_FIELDS,
   somaRequest,
 } from "../src/lib/server/free-soma";
@@ -39,7 +46,7 @@ const asOf = process.argv[2];
 const key = process.env.FT_HOMEPAGE_API_KEY?.trim();
 if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf ?? "") || !key) {
   console.error(
-    "usage: FT_HOMEPAGE_API_KEY=… record-soma-week.ts YYYY-MM-DD [--history]"
+    "usage: FT_HOMEPAGE_API_KEY=… record-soma-week.ts YYYY-MM-DD [--history|--mix]"
   );
   process.exit(2);
 }
@@ -91,6 +98,25 @@ if (process.argv[3] === "--history") {
     ) + "\n"
   );
   console.log(`${out}: history=${history.count}`);
+  process.exit(0);
+}
+
+if (process.argv[3] === "--mix") {
+  const mix = await record(asOf, SOMA_MIX_FIELDS, SOMA_MIX_MEASURES);
+  const out = `src/tests/fixtures/soma-${asOf}.mix.json`;
+  writeFileSync(
+    out,
+    JSON.stringify(
+      {
+        source: `scripts/record-soma-week.ts --mix, broker Position/Search with FT_HOMEPAGE_API_KEY, ${new Date().toISOString()}`,
+        asOf,
+        mix,
+      },
+      null,
+      2
+    ) + "\n"
+  );
+  console.log(`${out}: mix=${mix.count}`);
   process.exit(0);
 }
 

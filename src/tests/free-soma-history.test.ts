@@ -50,7 +50,9 @@ import {
   SOMA_HISTORY_TIMEOUT_MS,
   SOMA_POSITION_FIELDS,
   SOMA_FIELDS,
+  SOMA_MIX_FIELDS,
   fetchSomaHistory,
+  resetSomaCaches,
   somaHistory,
   somaPositions,
   type SomaTradeRow,
@@ -171,6 +173,7 @@ const sum = (values: string[]) =>
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(NOW);
+  resetSomaCaches();
   mocks.searchPositions.mockReset();
   vi.spyOn(console, "log").mockImplementation(() => undefined);
 });
@@ -381,13 +384,14 @@ describe.each(LOADS)("%s server load", (route, load) => {
     const data = await call(load, route);
     const history = await data.streamed.history;
     expect(history.ok).toBe(true);
-    expect(mocks.searchPositions).toHaveBeenCalledTimes(3);
+    expect(mocks.searchPositions).toHaveBeenCalledTimes(4);
     const requests: QueryPositionRequestProto[] =
       mocks.searchPositions.mock.calls.map(([r]) => r);
     expect(requests.map((r) => r.getFieldsList())).toEqual([
       SOMA_POSITION_FIELDS,
       SOMA_FIELDS,
       SOMA_HISTORY_FIELDS,
+      SOMA_MIX_FIELDS,
     ]);
     const search = requests[2];
     expect(search.getPositionType()).toBe(PositionTypeProto.TRANSACTION);

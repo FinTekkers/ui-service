@@ -340,6 +340,99 @@ export function weekTooltip(point: SomaHistoryPoint): SomaWeekTooltip {
   };
 }
 
+/** US-365: Maturity mix over time's remaining-maturity buckets, short to
+ * long. */
+export const SOMA_MIX_BUCKETS = [
+  "Under 1 yr",
+  "1–3 yrs",
+  "3–5 yrs",
+  "5–10 yrs",
+  "10–20 yrs",
+  "20+ yrs",
+] as const;
+
+/** The buckets' shades, light (short) to dark (long), around the stacks'
+ * blues. */
+export const SOMA_MIX_COLORS = [
+  "#DCE7FC",
+  "#B9D0FA",
+  "#8FB2F5",
+  "#5B8DEF",
+  "#2F5BB7",
+  "#1B3A7A",
+];
+
+/** The average-maturity line: the free pages' orange. */
+export const SOMA_MIX_AVG_COLOR = "#E8A33D";
+
+/** The right-hand axis, in years. */
+export const SOMA_MIX_YEARS_RANGE: [number, number] = [0, 12];
+
+/** One quarter's bar: its last H.4.1 week on or before the page's week. */
+export interface SomaMixPoint {
+  /** e.g. "2026Q4". */
+  quarter: string;
+  /** ISO date, a Wednesday. */
+  week: string;
+  /** % of par per SOMA_MIX_BUCKETS entry, to 2 decimal places. */
+  shares: number[];
+  /** Par-weighted average remaining maturity, years, to 2 decimal places. */
+  avgYears: number;
+}
+
+export interface SomaMixView {
+  /** The first bar's quarter: where All starts. */
+  firstQuarter: string;
+  /** Every quarter from firstQuarter to the page's week, oldest first. */
+  points: SomaMixPoint[];
+  /** The last bar's week, under-1-year share (%) and average maturity. */
+  latest: { week: string; under1: number; avgYears: number };
+  /** Under-1-year share over the past year, average maturity now vs a year
+   * ago, and the lowest under-1-year quarter. */
+  findings: SomaFinding[];
+}
+
+export interface SomaMixRange {
+  label: SomaRangeLabel;
+  /** Bars back to the page's week, inclusive; null for All. */
+  quarters: number | null;
+}
+
+export const SOMA_MIX_RANGES: SomaMixRange[] = [
+  { label: "1Y", quarters: 5 },
+  { label: "5Y", quarters: 21 },
+  { label: "All", quarters: null },
+];
+
+/** The bars `range` shows: its last `quarters` bars, or every bar there is
+ * when fewer. */
+export function mixWindow(
+  view: SomaMixView,
+  range: SomaMixRange
+): SomaMixPoint[] {
+  return range.quarters === null
+    ? view.points
+    : view.points.slice(-range.quarters);
+}
+
+/** One bar's hover: its quarter and week, each bucket's share and the
+ * average maturity. */
+export function mixTooltip(point: SomaMixPoint): {
+  title: string;
+  rows: { label: string; value: string }[];
+} {
+  return {
+    title: `${point.quarter}, week of ${weekLabel(point.week)}`,
+    rows: [
+      ...SOMA_MIX_BUCKETS.map((label, i) => ({
+        label,
+        value: `${point.shares[i].toFixed(1)}%`,
+      })),
+      { label: "Average maturity", value: `${point.avgYears.toFixed(1)} yrs` },
+    ],
+  };
+}
+
 export interface SomaPageData {
   /** The H.4.1 week shown (a Wednesday, ISO) and the same in words. */
   asOf: string;
@@ -354,7 +447,12 @@ export interface SomaPageData {
 
 /** US-317: the server loads' data. Holdings over time arrives after the
  * rest of the page: SvelteKit streams a promise nested in the data (a
- * top-level one it awaits), and this one never rejects. */
+ * top-level one it awaits), and this one never rejects. US-365: so does
+ * Maturity mix over time, from its own search; optional only so pages
+ * built without it still type-check. */
 export type SomaPageWithHistory = SomaPageData & {
-  streamed: { history: Promise<Section<SomaHistoryView>> };
+  streamed: {
+    history: Promise<Section<SomaHistoryView>>;
+    mix?: Promise<Section<SomaMixView>>;
+  };
 };
