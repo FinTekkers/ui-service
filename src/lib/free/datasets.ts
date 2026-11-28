@@ -4,7 +4,13 @@
 import { ETF_FUNDS } from "./etf/funds";
 
 export interface FreeDataset {
-  id: "soma" | "tips" | `etf-${string}` | "tech-vs-sp500" | "sigma-moves";
+  id:
+    | "soma"
+    | "tips"
+    | `etf-${string}`
+    | "tech-vs-sp500"
+    | "sigma-moves"
+    | "corporate-bond-crwv-2030";
   label: string;
   href: string;
 }
@@ -33,6 +39,12 @@ export const FREE_DATASETS: readonly FreeDataset[] = [
     id: "sigma-moves",
     label: "Sigma moves: daily returns in standard deviations",
     href: "/free/sigma-moves",
+  },
+  // US-354: one corporate bond, valued live by valuation-service.
+  {
+    id: "corporate-bond-crwv-2030",
+    label: "CoreWeave 9.25% 2030 corporate bond",
+    href: "/free/corporate-bond/crwv-2030",
   },
 ];
 

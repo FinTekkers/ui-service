@@ -673,6 +673,65 @@ export async function priceServiceHasCloses(
   }
 }
 
+/**
+ * US-354: does the ledger hold a security with this ISIN? One security
+ * search by ISIN through the broker, as /free/corporate-bond/crwv-2030's
+ * load makes. A broker error throws.
+ */
+export async function ledgerHasIsin(
+  isin: string,
+  brokerUrl: string = BROKER_URL,
+  apiKey?: string
+): Promise<boolean> {
+  const mods = await ledgerModules();
+  const securityGrpc: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/services/security-service/security_service_grpc_pb.js"
+  );
+  const securityQuery: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/requests/security/query_security_request_pb.js"
+  );
+  const identifierProtoMod: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_pb.js"
+  );
+  const identifierTypeMod: AnyModule = await import(
+    "@fintekkers/ledger-models/node/fintekkers/models/security/identifier/identifier_type_pb.js"
+  );
+  const identifierMod: AnyModule = await import(
+    "@fintekkers/ledger-models/node/wrappers/models/security/identifier.js"
+  );
+  const IdentifierTypeProto =
+    identifierTypeMod.IdentifierTypeProto ??
+    identifierTypeMod.default?.IdentifierTypeProto;
+
+  const filter = new mods.PositionFilter();
+  filter.addObjectFilter(
+    mods.FieldProto.IDENTIFIER,
+    new (pick(identifierMod, "Identifier"))(
+      new (pick(identifierProtoMod, "IdentifierProto"))()
+        .setIdentifierType(IdentifierTypeProto.ISIN)
+        .setIdentifierValue(isin)
+    )
+  );
+  const request = new (pick(securityQuery, "QuerySecurityRequestProto"))();
+  mods.stampOwn(request);
+  request.setAsOf(mods.ZonedDateTime.now().toProto());
+  request.setSearchSecurityInput(filter.toProto());
+  const client = new (pick(securityGrpc, "SecurityClient"))(
+    brokerUrl,
+    grpc.credentials.createInsecure()
+  );
+  try {
+    return await streamHasRows(
+      client.search(request, brokerMetadata(apiKey), {
+        deadline: Date.now() + PRECONDITION_DEADLINE_MS,
+      }),
+      (resp: any) => resp.getSecurityResponseList?.()?.length ?? 0
+    );
+  } finally {
+    client.close();
+  }
+}
+
 async function grpcDeletePortfolio(
   brokerUrl: string,
   apiKey: string | undefined,
