@@ -1,7 +1,8 @@
 /**
- * US-336: the ledger-models minimum is raised to the LM-491 release
- * (1.1.55, first with SecurityMetricTypeProto.EXPENSE_RATIO, which /free/spy's
- * fee chart reads), and no further. US-334 had raised it to the LM-485
+ * US-355: the ledger-models minimum is raised to the LM-508 release
+ * (1.1.64, first with PriceProto.mid, which replaces PriceProto.price on the
+ * same wire field), and no further. US-336 had raised it to the LM-491 release
+ * (1.1.55, first with SecurityMetricTypeProto.EXPENSE_RATIO). US-334 had raised it to the LM-485
  * release (1.1.53, first with SecurityMetricService). US-307 had raised it to the LM-433 release (1.1.31, first with
  * MeasureProto.INFLATION_COMPENSATION, which /free/soma requests). US-303 had raised it to the LM-427
  * release (1.1.27, ProductInputs.measuresForArm). The lockfile resolves a
@@ -13,7 +14,7 @@ import fs from "fs";
 import path from "path";
 import { describe, expect, test } from "vitest";
 
-const MINIMUM = "1.1.55";
+const MINIMUM = "1.1.64";
 
 const readJson = (file: string) =>
   JSON.parse(fs.readFileSync(path.resolve(file), "utf-8"));
@@ -29,7 +30,7 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
-describe("ledger-models minimum is the LM-491 release", () => {
+describe("ledger-models minimum is the LM-508 release", () => {
   test(`package.json declares exactly ">=${MINIMUM}"`, () => {
     expect(
       readJson("package.json").dependencies["@fintekkers/ledger-models"]

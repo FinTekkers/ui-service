@@ -204,7 +204,7 @@ export function createValuationClientMock() {
             bondInput?.getCleanPrice?.() ??
             tipsInput?.getCleanPrice?.() ??
             frnInput?.getCleanPrice?.() ??
-            request.getPriceInput?.()?.getPrice?.();
+            request.getPriceInput?.()?.getMid?.();
           const priceStr = fromDecimalProto(priceProto) ?? "100";
           const price = parseFloat(priceStr);
 

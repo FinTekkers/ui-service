@@ -79,7 +79,7 @@ export function searchSeriesPrices(
         const seconds = price.getAsOf?.()?.getTimestamp?.()?.getSeconds?.();
         let value: string | undefined;
         try {
-          value = fromDecimalProto(price.getPrice?.());
+          value = fromDecimalProto(price.getMid?.());
         } catch (e) {
           console.warn("Skipping series price, invalid decimal:", e);
           continue;

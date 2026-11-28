@@ -37,7 +37,7 @@ export function row(seconds: number, close: string, id: number): Row {
   const proto = new PriceProto()
     .setUuid(new UUIDProto().setRawUuid(uuidBytes(id)))
     .setAsOf(asOf)
-    .setPrice(toDecimalProto(close));
+    .setMid(toDecimalProto(close));
   return { seconds, proto };
 }
 

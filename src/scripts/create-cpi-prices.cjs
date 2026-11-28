@@ -79,7 +79,7 @@ async function createCpiPrice(client, entry) {
   price.setUuid(uuidProtoFromString(randomUuid));
   price.setAsOf(ZonedDateTime.now().toProto());
   price.setValidFrom(ZonedDateTime.now().toProto());
-  price.setPrice(dv(entry.value));
+  price.setMid(dv(entry.value));
   price.setSecurity(security);
 
   const request = new CreatePriceRequestProto();

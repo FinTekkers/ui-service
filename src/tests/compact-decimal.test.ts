@@ -143,7 +143,7 @@ async function rowThroughTransactions(
   proto.setUuid(UUID.random().toUUIDProto());
   proto.setAsOf(ZonedDateTime.now().toProto());
   proto.setSecurity(new SecurityProto());
-  proto.setPrice(new PriceProto().setPrice(price));
+  proto.setPrice(new PriceProto().setMid(price));
   proto.setQuantity(quantity);
   searchResults = [new Transaction(proto)];
   const rows = await FetchTransactionWithFilter({} as any);
@@ -305,7 +305,7 @@ describe("US-212 guardrail: absent and unset decimals read as before", () => {
   test("a malformed price is skipped in the price stream, not thrown", async () => {
     const priceRow = (decimal: DecimalValueProto, seconds: number) => ({
       getAsOf: () => ({ getTimestamp: () => ({ getSeconds: () => seconds }) }),
-      getPrice: () => decimal,
+      getMid: () => decimal,
     });
     priceResponses = [
       // Scale over the codec's 4096 limit: decoding throws.

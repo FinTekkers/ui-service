@@ -263,7 +263,7 @@ export async function fetchRealCleanPrices(
   );
   return protos
     .map((p) => {
-      const value = fromDecimalProto(p.getPrice());
+      const value = fromDecimalProto(p.getMid());
       if (!value) {
         throw new Error("Price search returned a price with no value");
       }

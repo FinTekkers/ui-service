@@ -65,7 +65,7 @@ vi.mock(
                           getSeconds: () => Date.parse(r.at) / 1000,
                         }),
                       }),
-                      getPrice: () => toDecimalProto(r.value),
+                      getMid: () => toDecimalProto(r.value),
                     })),
                 });
                 stream.emit("end");

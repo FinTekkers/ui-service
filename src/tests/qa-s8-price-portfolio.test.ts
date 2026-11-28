@@ -74,7 +74,7 @@ async function buildPriceProto(security: any, priceStr: string) {
   const price = new (PriceProto as any)();
   stampOwn(price);
   price.setAsOf(ZonedDateTime.now().toProto());
-  price.setPrice(toDecimalProto(priceStr));
+  price.setMid(toDecimalProto(priceStr));
   if (security) price.setSecurity(security);
   return price;
 }

@@ -139,7 +139,7 @@ export async function load({ locals, request }) {
       prices = rawPrices
         .map((p) => {
           const asOfMs = asOfMillis(p);
-          const value = fromDecimalProto(p.getPrice());
+          const value = fromDecimalProto(p.getMid());
           if (!value) throw new Error("Price value is required");
           return {
             date: new Date(asOfMs).toISOString().slice(0, 10),

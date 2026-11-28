@@ -350,7 +350,7 @@ async function priceSecurity(
   }
   const productInput = forSecurity(
     security,
-    new PriceProto().setPrice(toDecimalProto(price)),
+    new PriceProto().setMid(toDecimalProto(price)),
     marketData
   );
   checkProductInput(productInput);
@@ -389,11 +389,19 @@ export async function RunBondValuation(
         ? await FetchSecurityProtoByCusip(inputs.cusip!, apiKey)
         : buildManualSecurityProto(inputs);
 
+    // VS-170 follow-on: ACCRUED_INTEREST is in dollars for the position's
+    // face, and valuation-service rejects a bond valuation without a
+    // DIRECTED_QUANTITY. A position of one
+    // bond's face keeps the figure per bond, as the page has always shown.
+    const face = fromDecimalProto(
+      securityProto.getBondDetails()?.getFaceValue()
+    );
     const response = await priceSecurity(
       securityProto,
       inputs.price,
       VALUATION_MEASURES,
-      apiKey
+      apiKey,
+      face ? { position: directedQuantityInput(face) } : {}
     );
 
     const result: ValuationResult = {};

@@ -179,7 +179,7 @@ let FetchTransactionWithFilter = async function FetchTransactionWithFilter(
             ""
           ),
           transactionPrice: safe(
-            () => fromDecimalProto(element.getPrice()?.getPrice()) ?? "",
+            () => fromDecimalProto(element.getPrice()?.getMid()) ?? "",
             ""
           ),
         });
