@@ -9,12 +9,17 @@
  * 0.01 × √(100/99) and their population stdev is 0.01.
  */
 import { describe, expect, test } from "vitest";
+import spyFixture from "./fixtures/sigma-spy-adjusted.json";
+import tqqqFixture from "./fixtures/sigma-tqqq-adjusted.json";
 import {
+  EWMA_LAMBDA,
   SIGMA_BAND,
   SIGMA_WINDOW,
   countOutside,
   dailyReturns,
+  ewmaSigmaSeries,
   inRange,
+  parseMethod,
   sampleStdev,
   sigmaLabel,
   sigmaSeries,
@@ -195,5 +200,88 @@ describe("ranges and outliers", () => {
     expect(sigmaLabel(-6.1)).toBe("−6.10σ");
     expect(sigmaLabel(4.2)).toBe("+4.20σ");
     expect(sigmaLabel(-0.001)).toBe("0.00σ");
+  });
+});
+
+// US-360 metric 1: EWMA (λ = 0.94, RiskMetrics) on the stored Yahoo
+// adjusted closes, captured from the host price service on 2026-11-28 with
+// fetchClosesByTicker. EWMA depends on its seed (the first 100 returns), so
+// each fixture starts at the stored history's first close: SPY 1993-01-29,
+// TQQQ 2010-02-11. Expected values were computed independently on 27 Nov.
+type Fixture = { closes: (string | number)[][] };
+const fixtureCloses = (f: Fixture): Close[] =>
+  f.closes.map(([date, close]) => ({
+    date: String(date),
+    close: Number(close),
+  }));
+const SPY_CLOSES = fixtureCloses(spyFixture);
+const TQQQ_CLOSES = fixtureCloses(tqqqFixture);
+
+const sigmaOn = (points: SigmaPoint[], date: string): number => {
+  const p = points.find((x) => x.date === date);
+  if (!p) throw new Error(`no σ on ${date}`);
+  return p.sigma;
+};
+
+/** ±0.001, the owner's tolerance. */
+const expectNear = (actual: number, expected: number) =>
+  expect(Math.abs(actual - expected)).toBeLessThanOrEqual(0.001);
+
+describe("ewmaSigmaSeries (US-360)", () => {
+  test("the fixtures start at the stored history's first close", () => {
+    expect(SPY_CLOSES[0].date).toBe("1993-01-29");
+    expect(TQQQ_CLOSES[0].date).toBe("2010-02-11");
+  });
+
+  test.each([
+    ["SPY", "2018-02-05", -5.5722],
+    ["SPY", "2025-04-09", 5.1717],
+    ["SPY", "2024-08-05", -2.9154],
+    ["TQQQ", "2018-02-05", -4.458],
+    ["TQQQ", "2025-04-09", 5.1091],
+  ])("%s on %s is %f", (ticker, date, expected) => {
+    const closes = ticker === "SPY" ? SPY_CLOSES : TQQQ_CLOSES;
+    expectNear(sigmaOn(ewmaSigmaSeries(dailyReturns(closes)), date), expected);
+  });
+
+  test("hand fixture, window 3: sample-variance seed, then divide, then update", () => {
+    // Seed: sample variance (n − 1) of 0.01, −0.02, 0.03 = 6.3333e-4.
+    // Return 4: 0.04 ÷ √6.3333e-4 = +1.5894 (updating first gives 1.5213;
+    // a zero-mean seed gives 1.5119). Then 0.94 × 6.3333e-4 + 0.06 × 0.04²
+    // = 6.9133e-4, so return 5: −0.05 ÷ √6.9133e-4 = −1.9016.
+    const rets = [0.01, -0.02, 0.03, 0.04, -0.05].map((ret, i) => ({
+      date: day(i + 1),
+      ret,
+    }));
+    const points = ewmaSigmaSeries(rets, 3);
+    expect(points.map((p) => p.date)).toEqual([day(4), day(5)]);
+    expect(points[0].sigma).toBeCloseTo(1.5894, 4);
+    expect(points[1].sigma).toBeCloseTo(-1.9016, 4);
+    expect(EWMA_LAMBDA).toBe(0.94);
+  });
+
+  test("100 returns give no point; the first lands on return 101", () => {
+    const rets = dailyReturns(closesFrom([...ALTERNATING, 0.02]));
+    expect(ewmaSigmaSeries(rets.slice(0, 100))).toEqual([]);
+    expect(ewmaSigmaSeries(rets).map((p) => p.date)).toEqual([day(101)]);
+  });
+});
+
+// US-360 metric 2: the 100-day option is today's series, unchanged.
+describe("sigmaSeries on the stored SPY closes (US-360)", () => {
+  test("SPY 2018-02-05 is still −9.3072 on the trailing 100 days", () => {
+    expectNear(
+      sigmaOn(sigmaSeries(dailyReturns(SPY_CLOSES)), "2018-02-05"),
+      -9.3072
+    );
+  });
+});
+
+describe("parseMethod (US-360)", () => {
+  test("exactly '100d' picks the window; anything else is EWMA", () => {
+    expect(parseMethod("100d")).toBe("100d");
+    for (const raw of [null, "", "ewma", "foo", "100D", "100d "]) {
+      expect(parseMethod(raw), String(raw)).toBe("ewma");
+    }
   });
 });

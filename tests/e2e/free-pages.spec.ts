@@ -1435,10 +1435,12 @@ test.describe("US-341 /free/sigma-moves", () => {
 
   // US-359: the Method note says the closes are dividend-adjusted and that σ
   // is not a probability. The note renders whatever the host data holds.
+  // US-360: the "previous 100 trading days" clause is the 100-day method's,
+  // so this reads ?method=100d; the toggle journey checks the EWMA default.
   test("US-359 /free/sigma-moves: the Method note's price basis and σ caveat, and on reload", async ({
     page,
   }) => {
-    const response = await page.goto(ROUTE);
+    const response = await page.goto(`${ROUTE}?method=100d`);
     expect(response?.status()).toBe(200);
     for (const pass of ["load", "reload"]) {
       if (pass === "reload") {
@@ -1458,6 +1460,65 @@ test.describe("US-341 /free/sigma-moves", () => {
         "price change only"
       );
     }
+  });
+
+  // US-360: the method toggle, by a real click. EWMA is the default; "Last
+  // 100 days" puts ?method=100d in the URL, keeps the range, survives a
+  // reload; EWMA drops the parameter. The Method note follows the method.
+  test("US-360 /free/sigma-moves: the method toggle, kept in the URL and on reload", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const response = await page.goto(ROUTE);
+    expect(response?.status()).toBe(200);
+    // The buttons work only once the page has hydrated.
+    await page.waitForLoadState("networkidle");
+    const method = page.getByRole("group", { name: "Method" });
+    const ewma = method.getByRole("button", { name: "EWMA (λ 0.94)" });
+    const window100 = method.getByRole("button", { name: "Last 100 days" });
+    const all = page
+      .getByRole("group", { name: "Range" })
+      .getByRole("button", { name: "All", exact: true });
+    const note = page.getByRole("region", { name: "Method" });
+    const name = FUNDS[0].name;
+    const summary = page.getByTestId("sigma-summary");
+
+    await expect(ewma).toHaveAttribute("aria-pressed", "true");
+    await expect(window100).toHaveAttribute("aria-pressed", "false");
+    await expect(note).toContainText("each day back counts 6% less");
+    await expect(note).toContainText(
+      "J.P. Morgan/Reuters, RiskMetrics Technical Document, 4th ed., 1996"
+    );
+    await expect(note).toContainText("It is not a probability");
+    await expect(note).not.toContainText("previous 100 trading days");
+    await all.click();
+    await expect(all).toHaveAttribute("aria-pressed", "true");
+    const branch = await expectSigmaPanel(page, name);
+    test.info().annotations.push({ type: "branch", description: branch });
+    const ewmaSummary = branch === "plot" ? await summary.textContent() : "";
+
+    await window100.click();
+    await expect(page).toHaveURL(/[?&]method=100d(&|$)/);
+    await expect(window100).toHaveAttribute("aria-pressed", "true");
+    await expect(ewma).toHaveAttribute("aria-pressed", "false");
+    await expect(all).toHaveAttribute("aria-pressed", "true");
+    await expect(note).toContainText("previous 100 daily returns");
+    await expect(note).not.toContainText("RiskMetrics");
+    await expect(note).toContainText("It is not a probability");
+    expect(await expectSigmaPanel(page, name)).toBe(branch);
+    if (branch === "plot") {
+      await expect(summary).not.toHaveText(ewmaSummary ?? "");
+    }
+
+    expect((await page.reload())?.status()).toBe(200);
+    await page.waitForLoadState("networkidle");
+    await expect(window100).toHaveAttribute("aria-pressed", "true");
+    await expect(note).toContainText("previous 100 daily returns");
+
+    await ewma.click();
+    await expect(ewma).toHaveAttribute("aria-pressed", "true");
+    await expect(page).toHaveURL((url) => !url.searchParams.has("method"));
+    await expect(note).toContainText("each day back counts 6% less");
   });
 
   // Metric 5's PR screenshots, on request only:
@@ -1481,6 +1542,35 @@ test.describe("US-341 /free/sigma-moves", () => {
         path: path.join(dir as string, `sigma-moves-${ticker}-1Y.png`),
       });
       await page.setViewportSize({ width: 1280, height: 900 });
+    }
+  });
+
+  // US-360 metric 4: SPY at All on each method, on request only.
+  test("sigma moves screenshots of SPY at All on each method", async ({
+    page,
+  }) => {
+    const dir = process.env.SIGMA_SHOTS;
+    test.skip(!dir, "SIGMA_SHOTS not set: PR screenshots only");
+    for (const [method, search] of [
+      ["ewma", ""],
+      ["100d", "?method=100d"],
+    ]) {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(`${ROUTE}${search}`);
+      await page.waitForLoadState("networkidle");
+      await page.getByRole("button", { name: "SPY", exact: true }).click();
+      await page
+        .getByRole("group", { name: "Range" })
+        .getByRole("button", { name: "All", exact: true })
+        .click();
+      await expectSigmaPanel(page, FUNDS[0].name);
+      const height = await page
+        .locator(".ft-free")
+        .evaluate((el) => Math.ceil(el.getBoundingClientRect().height) + 200);
+      await page.setViewportSize({ width: 1280, height });
+      await page.screenshot({
+        path: path.join(dir as string, `sigma-moves-SPY-All-${method}.png`),
+      });
     }
   });
 });

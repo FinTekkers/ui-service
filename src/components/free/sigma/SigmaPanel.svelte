@@ -2,7 +2,8 @@
      drawn by Plotly (PlotlyChart, US-337) as a line over the shaded ±3σ
      band, with the latest value and the largest moves outside the band
      annotated. The same outliers are listed as text below the chart, so
-     they show before Plotly loads. -->
+     they show before Plotly loads. US-360: `series` is the chosen method's
+     section of `fund.series`, so its "Unavailable" reason shows here. -->
 <script lang="ts">
   import PlotlyChart from "../PlotlyChart.svelte";
   import { sigmaSpec } from "$lib/free/charts";
@@ -10,12 +11,15 @@
   import {
     SIGMA_BAND,
     sigmaLabel,
+    type Section,
     type SigmaFund,
     type SigmaPoint,
     type SigmaRange,
   } from "$lib/free/sigma";
 
   export let fund: SigmaFund;
+  /** The chosen method's [date, σ] series, or why it is unavailable. */
+  export let series: Section<[string, number][]>;
   export let range: SigmaRange;
   /** The points in `range`, oldest first. */
   export let points: SigmaPoint[];
@@ -36,8 +40,8 @@
   <h2 id="{id}-title" class="panel-title">
     {fund.name} ({fund.ticker})
   </h2>
-  {#if !fund.series.ok}
-    <p class="status">{fund.series.message}</p>
+  {#if !series.ok}
+    <p class="status">{series.message}</p>
   {:else if spec && latest}
     <PlotlyChart {spec} {label} testid="{id}-plot" />
     <p class="caption">
