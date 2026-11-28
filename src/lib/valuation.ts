@@ -389,8 +389,9 @@ export async function RunBondValuation(
         ? await FetchSecurityProtoByCusip(inputs.cusip!, apiKey)
         : buildManualSecurityProto(inputs);
 
-    // ACCRUED_INTEREST is in dollars for the position's face (VS-170), and
-    // valuation-service rejects the request without one. A position of one
+    // VS-170 follow-on: ACCRUED_INTEREST is in dollars for the position's
+    // face, and valuation-service rejects a bond valuation without a
+    // DIRECTED_QUANTITY. A position of one
     // bond's face keeps the figure per bond, as the page has always shown.
     const face = fromDecimalProto(
       securityProto.getBondDetails()?.getFaceValue()
