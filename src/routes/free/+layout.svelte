@@ -1,8 +1,8 @@
 <!-- Shell for every Free data explorer page (/free/*), from the owner's
      DataExplorer.dc.html artboard. These pages never call the backend
      themselves: live figures come only from the allowed server loads (/free,
-     /free/soma, /free/tips, /free/etf/[ticker], /free/tech-vs-sp500 and
-     /free/sigma-moves);
+     /free/soma, /free/tips, /free/etf/[ticker], /free/tech-vs-sp500,
+     /free/sigma-moves and /free/corporate-bond/crwv-2030);
      src/tests/free-mock-guard.test.ts enforces it. /free/spy only
      redirects. /free/request's action (US-352) only emails a request.
      The nav, footer, fonts and theme come from PublicShell (US-356). -->

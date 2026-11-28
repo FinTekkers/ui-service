@@ -2,7 +2,8 @@
  * US-251: the Free data explorer's dataset picker lists exactly the
  * public datasets (US-334 added SPY as the third; US-338 lists one entry per
  * fund in ETF_FUNDS, SPY and TQQQ, at /free/etf/<slug>; US-339 adds the tech
- * vs S&P 500 drawdown after them, and US-341 sigma moves last), reports its open state with aria-expanded and marks the
+ * vs S&P 500 drawdown after them, US-341 sigma moves, and US-354 the
+ * CoreWeave 2030 corporate bond last), reports its open state with aria-expanded and marks the
  * current dataset with aria-current. US-352: after the datasets, a last
  * item links to /free/request.
  */
@@ -18,10 +19,11 @@ const SPY = "SPDR S&P 500 ETF Trust (SPY)";
 const TQQQ = "ProShares UltraPro QQQ (TQQQ)";
 const TECH = "Tech's drawdown relative to the S&P 500";
 const SIGMA = "Sigma moves: daily returns in standard deviations";
+const CRWV = "CoreWeave 9.25% 2030 corporate bond";
 const REQUEST = "+ Request a free analysis";
 
 describe("DatasetPicker", () => {
-  test("opening it lists exactly SOMA, TIPS, SPY, TQQQ, tech vs S&P 500 and sigma moves, then the request link, and sets aria-expanded", async () => {
+  test("opening it lists exactly SOMA, TIPS, SPY, TQQQ, tech vs S&P 500, sigma moves and the CoreWeave 2030 bond, then the request link, and sets aria-expanded", async () => {
     render(DatasetPicker, { props: { currentPath: "/free/tips" } });
     const toggle = screen.getByRole("button");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -44,6 +46,7 @@ describe("DatasetPicker", () => {
       [TQQQ, "/free/etf/tqqq"],
       [TECH, "/free/tech-vs-sp500"],
       [SIGMA, "/free/sigma-moves"],
+      [CRWV, "/free/corporate-bond/crwv-2030"],
       [REQUEST, "/free/request"],
     ]);
   });
@@ -81,6 +84,21 @@ describe("DatasetPicker", () => {
       "page"
     );
     expect(screen.getByRole("link", { name: SPY })).not.toHaveAttribute(
+      "aria-current"
+    );
+  });
+
+  test("US-354: on /free/corporate-bond/crwv-2030 only the CoreWeave bond is current", async () => {
+    render(DatasetPicker, {
+      props: { currentPath: "/free/corporate-bond/crwv-2030" },
+    });
+    expect(screen.getByRole("button")).toHaveTextContent(CRWV);
+    await fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByRole("link", { name: CRWV })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByRole("link", { name: TIPS })).not.toHaveAttribute(
       "aria-current"
     );
   });

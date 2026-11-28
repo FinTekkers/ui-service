@@ -1,5 +1,7 @@
 import { ValuationClient } from "@fintekkers/ledger-models/node/fintekkers/services/valuation-service/valuation_service_grpc_pb.js";
 import { ValuationRequestProto } from "@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_request_pb.js";
+import { ValuationRequests } from "@fintekkers/ledger-models/node/wrappers/requests/valuation/ValuationRequests";
+import grpc from "@grpc/grpc-js";
 import {
   ProductInput,
   InflationIndexInput,
@@ -250,16 +252,43 @@ function buildManualSecurityProto(inputs: BondCalculatorInputs): SecurityProto {
 // ---------------------------------------------------------------------------
 
 /**
+ * US-354: ValuationRequestProto.settlement_convention (LM-509). The service
+ * derives the settlement date from it on its own calendar; nothing here
+ * computes a date.
+ */
+export interface SettlementConventionInput {
+  /** YYYY-MM-DD. */
+  tradeDate: string;
+  lagBusinessDays: number;
+  /** e.g. "US_SIFMA". */
+  calendarId: string;
+}
+
+/** US-354: optional extras for one valuation call. Without them the request
+ * and the call are exactly as before. */
+export interface ValuationCallOptions {
+  settlement?: SettlementConventionInput;
+  /** A gRPC deadline this many milliseconds from the call. */
+  deadlineMs?: number;
+}
+
+function localDate(iso: string): LocalDateProto {
+  const [year, month, day] = iso.split("-").map((part) => Number(part));
+  return new LocalDateProto().setYear(year).setMonth(month).setDay(day);
+}
+
+/**
  * Send a ValuationRequestProto to the service. Caller assembles the
  * ProductInput + measure list; this just handles the request envelope and
  * the (callback-style) gRPC call.
  */
-async function runValuationCore(
+export async function runValuationCore(
   productInput: ProductInput,
   measures: number[],
   apiKey?: string,
   asOf: ZonedDateTime = ZonedDateTime.now(),
-  positionInput?: PositionProto
+  positionInput?: PositionProto,
+  options: ValuationCallOptions = {}
 ): Promise<
   import("@fintekkers/ledger-models/node/fintekkers/requests/valuation/valuation_response_pb.js").ValuationResponseProto
 > {
@@ -270,6 +299,15 @@ async function runValuationCore(
   request.setProductInput(productInput);
   measures.forEach((m) => request.addMeasures(m));
   if (positionInput) request.setPositionInput(positionInput);
+  if (options.settlement) {
+    request.setSettlementConvention(
+      ValuationRequests.settlementConvention(
+        localDate(options.settlement.tradeDate),
+        options.settlement.lagBusinessDays,
+        options.settlement.calendarId
+      )
+    );
+  }
 
   const conn = getServiceConnection(apiKey);
   const client = new ValuationClient(conn.url, conn.credentials, {
@@ -278,10 +316,20 @@ async function runValuationCore(
   });
 
   return new Promise((resolve, reject) => {
-    client.runValuation(request, (err, response) => {
+    const done = (err: grpc.ServiceError | null, response: any) => {
       if (err) reject(err);
       else resolve(response);
-    });
+    };
+    if (options.deadlineMs === undefined) {
+      client.runValuation(request, done);
+    } else {
+      client.runValuation(
+        request,
+        new grpc.Metadata(),
+        { deadline: Date.now() + options.deadlineMs },
+        done
+      );
+    }
   });
 }
 
@@ -342,7 +390,7 @@ async function priceSecurity(
     sources?: MarketDataSources;
     /** US-328: TipsInput.assumed_inflation_rate, percent a year. */
     assumedInflationRate?: string;
-  } = {}
+  } & ValuationCallOptions = {}
 ) {
   const asOf = opts.asOf ?? ZonedDateTime.now();
   const marketData: MarketData = {};
@@ -381,7 +429,10 @@ async function priceSecurity(
       "None of this calculator's measures apply to this security."
     );
   }
-  return runValuationCore(productInput, sent, apiKey, asOf, opts.position);
+  return runValuationCore(productInput, sent, apiKey, asOf, opts.position, {
+    settlement: opts.settlement,
+    deadlineMs: opts.deadlineMs,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -466,6 +517,55 @@ export async function RunBondValuation(
       ),
     };
   }
+}
+
+/** US-354: one corporate bond valuation's results, as the service sent them. */
+export interface BondMeasuresResult {
+  /** ValuationResponseProto.settlement_date, ISO; absent when unset. */
+  settlementDate?: string;
+  values: Map<number, string | undefined>;
+  cashflows: CashflowEntry[];
+}
+
+/**
+ * US-354: value `security` at `cleanPrice` for exactly `measures` (those the
+ * security's arm computes), settling `tradeDate` T+1 on the US_SIFMA calendar
+ * (valuation-service derives the date). `directedQuantity` is the position's
+ * face: ACCRUED_INTEREST and DV01 are in dollars for it. Throws on any
+ * failure, including a passed `deadlineMs`.
+ */
+export async function RunCorporateBondMeasures(
+  security: SecurityProto,
+  cleanPrice: string,
+  tradeDate: string,
+  measures: number[],
+  apiKey: string | undefined,
+  options: { directedQuantity: string; deadlineMs?: number }
+): Promise<BondMeasuresResult> {
+  const response = await priceSecurity(security, cleanPrice, measures, apiKey, {
+    position: directedQuantityInput(options.directedQuantity),
+    settlement: { tradeDate, lagBusinessDays: 1, calendarId: "US_SIFMA" },
+    deadlineMs: options.deadlineMs,
+  });
+  const values = new Map<number, string | undefined>();
+  response.getMeasureResultsList().forEach((entry) => {
+    values.set(
+      entry.getMeasure(),
+      fromDecimalProto(entry.getMeasureDecimalValue())
+    );
+  });
+  const settled = response.getSettlementDate();
+  return {
+    ...(settled && settled.getYear()
+      ? {
+          settlementDate: `${settled.getYear()}-${String(
+            settled.getMonth()
+          ).padStart(2, "0")}-${String(settled.getDay()).padStart(2, "0")}`,
+        }
+      : {}),
+    values,
+    cashflows: parseCashflows(response),
+  };
 }
 
 /**

@@ -28,9 +28,17 @@
  * US-352: /free/request, reached from the dataset picker, shows field
  * errors, never claims success when mail can't be sent, and confirms a
  * request; the mail transport ships in no client script.
+ *
+ * US-354: /free/corporate-bond/crwv-2030, reached from the dataset picker,
+ * values the CoreWeave 2030 notes through the broker and live
+ * valuation-service from its GET form; invalid prices are field errors; a
+ * server whose broker is down says Unavailable with no numbers.
  */
 import { test, expect, type Locator, type Page } from "@playwright/test";
+import { spawn } from "child_process";
+import Decimal from "decimal.js";
 import { existsSync, readdirSync, readFileSync } from "fs";
+import { createServer } from "net";
 import path from "path";
 import {
   MOCK_SECURITY_MASTER,
@@ -38,6 +46,8 @@ import {
 } from "../../src/tests/fixtures/free-tips-live";
 import { SOMA_PAGE_SIZE } from "../../src/lib/free/soma";
 import { NEXT_COUPON_NOTE } from "../../src/lib/free/tips";
+import { CRWV_ISIN, PRICE_ERROR } from "../../src/lib/free/corporateBond";
+import { BROKER_URL, ledgerHasIsin } from "../../src/tests/probe-cleanup";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -1772,5 +1782,300 @@ test.describe("US-352 /free/request", () => {
         scripts.some((script) => script.includes(s))
       )
     ).toEqual([]);
+  });
+});
+
+test.describe("US-354 /free/corporate-bond/crwv-2030", () => {
+  const ROUTE = "/free/corporate-bond/crwv-2030";
+  const TITLE = "CoreWeave 9.25% senior notes due 2030";
+  const TRADE = "2026-11-25";
+  const GOLDEN = `${ROUTE}?price=81.375&tradeDate=${TRADE}`;
+  // valuation-service's figures for clean 81.375 traded 2026-11-25 (T+1 on
+  // US_SIFMA skips Thanksgiving): the street convention in the ledger-models
+  // catalog (30/360 accrued, w = DSC/E stub, semiannual) gives YTM
+  // 0.1643998… and modified duration 2.64528…, which show as 16.44% and
+  // 2.65. US-354's metric quotes 16.46% and 2.64; the catalog formula, not
+  // the metric, is the spec, so these are the service's figures. The gap
+  // waits on an owner ruling (amend the metric, or a valuation-service ask);
+  // METRIC_GAP puts it in every golden run's report until then.
+  const SETTLEMENT = "2026-11-27";
+  const YTM = "16.44%";
+  const MODIFIED = "2.65";
+  const METRIC_GAP = {
+    type: "metric-gap",
+    description: `US-354 metric line 2 quotes YTM 16.46% and modified duration 2.64; valuation-service returns ${YTM} and ${MODIFIED}. Owner ruling pending.`,
+  };
+  const COUPON_DATES = [
+    "2026-12-01",
+    "2027-06-01",
+    "2027-12-01",
+    "2028-06-01",
+    "2028-12-01",
+    "2029-06-01",
+    "2029-12-01",
+    "2030-06-01",
+  ];
+
+  /** Fails, naming the fix, when the CRWV security was never seeded. */
+  async function requireSeed(): Promise<void> {
+    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+    test.skip(
+      !key,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
+    expect(
+      await ledgerHasIsin(CRWV_ISIN, BROKER_URL, key),
+      `seed not run: ISIN ${CRWV_ISIN} is not in the ledger; run scripts/seed-crwv-2030.ts (see its header)`
+    ).toBe(true);
+  }
+
+  const tile = (page: Page, id: string) => page.getByTestId(`tile-${id}`);
+
+  /** The golden figures, as the tiles show them and as returned. */
+  async function expectGolden(page: Page): Promise<void> {
+    test.info().annotations.push(METRIC_GAP);
+    await expect(tile(page, "settlement")).toHaveAttribute(
+      "data-value",
+      SETTLEMENT,
+      { timeout: 30_000 }
+    );
+    await expect(tile(page, "ytm").locator("dd")).toHaveText(YTM);
+    await expect(tile(page, "modified").locator("dd")).toHaveText(MODIFIED);
+    const value = (id: string) =>
+      tile(page, id).getAttribute("data-value") as Promise<string>;
+    const [clean, accrued, dirty] = await Promise.all(
+      ["clean", "accrued", "dirty"].map(value)
+    );
+    expect(clean).toBe("81.375");
+    // The test adds; the page never does.
+    expect(new Decimal(clean).plus(accrued).toFixed(3)).toBe(
+      new Decimal(dirty).toFixed(3)
+    );
+  }
+
+  test("journey: fill the form, Calculate, see the golden figures in the URL and on reload", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    await requireSeed();
+    const response = await page.goto(ROUTE);
+    expect(response?.status()).toBe(200);
+    await page.waitForLoadState("networkidle");
+    await page.getByLabel("Clean price", { exact: true }).fill("81.375");
+    await page.getByLabel("Trade date", { exact: true }).fill(TRADE);
+    await page.getByRole("button", { name: /calculate/i }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`\\?price=81\\.375&tradeDate=${TRADE}$`),
+      { timeout: 30_000 }
+    );
+    await expectGolden(page);
+    const reload = await page.reload();
+    expect(reload?.status()).toBe(200);
+    await expectGolden(page);
+  });
+
+  test("the cash flows are 8 coupons and the principal, each with a PV; the sweep marks 81.375 at the calculator's yield", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await requireSeed();
+    await page.goto(GOLDEN);
+    await expect(tile(page, "settlement")).toHaveAttribute(
+      "data-value",
+      SETTLEMENT,
+      { timeout: 30_000 }
+    );
+    const rows = await page.getByTestId("cashflow-row").evaluateAll((els) =>
+      els.map((el) => ({
+        date: el.getAttribute("data-date"),
+        kind: el.getAttribute("data-kind"),
+        pv: el.getAttribute("data-pv") ?? "",
+      }))
+    );
+    expect(rows.map(({ date, kind }) => [date, kind])).toEqual([
+      ...COUPON_DATES.map((d) => [d, "coupon"]),
+      ["2030-06-01", "principal"],
+    ]);
+    for (const row of rows) {
+      expect(row.pv, row.date ?? "").toMatch(/^\d+(\.\d+)?$/);
+    }
+    const points = await page.getByTestId("sweep-point").evaluateAll((els) =>
+      els.map((el) => ({
+        price: el.getAttribute("data-price"),
+        ytm: el.getAttribute("data-ytm"),
+        marked: el.getAttribute("data-marked"),
+      }))
+    );
+    const marked = points.filter((p) => p.marked === "true");
+    expect(marked.map((p) => p.price)).toEqual(["81.375"]);
+    expect(marked[0].ytm).toBe(
+      await tile(page, "ytm").getAttribute("data-value")
+    );
+    await expect(
+      page
+        .getByRole("region", { name: "Cash flows to maturity" })
+        .locator(".js-plotly-plot")
+    ).toHaveCount(1, { timeout: 30_000 });
+    await expect(
+      page
+        .getByRole("region", { name: "Price and yield" })
+        .locator(".js-plotly-plot")
+    ).toHaveCount(1, { timeout: 30_000 });
+  });
+
+  for (const price of ["", "0", "-1", "200.01"]) {
+    test(`price ${JSON.stringify(
+      price
+    )}: a field error and no figures`, async ({ page }) => {
+      const response = await page.goto(
+        `${ROUTE}?price=${encodeURIComponent(price)}&tradeDate=${TRADE}`
+      );
+      expect(response?.status()).toBe(200);
+      const input = page.getByLabel("Clean price", { exact: true });
+      await expect(page.getByText(PRICE_ERROR)).toBeVisible();
+      await expect(input).toHaveAccessibleDescription(PRICE_ERROR);
+      await expect(input).toHaveValue(price);
+      await expect(page.getByTestId(/^tile-/)).toHaveCount(0);
+      await expect(page.getByTestId("cashflow-row")).toHaveCount(0);
+      await expect(page.getByTestId("crwv-results")).toHaveText("");
+    });
+  }
+
+  test("no price parameter values the example price, and clearing the field then Calculate is a field error", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto(`${ROUTE}?tradeDate=${TRADE}`);
+    await expect(page.getByLabel("Clean price", { exact: true })).toHaveValue(
+      "81.375"
+    );
+    await expect(page.getByText(PRICE_ERROR)).toHaveCount(0);
+    await page.waitForLoadState("networkidle");
+    await page.getByLabel("Clean price", { exact: true }).fill("");
+    await page.getByRole("button", { name: /calculate/i }).click();
+    await expect(page).toHaveURL(/\?price=&tradeDate=/, { timeout: 30_000 });
+    await expect(page.getByText(PRICE_ERROR)).toBeVisible();
+    await expect(page.getByTestId(/^tile-/)).toHaveCount(0);
+  });
+
+  test("journey: /free → dataset picker → the CoreWeave bond", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto("/free");
+    await page.waitForLoadState("networkidle");
+    const picker = page.getByRole("button", { name: /Public dataset/ });
+    await picker.click();
+    await expect(picker).toHaveAttribute("aria-expanded", "true");
+    await page
+      .getByRole("link", { name: "CoreWeave 9.25% 2030 corporate bond" })
+      .click();
+    await expect(page).toHaveURL(/\/free\/corporate-bond\/crwv-2030$/);
+    await expect(page.getByRole("heading", { name: TITLE })).toBeVisible();
+  });
+
+  test("FT_HOMEPAGE_API_KEY never reaches the browser, valid, invalid or failed", async ({
+    page,
+    request,
+  }) => {
+    test.setTimeout(90_000);
+    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+    test.skip(
+      !key,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
+    for (const url of [
+      GOLDEN,
+      `${ROUTE}/__data.json?price=81.375&tradeDate=${TRADE}`,
+      `${ROUTE}/__data.json?price=200.01`,
+      `${ROUTE}/__data.json`,
+    ]) {
+      const response = await request.get(url);
+      expect(response.status(), `GET ${url}`).toBe(200);
+      expect(await response.text(), `GET ${url} body`).not.toContain(key);
+    }
+    const headers: string[] = [];
+    page.on("request", (req) => headers.push(JSON.stringify(req.headers())));
+    await page.goto(GOLDEN);
+    await page.waitForLoadState("networkidle");
+    expect(await page.content()).not.toContain(key);
+    expect(headers.filter((h) => h.includes(key))).toEqual([]);
+  });
+
+  /** A port nothing listens on once this returns. */
+  function freePort(): Promise<number> {
+    return new Promise((resolve, reject) => {
+      const server = createServer();
+      server.once("error", reject);
+      server.listen(0, "127.0.0.1", () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        server.close(() => resolve(port));
+      });
+    });
+  }
+
+  test("with the broker down: Unavailable and no numbers, and no key in the payload", async ({
+    page,
+    request,
+  }) => {
+    test.setTimeout(120_000);
+    const entry = path.resolve("build/index.js");
+    test.skip(
+      !existsSync(entry),
+      "no build/index.js (scripts/checks/e2e.sh builds it before the specs)"
+    );
+    // Without the key the loader is unavailable before any broker call.
+    const key = process.env.FT_HOMEPAGE_API_KEY?.trim() ?? "";
+    test.skip(
+      !key,
+      "FT_HOMEPAGE_API_KEY not set for this run (scripts/checks/e2e.sh exports it)"
+    );
+    const [port, closed] = [await freePort(), await freePort()];
+    const base = `http://127.0.0.1:${port}`;
+    const server = spawn(process.execPath, [entry], {
+      env: {
+        ...process.env,
+        PORT: String(port),
+        HOST: "127.0.0.1",
+        ORIGIN: base,
+        BROKER_HOST: `127.0.0.1:${closed}`,
+      },
+      stdio: "ignore",
+    });
+    try {
+      await expect
+        .poll(
+          async () => {
+            try {
+              return (await request.get(`${base}/free`)).status();
+            } catch {
+              return 0;
+            }
+          },
+          { timeout: 60_000, intervals: [500] }
+        )
+        .toBe(200);
+      // beforeEach aborts other origins; the later route runs first.
+      await page.route(
+        (url) => url.origin === base,
+        (route) => route.continue()
+      );
+      const response = await page.goto(`${base}${GOLDEN}`);
+      expect(response?.status()).toBe(200);
+      const results = page.getByTestId("crwv-results");
+      await expect(results).toContainText("Unavailable", { timeout: 30_000 });
+      expect(await results.textContent()).not.toMatch(/\d/);
+      await expect(page.getByTestId(/^tile-/)).toHaveCount(0);
+      await expect(page.getByTestId("cashflow-row")).toHaveCount(0);
+      await expect(page.getByTestId("sweep-point")).toHaveCount(0);
+      const data = await request.get(
+        `${base}${ROUTE}/__data.json?price=81.375&tradeDate=${TRADE}`
+      );
+      expect(data.status()).toBe(200);
+      expect(await data.text()).not.toContain(key);
+    } finally {
+      server.kill();
+    }
   });
 });
