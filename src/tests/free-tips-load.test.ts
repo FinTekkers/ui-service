@@ -6,11 +6,14 @@
  * measures and the cashflows (never CLEAN_PRICE), and makes a failed
  * source's sections unavailable without a mock figure. US-311: it asks for
  * ACCRUED_INTEREST in a second call, whose failure leaves the rest showing.
+ * US-328: a third call projects the cashflows at CPI-U's latest 12-month
+ * change, or none is made and the table names why.
  *
  * The security lookup, price search, CPI-U lookup and valuation call are
  * stubbed; the e2e spec covers the real backend.
  */
-import { render, screen } from "@testing-library/svelte";
+import { render, screen, within } from "@testing-library/svelte";
+import Decimal from "decimal.js";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -18,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   createPriceSearch: vi.fn(),
   search: vi.fn(),
   fetchCpiReadings: vi.fn(),
+  fetchLatestCpiChange: vi.fn(),
   getServiceConnection: vi.fn(),
   runValuation: vi.fn(),
 }));
@@ -29,6 +33,7 @@ vi.mock("$lib/security", async (importOriginal) => ({
 vi.mock("$lib/cpi", async (importOriginal) => ({
   ...(await importOriginal<typeof import("$lib/cpi")>()),
   fetchCpiReadings: mocks.fetchCpiReadings,
+  fetchLatestCpiChange: mocks.fetchLatestCpiChange,
 }));
 vi.mock("$lib/grpc-auth", () => ({
   getServiceConnection: mocks.getServiceConnection,
@@ -65,12 +70,19 @@ import { QueryPriceResponseProto } from "@fintekkers/ledger-models/node/fintekke
 import { LocalTimestampProto } from "@fintekkers/ledger-models/node/fintekkers/models/util/local_timestamp_pb.js";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb.js";
 import { fromDecimalProto, toDecimalProto } from "$lib/decimal";
-import { UNAVAILABLE, type TipsPageData } from "$lib/free/tips";
+import { twelveMonthCpiChange, type CpiReading } from "$lib/cpi";
+import {
+  NEXT_COUPON_NOTE,
+  UNAVAILABLE,
+  type TipsPageData,
+} from "$lib/free/tips";
 import {
   FREE_TIPS_CUSIP,
+  FREE_TIPS_MEASURES,
   fetchLatestRealCleanPrice,
   referenceCpiMonths,
 } from "$lib/server/free-tips";
+import TipsCalculatorDisplay from "../components/free/TipsCalculatorDisplay.svelte";
 import { load } from "../routes/free/tips/+page.server";
 import TipsPage from "../routes/free/tips/+page.svelte";
 import { LIVE, liveWithout, mockFiguresIn } from "./fixtures/free-tips-live";
@@ -145,8 +157,14 @@ const MEASURES: [number, string][] = [
   [MeasureProto.YIELD_TO_MATURITY, "0.019872"],
 ];
 
-function cashflow(iso: string, fv: string) {
+function cashflow(
+  iso: string,
+  fv: string,
+  extra: { couponRate?: string; indexRatio?: string } = {}
+) {
   const [y, m, d] = iso.split("-").map(Number);
+  const decimal = (v?: string) =>
+    v === undefined ? undefined : toDecimalProto(v);
   return {
     getCashflowDate: () => ({
       getYear: () => y,
@@ -155,8 +173,41 @@ function cashflow(iso: string, fv: string) {
     }),
     getFvAmount: () => toDecimalProto(fv),
     getPvAmount: () => toDecimalProto(fv),
-    getCouponRate: () => undefined,
+    getCouponRate: () => decimal(extra.couponRate),
+    getIndexRatio: () => decimal(extra.indexRatio),
   };
+}
+
+/**
+ * US-328: CPI-U 300.0 in September 2026 against 291.26 in September 2025,
+ * 3.0007% a year.
+ */
+const CPI_HISTORY: CpiReading[] = [
+  { year: 2025, month: 9, label: "CPI-U Sep 2025", value: "291.26" },
+  { year: 2026, month: 3, label: "CPI-U Mar 2026", value: "296.5" },
+  { year: 2026, month: 9, label: "CPI-U Sep 2026", value: "300.0" },
+];
+
+/**
+ * US-328: the projection call's cashflows, out of date order. The maturity
+ * date has the final coupon and, as its own row with coupon_rate unset, the
+ * principal. Each fv_amount is a third of a cent over the dollar, so summing
+ * before rounding would show $1,258.01, not $1,258.00.
+ */
+const PROJECTED = [
+  cashflow("2035-04-15", "1234.004", { indexRatio: "1.2345678" }),
+  cashflow("2027-04-15", "11.004", {
+    couponRate: "2.125",
+    indexRatio: "1.0571234",
+  }),
+  cashflow("2035-04-15", "13.004", {
+    couponRate: "2.125",
+    indexRatio: "1.2345678",
+  }),
+];
+
+function projectionResponse(cashflows: unknown[] = PROJECTED) {
+  return { getMeasureResultsList: () => [], getCashflowsList: () => cashflows };
 }
 
 /** ACCRUED_INTEREST for the accrual call: "$7.43" in LIVE. */
@@ -181,17 +232,34 @@ function isAccrual(request: any): boolean {
   return request.getMeasuresList().includes(MeasureProto.ACCRUED_INTEREST);
 }
 
-/** Answers the main call with `main`, the accrual call with `accrual`. */
+/** Whether `request` is the projection call: it carries an assumed rate. */
+function isProjection(request: any): boolean {
+  return !!request.getProductInput().getTips()?.hasAssumedInflationRate();
+}
+
+function isMain(request: any): boolean {
+  return !isAccrual(request) && !isProjection(request);
+}
+
+/** Answers the main call with `main`, the accrual call with `accrual` and
+ * the projection call with `projection`. */
 function answer(
   main: () => [unknown, unknown?],
   accrual: () => [unknown, unknown?] = () => [
     null,
     valuationResponse([[MeasureProto.ACCRUED_INTEREST, ACCRUED]]),
-  ]
+  ],
+  projection: () => [unknown, unknown?] = () => [null, projectionResponse()]
 ) {
   mocks.runValuation.mockImplementation((request: any, callback: Function) => {
     requests.push(request);
-    callback(...(isAccrual(request) ? accrual() : main()));
+    callback(
+      ...(isAccrual(request)
+        ? accrual()
+        : isProjection(request)
+        ? projection()
+        : main())
+    );
   });
 }
 
@@ -222,6 +290,9 @@ beforeEach(() => {
     readings: READINGS,
     latestMonth: null,
   });
+  mocks.fetchLatestCpiChange.mockResolvedValue(
+    twelveMonthCpiChange(CPI_HISTORY)
+  );
   answer(() => [null, valuationResponse()]);
 });
 
@@ -239,6 +310,7 @@ function keysUsed(): unknown[] {
     ...mocks.FetchSecurityProtoByCusip.mock.calls.map((c) => c[1]),
     ...mocks.createPriceSearch.mock.calls.map((c) => c[0]),
     ...mocks.fetchCpiReadings.mock.calls.map((c) => c[1]),
+    ...mocks.fetchLatestCpiChange.mock.calls.map((c) => c[0]),
     ...mocks.getServiceConnection.mock.calls.map((c) => c[0]),
   ];
 }
@@ -265,9 +337,10 @@ describe("/free/tips load", () => {
   });
 
   test("with no cashflows, the next coupon and its date are null", async () => {
-    mocks.runValuation.mockImplementation((_: any, callback: Function) =>
-      callback(null, { ...valuationResponse(), getCashflowsList: () => [] })
-    );
+    answer(() => [
+      null,
+      { ...valuationResponse(), getCashflowsList: () => [] },
+    ]);
     const data = await load();
     expect(data.valuation.ok && data.valuation.data).toMatchObject({
       nextCoupon: null,
@@ -277,8 +350,8 @@ describe("/free/tips load", () => {
 
   test("the valuation asks for the five measures and the cashflows, never CLEAN_PRICE", async () => {
     await load();
-    expect(requests).toHaveLength(2);
-    const measures = requests.find((r) => !isAccrual(r)).getMeasuresList();
+    expect(requests).toHaveLength(3);
+    const measures = requests.find(isMain).getMeasuresList();
     expect([...measures].sort((a, b) => a - b)).toEqual(
       [
         MeasureProto.REFERENCE_CPI,
@@ -296,7 +369,7 @@ describe("/free/tips load", () => {
   test("the valuation uses the FedInvest price, settles on its date and sends that date's CPI-U readings", async () => {
     await load();
     expect(mocks.fetchCpiReadings).toHaveBeenCalledWith("2026-10-23", SENTINEL);
-    const request = requests.find((r) => !isAccrual(r));
+    const request = requests.find(isMain);
     const tips = request.getProductInput().getTips();
     expect(fromDecimalProto(tips.getCleanPrice())).toBe("98.4375");
     expect(
@@ -339,13 +412,20 @@ describe("/free/tips load", () => {
   test("with no key set, nothing is called and every section is unavailable", async () => {
     vi.stubEnv("FT_HOMEPAGE_API_KEY", "");
     const data = await load();
-    for (const section of ["security", "price", "cpi", "valuation"] as const) {
+    for (const section of [
+      "security",
+      "price",
+      "cpi",
+      "valuation",
+      "projection",
+    ] as const) {
       expect(data[section].ok, section).toBe(false);
     }
     expect(mocks.getServiceConnection).not.toHaveBeenCalled();
     expect(mocks.FetchSecurityProtoByCusip).not.toHaveBeenCalled();
     expect(mocks.createPriceSearch).not.toHaveBeenCalled();
     expect(mocks.fetchCpiReadings).not.toHaveBeenCalled();
+    expect(mocks.fetchLatestCpiChange).not.toHaveBeenCalled();
 
     const { container } = render(TipsPage, { props: { data } });
     expect(
@@ -391,9 +471,7 @@ describe("US-311: /free/tips accrued interest and full value", () => {
       const { measuresList: _, ...rest } = request.toObject();
       return rest;
     };
-    expect(inputs(accrual[0])).toEqual(
-      inputs(requests.find((r) => !isAccrual(r)))
-    );
+    expect(inputs(accrual[0])).toEqual(inputs(requests.find(isMain)));
   });
 
   test("passes ACCRUED_INTEREST through unchanged: 5.987 shows $5.99", async () => {
@@ -464,9 +542,181 @@ describe("US-311: /free/tips accrued interest and full value", () => {
   );
 });
 
+describe("US-328: /free/tips projected cashflows", () => {
+  /** The projected cashflows table, found by its title. */
+  function flowsTable() {
+    return screen.getByRole("region", { name: "Projected cashflows" });
+  }
+
+  /** Each body row's cells, as text. */
+  function bodyCells(): string[][] {
+    return within(flowsTable())
+      .getAllByRole("row")
+      .slice(1)
+      .map((row) =>
+        within(row)
+          .getAllByRole("cell")
+          .map((cell) => cell.textContent ?? "")
+      );
+  }
+
+  test("sends CPI-U's 12-month change at full precision, in percent a year, for PRESENT_VALUE_CASHFLOWS alone", async () => {
+    await load();
+    const projection = requests.filter(isProjection);
+    expect(projection).toHaveLength(1);
+    expect(projection[0].getMeasuresList()).toEqual([
+      MeasureProto.PRESENT_VALUE_CASHFLOWS,
+    ]);
+    // product_inputs.proto: "Assumed annual inflation rate, in percent a
+    // year (3.0 = 3% a year)". 300.0 / 291.26 - 1, unrounded: not "3.0".
+    const rate = fromDecimalProto(
+      projection[0].getProductInput().getTips().getAssumedInflationRate()
+    );
+    expect(rate).toBe(
+      new Decimal("300.0").dividedBy("291.26").minus(1).times(100).toFixed()
+    );
+    expect(rate).not.toBe("3.0");
+    expect(new Decimal(rate!).toFixed(1)).toBe("3.0");
+  });
+
+  test("the main and accrual calls are unchanged: no assumed rate, the main measures as before", async () => {
+    await load();
+    const main = requests.filter(isMain);
+    const accrual = requests.filter(isAccrual);
+    expect(main).toHaveLength(1);
+    expect(accrual).toHaveLength(1);
+    for (const request of [...main, ...accrual]) {
+      expect(
+        request.getProductInput().getTips().hasAssumedInflationRate()
+      ).toBe(false);
+    }
+    expect(main[0].getMeasuresList()).toEqual(FREE_TIPS_MEASURES);
+  });
+
+  test("fills one row per returned cashflow, the principal its own row, and totals the rounded totals", async () => {
+    const data = await load();
+    expect(data.projection).toEqual(LIVE.projection);
+
+    render(TipsCalculatorDisplay, { props: { data } });
+    // By date; on the maturity date the final coupon, then the principal.
+    // Each figure is the row's own fv_amount and index_ratio: nothing summed.
+    expect(bodyCells()).toEqual([
+      ["Apr 15, 2027", "1.05712", "$11.00", "—", "$11.00"],
+      ["Apr 15, 2035", "1.23457", "$13.00", "—", "$13.00"],
+      ["Apr 15, 2035", "1.23457", "—", "$1,234.00", "$1,234.00"],
+    ]);
+    // 11.00 + 13.00 + 1,234.00; the raw 1,258.012 would read $1,258.01.
+    expect(screen.getByText("$1,258.00")).toBeInTheDocument();
+    expect(screen.getByText(/^Total received:/)).toHaveTextContent(
+      "Total received: $1,258.00"
+    );
+    expect(
+      screen.getByText(
+        "Assumes CPI-U keeps rising 3.0% a year, its change over the 12 months to September 2026."
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText(NEXT_COUPON_NOTE)).toBeInTheDocument();
+    expect(screen.queryByText(/Treasury's official TIPS index/)).toBeNull();
+  });
+
+  test("no BLS reading for October 2025: Treasury's 325.604 stands in, and the note says so", async () => {
+    mocks.fetchLatestCpiChange.mockResolvedValue(
+      twelveMonthCpiChange([
+        { year: 2025, month: 9, label: "CPI-U Sep 2025", value: "324.8" },
+        { year: 2025, month: 11, label: "CPI-U Nov 2025", value: "324.1" },
+        { year: 2026, month: 10, label: "CPI-U Oct 2026", value: "334.2" },
+      ])
+    );
+    const data = await load();
+    const projection = requests.filter(isProjection);
+    expect(projection).toHaveLength(1);
+    expect(
+      fromDecimalProto(
+        projection[0].getProductInput().getTips().getAssumedInflationRate()
+      )
+    ).toBe(
+      new Decimal("334.2").dividedBy("325.604").minus(1).times(100).toFixed()
+    );
+
+    render(TipsCalculatorDisplay, { props: { data } });
+    expect(
+      screen.getByText(
+        "Assumes CPI-U keeps rising 2.6% a year, its change over the 12 months to October 2026."
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "October 2025 uses Treasury's official TIPS index (325.604), as BLS published no October 2025 CPI."
+      )
+    ).toBeInTheDocument();
+  });
+
+  test("CPI-U has no reading a year before its latest month: no projection call, and the table says why", async () => {
+    // March 2025 is older than a year; it never stands in for September 2025.
+    mocks.fetchLatestCpiChange.mockResolvedValue(
+      twelveMonthCpiChange([
+        { year: 2025, month: 3, label: "CPI-U Mar 2025", value: "288.0" },
+        ...CPI_HISTORY.slice(1),
+      ])
+    );
+    const data = await load();
+    expect(requests.filter(isProjection)).toHaveLength(0);
+    expect(requests).toHaveLength(2);
+    expect(data.valuation).toEqual(LIVE.valuation);
+
+    const { container } = render(TipsCalculatorDisplay, { props: { data } });
+    const message =
+      "Unavailable: CPI-U has no reading for September 2025, a year before its latest month, so there is no 12-month inflation rate.";
+    expect(data.projection).toEqual({ ok: false, message });
+    expect(within(flowsTable()).getByText(message)).toHaveAttribute(
+      "colspan",
+      "5"
+    );
+    expect(screen.queryByText(/doesn't take yet/)).toBeNull();
+    expect(container.textContent).not.toContain("Assumes CPI-U");
+    expect(container).toHaveTextContent(`Total received: ${UNAVAILABLE.value}`);
+  });
+
+  test("CPI-U's latest month is unknown or its lookup failed: no projection call, the generic message", async () => {
+    mocks.fetchLatestCpiChange.mockResolvedValue({
+      ok: false,
+      reason: "no-latest",
+    });
+    const data = await load();
+    expect(requests.filter(isProjection)).toHaveLength(0);
+    expect(data.projection).toEqual({
+      ok: false,
+      message: "Projected cashflows are unavailable right now.",
+    });
+    render(TipsCalculatorDisplay, { props: { data } });
+    expect(
+      within(flowsTable()).getByText(UNAVAILABLE.projection)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/doesn't take yet/)).toBeNull();
+  });
+
+  test("valuation-service returns no cashflows: the table says so", async () => {
+    answer(
+      () => [null, valuationResponse()],
+      undefined,
+      () => [null, projectionResponse([])]
+    );
+    const data = await load();
+    expect(requests.filter(isProjection)).toHaveLength(1);
+    const message =
+      "Unavailable: the valuation service returned no projected cashflows.";
+    expect(data.projection).toEqual({ ok: false, message });
+
+    render(TipsCalculatorDisplay, { props: { data } });
+    expect(within(flowsTable()).getByText(message)).toBeInTheDocument();
+    expect(screen.queryByText(/doesn't take yet/)).toBeNull();
+    expect(screen.queryByText(/^Assumes CPI-U/)).toBeNull();
+  });
+});
+
 describe("/free/tips load when a live source fails", () => {
   const PRICE_GONE = {
-    ...liveWithout("price", "cpi", "valuation"),
+    ...liveWithout("price", "cpi", "valuation", "projection"),
     asOf: { priceDate: null, cpiMonths: null },
     calculator: { years: null, inflation: "2.30" },
   };
@@ -491,7 +741,7 @@ describe("/free/tips load when a live source fails", () => {
           new Error("ledger down")
         ),
       {
-        ...liveWithout("security", "price", "cpi", "valuation"),
+        ...liveWithout("security", "price", "cpi", "valuation", "projection"),
         asOf: { priceDate: null, cpiMonths: null },
         calculator: { years: null, inflation: "2.30" },
       },
@@ -505,31 +755,26 @@ describe("/free/tips load when a live source fails", () => {
           latestMonth: "Jun 2026",
         }),
       {
-        ...liveWithout("cpi", "valuation"),
+        ...liveWithout("cpi", "valuation", "projection"),
         asOf: { priceDate: "2026-10-23", cpiMonths: null },
       },
       false,
     ],
     [
       "the valuation fails",
-      () =>
-        mocks.runValuation.mockImplementation((_r: any, cb: Function) =>
-          cb({ details: "valuation down" })
-        ),
+      () => answer(() => [{ details: "valuation down" }]),
       liveWithout("valuation"),
       true,
     ],
     [
       "the valuation lacks MARKET_VALUE",
       () =>
-        mocks.runValuation.mockImplementation((_r: any, cb: Function) =>
-          cb(
-            null,
-            valuationResponse(
-              MEASURES.filter(([m]) => m !== MeasureProto.MARKET_VALUE)
-            )
-          )
-        ),
+        answer(() => [
+          null,
+          valuationResponse(
+            MEASURES.filter(([m]) => m !== MeasureProto.MARKET_VALUE)
+          ),
+        ]),
       liveWithout("valuation"),
       true,
     ],

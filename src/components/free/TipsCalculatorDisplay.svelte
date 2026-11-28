@@ -1,9 +1,11 @@
 <!-- The calculator of DataExplorerTIPS.dc.html, display only: its 7 inputs
      show the default inputs and are disabled, and the outputs are the live
      figures /free/tips's server load returns (US-298). Nothing recalculates.
-     A figure whose source failed reads "Unavailable". The nominal yield and
-     the projected cashflows need an inflation forecast the valuation
-     request can't carry yet (US-298b), so they say so. The next coupon is
+     A figure whose source failed reads "Unavailable". The nominal yield
+     needs an inflation forecast the valuation request can't carry yet
+     (US-298b), so it says so. The projected cashflows are valuation-service's
+     at CPI-U's latest 12-month change, row for row, or a named reason they
+     are unavailable (US-328). The next coupon is
      an estimate: the first projected cashflow at today's index ratio, not
      the amount the payment date's ratio will pay (US-310). The clean value
      is MARKET_VALUE; the accrued interest is ACCRUED_INTEREST and the full
@@ -20,6 +22,7 @@
   $: security = data.security.ok ? data.security.data : null;
   $: price = data.price.ok ? data.price.data : null;
   $: valuation = data.valuation.ok ? data.valuation.data : null;
+  $: projection = data.projection.ok ? data.projection.data : null;
 
   $: fields = [
     { label: "Face value ($)", value: security?.faceValue },
@@ -93,7 +96,9 @@
       <div class="flows-top">
         <span class="flows-title" id="flows-title">Projected cashflows</span>
         <span class="muted"
-          >Total received: <span class="total">{UNAVAILABLE.value}</span></span
+          >Total received: <span class="total"
+            >{projection?.totalReceived ?? UNAVAILABLE.value}</span
+          ></span
         >
       </div>
       <!-- Focusable so keyboard users can scroll the table. -->
@@ -115,15 +120,33 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="unavailable-row" colspan="5"
-                >{UNAVAILABLE.projection}</td
-              >
-            </tr>
+            {#if data.projection.ok}
+              {#each data.projection.data.rows as row}
+                <tr>
+                  <td>{row.date}</td>
+                  <td>{row.indexRatio ?? "—"}</td>
+                  <td>{row.coupon ?? "—"}</td>
+                  <td>{row.principal ?? "—"}</td>
+                  <td>{row.total}</td>
+                </tr>
+              {/each}
+            {:else}
+              <tr>
+                <td class="unavailable-row" colspan="5"
+                  >{data.projection.message}</td
+                >
+              </tr>
+            {/if}
           </tbody>
         </table>
       </div>
     </div>
+    {#if projection}
+      <p class="note">{projection.assumption}</p>
+      {#if projection.treasuryNote}
+        <p class="note">{projection.treasuryNote}</p>
+      {/if}
+    {/if}
   </div>
 </div>
 

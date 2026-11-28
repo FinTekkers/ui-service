@@ -13,6 +13,7 @@ import { ZonedDateTime } from "@fintekkers/ledger-models/node/wrappers/models/ut
 import { PositionFilter } from "@fintekkers/ledger-models/node/wrappers/models/position/positionfilter";
 import { SecurityService } from "@fintekkers/ledger-models/node/wrappers/services/security-service/SecurityService";
 import { stampOwn } from "@fintekkers/ledger-models/node/wrappers/util/object-types";
+import Decimal from "decimal.js";
 import { searchSeriesPrices } from "$lib/fixings";
 
 const { FieldProto } = field_pkg;
@@ -21,6 +22,24 @@ const { FieldProto } = field_pkg;
 export const CPI_U_NSA_SERIES_ID = "CUUR0000SA0";
 
 export type YearMonth = { year: number; month: number }; // month 1-12
+
+/**
+ * CPI-U NSA months BLS never published, keyed "YYYY-MM", with the index
+ * Treasury announced for TIPS in their place under 31 CFR 356 Appendix B.
+ * Only these, and nothing else, stand in for a missing reading (US-328).
+ * - 2025-10: no BLS release (2025 federal shutdown). 325.604 per
+ *   TreasuryDirect, CPI_20251126.pdf, 26 Nov 2025. valuation-service uses
+ *   the same number (VS-163, LM-496).
+ */
+export const TREASURY_TIPS_INDEX: Readonly<Record<string, string>> =
+  Object.freeze({ "2025-10": "325.604" });
+
+function treasuryTipsIndex(m: YearMonth): string | undefined {
+  const key = `${m.year}-${String(m.month).padStart(2, "0")}`;
+  return Object.prototype.hasOwnProperty.call(TREASURY_TIPS_INDEX, key)
+    ? TREASURY_TIPS_INDEX[key]
+    : undefined;
+}
 
 /** One monthly CPI-U level as stored in the price service. */
 export type CpiReading = YearMonth & { label: string; value: string };
@@ -31,6 +50,33 @@ export type CpiLookup = {
   /** Latest month loaded, e.g. "Aug 2026"; null when unknown. */
   latestMonth: string | null;
 };
+
+/**
+ * US-328: CPI-U's change over the 12 months to its latest month, or why
+ * there is none. Never a default rate: without the same month a year
+ * earlier there is no change.
+ */
+export type CpiChange =
+  | {
+      ok: true;
+      /** Percent a year at full precision, the unit of
+       * TipsInput.assumed_inflation_rate ("3.0 = 3% a year"). */
+      rate: string;
+      /** The same rate to 1 decimal, for display, e.g. "3.0". */
+      pct: string;
+      /** The latest month, e.g. "September 2026". */
+      month: string;
+      /** Set when the year-ago month is one BLS never published, so its
+       * level is Treasury's TIPS index (TREASURY_TIPS_INDEX). */
+      treasuryIndex?: { month: string; value: string };
+    }
+  | { ok: false; reason: "no-latest" }
+  | {
+      ok: false;
+      reason: "no-year-ago";
+      /** The missing month, e.g. "September 2025". */
+      missingMonth: string;
+    };
 
 /** What the TIPS Pricer's Current CPI field shows after a lookup. */
 export type CurrentCpiState = {
@@ -89,6 +135,15 @@ export function monthWindow(m: YearMonth): { start: number; end: number } {
     start: Date.UTC(m.year, m.month - 1, 1),
     end: Date.UTC(m.year, m.month, 1),
   };
+}
+
+/** e.g. "September 2026". */
+export function longMonthLabel(m: YearMonth): string {
+  const name = new Date(Date.UTC(m.year, m.month - 1, 1)).toLocaleString(
+    "en-US",
+    { month: "long", timeZone: "UTC" }
+  );
+  return `${name} ${m.year}`;
 }
 
 export function monthLabel(m: YearMonth): string {
@@ -184,21 +239,106 @@ async function fetchMonth(
   return { ...m, label: cpiReadingLabel(m), value: latest.value };
 }
 
-async function fetchLatestMonth(
+/**
+ * Every month the series has, oldest first, from one PRICE_HORIZON_MAX
+ * search. One reading per month: the latest stamp wins, as in fetchMonth.
+ */
+async function fetchMonthlyReadings(
   seriesId: string,
   apiKey?: string
-): Promise<string | null> {
+): Promise<CpiReading[]> {
   const points = await searchSeriesPrices(
     seriesId,
     (request) => request.setHorizon(PriceHorizonProto.PRICE_HORIZON_MAX),
     apiKey
   );
-  if (points.length === 0) return null;
-  const latest = new Date(Math.max(...points.map((p) => p.at)));
-  return monthLabel({
-    year: latest.getUTCFullYear(),
-    month: latest.getUTCMonth() + 1,
-  });
+  const byMonth = new Map<number, { at: number; reading: CpiReading }>();
+  for (const p of points) {
+    const at = new Date(p.at);
+    const m = { year: at.getUTCFullYear(), month: at.getUTCMonth() + 1 };
+    const key = m.year * 12 + m.month - 1;
+    const seen = byMonth.get(key);
+    if (seen && seen.at >= p.at) continue;
+    byMonth.set(key, {
+      at: p.at,
+      reading: { ...m, label: cpiReadingLabel(m), value: p.value },
+    });
+  }
+  return [...byMonth.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([, { reading }]) => reading);
+}
+
+async function fetchLatestMonth(
+  seriesId: string,
+  apiKey?: string
+): Promise<string | null> {
+  const readings = await fetchMonthlyReadings(seriesId, apiKey);
+  const latest = readings[readings.length - 1];
+  return latest ? monthLabel(latest) : null;
+}
+
+/**
+ * The 12-month change to the latest of `readings`: the latest month against
+ * exactly the same month a year earlier, never an older one. 300.0 against
+ * 291.26 is rate "3.0007..." and pct "3.0". The rate is display-free: it is
+ * what valuation-service is sent. A year-ago month BLS never published uses
+ * Treasury's TIPS index for it (TREASURY_TIPS_INDEX), and only that.
+ */
+export function twelveMonthCpiChange(readings: CpiReading[]): CpiChange {
+  let latest: CpiReading | undefined;
+  for (const r of readings) {
+    if (!latest || r.year * 12 + r.month > latest.year * 12 + latest.month) {
+      latest = r;
+    }
+  }
+  if (!latest) return { ok: false, reason: "no-latest" };
+  const target = addMonths(latest, -12);
+  const yearAgo = readings.find(
+    (r) => r.year === target.year && r.month === target.month
+  );
+  const treasury = yearAgo ? undefined : treasuryTipsIndex(target);
+  const yearAgoValue = yearAgo?.value ?? treasury;
+  const base = yearAgoValue !== undefined && new Decimal(yearAgoValue);
+  const now = new Decimal(latest.value);
+  if (!base || !base.isFinite() || base.lte(0)) {
+    return {
+      ok: false,
+      reason: "no-year-ago",
+      missingMonth: longMonthLabel(target),
+    };
+  }
+  if (!now.isFinite()) return { ok: false, reason: "no-latest" };
+  const rate = now.dividedBy(base).minus(1).times(100);
+  return {
+    ok: true,
+    rate: rate.toFixed(),
+    pct: rate.toFixed(1),
+    month: longMonthLabel(latest),
+    ...(treasury !== undefined
+      ? { treasuryIndex: { month: longMonthLabel(target), value: treasury } }
+      : {}),
+  };
+}
+
+/**
+ * US-328: CPI-U NSA's change over the 12 months to its latest month in the
+ * price service. Never throws: a failed lookup reads as "no-latest".
+ */
+export async function fetchLatestCpiChange(
+  apiKey?: string
+): Promise<CpiChange> {
+  try {
+    const seriesId = await findCpiUSeriesId(apiKey);
+    if (!seriesId) return { ok: false, reason: "no-latest" };
+    return twelveMonthCpiChange(await fetchMonthlyReadings(seriesId, apiKey));
+  } catch (e: any) {
+    console.error(
+      "CPI-U 12-month change lookup failed:",
+      e?.details ?? e?.message ?? e
+    );
+    return { ok: false, reason: "no-latest" };
+  }
 }
 
 /**

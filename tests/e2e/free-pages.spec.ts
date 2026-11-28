@@ -617,9 +617,6 @@ test("/free/tips calculator is disabled and shows its defaults", async ({
   await expect(inflation).toBeDisabled();
   await expect(inflation).toHaveValue("2.30");
   await expect(calc.getByRole("textbox")).toHaveCount(7);
-  // US-298b: the projected cashflows need an inflation forecast.
-  await expect(calc.locator("tbody tr")).toHaveCount(1);
-  await expect(calc.locator("tbody tr")).toContainText(TIPS_UNAVAILABLE);
   await expect(calc.locator("button:enabled")).toHaveCount(0);
 
   await expect(calc).toContainText(
@@ -628,6 +625,62 @@ test("/free/tips calculator is disabled and shows its defaults", async ({
   await expect(
     page.getByText("Change the real yield and your inflation assumption")
   ).toHaveCount(0);
+});
+
+// US-328: the projected cashflows, at CPI-U's latest 12-month change. These
+// need the year-ago CPI-U month and valuation-service with VS-159 on the
+// host; an Unavailable reason fails them, naming the reason.
+async function expectProjectedCashflows(page: Page) {
+  const flows = page.getByRole("region", { name: "Projected cashflows" });
+  const rows = flows.locator("tbody tr");
+  await expect(rows.first()).toBeVisible();
+  const unavailable = flows.locator("td.unavailable-row");
+  if ((await unavailable.count()) > 0) {
+    throw new Error(
+      `Projected cashflows did not render: ${await unavailable.innerText()}`
+    );
+  }
+  expect(await rows.count()).toBeGreaterThanOrEqual(2);
+  // Every row has its index ratio, to 5 decimals.
+  for (const ratio of await rows.locator("td:nth-child(2)").allInnerTexts()) {
+    expect(ratio).toMatch(/^\d+\.\d{5}$/);
+  }
+  const calc = page.getByRole("region", { name: TIPS_H2S[3] as string });
+  await expect(calc).toContainText(/Total received: \$[\d,]+\.\d{2}/);
+  await expect(
+    calc.getByText(
+      /^Assumes CPI-U keeps rising −?\d+\.\d% a year, its change over the 12 months to [A-Z][a-z]+ \d{4}\.$/
+    )
+  ).toBeVisible();
+  await expect(calc.getByText(NEXT_COUPON_NOTE)).toBeVisible();
+}
+
+test("/free/tips projected cashflows fill one row per payment with the assumption line, and again on reload", async ({
+  page,
+}) => {
+  await page.goto("/free/tips");
+  await page.waitForLoadState("networkidle");
+  await expectProjectedCashflows(page);
+  await expect(page.getByText(/doesn't take yet/)).toHaveCount(0);
+
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+  await expectProjectedCashflows(page);
+});
+
+test("/free/tips at 375 px with the cashflow table rendered: no page-level horizontal scroll", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/free/tips");
+  await page.waitForLoadState("networkidle");
+  await expectProjectedCashflows(page);
+  const widths = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    client: document.documentElement.clientWidth,
+  }));
+  expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+  expect(widths.scroll).toBeLessThanOrEqual(375);
 });
 
 // US-307: the same for /free/soma and /free, including the __data.json a

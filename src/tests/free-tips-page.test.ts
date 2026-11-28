@@ -145,7 +145,7 @@ describe("/free/tips page", () => {
     );
   });
 
-  test("the calculator shows the FedInvest price, live measures and unavailable projections", () => {
+  test("the calculator shows the FedInvest price, live measures and projected cashflows", () => {
     renderPage();
     const calc = screen.getByRole("region", { name: H2S[3] });
     expect(calc).toHaveTextContent("Real clean price (FedInvest, 2026-10-23)");
@@ -164,7 +164,10 @@ describe("/free/tips page", () => {
       (tile) => tile.querySelector("dt")?.textContent === "Nominal YTM"
     );
     expect(nominal?.querySelector("dd")?.textContent).toBe(UNAVAILABLE.value);
-    expect(calc).toHaveTextContent(UNAVAILABLE.projection);
+    expect(calc).toHaveTextContent("Total received: $1,258.00");
+    expect(calc).toHaveTextContent(
+      "Assumes CPI-U keeps rising 3.0% a year, its change over the 12 months to September 2026."
+    );
   });
 
   test("the mock scan holds the mock's figures (negative control)", () => {
